@@ -1,10 +1,8 @@
 ---
-layout: single
+layout: page
 title: "How to Cite"
-permalink: /citation/
-toc: true
-toc_label: "Formats"
-toc_sticky: true
+icon: fas fa-quote-left
+order: 4
 ---
 
 If you use this book in your research or teaching, please cite it as:

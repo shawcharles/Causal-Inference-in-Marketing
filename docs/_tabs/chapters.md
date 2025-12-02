@@ -1,11 +1,8 @@
 ---
-layout: single
+layout: page
 title: "Table of Contents"
-permalink: /chapters/
-toc: true
-toc_label: "Parts"
-toc_icon: "book"
-toc_sticky: true
+icon: fas fa-list
+order: 2
 ---
 
 ## Part I — Foundations

@@ -1,10 +1,8 @@
 ---
-layout: single
+layout: page
 title: "About"
-permalink: /about/
-toc: true
-toc_label: "On This Page"
-toc_sticky: true
+icon: fas fa-info-circle
+order: 3
 ---
 
 ## About the Author

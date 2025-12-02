@@ -1,19 +1,22 @@
 # Site settings
 title: "Causal Inference in Marketing"
-subtitle: "Panel Data and Machine Learning Methods"
-name: "Charles Shaw"
+tagline: "Panel Data and Machine Learning Methods"
 description: "A rigorous, practitioner-oriented guide to causal inference for marketing analysts and applied econometricians."
 url: "https://shawcharles.github.io"
 baseurl: "/Causal-Inference-in-Marketing"
-repository: "shawcharles/Causal-Inference-in-Marketing"
 
 # Theme
-remote_theme: "mmistakes/minimal-mistakes@4.24.0"
-minimal_mistakes_skin: "air"  # Options: air, aqua, contrast, dark, dirt, neon, mint, plum, sunrise
+remote_theme: "cotes2020/jekyll-theme-chirpy@7.2.4"
 
 # Build settings
-markdown: kramdown
-highlighter: rouge
+lang: en
+timezone: UTC
+
+# Author
+social:
+  name: "Charles Shaw"
+  links:
+    - https://github.com/shawcharles
 
 # Plugins
 plugins:
@@ -21,42 +24,14 @@ plugins:
   - jekyll-seo-tag
   - jekyll-sitemap
   - jekyll-feed
-  - jekyll-include-cache
 
-# Author profile (appears in sidebar)
-author:
-  name: "Charles Shaw"
-  bio: "Researcher and practitioner at the intersection of causal inference, machine learning, and marketing analytics."
-  location: "Global"
-  links:
-    - label: "GitHub"
-      icon: "fab fa-fw fa-github"
-      url: "https://github.com/shawcharles"
+# Chirpy theme settings
+theme_mode: light  # Options: light, dark
+avatar: ""  # Add path to author image if desired
+toc: true
 
-# Site defaults
-defaults:
-  - scope:
-      path: ""
-      type: pages
-    values:
-      layout: single
-      author_profile: true
-      toc: true
-      toc_sticky: true
-
-# Navigation
-header:
-  overlay_color: "#1a1a2e"
-  
-navigation:
-  - title: "Home"
-    url: /
-  - title: "Chapters"
-    url: /chapters/
-  - title: "About"
-    url: /about/
-  - title: "Citation"
-    url: /citation/
+# Pagination (for posts, if any)
+paginate: 10
 
 # Exclude from processing
 exclude:
@@ -70,8 +45,6 @@ exclude:
   - papers/
   - scripts/
   - style/
-  - book.pdf
-  - Gemfile
   - Gemfile.lock
   - node_modules
   - vendor
