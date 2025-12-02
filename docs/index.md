@@ -12,6 +12,8 @@ title: "Causal Inference in Marketing"
 [📄 Download PDF](https://github.com/shawcharles/Causal-Inference-in-Marketing/raw/main/book.pdf) ·
 [📖 View on GitHub](https://github.com/shawcharles/Causal-Inference-in-Marketing)
 
+**Navigate:** [Table of Contents](./chapters) · [About](./about) · [How to Cite](./citation)
+
 ---
 
 ## Why This Book?

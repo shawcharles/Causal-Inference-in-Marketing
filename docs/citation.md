@@ -1,9 +1,11 @@
 ---
-layout: page
+layout: default
 title: "How to Cite"
-icon: fas fa-quote-left
-order: 4
 ---
+
+# How to Cite
+
+[← Back to Home](./)
 
 If you use this book in your research or teaching, please cite it as:
 

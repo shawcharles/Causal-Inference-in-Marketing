@@ -1,9 +1,11 @@
 ---
-layout: page
+layout: default
 title: "Table of Contents"
-icon: fas fa-list
-order: 2
 ---
+
+# Table of Contents
+
+[← Back to Home](./)
 
 ## Part I — Foundations
 

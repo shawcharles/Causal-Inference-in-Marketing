@@ -1,9 +1,11 @@
 ---
-layout: page
+layout: default
 title: "About"
-icon: fas fa-info-circle
-order: 3
 ---
+
+# About
+
+[← Back to Home](./)
 
 ## About the Author
 
