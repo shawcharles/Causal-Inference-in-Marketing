@@ -1,0 +1,110 @@
+\section{Multiple Treated Units and Staggered Adoption}
+\label{sec:hybrid-multiple}
+
+Hybrid methods extend naturally to settings with multiple treated units or staggered adoption. However, aggregation and estimation require care to ensure that the resulting estimates have clear interpretations. This section discusses common intervention times (when all treated units adopt simultaneously) and staggered timing (when treated units adopt at different calendar dates). The key contribution of hybrid methods in staggered settings is improved counterfactual construction: better pre-treatment fit through augmentation (ASCM), robustness to trend violations through time weighting (SDID), and regularisation for stability (ridge SC). These advantages complement the cohort-specific estimation strategies developed in Chapter~\ref{ch:did} and Chapter~\ref{ch:event}, where the focus is on aggregation and negative weighting. Here we focus on estimation within each cohort-time cell, leaving aggregation to the frameworks established in those earlier chapters.
+
+\subsection*{Common Intervention Times: Unit-Level vs Pooled Estimation}
+
+When multiple treated units share a common intervention time, the analyst can fit unit-level hybrid estimates and aggregate them. Alternatively, fit a single set of weights under pooled constraints.
+
+The unit-level approach estimates a separate hybrid synthetic control for each treated unit. Use the same donor pool and the same predictor set across units. This produces unit-specific treatment effect estimates $\hat{\tau}_i$ for each treated unit $i$. These estimates can be aggregated into an overall average treatment effect using weights that reflect the policy relevance or prevalence of each treated unit:
+\[
+\hat{\tau}^{\text{pooled}} = \sum_{i \in \mathcal{I}} \omega_i \hat{\tau}_i,
+\]
+where $\omega_i$ are aggregation weights. Examples include uniform weights $\omega_i = 1 / |\mathcal{I}|$, or weights proportional to pre-treatment outcome levels, market size, or other characteristics.
+
+The advantage of the unit-level approach is transparency. Each treated unit's synthetic control is reported explicitly. This enables readers to assess heterogeneity and to identify which units drive the aggregate result. The disadvantage is computational cost and potential instability if some treated units are poorly matched.
+
+Consider a retailer testing a new store format in five flagship locations. Unit-level estimation produces five separate synthetic controls, revealing that the format works well in urban stores but poorly in suburban stores. This heterogeneity would be obscured by pooled estimation.
+
+The pooled approach fits a single set of weights that minimises the aggregate pre-treatment discrepancy across all treated units:
+\[
+\min_{w} \sum_{i \in \mathcal{I}} \sum_{t \in \mathcal{T}_{\text{pre}}} \left( Y_{it} - \sum_{j \in \mathcal{J}} w_j Y_{jt} \right)^2 + \eta \| w \|^2,
+\]
+subject to convexity constraints on $w$. The pooled weights balance all treated units simultaneously. This produces a single synthetic control that serves as a common counterfactual. The advantage is computational simplicity and a single set of weights to report and interpret. The disadvantage is that the pooled weights may fit some treated units well and others poorly. This obscures heterogeneity and potentially biases the aggregate estimate if treatment effects vary across units.
+
+\subsection*{Aggregation and Policy-Relevant Weighting}
+
+Weighting treated units for policy-relevant summaries requires aligning the aggregation weights $\omega_i$ with the substantive question.
+
+If the goal is to estimate the average effect across all treated units (for example, for cost-benefit analysis or for forecasting aggregate impacts), uniform weights or sample-size weights are natural. These give equal importance to each treated unit or weight by the number of observations.
+
+If the goal is to estimate the effect for a target population (for example, for generalising to future rollouts), weights should reflect the prevalence or importance of each unit in the target population. A retailer planning national expansion would weight pilot stores by how representative they are of the broader store network.
+
+If treatment effects are expected to be heterogeneous, reporting unit-specific estimates alongside the aggregate provides transparency. This enables readers to assess the range of effects and understand which types of units benefit most from treatment.
+
+\subsection*{Staggered Adoption and Event-Time Effects}
+
+When treated units adopt at different times (staggered adoption), hybrid methods can be adapted by estimating cohort-specific effects. For each cohort $g$ (units adopting at time $g$) and each post-treatment period $t \geq g$, estimate a hybrid synthetic control using donors that are not yet treated by period $t$. The cohort-time-specific treatment effect estimate $\hat{\tau}_{g,t}$ is computed differently for each hybrid method.
+
+For SDID, the cohort-time estimator is:
+\[
+\hat{\tau}_{g,t}^{\text{SDID}} = \bar{Y}_{g,t} - \sum_{j \in \mathcal{J}_{-t}} \hat{w}_j^g \bar{Y}_{j,t} - \left( \sum_{s < g} \hat{\lambda}_s^g \bar{Y}_{g,s} - \sum_{j \in \mathcal{J}_{-t}} \sum_{s < g} \hat{w}_j^g \hat{\lambda}_s^g \bar{Y}_{j,s} \right),
+\]
+where $\mathcal{J}_{-t}$ denotes units not yet treated by period $t$, $\hat{w}_j^g$ are unit weights estimated for cohort $g$, and $\hat{\lambda}_s^g$ are time weights. The double-differencing structure removes both unit-level and time-level imbalances.
+
+For ASCM, the cohort-time estimator is:
+\[
+\hat{\tau}_{g,t}^{\text{ASCM}} = \bar{Y}_{g,t} - \sum_{j \in \mathcal{J}_{-t}} \hat{w}_j^g \bar{Y}_{j,t} - \hat{m}(\bar{X}_{g,t} - \sum_{j \in \mathcal{J}_{-t}} \hat{w}_j^g \bar{X}_{j,t}),
+\]
+where $\hat{m}(\cdot)$ is the regression adjustment evaluated at the covariate imbalance.
+
+These cohort-time effects can be aggregated into event-time effects $\hat{\tau}_k$ for event time $k = t - g$:
+\[
+\hat{\tau}_k = \sum_{g \in \mathcal{G}_k} w_g \hat{\tau}_{g, g+k},
+\]
+where $\mathcal{G}_k$ is the set of cohorts that contribute observations at event time $k$, and $w_g$ are cohort weights (for example, proportional to cohort size or normalised to sum to one within $\mathcal{G}_k$). The support restriction $g \in \mathcal{G}_k$ is critical: not all cohorts contribute to all event times. Early-adopting cohorts contribute to long event horizons (large $k$) but late-adopting cohorts do not. Late-adopting cohorts contribute to short event horizons but have longer pre-treatment windows. Aggregation should only include cohorts with valid data at each event time, and the analyst should report which cohorts contribute to each event-time coefficient. This transparency enables readers to assess whether the event-time profile reflects the full sample or is driven by specific cohorts.
+
+This aggregation aligns with the event-study framework developed in Chapter~\ref{ch:event}. It enables transparent visualisation of dynamic treatment effects and rigorous pre-trend testing using leads.
+
+Consider a brand launching digital campaigns in 20 markets sequentially over three years. Early-adopting markets (cohort 2020) have long post-treatment windows but face donor pool shrinkage as more markets adopt treatment. Late-adopting markets (cohort 2022) have short post-treatment windows but benefit from larger donor pools. Estimating cohort-specific effects using not-yet-treated donors ensures valid comparisons. Aggregating by event time produces a dynamic treatment effect profile that shows ramp-up, peak, and decay patterns. SDID is particularly valuable here because time weights accommodate the different pre-treatment dynamics across cohorts.
+
+\subsection*{Connection to Group-Time Effects}
+
+The connection to group-time effects $\text{ATT}(g, t)$ clarifies how staggered hybrid estimates relate to the modern difference-in-differences literature (Chapter~\ref{ch:did}). The group-time effect $\text{ATT}(g, t)$ is the average treatment effect for cohort $g$ in calendar period $t$. It is estimated by comparing cohort $g$ to not-yet-treated or never-treated controls.
+
+Hybrid methods estimate $\text{ATT}(g, t)$ by constructing a synthetic control (or augmented synthetic control, or SDID) for cohort $g$ using donors not yet treated by period $t$. The difference between cohort $g$'s observed outcomes and the synthetic control's outcomes in period $t$ provides the group-time effect. Aggregating $\text{ATT}(g, t)$ across cohorts and time produces overall average treatment effects, event-time effects, or calendar-time effects. The aggregation scheme determines which summary is produced.
+
+A critical consideration in staggered adoption is the negative weighting problem identified in Chapter~\ref{ch:did}. When treatment effects are heterogeneous across cohorts and time, simple aggregation schemes can produce weights that are negative for some cohorts. This leads to estimates that do not have a clear causal interpretation. It is important to clarify that hybrid methods do not fundamentally solve negative weighting---cohort-specific estimation does. Any method (including simple DID) avoids negative weighting when applied cohort-by-cohort. The contribution of hybrid methods is improved counterfactual construction within each cohort, not the aggregation structure. By constructing cohort-specific synthetic controls using only not-yet-treated donors, hybrids ensure that all comparisons are valid. Combined with transparent aggregation (which keeps weights positive), this produces estimates with clear causal interpretations.
+
+\subsection*{SDID for Staggered Designs}
+
+SDID provides a natural framework for staggered adoption because it incorporates time weights that accommodate cohort-specific time trends. For each cohort $g$, SDID estimates unit weights $\hat{w}_j^g$ and time weights $\hat{\lambda}_t^g$ that align the cohort's pre-treatment trajectory with weighted controls. It computes cohort-time effects $\hat{\tau}_{g,t}^{\text{SDID}}$ using the SDID formula. These cohort-time effects can be aggregated into event-time effects or overall effects using transparent cohort weights. This produces estimates that are robust to differential trends across cohorts and that respect the staggered adoption structure.
+
+The time weights in SDID are particularly valuable for staggered adoption because they down-weight pre-treatment periods that are dissimilar across cohorts. Early-adopting cohorts may have different pre-treatment trends than late-adopting cohorts. Time weights accommodate this heterogeneity by focusing on periods where trends are more comparable. This makes SDID more robust than standard synthetic control when cohorts differ in their pre-treatment dynamics.
+
+\subsection*{Practical Challenges: Incomplete Pre-Periods and Unbalanced Panels}
+
+Practical handling of incomplete pre-periods and unbalanced panels requires care. When cohorts adopt at different times, the length of the pre-treatment window varies across cohorts. Early-adopting cohorts have short pre-periods. Late-adopting cohorts have long pre-periods. Hybrid methods can accommodate this variation by using all available pre-treatment periods for each cohort. However, the analyst must decide whether to impose common weights across cohorts (pooled estimation) or to estimate cohort-specific weights (unit-level estimation).
+
+Pooled estimation assumes that all cohorts share a common factor structure or weighting model. This may be implausible if cohorts differ systematically. Unit-level estimation allows for cohort-specific weights, which is more flexible. However, it requires sufficient pre-treatment data for each cohort.
+
+Unbalanced panels (where some units or periods have missing outcomes) complicate hybrid estimation. The optimisation problem requires complete data for all units and periods included in the pre-treatment window. Imputation methods (Chapter~\ref{ch:factor}) can fill in missing values before applying hybrid methods. Alternatively, the analyst can restrict the sample to balanced subsets (complete observations for all units over a common window).
+
+The choice depends on the extent and pattern of missingness. If missingness is sparse and random, imputation is effective. If missingness is extensive or systematic, restricting to balanced subsets is safer. However, this reduces the sample size and may bias the estimates if the balanced subset is not representative.
+
+\subsection*{Minimum Requirements for Reliable Estimation}
+
+Reliable hybrid estimation in staggered settings requires sufficient data for each cohort. As a practical guideline, each cohort should have at least four to six pre-treatment periods to estimate stable weights. Cohorts with fewer than four pre-treatment periods produce unstable synthetic controls because the optimisation problem is underdetermined. When early-adopting cohorts have very short pre-treatment windows, consider using SDID (which regularises through time weights) or ridge SC (which regularises through penalisation) rather than standard SC. Alternatively, exclude cohorts with insufficient pre-treatment data from the analysis and report this exclusion transparently.
+
+Pre-treatment fit should be assessed for each cohort separately. A useful threshold is RMSPE less than 10 per cent of the outcome's standard deviation within that cohort. Cohorts with poor fit (RMSPE exceeding 15 to 20 per cent) should be flagged and their contribution to aggregate estimates assessed. If a single cohort with poor fit drives the aggregate result, conclusions are fragile.
+
+The donor pool shrinks as more cohorts adopt treatment. By the final adoption wave, only never-treated units remain as donors. If the donor pool becomes too small (fewer than five to ten donors), the synthetic control may overfit to idiosyncratic donor patterns. The analyst should monitor donor pool size across cohorts and consider whether late-adopting cohorts have sufficient comparison units.
+
+\subsection*{Choosing Between Hybrid Methods for Staggered Designs}
+
+The choice between SDID, ASCM, and standard SC depends on the data structure and the nature of potential violations.
+
+SDID is preferable when parallel trends is plausible after reweighting and when cohorts differ in their pre-treatment dynamics. The time weights accommodate heterogeneous trends by down-weighting dissimilar periods. SDID is also computationally efficient for large panels and scales well to many cohorts. Assess parallel trends by examining pre-treatment event-time coefficients: if they are close to zero and statistically insignificant across cohorts, weighted parallel trends is plausible.
+
+ASCM is preferable when treated cohorts are outliers that cannot be matched by convex combinations of donors, or when pre-treatment fit is poor despite reweighting. The regression adjustment corrects residual imbalances that pure weighting cannot eliminate. ASCM is particularly valuable when treated cohorts differ systematically from donors on observable characteristics that predict outcomes.
+
+Standard SC remains appropriate when treated cohorts lie well within the donor convex hull and pre-treatment fit is excellent (RMSPE less than 5 per cent of outcome SD). In such cases, the additional complexity of SDID or ASCM may not improve estimates and could introduce noise.
+
+A pragmatic workflow estimates all three methods for at least a subset of cohorts and compares pre-treatment fit and post-treatment estimates. If estimates converge, conclusions are robust. If estimates diverge, diagnostics should identify whether the divergence arises from poor fit (favouring ASCM), trend violations (favouring SDID), or model instability (suggesting the data do not support credible inference).
+
+\subsection*{Reporting and Transparency}
+
+Transparent reporting in staggered hybrid designs requires several elements. Report aggregation weights explicitly, showing how each cohort contributes to overall and event-time effects. If certain cohorts dominate the aggregate, readers should know this. Report pre-treatment fit (RMSPE) for each cohort and flag cohorts with poor fit. Report which cohorts contribute to each event-time coefficient, especially for long event horizons where only early-adopting cohorts contribute.
+
+Conduct sensitivity analyses that vary aggregation weights to assess robustness. If estimates are stable across weighting schemes, conclusions are credible. If estimates vary substantially, discuss which weighting scheme is most appropriate for the substantive question. Present event-time profiles with confidence intervals that account for estimation uncertainty in both the cohort-time effects and the aggregation. The bootstrap procedures discussed in Section~\ref{sec:hybrid-inference} can be adapted to staggered settings by resampling cohorts or unit-time blocks.

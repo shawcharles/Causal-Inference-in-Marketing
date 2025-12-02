@@ -1,0 +1,34 @@
+
+\section{Interlude: Design-First and Structural IO}
+\label{sec:design-structural}
+
+\noindent\textbf{Purpose.} This interlude sets our design-first approach alongside the structural tradition in industrial organisation and marketing science. We clarify the goals, assumptions, and outputs of each approach, and we highlight where each one shines or struggles. We then sketch productive hybrids.
+
+\subsection{Two Traditions, Different Targets}
+Design-first methods aim to estimate credible causal effects of concrete interventions under transparent assumptions with diagnostics. We emphasise identification strategies that can be tested or stress-tested, including parallel trends, pre-trends and placebos, overlap, donor curation, and design-faithful inference.
+
+Structural IO recovers behavioural primitives and market mechanisms. A canonical example is the Berry--Levinsohn--Pakes (BLP) model of demand for differentiated products \citet{berry1995automobile}. BLP posits a utility structure, corrects for the endogeneity of prices, and recovers own- and cross-price elasticities. Combined with a supply side, it supports counterfactual simulations of mergers, taxes, assortment changes, and pricing policies. Follow-on work extends identification and practice \citet{nevo2001measuring,berry2014identification} and offers applied guidance \citet{train2009discrete,einav2010empirical,aguirregabiria2010dynamic}.
+
+\subsection{Strengths and Vulnerabilities}
+Design-first excels in transparency and internal validity. Diagnostics make assumptions visible, flag when they fail, and keep the link between design and estimand explicit. The resulting estimates are directly decision-ready for the specific design and time window under study. That strength is also the main limitation. The scope of inference is local. We learn little about behaviour far from observed support, about general-equilibrium feedback, or about multi-firm strategic interaction.
+
+Structural work excels at explaining mechanisms and supporting broad counterfactuals. By embedding behaviour in an explicit model, it can simulate market-wide policy changes and recover welfare-relevant objects. This power comes with familiar risks. Utility or conduct may be misspecified, instruments or exclusion restrictions may be hard to justify, and computational burdens can crowd out robustness checks.
+
+\subsection{A Productive Synthesis}
+We advocate a pragmatic hybrid workflow. Begin by documenting credible effects with design-first tools such as DiD and event studies, synthetic control and SDID, and factor-based designs, using full diagnostics (Chapter~\ref{ch:design-diagnostics}). Then use those estimates to discipline structural models by calibrating or validating local elasticities, substitution patterns, and dynamics against design-based evidence. Finally, deploy structure to study policy frontiers that require mechanism or equilibrium reasoning, and report sensitivity to model choices and instruments.
+
+This sequence aligns evidence with decisions. Design-first establishes what happened under a feasible design. Structure explores why it happened and what might happen under unobserved policies.
+
+\subsection{BLP in One Paragraph}
+BLP specifies indirect utility for consumer $n$ choosing product $j$ in market $t$ as
+$u_{njt}=x_{jt}'\beta_{n}-\alpha p_{jt}+\xi_{jt}+\varepsilon_{njt}$, where $x_{jt}$ collects observed product characteristics, $p_{jt}$ is price, $\xi_{jt}$ is an unobserved product-market shock, and $\varepsilon_{njt}$ is an idiosyncratic error. The random coefficients $\beta_{n}$ capture heterogeneous tastes. Market shares map to mean utilities via an inversion, and instruments address the endogeneity of $p_{jt}$. Estimation recovers demand elasticities and, with a supply system, markups and conduct. Counterfactuals change $x$ or $p$ and solve for the new equilibrium. Performance hinges on functional forms, instrument quality, and equilibrium selection.
+
+\subsection{When to Prefer Which}
+Use design-first when the goal is to measure realised effects of specific rollouts, when diagnostics are paramount, or when platforms induce nonstationarity and interference that complicate modelling. Use structure when the question demands market-wide simulations, welfare analysis, or strategic counterfactuals far from observed support. Combine them when decisions require both credible local evidence and mechanism-based exploration.
+
+\subsection{Reporting and Diagnostics Across Traditions}
+Structural work benefits from design-style diagnostics. You can run pre-trends and placebos for auxiliary reduced forms, inspect weight and influence, vary instrument sets, and report first-stage strength and alternative equilibrium assumptions transparently. Design-first studies benefit from structural sanity checks. Estimated elasticities or substitution patterns should accord with economic reason and prior evidence.
+
+\subsection{Further Reading}
+For BLP and demand estimation, see Berry, Levinsohn, and Pakes (1995), Nevo (2001), Berry and Haile (2014), and Train (2009) \citet{berry1995automobile,nevo2001measuring,berry2014identification,train2009discrete}. For dynamics and games, see Aguirregabiria and Mira (2010) \citet{aguirregabiria2010dynamic}. For field overviews, see Einav and Levin (2010) \citet{einav2010empirical}.
+

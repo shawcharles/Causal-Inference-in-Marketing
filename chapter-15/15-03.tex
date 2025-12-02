@@ -1,0 +1,50 @@
+\section{Parallel Trends Violations}
+\label{sec:parallel-trends-violations}
+
+The parallel trends assumption is the cornerstone of difference-in-differences (DiD) and related designs. In marketing, this assumption is frequently threatened by seasonality, calendar effects, and diverging competitive trajectories.
+
+\begin{definition}[$\delta$-Violation of Parallel Trends]\label{def:bounded-pt-violation}
+Let $Y_{it}(0)$ denote the potential outcome under no treatment. Parallel trends holds if:
+\[
+\mathbb{E}[Y_{it}(0) - Y_{it'}(0) | W_i = 1] = \mathbb{E}[Y_{it}(0) - Y_{it'}(0) | W_i = 0].
+\]
+A $\delta$-bounded violation allows the trends to differ by at most $\delta$:
+\[
+\left| \mathbb{E}[Y_{it}(0) - Y_{it'}(0) | W_i = 1] - \mathbb{E}[Y_{it}(0) - Y_{it'}(0) | W_i = 0] \right| \leq \delta.
+\]
+The parameter $\delta$ quantifies the maximum allowable deviation from parallel trends.
+\end{definition}
+
+When parallel trends do not hold exactly, we can no longer point-identify the treatment effect. However, if we can bound the violation by $\delta$, we can bound the bias.
+
+\begin{theorem}[DiD Bias Bounds]\label{thm:did-bias-bounds}
+Under a $\delta$-bounded parallel trends violation (Definition~\ref{def:bounded-pt-violation}), the DiD estimator $\hat{\tau}^{\text{DiD}}$ satisfies:
+\[
+\tau_0 - \delta \leq \hat{\tau}^{\text{DiD}} \leq \tau_0 + \delta,
+\]
+where $\tau_0$ is the true ATT. The identified set for $\tau_0$ is:
+\[
+\mathcal{T}(\delta) = [\hat{\tau}^{\text{DiD}} - \delta, \hat{\tau}^{\text{DiD}} + \delta].
+\]
+Reporting $\mathcal{T}(\delta)$ for a range of $\delta$ values (e.g., $\delta \in \{0, 0.5\sigma_Y, \sigma_Y\}$) provides transparent sensitivity analysis.
+\end{theorem}
+
+A key practical question is how to choose $\delta$. Data-driven approaches use pre-treatment trends to calibrate plausible post-treatment deviations.
+
+\begin{proposition}[Calibrating $\delta$ from Pre-Trends]\label{prop:delta-calibration}
+Let $\hat{\delta}_{\text{pre}}$ denote the maximum observed pre-treatment trend difference:
+\[
+\hat{\delta}_{\text{pre}} = \max_{t < t_0} \left| (\bar{Y}_{t}^{\text{treat}} - \bar{Y}_{t-1}^{\text{treat}}) - (\bar{Y}_{t}^{\text{control}} - \bar{Y}_{t-1}^{\text{control}}) \right|.
+\]
+If pre-trends are informative about post-treatment trends, using $\delta = c \cdot \hat{\delta}_{\text{pre}}$ for some $c \geq 1$ provides a data-driven sensitivity bound. The multiplier $c$ accounts for potential trend acceleration.
+\end{proposition}
+
+\subsection*{Calendars, Seasonality, and Event Interference}
+
+In practice, calendar effects are perhaps the most common source of parallel trends violations ($B_{\text{PT}}$). Holidays, pay cycles, and major events all shift demand in ways that can be independent of our treatment. If these events correlate with the timing of an intervention, our estimates will conflate the treatment effect with this calendar-driven variation.
+
+We can mitigate these effects through careful design: use balanced pre- and post-treatment windows, include rich fixed effects for holidays and other events, and employ flexible controls for seasonality. The event-time alignment discussed in Chapter~\ref{ch:event} is a key tool here, ensuring we compare cohorts at the same point in their treatment journey.
+
+\paragraph{Event interference.} Event interference arises when concurrent campaigns, competitor actions, or macroeconomic shocks overlap with the study window. Isolating windows is sometimes feasible but at the cost of external validity.
+
+High-dimensional controls (Chapter~\ref{ch:high-dim}) can adjust for observable concurrent exposures, while designs that absorb common shocks via unit and time fixed effects (Chapter~\ref{ch:did}) or via latent factors (Chapter~\ref{ch:factor}) reduce bias from unobserved common trends.

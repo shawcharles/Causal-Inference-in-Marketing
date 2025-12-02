@@ -1,0 +1,46 @@
+\section{Assumptions for Future Practice}
+\label{sec:future-assumptions}
+
+The open problems discussed in this chapter will not be solved by methods alone. Progress requires that practitioners adopt new disciplines—documenting what was once implicit, monitoring what was once assumed stable, and embracing uncertainty where point identification fails. This section states assumptions that future work should satisfy. These are not assumptions we make today; they are assumptions we aspire to make credible through better practice.
+
+\subsection*{Stability and Adaptation}
+
+\begin{assumption}[Documented change points and adaptive stability]
+\label{assump:outlook-stability}
+Measurement and assignment rules are stable within defined windows, or change points are documented and modelled explicitly. Adaptive assignment mechanisms are logged with sufficient detail to reconstruct assignment probabilities for inference.
+\end{assumption}
+
+Current practice often assumes stability without verification. Platform policies change without announcement. Algorithm updates occur silently. The practitioner discovers breaks only when estimates behave unexpectedly. Future practice should require explicit stability windows and documented changelogs, as emphasised in Section~\ref{sec:nonstationarity}. When assignment is adaptive, the logging should capture enough information to support identification under sequential designs—a requirement that few current systems meet.
+
+\subsection*{Interference and Exposure}
+
+\begin{assumption}[Explicit exposure mappings under complex interference]
+\label{assump:outlook-interference}
+When interference is dense or overlapping, exposure mappings aggregate neighbour treatments into documented, low-dimensional summaries. Identification conditions for spillover effects are tested and reported, or partial identification bounds are embraced when point identification fails.
+\end{assumption}
+
+The partial-interference framework assumes clean cluster boundaries. Real networks have overlapping communities, and users belong to multiple groups, as discussed in Section~\ref{sec:interference-scale}. Future practice should require explicit specification of the exposure mapping—how neighbour treatments are summarised into an exposure variable—and sensitivity analysis for alternative mappings. When the exposure structure is too complex for point identification, bounds such as those in Section~\ref{sec:partial-identification} should be reported.
+
+\subsection*{Overlap and Support}
+
+\begin{assumption}[Evolving overlap and support monitoring]
+\label{assump:outlook-support}
+As environments shift, overlap and support are monitored continuously. Donor pools, propensity models, and trimming rules adapt to maintain identification. Diagnostics flag when support erosion compromises inference.
+\end{assumption}
+
+Overlap is not a one-time check. As platforms evolve and populations shift, the overlap that existed at study design may erode by study completion. Future practice should build monitoring into the analysis pipeline—tracking propensity score distributions over time, flagging when trimming thresholds change, and alerting when donor pools shrink. Static assumptions about support are insufficient in dynamic environments.
+
+\subsection*{Governance and Auditability}
+
+\begin{assumption}[Governance ensuring long-run auditability]
+\label{assump:outlook-governance}
+Data versioning, code repositories, and audit trails support reproducibility over time. Privacy-preserving workflows balance transparency with compliance. Analysis registries document pre-specified plans and deviations from those plans.
+\end{assumption}
+
+Reproducibility requires infrastructure. Code must be versioned. Data snapshots must be preserved. Analysis plans must be registered before outcomes are observed. Deviations must be documented. These practices are standard in clinical trials but rare in marketing analytics. Future practice should treat governance as a requirement, not an afterthought. The credibility of causal claims depends on the auditability of the process that produced them.
+
+\subsection*{The Gap Between Aspiration and Reality}
+
+These assumptions describe where the field should go, not where it is. Most marketing analytics today lack documented change points, explicit exposure mappings, continuous overlap monitoring, and rigorous governance. Closing this gap requires investment—in infrastructure, in training, and in institutional incentives that reward transparency over speed.
+
+The methods in this book provide the analytical tools. The assumptions in this section describe the conditions under which those tools can be trusted. Bridging the two is the work that remains.

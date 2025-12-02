@@ -1,0 +1,176 @@
+\section{Robust Matrix Completion with Outliers}
+\label{sec:robust-matrix}
+
+\subsection*{The Outlier Problem in Marketing Data}
+
+Marketing data are contaminated by outliers. Stockouts create artificial zeros: a product is unavailable in a store for a week, producing zero sales that reflects a supply constraint rather than underlying demand. Data entry errors produce extreme values (extra digits, decimal point errors). Promotional spikes create temporary deviations: a flash sale produces a 10x increase in sales for a day, then sales return to normal.
+
+Standard matrix completion treats all observations equally. It estimates a low-rank structure that fits all cells, including outliers. Outliers pull the low-rank estimate away from the true underlying structure, resulting in biased counterfactuals and biased treatment effects.
+
+Robust matrix completion separates outliers from the low-rank structure by decomposing the outcome matrix into three components.
+
+\begin{definition}[Low-Rank Plus Sparse Decomposition]
+The observed outcome matrix $\mathbf{Y} \in \mathbb{R}^{N \times T}$ admits the decomposition
+\[
+\mathbf{Y} = \mathbf{L}^* + \mathbf{S}^* + \mathbf{E},
+\]
+where:
+\begin{enumerate}[(i)]
+    \item $\mathbf{L}^* \in \mathbb{R}^{N \times T}$ is the low-rank component with $\text{rank}(\mathbf{L}^*) = R \ll \min(N, T)$;
+    \item $\mathbf{S}^* \in \mathbb{R}^{N \times T}$ is the sparse outlier component with $\|\mathbf{S}^*\|_0 \leq \rho N T$ for some $\rho \in (0, 1)$;
+    \item $\mathbf{E} \in \mathbb{R}^{N \times T}$ is the noise matrix with i.i.d.\ entries satisfying $\mathbb{E}[E_{it}] = 0$ and $\mathbb{E}[E_{it}^2] = \sigma^2$.
+\end{enumerate}
+\end{definition}
+
+The low-rank component captures systematic co-movement across units and time. The sparse component captures cell-specific deviations that are large in magnitude but affect only a small fraction of cells.
+
+\subsection*{Robust PCA and Matrix Completion}
+
+Principal Component Pursuit (PCP) provides a convex formulation for separating low-rank and sparse components. The optimisation problem is:
+\[
+\min_{\mathbf{L}, \mathbf{S}} \|\mathbf{L}\|_* + \lambda \|\mathbf{S}\|_1 \quad \text{subject to} \quad \mathbf{Y} = \mathbf{L} + \mathbf{S} + \mathbf{E},
+\]
+where $\|\mathbf{L}\|_*$ is the nuclear norm (encouraging low rank), $\|\mathbf{S}\|_1$ is the $\ell_1$ norm (encouraging sparsity), and $\lambda > 0$ is the regularisation parameter.
+
+\paragraph{Choice of $\lambda$.} The theory suggests $\lambda = 1/\sqrt{\max(N, T)}$ for exact recovery in the noiseless case. In practice, cross-validation on held-out untreated cells is recommended. Small $\lambda$ prioritises low rank; large $\lambda$ prioritises sparsity.
+
+\paragraph{Stable Principal Component Pursuit (SPCP).} When treatment creates missing cells, we observe $Y_{it}$ only for $(i, t) \in \Omega$. SPCP solves:
+\[
+\min_{\mathbf{L}, \mathbf{S}} \|\mathbf{L}\|_* + \lambda \|\mathbf{S}\|_1 \quad \text{subject to} \quad Y_{it} = L_{it} + S_{it} \text{ for } (i, t) \in \Omega.
+\]
+Both PCP and SPCP are convex and can be solved efficiently using the Alternating Direction Method of Multipliers (ADMM). See Section~\ref{sec:computation} for algorithmic details.
+
+\subsection*{Identification and Assumptions}
+
+Identification of the low-rank and sparse components requires regularity conditions.
+
+\begin{assumption}[Incoherence]\label{ass:incoherence}
+Let $\mathbf{L}^* = \mathbf{U} \boldsymbol{\Sigma} \mathbf{V}^\top$ be the SVD of the low-rank component. The matrix $\mathbf{L}^*$ is $\mu$-incoherent if:
+\begin{enumerate}[(i)]
+    \item $\max_{i \in [N]} \|\mathbf{U}_{i\cdot}\|_2^2 \leq \frac{\mu R}{N}$;
+    \item $\max_{t \in [T]} \|\mathbf{V}_{t\cdot}\|_2^2 \leq \frac{\mu R}{T}$;
+    \item $\|\mathbf{U} \mathbf{V}^\top\|_{\infty} \leq \sqrt{\frac{\mu R}{NT}}$.
+\end{enumerate}
+Incoherence ensures the singular vectors are spread out rather than concentrated in a few rows or columns. $\mu = 1$ corresponds to maximally spread singular vectors.
+\end{assumption}
+
+\begin{assumption}[Random Sparsity Pattern]\label{ass:sparsity}
+The support of $\mathbf{S}^*$ is uniformly distributed among all subsets of $[N] \times [T]$ of cardinality at most $\rho NT$, independent of $\mathbf{L}^*$ and $\mathbf{E}$.
+\end{assumption}
+
+\begin{theorem}[Exact Recovery]\label{thm:rpca}
+Suppose Assumptions~\ref{ass:incoherence} and~\ref{ass:sparsity} hold with $\rho \leq c_0 / (\mu R)$ for a universal constant $c_0 > 0$. With $\lambda = 1/\sqrt{\max(N, T)}$ and $\sigma = 0$ (noiseless), PCP recovers $\hat{\mathbf{L}} = \mathbf{L}^*$ and $\hat{\mathbf{S}} = \mathbf{S}^*$ with probability at least $1 - c_1 (NT)^{-10}$. See \citet{candes2011robust} for the proof.
+\end{theorem}
+
+\begin{proposition}[Noisy Recovery]\label{prop:rpca-noisy}
+Under the conditions of Theorem~\ref{thm:rpca} with noise $\|\mathbf{E}\|_F \leq \delta$, Stable PCP satisfies
+\[
+\|\hat{\mathbf{L}} - \mathbf{L}^*\|_F^2 + \|\hat{\mathbf{S}} - \mathbf{S}^*\|_F^2 \leq C \delta^2
+\]
+for a constant $C$ depending on $\mu$, $R$, and $\rho$.
+\end{proposition}
+
+\subsection*{Treatment-Outlier Separation}
+
+For causal inference, we must ensure that treatment effects are not mistaken for outliers.
+
+\begin{assumption}[Treatment-Outlier Separation]\label{ass:treatment-outlier}
+Let $\mathcal{T}$ denote the set of treated cells. Treatment effects are distinguishable from outliers if:
+\begin{enumerate}[(i)]
+    \item The sparse component is estimated using only untreated cells: $\text{supp}(\hat{\mathbf{S}}) \cap \mathcal{T} = \emptyset$;
+    \item Treatment effects satisfy $|\tau_{it}| \leq C_\tau \sigma$ for $(i,t) \in \mathcal{T}$;
+    \item Outlier magnitudes satisfy $|S^*_{it}| > C_S \sigma$ with $C_S \gg C_\tau$.
+\end{enumerate}
+\end{assumption}
+
+\begin{tcolorbox}[colback=orange!5!white,colframe=orange!75!black,title=Caution: Large Treatment Effects]
+Assumption~\ref{ass:treatment-outlier} requires that treatment effects are moderate relative to outliers. This may be violated when:
+\begin{itemize}
+\item Promotions cause extreme sales spikes (10x increases).
+\item Treatment fundamentally changes the demand structure.
+\item Treated units are systematically different from controls.
+\end{itemize}
+\textbf{Mitigation strategies:}
+\begin{enumerate}
+\item Estimate $\mathbf{L}$ and $\mathbf{S}$ using only untreated cells (excluding all treated cells from outlier detection).
+\item Compare robust MC estimates to standard MC estimates. If they differ substantially, investigate whether treatment effects are being classified as outliers.
+\item Conduct sensitivity analysis: vary $\lambda$ and assess stability of ATT estimates.
+\end{enumerate}
+\end{tcolorbox}
+
+\subsection*{Comparison: Standard vs Robust Matrix Completion}
+
+Table~\ref{tab:robust-comparison} compares standard and robust matrix completion.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Standard vs Robust Matrix Completion}
+\label{tab:robust-comparison}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Aspect} & \textbf{Standard MC} & \textbf{Robust MC (PCP/SPCP)} \\
+\midrule
+Model & $\mathbf{Y} = \mathbf{L}^* + \mathbf{E}$ & $\mathbf{Y} = \mathbf{L}^* + \mathbf{S}^* + \mathbf{E}$ \\
+\addlinespace
+Outliers & Absorbed into $\mathbf{L}$ (bias) & Separated into $\mathbf{S}$ \\
+\addlinespace
+Assumptions & Low-rank structure & Low-rank + sparse + incoherence \\
+\addlinespace
+When to use & Clean data; no stockouts & Stockouts, data errors, promotions \\
+\addlinespace
+Regularisation & $\lambda$ (nuclear norm) & $\lambda$ (trade-off L vs S) \\
+\addlinespace
+Computation & SVD-based & ADMM (iterative) \\
+\addlinespace
+Interpretability & Factors and loadings & Factors + identified outliers \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{Software Implementation}
+
+Several packages implement robust matrix completion:
+
+\paragraph{Python.}
+\begin{itemize}
+\item \texttt{sklearn.decomposition.PCA} with \texttt{svd\_solver='arpack'}: standard PCA (not robust).
+\item \texttt{rpca}: Robust PCA using PCP. Implements ADMM solver.
+\item \texttt{tensorly}: Includes robust tensor decomposition methods.
+\end{itemize}
+
+\paragraph{R.}
+\begin{itemize}
+\item \texttt{rpca}: Robust PCA with nuclear norm + $\ell_1$ penalty. Implements ADMM.
+\item \texttt{pcaMethods}: Various PCA methods including robust variants.
+\item \texttt{robustbase}: General robust statistical methods.
+\end{itemize}
+
+\paragraph{MATLAB.}
+\begin{itemize}
+\item Augmented Lagrange Multiplier (ALM) implementations available from the authors of \citet{candes2011robust}.
+\end{itemize}
+
+\subsection*{Application: Retail Sales with Stockouts}
+
+Consider a grocery retailer with 500 products across 100 stores over 104 weeks. Stockouts affect approximately 5 per cent of product-store-week combinations. Stockouts are non-random: they are more common for popular products (high demand depletes inventory) and small stores (limited shelf space).
+
+\paragraph{Treatment.} A promotional campaign is applied to 50 products in 20 stores for 4 weeks. The goal is to estimate the causal effect on sales.
+
+\paragraph{Problem.} Standard matrix completion produces biased estimates because stockouts create artificial zeros that violate the low-rank assumption.
+
+\paragraph{Robust MC solution.} Solve SPCP with $\lambda = 0.1$ (chosen by cross-validation) on untreated cells only. The low-rank component $\hat{\mathbf{L}}$ captures underlying demand. The sparse component $\hat{\mathbf{S}}$ captures stockouts and outliers.
+
+\paragraph{Outlier analysis.} Inspecting $\hat{\mathbf{S}}$: 95 per cent of non-zero entries are negative (stockouts produce zeros, which are negative deviations from demand). The remaining 5 per cent are positive (data errors or extreme promotions).
+
+\paragraph{Results.} The imputed counterfactuals are $\hat{L}_{ijt}$ (excluding outliers). The robust ATT is 20 per cent increase in sales. For comparison, standard MC (without robustness) produces 15 per cent. The difference arises because standard MC is biased downward by stockouts in untreated cells.
+
+\paragraph{Diagnostics.}
+\begin{itemize}
+\item Distribution of $\hat{\mathbf{S}}$: 95 per cent zero entries; non-zero entries have mean absolute value 50 (vs mean sales of 100).
+\item Placebo test: randomly designate 5 per cent of untreated cells as artificial outliers; method correctly identifies 90 per cent.
+\item Sensitivity to $\lambda$: ATT estimates stable for $\lambda \in [0.05, 0.2]$.
+\end{itemize}
+
+\paragraph{Inference.} Confidence intervals for the robust ATT can be constructed using bootstrap methods (Section~\ref{sec:bayesian-matrix}) or by propagating uncertainty from the ADMM solution. The 95 per cent bootstrap CI for the ATT is [16\%, 24\%].

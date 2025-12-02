@@ -1,0 +1,54 @@
+\section{Diagnostics and Robustness}
+\label{sec:hd-diagnostics}
+
+Credible regularisation requires rigorous diagnostics. We must assess covariate balance, overlap, residual dependence, and the stability of our results. This section outlines a diagnostic workflow that integrates with the principles in Chapter~\ref{ch:design-diagnostics}.
+
+Post-selection balance improvement assesses whether the selected controls reduce covariate imbalance between treated and control units. Compute standardised mean differences (SMDs) for all covariates before and after including the selected controls:
+\[
+\text{SMD}_j^{\text{before}} = \frac{\bar{X}_{j,\text{treat}} - \bar{X}_{j,\text{control}}}{\sqrt{(s_{j,\text{treat}}^2 + s_{j,\text{control}}^2) / 2}}, \quad \text{SMD}_j^{\text{after}} = \frac{\bar{X}_{j,\text{treat}}^{\text{adj}} - \bar{X}_{j,\text{control}}^{\text{adj}}}{\sqrt{(s_{j,\text{treat}}^{\text{adj},2} + s_{j,\text{control}}^{\text{adj},2}) / 2}},
+\]
+where $\bar{X}_j$ and $s_j^2$ are the mean and variance of covariate $j$, and the "adj" superscript denotes values after regression adjustment (residualising with respect to the selected controls). Balance is improved if $|\text{SMD}_j^{\text{after}}| < |\text{SMD}_j^{\text{before}}|$ for most covariates.
+
+Common thresholds are $|\text{SMD}| < 0.1$ (good balance) or $|\text{SMD}| < 0.25$ (acceptable balance). If balance is poor after selection (many covariates have $|\text{SMD}^{\text{after}}| > 0.25$), this suggests that the selected controls do not adequately control for confounding, and double selection or alternative methods (propensity score matching, synthetic control) may be preferable.
+
+\subsection*{Overlap Checks}
+
+Overlap checks plot propensity score distributions for treated and control units after selection and assess common support. Estimate propensity scores using the selected controls (logistic regression of treatment on selected controls, unit fixed effects, and time fixed effects), plot histograms or density plots of predicted propensities for treated and control units, and compute the overlap statistic (the integral of the minimum of the two densities).
+
+Flag regions where one group dominates (for example, treated units concentrated at high propensities, controls at low propensities), and consider trimming extreme observations (excluding units with propensities below 0.05 or above 0.95) or reweighting (inverse propensity weighting). Report effective sample sizes (the number of treated and control observations with propensities in the common support range) and assess whether the trimmed sample remains representative.
+
+\subsection*{Residual Dependence Checks}
+
+Residual dependence checks assess whether residuals from the selected model exhibit serial correlation, cross-sectional correlation, or clustering. For serial dependence, compute the autocorrelation function (ACF) of residuals within units, $\text{Corr}(\hat{\varepsilon}_{it}, \hat{\varepsilon}_{i,t-k})$, for lags $k = 1, 2, \ldots, K_{\max}$. If autocorrelations are large (for example, $|\text{ACF}(k)| > 0.2$ for $k \leq 5$), serial dependence is present, and cluster-robust or HAC standard errors are required.
+
+For cross-sectional dependence, compute the average correlation of residuals across units within periods, $\text{Corr}(\hat{\varepsilon}_{it}, \hat{\varepsilon}_{jt})$ for $i \neq j$. If cross-correlations are large, two-way clustering or spatial HAC corrections are required. Reporting residual diagnostics alongside treatment effect estimates builds confidence that inference accounts for dependence.
+
+\subsection*{Inclusion Frequency and Stability}
+
+Inclusion frequency and stability across folds quantify how often each control is selected across cross-validation folds, providing evidence on selection stability. For each control $j$, compute the inclusion frequency $f_j = (\text{number of folds where control } j \text{ is selected}) / K$.
+
+A control with $f_j = 1$ is selected in all folds (highly stable), a control with $f_j = 0$ is never selected (clearly irrelevant), and a control with $0 < f_j < 1$ is selected in some folds but not others (unstable). Plot inclusion frequencies against control indices or names, highlighting highly stable controls (candidates for inclusion in the final model) and unstable controls (candidates for exclusion or sensitivity analysis).
+
+Reporting inclusion frequencies transparently enables readers to assess whether conclusions depend on specific controls that are selected in only some folds.
+
+\subsection*{Sensitivity to Penalty Choice}
+
+Sensitivity to penalty choice assesses whether treatment effect estimates are stable across a range of penalties. Estimate treatment effects for multiple penalties (for example, $\lambda_{\min}$, $\lambda_{1\text{se}}$, and two intermediate penalties) and plot the estimates against $\lambda$.
+
+If estimates are stable (vary little across penalties), conclusions are robust to penalty choice. If estimates vary widely (for example, $\hat{\tau}$ ranges from 0.10 to 0.25 across penalties), the choice of penalty matters, and the analyst should report results for multiple penalties, discuss which is most plausible based on cross-validation error and domain knowledge, and interpret the range as reflecting model uncertainty.
+
+Reporting a range of estimates (for example, the minimum and maximum across all penalties considered) provides transparent evidence of sensitivity.
+
+\subsection*{Triangulation against Simpler Designs}
+
+Triangulation against simpler designs compares regularised estimates to estimates from simpler methods (two-way fixed effects DiD without controls, synthetic control, event studies, factor models) to assess whether added flexibility materially changes conclusions.
+
+If regularised estimates are similar to simpler estimates (for example, within one standard error), this suggests that flexible covariate adjustment is not needed and that the design is robust. If regularised estimates differ substantially from simpler estimates, investigate whether the difference is due to improved control for confounders (positive) or to overfitting or collider bias (negative).
+
+Transparent reporting of multiple estimates and discussion of the sources of divergence builds confidence that conclusions are not driven by method artefacts.
+
+\subsection*{Integration with Design-Diagnostics Workflow}
+
+Integrating with the design-diagnostics workflow in Chapter~\ref{ch:design-diagnostics} ensures that regularisation analyses are held to the same standards as design-based methods. Run pre-trend tests on leads (periods before treatment) to assess parallel trends. Plot event-time effects with confidence intervals and check that pre-treatment effects are near zero.
+
+Conduct placebo tests on never-treated units or periods. Assess overlap and support in covariates and propensities. Compare regularised estimates to estimates from simpler methods for triangulation. Transparent reporting of diagnostics alongside estimates builds confidence that regularisation provides credible causal evidence.

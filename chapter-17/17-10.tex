@@ -1,0 +1,82 @@
+\section{Inference for Diagnostics}
+\label{sec:inference-diagnostics}
+
+Diagnostic tests themselves require valid inference. A pre-trend test with incorrect standard errors, or a placebo p-value computed under wrong assumptions, can mislead as badly as a flawed main estimate. This section addresses inference for the diagnostics introduced earlier in this chapter.
+
+\subsection*{Joint Inference for Pre-Trend Tests}
+
+Event studies produce multiple pre-treatment coefficients. Testing each individually inflates the false positive rate; testing them jointly requires accounting for their correlation.
+
+\begin{definition}[Joint Pre-Trend Test with Correct Inference]\label{def:joint-pretrend-inference}
+For pre-treatment coefficients $\hat{\theta}_{-K}, \ldots, \hat{\theta}_{-1}$ with cluster-robust covariance $\hat{\Sigma}_{\text{pre}}$, the joint Wald statistic is:
+\[
+W = \hat{\boldsymbol{\theta}}_{\text{pre}}' \hat{\Sigma}_{\text{pre}}^{-1} \hat{\boldsymbol{\theta}}_{\text{pre}} \xrightarrow{d} \chi^2(K).
+\]
+When the number of clusters $G$ is small (e.g., $G < 50$), the asymptotic $\chi^2$ approximation is unreliable. Two alternatives are available: the wild cluster bootstrap (Section~\ref{sec:bootstrap}), which computes the bootstrap distribution of $W$ under the null, and the F-correction, which uses $F = W/K$ compared to $F(K, G-1)$ critical values for finite-sample correction. Report both pointwise and joint confidence bands for pre-treatment coefficients; pointwise bands that exclude zero do not imply joint rejection.
+\end{definition}
+
+\begin{proposition}[Uniform Confidence Bands for Event Studies]\label{prop:uniform-bands-es}
+To construct $(1-\alpha)$ uniform confidence bands that cover all event-time coefficients simultaneously:
+\[
+\hat{\theta}_k \pm c_{1-\alpha} \cdot \hat{\text{se}}_k, \quad \text{for all } k,
+\]
+where $c_{1-\alpha}$ is the $(1-\alpha)$-quantile of $\max_k |t_k^{(b)}|$ over bootstrap replicates. This accounts for the correlation structure among coefficients. Uniform bands are wider than pointwise bands but provide valid simultaneous coverage.
+\end{proposition}
+
+\subsection*{Placebo Inference for Synthetic Control}
+
+Synthetic control with a single treated unit cannot rely on asymptotic inference. Placebo tests generate a reference distribution by applying the method to each donor as if it were treated.
+
+\begin{definition}[Rank-Based Placebo P-Value]\label{def:placebo-pvalue-formal}
+Let $R_1 = \text{RMSPE}_{\text{post},1} / \text{RMSPE}_{\text{pre},1}$ be the RMSPE ratio for the treated unit, and $R_j$ the ratio for placebo unit $j$. The one-sided placebo p-value is:
+\[
+p = \frac{1 + \sum_{j=2}^{J+1} \mathbf{1}(R_j \geq R_1)}{J+1}.
+\]
+The numerator includes 1 for the treated unit itself, ensuring the p-value is never zero. Under the sharp null of no effect, $p$ is uniformly distributed on $\{1/(J+1), 2/(J+1), \ldots, 1\}$.
+\end{definition}
+
+\begin{remark}[Excluding Poor-Fit Placebos]\label{rem:placebo-exclusion}
+Placebo units with poor pre-treatment fit (high $\text{RMSPE}_{\text{pre},j}$) can produce spuriously large post-treatment gaps unrelated to treatment. Two approaches address this: the ratio-based approach uses the RMSPE ratio $R_j$ (Definition~\ref{def:rmspe}) rather than the raw post-period gap, normalising by pre-period fit; the exclusion approach drops placebos with $\text{RMSPE}_{\text{pre},j} > c \cdot \text{RMSPE}_{\text{pre},1}$ for threshold $c$ (e.g., $c = 2$ or $c = 5$). Report sensitivity to the exclusion threshold. If the p-value changes dramatically with $c$, the inference is fragile.
+\end{remark}
+
+\subsection*{Small-Sample Corrections}
+
+When the number of clusters, treated units, or donors is small, asymptotic approximations fail. Resampling and permutation methods provide valid alternatives.
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Procedure: Wild Cluster Bootstrap for Diagnostics]
+For diagnostic statistics (pre-trend tests, balance tests, specification curve summaries) with $G$ clusters, first compute the diagnostic statistic $T$ on the original data. Second, for $b = 1, \ldots, B$, multiply cluster-level residuals by Rademacher or Webb weights and recompute the statistic $T^{(b)}$. Third, compute the bootstrap p-value as the fraction of $|T^{(b)}| \geq |T|$. Use Webb six-point weights when $G < 10$ (Section~\ref{sec:bootstrap}). With $G < 6$, even the bootstrap may be unreliable; consider randomisation inference (Section~\ref{sec:randomisation}) or report that inference is underpowered.
+\end{tcolorbox}
+
+\begin{proposition}[Randomisation Inference for Diagnostics]\label{prop:ri-diagnostics}
+When the assignment mechanism is known (e.g., a geo-experiment with randomised treatment), randomisation inference provides exact p-values for any diagnostic statistic:
+\[
+p_{\text{RI}} = \frac{1}{|\mathcal{W}|} \sum_{\mathbf{w} \in \mathcal{W}} \mathbf{1}(T(\mathbf{w}) \geq T^{\text{obs}}),
+\]
+where $\mathcal{W}$ is the set of feasible treatment assignments. This is valid regardless of sample size, distributional assumptions, or dependence structure. Use randomisation inference as the primary method when design-based justification is available.
+\end{proposition}
+
+\subsection*{The Pre-Test Bias Problem}
+
+A subtle but critical issue: conditioning on passing a pre-trend test biases subsequent inference. If we only proceed when pre-trends "look good," we have selected on a random variable, and standard confidence intervals no longer have correct coverage.
+
+\begin{definition}[Pre-Test Bias]\label{def:pretest-bias}
+Let $\hat{\tau}$ be the treatment effect estimator and $\hat{\theta}_{\text{pre}}$ the vector of pre-trend coefficients. If we condition on the event $A = \{\text{pre-trend test not rejected}\}$, then:
+\[
+\mathbb{E}[\hat{\tau} | A] \neq \tau,
+\]
+even when $\mathbb{E}[\hat{\tau}] = \tau$ unconditionally. The bias arises because $\hat{\tau}$ and $\hat{\theta}_{\text{pre}}$ are correlated through shared confounders or estimation error. Conditioning on $A$ selects realisations where this correlation happened to produce small pre-trends, which systematically shifts $\hat{\tau}$.
+\end{definition}
+
+\begin{remark}[Honest Inference After Pre-Testing]\label{rem:honest-inference}
+Following \citet{roth2022pretest}, honest confidence intervals that account for pre-testing can be constructed by three approaches. First, unconditional reporting: report the main estimate and confidence interval regardless of pre-trend test results without conditioning on passing. Second, sensitivity analysis: use the framework in Section~\ref{sec:sensitivity-analyses} to bound the effect under plausible pre-trend violations rather than testing for exact parallel trends. Third, conditional inference: if conditioning is unavoidable, use methods that correct for selection, such as the conditional confidence intervals in \citet{roth2022pretest}. The key insight is that failing to reject parallel trends does not validate them; a non-significant pre-trend test has low power against small violations that could still bias the main estimate substantially.
+\end{remark}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 17.2: Inference Checklist for Diagnostics]
+\textbf{Pre-trend tests:} Use joint tests with cluster-robust or bootstrap inference. Report uniform confidence bands. Do not condition main inference on passing.
+
+\textbf{Placebo tests:} Use rank-based p-values with RMSPE ratios. Report sensitivity to placebo exclusion thresholds.
+
+\textbf{Small samples:} Use wild cluster bootstrap with Webb weights when $G < 50$. Use randomisation inference when $G < 10$ or when design-based justification is available.
+
+\textbf{Pre-test bias:} Report unconditional estimates. Use sensitivity analysis rather than binary pass/fail pre-trend tests. If conditioning, use honest inference methods.
+\end{tcolorbox}

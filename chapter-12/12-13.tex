@@ -1,0 +1,110 @@
+
+
+\section{Workflow Checklist}
+\label{sec:dml-workflow}
+
+This section provides a compact, reproducible protocol for conducting DML analyses in marketing panels. The workflow integrates estimand definition, nuisance estimation, cross-fitting, diagnostics, inference, and reporting, ensuring that conclusions are credible and transparent.
+
+\subsection*{Step 1: Define Estimand}
+
+Clarify the target parameter: ATE (average treatment effect over the full sample), ATT (average effect on the treated), CATE (conditional average treatment effect given covariates $x$), or dose-response $\mu(w)$ (average outcome under treatment intensity $w$). Document the estimand mathematically and discuss its policy relevance. For staggered adoption, define whether the target is cohort-time effects $\text{ATT}(g, t)$, event-time effects $\theta_k$, or the overall ATT.
+
+\subsection*{Step 2: Construct Orthogonal Score}
+
+Identify the nuisance functions required to estimate the target parameter: outcome regressions $\mu_0(x)$ and $\mu_1(x)$ (conditional mean outcomes under control and treatment), propensity scores $e(x)$ (conditional probability of treatment), and any additional nuisances (factor loadings, exposure variables). Construct the doubly robust orthogonal score that combines these nuisances in a way that is first-order insensitive to nuisance estimation error. Verify that the score is derived using residual-on-residual constructions or augmentation, and that it satisfies Neyman orthogonality by checking the first-order derivative condition.
+
+\subsection*{Step 3: Design Dependence-Respecting Cross-Fitting}
+
+Partition the data into $K$ folds (typically $K = 5$ or $K = 10$) that respect panel dependence. For panels with many units and few periods, use unit-level cross-fitting (partition units, train on $K-1$ folds of units). For panels with few units and many periods, use time-level cross-fitting (partition periods, train on $K-1$ folds of periods). For balanced panels, use block cross-fitting (partition both units and periods). Ensure that nuisance training data exclude post-treatment periods for treated units (to avoid leakage). Ensure that folds block the dependence structure (to enable valid inference).
+
+\subsection*{Step 4: Choose Learners and Tune}
+
+Select ML learners for nuisance estimation: regularised GLMs (lasso, elastic net) for interpretability and linear relationships, gradient boosting or random forests for nonlinear relationships and interactions, or neural networks for extreme flexibility. Tune hyperparameters via cross-validation confined to training folds, selecting the values that minimise out-of-sample prediction error (mean squared error for outcome regressions, log-likelihood or AUC for propensity scores). Report the tuning procedure, the selected hyperparameters, and sensitivity to tuning choices. Impose constraints (monotonicity, bounds) when domain knowledge supports them.
+
+\subsection*{Step 5: Assess Overlap and Trim}
+
+Plot propensity score distributions for treated and control units, compute the overlap statistic, and flag extreme propensities (below 0.05 or above 0.95). Apply modest trimming (excluding the most extreme 1–5 per cent of observations) if propensities are concentrated at the boundaries, and report the effective sample size after trimming. Assess whether the trimmed sample is representative of the population of interest. Compute standardised mean differences (SMDs) for covariates before and after propensity score weighting or regression adjustment, and verify that balance improves (SMDs reduce after adjustment).
+
+\subsection*{Step 6: Estimate Effects with Clustered Inference}
+
+For each fold $k$, estimate nuisance functions on the $K-1$ training folds, evaluate on the held-out fold to produce predictions, construct the orthogonal score using the fold-specific nuisance estimates, and solve for the treatment effect estimate. Aggregate estimates across folds to obtain the final estimate, accounting for the variation across folds. Compute influence-function-based standard errors clustered by unit (or two-way clustered by unit and time), ensuring that standard errors account for serial dependence and panel structure. Report point estimates, standard errors, confidence intervals, and p-values. For CATEs, report grouped effects for key subgroups, with standard errors that account for clustering and estimation error in the nuisances.
+
+\subsection*{Step 7: Conduct Diagnostics}
+
+Run placebo tests in pre-treatment periods, applying the DML procedure to pseudo-intervention dates and checking that pseudo effects are near zero. Assess nuisance fit (out-of-sample $R^2$ or AUC) and balance improvement (SMDs before and after adjustment). Check stability of treatment effect estimates across folds (correlation of fold-specific estimates) and across tuning grids (sensitivity to hyperparameters). Compare DML estimates to design-based benchmarks (two-way fixed effects DiD, event studies, synthetic control) to assess whether flexible functional forms materially change conclusions. Integrate with the design-diagnostics workflow in Chapter~\ref{ch:design-diagnostics}, running pre-trend tests, overlap checks, and support checks.
+
+\subsection*{Step 8: Report Sensitivity and Policy Implications}
+
+Report treatment effect estimates for multiple learner classes (lasso, random forests, boosting) and multiple tuning grids, tabulating estimates and standard errors. Discuss which learner is most plausible based on fit diagnostics, domain knowledge, and alignment with design-based benchmarks. Report a range of estimates (minimum and maximum across learners and tunings) to reflect model uncertainty. For CATEs, report grouped effects and discuss policy implications: which subgroups should be targeted, how budgets should be allocated, and what mechanisms explain the heterogeneity. For dose-response, report marginal effects at key intensity levels and discuss optimal dosage. Provide replication materials (data, scripts, documentation) to enable verification and alternative analyses.
+
+By following this workflow, practitioners can conduct DML analyses that combine the flexibility of ML for nuisance estimation with the credibility and transparency of design-based causal inference. The workflow ensures that estimands are clearly defined, that orthogonality and cross-fitting protect against overfitting and regularisation bias, that diagnostics assess the validity of identification assumptions, and that inference accounts for panel dependence. The result is causal evidence that withstands scrutiny and that informs strategic decisions with confidence.
+
+\begin{figure}[htbp]
+\centering
+\caption{Cross-Fitting Folds in Panels: Unit Blocks, Time Blocks, Two-Dimensional Blocks}
+\label{fig:dml-crossfit}
+\textit{[Figure to be inserted: Three-panel figure showing fold structures. Left panel shows unit-level cross-fitting: matrix with units on rows, time on columns, coloured blocks indicate five unit-based folds (Fold 1 = rows 1–20, Fold 2 = rows 21–40, etc.). Middle panel shows time-level cross-fitting: matrix with units on rows, time on columns, coloured blocks indicate five time-based folds (Fold 1 = columns 1–4, Fold 2 = columns 5–8, etc.). Right panel shows block cross-fitting: matrix with units on rows, time on columns, coloured grid indicates $3 \times 3$ blocks. Annotations indicate training folds (darker shade) and test fold (lighter shade) for one example fold. Arrows show that nuisance training uses training folds and evaluation uses test fold.]}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\caption{Orthogonal Score Schematic for ATT with Nuisance Components}
+\label{fig:dml-score}
+\textit{[Figure to be inserted: Flowchart showing the construction of the doubly robust orthogonal score for ATT. Start with observed data $(Y_{it}, W_{it}, X_{it})$. Estimate nuisance components: outcome regression $\mu(0, X_{it})$ (box 1, using ML on control observations) and propensity score $e(X_{it})$ (box 2, using ML on all observations). Compute residuals: outcome residual $Y_{it} - \mu(0, X_{it})$ (box 3) and treatment residual $W_{it} - e(X_{it})$ (box 4). Combine residuals into the doubly robust score: weighted outcome residual plus propensity-adjusted term (box 5). Solve for ATT by setting mean score to zero (box 6). Annotations show that orthogonality ensures first-order insensitivity to nuisance error, and cross-fitting ensures nuisance estimates are independent of test data.]}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\caption{CATE Stability Across Folds and Tuning Grids}
+\label{fig:dml-stability}
+\textit{[Figure to be inserted: Scatter plot showing CATE estimates for a sample of 50 observations across five folds (horizontal axis: CATE from Fold 1, vertical axis: CATE from Fold 2). Points should cluster around the 45-degree line if estimates are stable. Inset panel shows CATE estimates for key subgroups (urban vs rural) across 10 tuning grid points (horizontal axis: tuning parameter $\lambda$ for lasso, vertical axis: grouped CATE). Lines for urban (solid) and rural (dashed) should be relatively flat if estimates are stable to tuning. Annotations report correlation between fold-specific estimates (for example, $\text{Cor} = 0.78$) and range of grouped CATEs across tunings.]}
+\end{figure}
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Mapping from Estimands to Nuisance Components, Scores, and Aggregation}
+\label{tab:dml-estimands}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Estimand} & \textbf{Nuisance Components} & \textbf{Orthogonal Score} & \textbf{Aggregation} \\
+\midrule
+ATE with high-dim controls & Outcome regressions $\mu_1(x), \mu_0(x)$; propensity $e(x)$ & Doubly robust: weighted residuals plus regression adjustment & Average over all observations \\
+\addlinespace
+ATT in staggered DiD & Outcome trend $\mu_g(t, x)$ for cohort $g$; propensity $e_g(x)$ & Doubly robust: cohort-time residuals plus propensity adjustment & Aggregate $\text{ATT}(g,t)$ to event-time $\theta_k$ using cohort weights \\
+\addlinespace
+Dose-response $\mu(w)$ & Conditional mean $\mu(w, x)$; treatment density $f(w \mid x)$ & Residual-on-residual or inverse-density weighting & Marginal effect $\tau(w) = \partial \mu / \partial w$ via differencing or derivative \\
+\addlinespace
+CATE $\tau(x)$ & Outcome regressions $\mu_1(x), \mu_0(x)$; propensity $e(x)$ & Doubly robust; residuals used in causal forest & Grouped CATEs: average $\hat{\tau}(x)$ over subgroups \\
+\addlinespace
+Policy value $V(\pi)$ & CATEs $\tau(x)$; cost $c$ & Value function: $\tau(x) \{\pi(x) = 1\} - c \mathds{1}\{\pi(x) = 1\}$ & Average over realised assignments under policy $\pi$ \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\begin{quote}
+\textbf{Box 12.1: DML Workflow Checklist}
+
+\textbf{1. Define Estimand:} Specify ATE, ATT, CATE, or dose-response. Document mathematical definition and policy relevance. For staggered adoption, define cohort-time or event-time target.
+
+\textbf{2. Construct Orthogonal Score:} Identify nuisance functions (outcome regressions, propensities, factors). Build doubly robust score via residual-on-residual or augmentation. Verify Neyman orthogonality (first-order insensitivity to nuisance error).
+
+\textbf{3. Design Cross-Fitting:} Partition data into $K$ folds respecting dependence (unit-level, time-level, or block). Exclude post-treatment from nuisance training for treated units (avoid leakage). Document fold construction.
+
+\textbf{4. Choose Learners and Tune:} Select ML learners (lasso, boosting, forests, nets). Tune via cross-validation on training folds (minimise prediction error). Report hyperparameters and sensitivity to tuning.
+
+\textbf{5. Assess Overlap and Trim:} Plot propensity distributions. Compute overlap statistic. Trim extreme propensities (1–5 per cent). Report effective sample. Check balance improvement (SMDs before/after adjustment).
+
+\textbf{6. Estimate with Clustered Inference:} For each fold, train nuisances, evaluate on held-out, construct score, solve for effect. Aggregate across folds. Compute influence-function SE clustered by unit (or two-way). Report estimates, SE, CI, p-values.
+
+\textbf{7. Run Diagnostics:} Placebo tests in pre-periods (pseudo effects near zero). Nuisance fit ($R^2$, AUC). Stability across folds and tunings. Compare to design-based benchmarks (DiD, SC, event studies). Integrate with Chapter~\ref{ch:design-diagnostics}.
+
+\textbf{8. Report Sensitivity and Policy:} Tabulate estimates across learners and tunings. Discuss most plausible learner. Report range of estimates (model uncertainty). For CATEs, report grouped effects and targeting rules. Provide replication materials.
+
+\textbf{9. Address Multiplicity:} For many subgroups or event times, report joint tests. Adjust p-values (Bonferroni, FDR, Romano-Wolf) or interpret individual tests as exploratory.
+
+\textbf{10. Document Assumptions:} State and justify orthogonality, overlap, dependence-aware splitting, stability, limited interference. Connect to panel frameworks (Chapter~\ref{ch:frameworks}) and modern identification \citet{arkhangelsky2024causal}.
+\end{quote}
+\index{double machine learning|)}
+\index{CATE|)}

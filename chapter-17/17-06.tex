@@ -1,0 +1,52 @@
+\section{Influence and Stability}
+\label{sec:influence-stability}
+
+Leave-one-out diagnostics are a crucial stability check. By re-estimating the effect while excluding one unit, time period, or cohort at a time, we identify influential observations. If results change dramatically when a single element is excluded, the findings may be fragile.
+
+\begin{definition}[Leave-One-Out Diagnostic]\label{def:leave-one-out}
+Let $\hat{\tau}$ be the treatment effect estimate using all data and $\hat{\tau}_{(-i)}$ the estimate excluding unit $i$. The leave-one-out influence is:
+\[
+\text{DFBETA}_i = \hat{\tau} - \hat{\tau}_{(-i)}.
+\]
+For leave-one-cohort-out in staggered designs with cohort $g$:
+\[
+\text{DFBETA}_g = \hat{\tau} - \hat{\tau}_{(-g)}.
+\]
+Units or cohorts with large $|\text{DFBETA}|$ are influential. Report the influence profile showing $\hat{\tau}_{(-i)}$ for all $i$.
+\end{definition}
+
+\begin{proposition}[Standardised Influence]\label{prop:cooks-distance}
+To compare influence across units on a common scale, standardise by the estimated variance:
+\[
+D_i = \frac{(\hat{\tau} - \hat{\tau}_{(-i)})^2}{\hat{V}(\hat{\tau})},
+\]
+analogous to Cook's distance in regression. Units with $D_i > 4/N$ or $D_i > 1$ warrant scrutiny. For donor influence in synthetic control:
+\[
+D_j^{\text{donor}} = \frac{(\hat{\tau} - \hat{\tau}_{(-j)}^{\text{SC}})^2}{\hat{V}(\hat{\tau})},
+\]
+where $\hat{\tau}_{(-j)}^{\text{SC}}$ re-estimates synthetic control excluding donor $j$ from the pool.
+\end{proposition}
+
+Weight dispersion and leverage diagnostics inspect the concentration of synthetic control or SDID (Chapter~\ref{ch:generalized-sc}) weights and time weights. If one or two donors receive nearly all weight, the counterfactual is fragile to those donors' idiosyncrasies. Entropy or Herfindahl indices quantify concentration.
+
+\begin{definition}[Donor Weight Concentration]\label{def:weight-concentration}
+For synthetic control weights $\hat{w} = (\hat{w}_2, \ldots, \hat{w}_{J+1})$, concentration is measured by three statistics. The Herfindahl-Hirschman Index is $\text{HHI} = \sum_{j=2}^{J+1} \hat{w}_j^2 \in [1/J, 1]$, with $1/J$ indicating equal weights (minimum concentration) and 1 indicating all weight on one donor. Entropy is $H = -\sum_{j=2}^{J+1} \hat{w}_j \log \hat{w}_j \in [0, \log J]$, with high entropy indicating dispersed weights. The effective number of donors is $N_{\text{eff}}^{\text{donors}} = 1/\text{HHI}$, the number of equally weighted donors that would produce the same HHI. Low $N_{\text{eff}}^{\text{donors}}$ (e.g., $< 3$) indicates fragility to specific donors.
+\end{definition}
+
+Visualising weights over time reveals whether time weights are stable or shift abruptly, signalling potential structural breaks. Regularisation via ridge or elastic net penalties can spread weights more evenly, though at the cost of potentially worse pre-period fit. Donor redesign---excluding high-weight donors and re-estimating---tests robustness to individual donor influence.
+
+Perturbation checks vary estimation windows, donor sets, or tuning parameters within defensible bounds and report the range of estimates. Tight ranges support robustness.
+
+\begin{definition}[Perturbation Interval]\label{def:perturbation}
+For a set of defensible design variations $\mathcal{D}$ (e.g., varying window lengths, donor sets, trimming thresholds), the perturbation interval is:
+\[
+\mathcal{I}_{\text{pert}} = \left[ \min_{d \in \mathcal{D}} \hat{\tau}_d, \max_{d \in \mathcal{D}} \hat{\tau}_d \right].
+\]
+The perturbation ratio is:
+\[
+R_{\text{pert}} = \frac{\max_d \hat{\tau}_d - \min_d \hat{\tau}_d}{|\hat{\tau}_{\text{primary}}|},
+\]
+where $\hat{\tau}_{\text{primary}}$ is the pre-specified primary estimate. Small $R_{\text{pert}}$ (e.g., $< 0.5$) indicates robustness.
+\end{definition}
+
+Wide ranges or sign changes signal that conclusions depend sensitively on design choices, and additional triangulation or sensitivity reporting is warranted.

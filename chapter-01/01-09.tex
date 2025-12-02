@@ -1,0 +1,22 @@
+\section{Roadmap of the Book}
+\label{sec:roadmap}
+
+This book is organised into eight Parts that build from foundational concepts through core methodologies to inference, diagnostics, and applications.
+
+\textbf{Part I: Foundations} (Chapters 1--3) establishes the causal framework and panel notation. Chapter 2 formalises potential outcomes for panel data, distinguishing contemporaneous from path-dependent treatments, and defines key estimands. Chapter 3 contrasts randomised experiments with quasi-experimental designs including geo-experiments, switchback tests, and phased rollouts.
+
+\textbf{Part II: Differences-in-Differences and Event Studies} (Chapters \ref{ch:did}--\ref{ch:event}) develops canonical and staggered DiD designs. We present modern heterogeneity-robust estimators that avoid negative weighting and trace dynamic treatment effects through event-study specifications with pre-trend tests.
+
+\textbf{Part III: Synthetic Controls and Hybrid Methods} (Chapters \ref{ch:sc}--\ref{ch:generalized-sc}) introduces synthetic control for settings where pre-treatment fit substitutes for parallel trends. Chapter \ref{ch:generalized-sc} covers hybrid approaches including synthetic DiD and augmented synthetic control with doubly robust estimation.
+
+\textbf{Part IV: Factor Models and Matrix Methods} (Chapters \ref{ch:factor}--\ref{ch:advanced-matrix}) exploits low-rank structure in panel data. Interactive fixed effects capture common time-varying shocks with unit-specific loadings. Matrix completion methods handle missing data and high-dimensional settings through nuclear-norm regularisation.
+
+\textbf{Part V: Dynamics and Spillovers} (Chapters \ref{ch:dynamics}--\ref{ch:spillovers}) addresses treatment path dependence through distributed lag and adstock models. Chapter \ref{ch:spillovers} tackles SUTVA violations from network, geographic, and competitive spillovers using spatial econometrics and partial identification.
+
+\textbf{Part VI: Machine Learning Integration} (Chapters \ref{ch:ml-nuisance}--\ref{ch:continuous}) introduces double/debiased machine learning for nuisance function estimation with Neyman orthogonalisation. Causal forests estimate heterogeneous effects. Lasso and regularisation handle high-dimensional confounders. Extensions cover continuous treatments, dose-response functions, and quantile effects.
+
+\textbf{Part VII: Validity and Inference} (Chapters \ref{ch:threats}--\ref{ch:design-diagnostics}) catalogues marketing-specific threats including algorithmic confounding and platform metric misalignment. Inference tools include cluster-robust standard errors, bootstrap procedures, randomisation inference, and multiple testing adjustments. Diagnostic workflows encompass placebo tests, balance checks, and specification curves.
+
+\textbf{Part VIII: Applications and Future Directions} (Chapters \ref{ch:applications}--\ref{ch:outlook}) synthesises methods through integrated case studies combining DiD, synthetic control, event studies, and causal forests. Chapter \ref{ch:data-measurement} examines scanner data, platform logs, and measurement challenges including privacy regulations. Chapter \ref{ch:outlook} identifies open problems in interference, nonstationarity, real-time optimisation, and method selection frameworks.
+
+Each chapter follows a consistent structure: motivation, identification assumptions, estimation, inference, diagnostics, and marketing applications.

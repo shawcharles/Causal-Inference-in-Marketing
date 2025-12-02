@@ -1,0 +1,71 @@
+\section{Introduction: Beyond Standard Matrix Completion}
+\label{sec:adv-matrix-intro}
+
+The matrix completion methods introduced in Chapter~\ref{ch:factor} assume that the outcome matrix has a low-rank structure, that the rank is fixed over time, and that all observations are equally reliable. These assumptions enable powerful causal inference but are often violated in marketing applications. This chapter extends the standard framework to handle richer data structures and more realistic settings.
+
+\subsection*{Learning Objectives}
+
+After reading this chapter, you will be able to:
+\begin{enumerate}
+\item Apply tensor completion to multi-way panel data (products $\times$ stores $\times$ time).
+\item Use robust matrix completion methods to handle outliers, stockouts, and promotional spikes.
+\item Incorporate side information (covariates) to improve counterfactual imputation.
+\item Adapt to time-varying factor structures and structural breaks.
+\item Quantify uncertainty using Bayesian approaches.
+\item Select among advanced methods based on data characteristics.
+\end{enumerate}
+
+\subsection*{Motivating Scenarios}
+
+Four scenarios motivate the extensions in this chapter.
+
+\paragraph{Scenario 1: Multi-way structure (Tensor Completion).}
+A retailer observes sales data with three natural dimensions: products, stores, and time. Flattening this three-way structure into a two-way matrix (product-store combinations by time) discards information about how products and stores interact. Tensor completion preserves the multi-way structure and can improve imputation accuracy. This is addressed in Section~\ref{sec:tensor-completion}.
+
+\paragraph{Scenario 2: Outlier contamination (Robust Methods).}
+Retail data contain outliers. Stockouts create artificial zeros. Data entry errors produce extreme values. Promotional spikes create temporary deviations from the underlying demand structure. Standard matrix completion treats all observations equally and can be severely biased by outliers. Robust methods separate outliers from the low-rank structure. This is addressed in Section~\ref{sec:robust-matrix}.
+
+\paragraph{Scenario 3: Rich side information (Covariate-Assisted Completion).}
+We often have rich side information. Store characteristics (size, location, demographics) and time-varying covariates (weather, holidays, macroeconomic conditions) provide additional signal. Covariate-assisted matrix completion incorporates this information to improve counterfactual imputation. This is addressed in Section~\ref{sec:matrix-side-info}.
+
+\paragraph{Scenario 4: Structural breaks (Time-Varying Rank).}
+The factor structure may change over time. A recession introduces new factors. A platform algorithm change alters user behaviour. The COVID-19 pandemic created a structural break in demand patterns. Time-varying rank models adapt to non-stationary environments. This is addressed in Section~\ref{sec:time-varying-rank}.
+
+\subsection*{Chapter Roadmap}
+
+Table~\ref{tab:ch9-roadmap} maps the motivating scenarios to chapter sections and summarises the key methods.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Chapter 9 Roadmap: Advanced Matrix Methods}
+\label{tab:ch9-roadmap}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Scenario} & \textbf{Section} & \textbf{Method} & \textbf{Marketing Example} \\
+\midrule
+Multi-way structure & \ref{sec:tensor-completion} & Tensor completion, CP/Tucker & Product $\times$ store $\times$ time sales \\
+\addlinespace
+Outliers & \ref{sec:robust-matrix} & Robust PCA, sparse + low-rank & Stockouts, promotions, data errors \\
+\addlinespace
+Side information & \ref{sec:matrix-side-info} & Covariate-assisted MC & Store demographics, weather \\
+\addlinespace
+Structural breaks & \ref{sec:time-varying-rank} & Time-varying rank, changepoint & COVID shock, algorithm changes \\
+\addlinespace
+Uncertainty & \ref{sec:bayesian-matrix} & Bayesian matrix completion & Posterior intervals for ATT \\
+\addlinespace
+Scalability & \ref{sec:computation} & Stochastic, distributed methods & Large retail panels \\
+\addlinespace
+Method selection & \ref{sec:adv-matrix-connections} & Decision framework & Choosing the right method \\
+\addlinespace
+Diagnostics & \ref{sec:adv-matrix-diagnostics} & Validation, residual checks & Assessing model fit \\
+\addlinespace
+Applications & \ref{sec:adv-matrix-applications} & Four case studies & Retail, advertising, platform, CPG \\
+\addlinespace
+Workflow & \ref{sec:adv-matrix-workflow} & Step-by-step protocol & Reproducible analysis \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+The methods in this chapter build on the factor model foundations in Chapter~\ref{ch:factor}. Section~\ref{sec:adv-matrix-connections} provides guidance on when to use standard versus advanced methods, and how these extensions relate to synthetic control (Chapter~\ref{ch:sc}) and SDID (Chapter~\ref{ch:generalized-sc}).

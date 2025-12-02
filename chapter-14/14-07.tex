@@ -1,0 +1,26 @@
+\section{Dynamics with Continuous Intensity}
+\label{sec:continuous-dynamics}
+
+Marketing responses to continuous treatments (price, ad spend) are rarely instantaneous; they propagate over time. \citet{xiao2025causal} formalise this using the \textbf{Average Causal Response (ACR)}.
+
+\begin{definition}[Average Causal Response]\label{def:acr}
+For a continuous treatment history $\underline{d}_{it}$, the Average Causal Response at time $t$ to a change in treatment at time $t$ is:
+\[
+\text{ACR}_t(\underline{d}_{it}) = \frac{\partial \mathbb{E}[Y_{it}(\underline{d}_{it})]}{\partial d_{it}}.
+\]
+This measures the sensitivity of the average potential outcome to a unit perturbation in the current dose, holding past doses constant. It is the continuous analogue of the instantaneous treatment effect.
+\end{definition}
+
+\begin{theorem}[Identification via Generalised TWFE]\label{thm:acr-identification}
+Under a \textit{Linear Equi-Confounding} assumption (which generalises parallel trends to continuous intensities), the ACR is identified by a Generalised Two-Way Fixed Effects estimator. Unlike the binary case, where TWFE weights can be negative, \citet{xiao2025causal} derive a weighting function that ensures the ACR is a convex combination of unit-level marginal effects, provided the treatment intensity variance is stable over time.
+\end{theorem}
+
+Practically, this justifies the use of distributed lag models with continuous regressors:
+\[
+Y_{it} = \sum_{s=0}^L \beta_s D_{i,t-s} + \alpha_i + \gamma_t + \varepsilon_{it},
+\]
+interpreting $\beta_s$ as the Average Causal Response at lag $s$ (the impulse response function).
+
+\subsection*{Bridging Static and Dynamic Estimands}
+
+This framework bridges the gap between static dose-response curves (Section~\ref{sec:continuous-estimands}) and the dynamic binary estimators of Chapter~\ref{ch:dynamics}. For marketing, it provides the rigorous justification for calculating ``Long-Run ROI'' from continuous ad-spend models.

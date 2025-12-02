@@ -1,0 +1,56 @@
+\section{Workflow Checklist}
+\label{sec:continuous-workflow}
+
+The following protocol supports reproducible analysis from estimand to decision.
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 14.1: Continuous-Treatment Analysis Checklist]
+A rigorous analysis of continuous treatments begins by defining the estimand (ADRF, contrasts, or marginal effects) and stating the design assumptions that identify it. Inspect the dose distributions and assess GPS overlap, planning for trimming or binning in sparse regions.
+
+Select an appropriate estimator---GPS-weighted, outcome regression, or DML---and choose a basis for the dose that balances flexibility with parsimony. Tune the model using cross-validation within folds, ensuring that nuisance functions are trained on pre-treatment or out-of-fold data to prevent leakage.
+
+Validate the model with diagnostics including balance checks, overlap inspections, and placebo tests, while also testing sensitivity to basis choices. Conduct inference using clustered or wild cluster bootstrap methods and report confidence bands for the ADRF, mapping the results to actionable decisions like pricing or budgeting.
+\end{tcolorbox}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{images/fig_adrf_band.pdf}
+\caption{Average dose--response function with confidence band}
+\label{fig:adrf-band}
+\small\textit{The ADRF $\hat{\mu}(d)$ is plotted across dose with 95\% confidence bands from clustered inference. Red shaded regions at the tails indicate trimmed areas with sparse support. The common support region (dose 5--95) shows diminishing returns with increasing treatment intensity.}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/fig_gps_overlap.pdf}
+\caption{Overlap diagnostics for the GPS by dose bins and subgroups}
+\label{fig:gps-overlap}
+\small\textit{Stacked histograms show the distribution of predicted generalised propensity scores (GPS) for treated (blue) and control (coral) units across four market subgroups. Red dashed lines mark trimming thresholds at 0.05 and 0.95. Overlap statistics (displayed in each panel) quantify the common support between treated and control distributions. Good overlap (values near 1.0) indicates comparable units across the dose range.}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{images/fig_marginal_dose.pdf}
+\caption{Marginal effect of dose as a function of dose}
+\label{fig:marginal-dose}
+\small\textit{The derivative $\partial \hat{\mu}(d)/\partial d$ represents the marginal effect of increasing treatment intensity. Shaded regions highlight areas of strong diminishing returns (orange, 0--30), slight increasing returns (blue, 40--60), and moderate diminishing returns (red, 70--100). The red star marks a suggested operating point where marginal benefits remain positive but are beginning to diminish. Confidence bands account for estimation uncertainty.}
+\end{figure}
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Estimator to assumptions, tuning, and use-cases}
+\label{tab:cont-mapping}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Estimator} & \textbf{Key assumptions} & \textbf{Tuning and diagnostics} & \textbf{Use-cases} \\
+\midrule
+GPS--OR & Unconfoundedness, overlap & Basis in dose, stabilised weights, balance and overlap checks & Moderate $X$, clear support \\
+DR (GPS+OR) & Either GPS or OR correct & Cross-fit nuisances, trimming, sensitivity to link & Guard against misspecification \\
+DML (continuous) & Orthogonality, overlap, fold independence & Blocked cross-fitting, learner stability, bands over dose & High-dimensional $X$, flexible $\mu(d)$ \\
+Factor/IV & Rank or exclusion, relevance & Rank tests, placebo exposure, over-id checks & Doubtful unconfoundedness \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+\index{continuous treatment|)}
+

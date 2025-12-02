@@ -1,0 +1,29 @@
+\section{Assumptions and Failure Modes}
+\label{sec:assumptions-failure-modes}
+
+We state core assumptions across threat domains. Violations map directly to the threats outlined above.
+
+\begin{assumption}[SUTVA and limited interference]
+\label{assump:threats-sutva}
+Potential outcomes depend only on own treatment through a well-defined exposure mapping, with spillovers absent or explicitly modelled. When spillovers are plausible, the estimand must distinguish own effects from spillover effects and designs should include buffers or clustered assignment \citet{pearl2009causality}. See Chapter~\ref{ch:spillovers} for details.
+\end{assumption}
+
+\begin{assumption}[Stationarity and structural stability]
+\label{assump:threats-stationarity}
+Parameters and counterfactual relationships are stable across the estimation window, or time-varying parameters are modelled explicitly. Breaks invalidate pooled estimates and require subsample analysis or factor methods that accommodate drift (Chapter~\ref{ch:factor}).
+\end{assumption}
+
+\begin{assumption}[Measurement invariance]
+\label{assump:threats-measurement}
+Exposure and outcome definitions remain stable over time and across treated and control states. Platform policy changes and algorithmic confounding can invalidate this assumption, requiring reconciliation, external outcomes, or partial identification.
+\end{assumption}
+
+\begin{assumption}[Overlap and support]
+\label{assump:threats-overlap}
+Treated and control groups share common support on covariates and dose when applicable. Algorithmic targeting and endogenous delivery can erode overlap, requiring propensity-score weighting, trimming, or clustered randomisation.
+\end{assumption}
+
+\begin{assumption}[Independence or design-based identification]
+\label{assump:threats-independence}
+Treatment assignment is unconfounded conditional on controls and fixed effects, or identification relies on design-based variation (natural experiments, instruments, or quasi-random shocks). Prediction-focused ML can threaten identification when used naively \citet{breiman2001statistical}. Orthogonalised approaches in Chapter~\ref{ch:ml-nuisance} mitigate this risk.
+\end{assumption}

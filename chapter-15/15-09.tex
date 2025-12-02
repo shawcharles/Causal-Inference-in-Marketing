@@ -1,0 +1,18 @@
+\section{Small-Sample and Dependence Corrections}
+\label{sec:small-sample-corrections}
+
+Our statistical inference often relies on large-sample asymptotics, which can be misleading when we have only a small number of clusters ($G$).
+
+\begin{definition}[Effective Sample Size]\label{def:effective-n}
+Under within-cluster dependence with $G$ clusters, each of size $n_i$, and intra-cluster correlation $\rho$, the effective sample size is:
+\[
+N_{\text{eff}} = \frac{N}{1 + (n_{\text{avg}} - 1)\rho},
+\]
+where $N = \sum_i n_i$ is the total sample size and $n_{\text{avg}} = N/G$ is the average cluster size. When $\rho$ is large (strong dependence), $N_{\text{eff}} \approx G$. Standard errors should be computed as if the sample size were $N_{\text{eff}}$, not $N$.
+\end{definition}
+
+\begin{proposition}[Wild Cluster Bootstrap Validity]\label{prop:wild-bootstrap}
+For $G$ clusters with $G$ small (e.g., $G < 50$), the wild cluster bootstrap provides valid inference. First, compute $\hat{\tau}$ and cluster-robust standard errors from the original data. Then, for each bootstrap iteration, generate residuals with Rademacher weights and construct bootstrap estimates.
+
+Confidence intervals are derived from the quantiles of these bootstrap estimates. The bootstrap is valid under cluster-level homoskedasticity and provides better coverage than asymptotic methods when $G$ is small.
+\end{proposition}

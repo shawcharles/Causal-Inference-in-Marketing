@@ -1,0 +1,86 @@
+\section{Templates and Checklists}
+\label{sec:templates-checklists}
+
+This section provides a reusable design protocol and guidance that practitioners can adapt to their marketing panel studies. The goal is to operationalise the design principles developed in this chapter, ensuring that key decisions are made \textit{ex ante} and that reporting is transparent and reproducible.
+
+\subsection{Design Protocol Template}
+
+A design protocol documents the key features of a study in a structured format. The protocol can be adapted to various settings---geo-experiments, phased rollouts, switchbacks, observational panels---by addressing the relevant elements.
+
+The protocol should state the research question in clear, non-technical language, specifying the intervention, the outcome of interest, the target population, and the time horizon. It should describe the assignment mechanism: whether treatment is randomised (and if so, the unit of randomisation, stratification scheme, and randomisation protocol) or observational (and if so, what drives treatment adoption). The treatment window should specify start and end dates and justify the window length in terms of power, seasonality, and threat mitigation.
+
+The protocol should define the target estimand precisely---whether ATT, cohort-time effects $\text{ATT}(g, t)$, event-time effects $\theta_k$, or a dose-response function---and align the estimand to the research question and assignment mechanism. Primary and secondary outcomes should be defined (see also Section~\ref{sec:reporting-standards}), including data sources, measurement units, and any transformations. The estimator should be specified (for example, Callaway--Sant'Anna DiD, synthetic control, SDID, interactive fixed effects), referencing the relevant chapter for details.
+
+The inferential procedure should be specified: how standard errors will be computed (clustered by unit, by time, two-way), whether bootstrap or randomisation inference will be used, and how multiplicity will be handled. \textit{Ex ante} diagnostics should be listed (balance checks, pre-trend plots, overlap checks, placebo tests) with criteria for judging credibility. Main threats to validity should be identified (seasonality, algorithm changes, spillovers, measurement issues) along with design adaptations to mitigate them. Sensitivity analyses should be pre-specified to assess robustness to assumption violations.
+
+This protocol should be timestamped and archived before data are accessed. Deviations from the protocol should be documented with justifications, ensuring transparency about \textit{ex post} changes.
+
+\subsection{Diagnostic Checklist}
+
+The diagnostic checklist mirrors the workflow in Chapter~\ref{ch:design-diagnostics} and provides guidance for assessing the credibility of a panel design. The checklist addresses assignment transparency, covariate balance, pre-treatment trends, overlap, spillovers, seasonality and events, measurement stability, sample size and power, inference plans, and multiplicity adjustments. Each element includes specific questions to guide assessment.
+
+This checklist should be completed before data analysis begins, with any failures prompting design revisions or acknowledgment of limitations. Transparent reporting of diagnostic results builds confidence in the credibility of the final estimates.
+
+Figures~\ref{fig:assignment-matrix}, \ref{fig:geo-map}, and \ref{fig:switchback-schedule} provide visual templates for documenting assignment mechanisms in different design types.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{images/assignment_matrix.pdf}
+\caption{Example Assignment Matrix for a Phased Rollout}
+\label{fig:assignment-matrix}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\textwidth]{images/geo_map.pdf}
+\caption{Geo-Cluster Map with Buffers and Stratification}
+\label{fig:geo-map}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{images/switchback_schedule.pdf}
+\caption{Switchback Schedule with Washout Periods}
+\label{fig:switchback-schedule}
+\end{figure}
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Mapping from Assignment Mechanism to Estimands and Recommended Estimators}
+\label{tab:mechanism-estimand-map}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Assignment Mechanism} & \textbf{Typical Estimand} & \textbf{Recommended Estimators (Chapter Refs)} \\
+\midrule
+Randomised block (constant treatment) & ATT, event-time $\theta_k$ & Standard DiD (Chapter~\ref{ch:did}), event study (Chapter~\ref{ch:event}), cluster-robust inference (Chapter~\ref{ch:inference}) \\
+\addlinespace
+Staggered adoption (heterogeneous effects) & $\text{ATT}(g,t)$, cohort-specific, event-time $\theta_k$ & Callaway--Sant'Anna, Sun--Abraham, TWFE diagnostics (Chapter~\ref{ch:did}), event study (Chapter~\ref{ch:event}) \\
+\addlinespace
+Single treated unit, many controls & ATT for treated unit & Synthetic control (Chapter~\ref{ch:sc}), SDID (Chapter~\ref{ch:generalized-sc}), placebo inference (Chapter~\ref{ch:inference}) \\
+\addlinespace
+Single treated period, common shock & Event-time $\theta_k$, cumulative effect & Event study (Chapter~\ref{ch:event}), factor models if no parallel trends (Chapters~\ref{ch:factor}, \ref{ch:advanced-matrix}) \\
+\addlinespace
+Continuous intensity (observational) & Dose-response, elasticity & Conditional DiD with high-dimensional controls (Chapter~\ref{ch:high-dim}), DML (Chapter~\ref{ch:ml-nuisance}), distributed lags (Chapter~\ref{ch:dynamics}) \\
+\addlinespace
+Spillovers present & Direct effect, spillover effect & Spatial/network models, cluster designs (Chapter~\ref{ch:spillovers}), partial identification bounds \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection{Pre-Analysis Plan Template for a Marketing Panel Study}
+
+A pre-analysis plan should document all critical design decisions before analysis begins. The plan should include the study title and the date the protocol was finalised. It should state the research question in one sentence and describe the assignment mechanism (whether randomisation or observational assignment). The data structure should be specified, including $N$, $T$, panel type, and cohort structure if applicable. The treatment window should specify start and end dates along with measurement periods.
+
+The plan should define the primary estimand (ATT, $\text{ATT}(g,t)$, $\theta_k$, or other) with mathematical definition, and align it to the research question. The primary outcome should be defined, including data source, measurement unit, and any transformations. Secondary outcomes should be listed with clear indication of their exploratory status. The estimator should be named with reference to the relevant chapter of this book.
+
+The identification assumption should be stated explicitly (parallel trends, factor structure, conditional independence, or other). The inference procedure should specify the clustering choice, whether bootstrap or randomisation inference will be used, the significance level, and any multiplicity adjustment. \textit{Ex ante} diagnostics should be listed, including balance checks, pre-trend tests, overlap checks, and placebo tests. Sensitivity analyses should be pre-specified to assess robustness to assumption violations.
+
+Main threats to validity should be identified (seasonality, algorithm changes, spillovers, measurement issues) along with design adaptations to mitigate them. The reporting plan should specify which tables, figures, and aggregations will be reported, with commitment to reporting all pre-specified analyses regardless of results. This template ensures that all critical design decisions are documented before analysis begins, reducing researcher degrees of freedom and enhancing the credibility of the study.
+
+By following the design principles, diagnostic workflows, and reporting standards outlined in this chapter, practitioners can conduct marketing panel studies that generate credible causal estimates, withstand scrutiny, and inform strategic decisions with confidence. Design-based thinking anchors inference in the assignment mechanism, makes assumptions explicit and testable, and prioritises transparency over sophistication.
+
+The methods developed in subsequent chapters operationalise these principles, providing the tools needed to estimate causal effects, quantify uncertainty, and diagnose threats to validity in the complex, dynamic, and strategically rich environments that characterise modern marketing. Chapter~\ref{ch:did} begins this journey with difference-in-differences methods for staggered adoption.
+
+%%%%%%%%%%%%%%%%%%%%%%%5

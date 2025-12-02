@@ -1,0 +1,50 @@
+\section{Adaptive Experimentation and Learning}
+\label{sec:adaptive-experimentation}
+
+Modern platforms rarely assign treatments randomly and hold them fixed. Instead, they deploy adaptive systems—bandits, pacing algorithms, budget optimisers, and recommendation engines—that continuously adjust treatment assignment based on observed outcomes. This adaptivity creates fundamental challenges for causal inference: the assignment mechanism depends on the data, violating the fixed-design assumptions set out in earlier chapters.
+
+\subsection*{Types of Adaptive Systems}
+
+Adaptive treatment assignment takes many forms in marketing. Multi-armed bandits allocate traffic to ads, creatives, or product variants based on observed performance. Thompson sampling, UCB, and $\epsilon$-greedy algorithms balance exploration with exploitation, and treatment assignment probabilities evolve as data accumulate.
+
+Pacing and budget algorithms present similar challenges. Ad delivery systems pace spend over time to meet budget constraints while maximising value. Assignment depends on predicted outcomes, bid landscapes, and remaining budget—all of which evolve endogenously. Recommendation engines add another layer: personalisation algorithms assign content, products, or ads based on predicted user preferences, and these predictions update continuously as user behaviour is observed, creating feedback loops between treatment and outcomes.
+
+Dynamic pricing creates simultaneity rather than just selection. Prices adjust in real time based on demand signals, inventory, and competitor behaviour. The treatment (price) is endogenous to the outcome (demand), and standard methods cannot disentangle cause from effect without further structure. Reinforcement learning agents, increasingly deployed on platforms, learn policies over time. The policy itself is the object of interest, but it evolves during the observation period, making the target of inference a moving target.
+
+\subsection*{Why Adaptivity Breaks Standard Methods}
+
+In the design-based paradigm of Chapters~\ref{ch:frameworks}–\ref{ch:threats}, treatment assignment is either randomised with known probabilities or determined by observable covariates. Adaptive systems violate both conditions because assignment probabilities depend on past outcomes.
+
+In a bandit, the probability that unit $i$ receives treatment depends on the outcomes of all previous units. This probability is not fixed ex ante and may not be computable ex post without access to the algorithm's internal state. Assignment depends on observed outcomes, creating a feedback loop: units that would have good outcomes under treatment are more likely to be assigned treatment, confounding the treatment–outcome relationship.
+
+Each assignment depends on all previous assignments and outcomes, inducing temporal dependence that breaks standard independence assumptions. Adaptive experiments often stop when a "winner" is declared, creating selection bias. The stopping rule depends on the data, invalidating fixed-sample inference.
+
+\subsection*{Current Approaches}
+
+Several approaches provide partial solutions, each with limitations. Switchback experiments, discussed also in Section~\ref{sec:interference-scale}, randomise treatment over time rather than across units, providing exogenous variation even when within-period assignment is adaptive. They rely on limited carryover and do not address within-period adaptivity. Phased rollouts introduce treatment in stages across units or markets, with early phases providing quasi-experimental variation before the adaptive system fully optimises. Effects may differ between early exploratory phases and late exploitative phases.
+
+If assignment probabilities can be reconstructed from logged data, propensity score adjustment through inverse probability weighting can correct for selection, building on the methods from Chapter~\ref{ch:ml-nuisance}. This requires access to the algorithm's decision process and correct specification of the propensity model—conditions that rarely hold in practice. Doubly robust methods combine outcome modelling with propensity weighting for robustness, but still assume that propensities are known or estimable.
+
+Off-policy evaluation estimates the value of a target policy using data collected under a different logging policy. Importance sampling and doubly robust estimators are standard tools, yet variance becomes prohibitive when target and logging policies differ substantially.
+
+\subsection*{Inference Under Adaptivity}
+
+Even when identification is achieved, inference poses challenges. Under adaptivity, standard central limit theorems for independent observations may not apply. Martingale central limit theorems and concentration inequalities provide alternatives but rest on different regularity conditions.
+
+When experiments are monitored continuously and stopped based on results, standard p-values are invalid. Sequential testing methods—alpha-spending functions and always-valid p-values—control error rates under optional stopping. Confidence sequences provide valid confidence intervals at any stopping time, not just at fixed sample sizes. These tools are essential for adaptive experiments but are typically less efficient than fixed-sample procedures.
+
+Randomisation inference requires known assignment mechanisms, as developed in Chapter~\ref{ch:inference}. When the mechanism is adaptive and complex, exact randomisation inference may be infeasible: the assignment distribution is not known, and simulating it requires access to the algorithm's internal state.
+
+\subsection*{Open Problems}
+
+When both own treatment and neighbour treatments evolve adaptively, identification becomes extremely difficult. We lack established results for settings with simultaneous adaptivity and interference. Bandits optimise for reward, not causal effect estimation in the sense of this book. Designing algorithms that balance reward maximisation with causal learning—so-called causal bandits—is an active research area without settled solutions.
+
+How do we detect when adaptivity has compromised identification? The design diagnostics from Chapter~\ref{ch:design-diagnostics} assume fixed designs. New diagnostics are needed that can flag when adaptive assignment has induced confounding. Adaptive systems optimise for short-run outcomes, but estimating long-run effects such as brand equity and customer lifetime value when assignment is adapted to short-run signals remains largely unexplored.
+
+Most work focuses on evaluating a fixed policy. Learning optimal policies from adaptive data—and quantifying uncertainty about the learned policy—remains challenging. The policy that appears optimal in sample may not be optimal out of sample, and standard confidence intervals do not account for the search over policy space.
+
+\subsection*{Research Directions}
+
+Progress will require identification theory for causal effects under adaptive assignment, including conditions under which effects are recoverable and bounds when they are not. We need inference methods that are valid under adaptivity, including confidence sequences, sequential tests, and martingale-based approaches. Algorithm design that balances exploration, exploitation, and causal learning would enable causal bandits that estimate effects while optimising reward. Diagnostic tools that detect when adaptivity has compromised identification would help practitioners assess credibility. Platform collaboration to access assignment logs and algorithm internals is essential for propensity reconstruction.
+
+Until these advances materialise, practitioners should document the adaptive systems in use, attempt to reconstruct assignment probabilities where possible, and report sensitivity to assumptions about the assignment mechanism.

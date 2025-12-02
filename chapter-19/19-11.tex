@@ -1,0 +1,100 @@
+\section{Workflow Checklist}
+\label{sec:workflow-checklist}
+
+This section consolidates the data and measurement practices from this chapter into a unified workflow. The checklist, figures, and summary table provide a practical reference for implementing design-faithful measurement in marketing causal inference.
+
+\subsection*{End-to-End Workflow}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 19.10: Data–Measurement–Platforms Workflow Checklist]
+\textbf{Stage 1: Source Inventory}
+\begin{itemize}
+    \item List all data inputs (platform logs, scanner data, CRM, geo/mobility).
+    \item Define primary and foreign keys that link sources (Section~\ref{sec:identity-linking}).
+    \item Document coverage gaps and missingness patterns (Section~\ref{sec:missing-measurement}).
+\end{itemize}
+
+\textbf{Stage 2: Temporal Alignment}
+\begin{itemize}
+    \item Standardise on ISO weeks or fiscal periods (Section~\ref{sec:transformations}).
+    \item Specify seasonality controls (week-of-year, holiday indicators).
+    \item Verify temporal ordering to prevent leakage (Assumption~\ref{assump:data-no-leakage}).
+\end{itemize}
+
+\textbf{Stage 3: Metric-Estimand Alignment}
+\begin{itemize}
+    \item Map platform metrics to econometric estimands (Section~\ref{sec:platform-metrics}).
+    \item Construct exposure/dose variables from raw impressions (Section~\ref{sec:transformations}).
+    \item Validate platform metrics against external data (Section~\ref{sec:validation-reconciliation}).
+\end{itemize}
+
+\textbf{Stage 4: Policy Documentation}
+\begin{itemize}
+    \item Document attribution windows and conversion definitions.
+    \item Maintain changelogs for platform policy changes (Section~\ref{sec:privacy-governance}).
+    \item Flag break dates and restrict analysis to stable windows.
+\end{itemize}
+
+\textbf{Stage 5: Imperfection Handling}
+\begin{itemize}
+    \item Classify missingness as MCAR, MAR, or MNAR (Section~\ref{sec:missing-measurement}).
+    \item Apply design-consistent imputation or matrix completion.
+    \item Bound measurement error through validation studies.
+\end{itemize}
+
+\textbf{Stage 6: Reconciliation and Governance}
+\begin{itemize}
+    \item Compare estimates across methods (DiD, SC, DML) (Section~\ref{sec:validation-reconciliation}).
+    \item Enforce version control, snapshotting, and audit trails (Section~\ref{sec:pipelines-reproducibility}).
+    \item Document all assumptions and their diagnostics (Section~\ref{sec:assumptions-guardrails}).
+\end{itemize}
+\end{tcolorbox}
+
+\subsection*{Visual Workflow Guides}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/fig_data_lineage.pdf}
+\caption{Data lineage from platform logs to econometric panel with leakage guardrails}
+\label{fig:data-lineage}
+\small\textit{Flowchart shows complete data pipeline from raw sources to analysis-ready panel. Stage 1 (top) shows three raw data sources: platform event logs, retail scanner data, and geo/mobility data. Stage 2 shows identity linking and joins using primary keys (store ID, user ID, DMA, week) and foreign keys for cross-device and cross-platform linking. Red checkmark indicates temporal ordering verification. Stage 3 shows transformations including calendar alignment (ISO weeks), deduplication, winsorisation, and exposure construction. Second red checkmark verifies no look-ahead bias. Stage 4 produces analysis-ready panel with unit × time structure containing treatment, outcomes, and covariates. Stage 5 shows validation via cross-source reconciliation, diagnostic checks, and sensitivity analysis. Bottom governance layer ensures version control, snapshots, audit trails, and reproducibility. Leakage prevention checks at each stage prevent future information from contaminating past predictions.}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/fig_exposure_construction.pdf}
+\caption{Exposure construction and mapping to dose with frequency caps and viewability}
+\label{fig:exposure-construction}
+\small\textit{Four-panel pipeline shows exposure construction for continuous-treatment analysis. Panel A shows raw impressions distribution (mean 5.0 per user) with right skew typical of digital advertising. Panel B applies viewability adjustment (70\% rate), reducing effective exposure. Green histogram shows viewable impressions overlaid on raw (blue). Panel C applies frequency cap at 10 impressions per user to prevent extreme doses. Coral histogram shows capped distribution with red dashed line marking cap threshold. Panel D applies trimming at 5th and 95th percentiles to ensure common support. Purple histogram shows final dose distribution (N reduced, mean 4.2). Red dotted lines mark trimming thresholds. Each transformation affects overlap, support, and interpretation of marginal effects in dose-response analysis (Chapter 14). Final dose balances measurement fidelity (viewability) with statistical properties (capping, trimming).}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/fig_policy_timeline.pdf}
+\caption{Policy change timeline overlaid on outcomes and exposure metrics}
+\label{fig:policy-timeline}
+\small\textit{Two-panel time series (100 weeks) shows impact of platform policy changes on metrics. Panel A shows outcome metric (conversions) over time. Three red dashed vertical lines mark policy changes: attribution window change (week 20), auction update (week 45), and privacy policy/ATT implementation (week 70). Green shaded regions indicate stable windows suitable for analysis (weeks 1-18, 23-43, 48-68). Attribution change causes upward jump (+5 units) as longer windows capture more conversions. Auction update causes small decline (-3 units). Privacy policy causes large decline (-8 units) as tracking degrades. Panel B shows exposure metric (impressions) with same policy markers. Auction update increases delivery (+4 units). Privacy policy sharply reduces tracking (-10 units). Red annotations highlight measurement breaks. Researchers should restrict analysis to stable windows, model breaks explicitly, or report before/after estimates with transparency about comparability. Policy timelines are essential for design-faithful measurement (Chapter 15).}
+\end{figure}
+
+\subsection*{Metric-Estimand Mapping}
+
+Table~\ref{tab:metric-estimand-mapping} provides a quick reference for mapping common marketing metrics to their econometric estimands, design constraints, and diagnostic checks.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Mapping from metric class to econometric estimand, design constraints, and diagnostic checks}
+\label{tab:metric-estimand-mapping}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Metric class} & \textbf{Econometric estimand} & \textbf{Design constraints} & \textbf{Diagnostic checks} \\
+\midrule
+Platform conversions & ATT, ATE & Stable attribution, external validation & Reconcile with retail/finance, sensitivity to windows \\
+Impressions/reach & Exposure, dose & Viewability, deduplication & Overlap, trimming, frequency distribution \\
+Retail scanner sales & ATT, event-time & Coverage, churn, calendar alignment & Balance, pre-trends, support-by-$k$ \\
+Geo/mobility flows & Spillover exposure & Catchment definitions, buffers & Exposure maps, buffer sensitivity \\
+Platform lift & Biased ATE & Endogenous exposure & Use external outcomes, adjust via GPS or factors \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+\index{panel data|)}

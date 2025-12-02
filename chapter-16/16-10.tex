@@ -1,0 +1,124 @@
+\section{Instrumental Variables in Marketing}
+\label{sec:iv-marketing}
+\index{instrumental variables|(}
+
+Instrumental variables (IV) methods address \emph{endogeneity}---situations where the treatment variable is correlated with unobserved determinants of the outcome. In marketing, endogeneity arises frequently: prices respond to demand, budgets respond to sales, and targeting algorithms select high-propensity users. When selection-on-observables is implausible and no natural experiment exists, IV offers a path to identification---but one with stringent requirements that are often difficult to satisfy in marketing contexts.
+
+\begin{remark}[Scope of IV Coverage]\label{rem:iv-scope-ch16}
+This section provides conceptual foundations and marketing-specific guidance for instrumental variables. We do not develop the full IV estimation theory, which requires substantial treatment of weak instruments, many instruments, and specification testing. For comprehensive coverage, see \citet{angrist2009mostly} for applied foundations, \citet{andrews2019weak} for weak instrument inference, and \citet{londschien2025statistician} for a recent practitioner-oriented survey. The methods in Chapter~\ref{ch:did} through Chapter~\ref{ch:sc} (DiD, synthetic control) often provide more credible identification in marketing than IV, where exclusion restrictions are difficult to defend.
+\end{remark}
+
+\subsection*{When IV Is Needed}
+
+IV addresses situations where naive regression fails due to simultaneity or omitted variable bias.
+
+\begin{definition}[Endogeneity]\label{def:endogeneity}
+In the structural equation $Y_i = \alpha + \beta D_i + U_i$, endogeneity occurs when:
+\[
+\text{Cov}(D_i, U_i) \neq 0.
+\]
+The treatment $D$ is correlated with unobserved factors $U$ that also affect the outcome $Y$. OLS estimation of $\beta$ is biased.
+\end{definition}
+
+In marketing, endogeneity arises from three sources:
+\begin{enumerate}
+\item \textbf{Simultaneity.} Prices are set based on expected demand; budgets are allocated based on expected returns. The outcome (demand, sales) determines the treatment (price, spend).
+\item \textbf{Omitted variables.} Unobserved brand strength, market conditions, or consumer preferences affect both marketing decisions and outcomes.
+\item \textbf{Measurement error.} If the treatment is measured with error, the measurement error is correlated with the regressor, biasing estimates toward zero.
+\end{enumerate}
+
+\subsection*{The IV Solution}
+
+An instrument $Z$ provides exogenous variation in the treatment $D$ that is unrelated to the outcome except through $D$.
+
+\begin{definition}[Instrumental Variable]\label{def:iv-definition}
+A variable $Z$ is a valid instrument for the effect of $D$ on $Y$ if:
+\begin{enumerate}
+\item \textbf{Relevance:} $\text{Cov}(Z, D) \neq 0$. The instrument is correlated with the treatment.
+\item \textbf{Exclusion restriction:} $\text{Cov}(Z, U) = 0$. The instrument affects the outcome only through the treatment, not directly or through other channels.
+\end{enumerate}
+\end{definition}
+
+Two-stage least squares (2SLS) uses the instrument to isolate exogenous variation in $D$:
+\begin{align}
+\text{First stage:} \quad & \hat{D}_i = \hat{\pi}_0 + \hat{\pi}_1 Z_i + \hat{\nu}_i, \\
+\text{Second stage:} \quad & Y_i = \alpha + \beta \hat{D}_i + \varepsilon_i.
+\end{align}
+The 2SLS estimator $\hat{\beta}_{2SLS}$ is consistent if both relevance and exclusion hold.
+
+\subsection*{Marketing Instruments: Examples and Pitfalls}
+
+Table~\ref{tab:marketing-instruments} summarises commonly proposed instruments in marketing and the challenges each faces.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Instruments in marketing: examples and exclusion concerns}
+\label{tab:marketing-instruments}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Instrument} & \textbf{Application} & \textbf{Exclusion Concern} \\
+\midrule
+Cost shifters (fuel, commodities) & Price elasticity & Costs may signal quality or affect demand directly \\
+Hausman instruments (prices in other markets) & Price elasticity & Common demand shocks across markets \\
+Ad pre-emptions (sports events, breaking news) & Advertising effects & Events may directly affect consumer mood or attention \\
+Competitor actions (entry, exit, promotions) & Own-brand effects & Strategic response may correlate with demand \\
+Weather & Retail traffic, ad exposure & Weather affects both exposure and purchase propensity \\
+Algorithmic lags (delayed price updates) & Dynamic pricing & Lags may correlate with demand persistence \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\begin{remark}[The Exclusion Restriction Is Rarely Credible in Marketing]\label{rem:exclusion-hard}
+The exclusion restriction requires that the instrument affects the outcome \emph{only} through the treatment. In marketing, this is difficult to defend:
+\begin{enumerate}
+\item \textbf{Cost shifters.} Input costs (commodities, shipping) affect prices, but they may also affect product quality, retailer effort, or consumer expectations.
+\item \textbf{Hausman instruments.} Using prices in other markets as instruments assumes no common demand shocks---implausible for national brands or correlated economic conditions.
+\item \textbf{Ad pre-emptions.} Major events that pre-empt advertising may directly affect consumer attention, mood, or category salience.
+\item \textbf{Competitor instruments.} Competitor actions are often strategic responses to the same market conditions affecting the focal firm.
+\end{enumerate}
+Unlike randomised experiments or parallel-trends designs where assumptions can be partially tested, the exclusion restriction is \emph{fundamentally untestable}. Overidentification tests (Hansen J) detect some violations but have low power and cannot validate the exclusion restriction.
+\end{remark}
+
+\subsection*{Key Landmines}
+
+Beyond the exclusion restriction, IV estimation faces several practical challenges.
+
+\paragraph{Weak instruments.} When the first-stage relationship is weak ($F < 10$), 2SLS estimates are biased toward OLS and have unreliable standard errors. See Section~\ref{sec:weak-iv} for diagnostics and weak-instrument-robust inference.
+
+\paragraph{Many instruments.} Using many instruments (e.g., many cost shifters, many market dummies) can bias 2SLS toward OLS even when each instrument is individually strong. The bias is proportional to the number of instruments relative to sample size.
+
+\paragraph{Local average treatment effect (LATE).} IV identifies the effect for \emph{compliers}---units whose treatment status changes with the instrument. This may differ from the average treatment effect (ATE) if treatment effects are heterogeneous. In marketing, the complier population (e.g., customers whose purchases respond to cost-driven price changes) may not be the population of interest.
+
+\paragraph{Exclusion violations.} Even small violations of the exclusion restriction can produce large biases in IV estimates. Sensitivity analysis (e.g., Conley et al. bounds) can assess robustness to plausible violations, but this is rarely done in marketing applications.
+
+\subsection*{When to Use IV in Marketing}
+
+Given the stringent requirements, IV should be a method of last resort in marketing:
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 16.3: IV Decision Checklist]
+\textbf{Before using IV, verify:}
+\begin{enumerate}
+\item \textbf{Randomisation is impossible.} No experiment (geo, A/B, or switchback) can address the question.
+\item \textbf{Parallel trends fail.} DiD or synthetic control are not credible due to differential trends or confounding shocks.
+\item \textbf{Selection-on-observables fails.} Propensity score methods require conditioning on all confounders, which is implausible.
+\item \textbf{A credible instrument exists.} You can articulate why the instrument satisfies both relevance and exclusion.
+\item \textbf{First stage is strong.} The effective F-statistic exceeds critical values (see Section~\ref{sec:weak-iv}).
+\item \textbf{LATE is interpretable.} The complier population is economically meaningful for the business question.
+\end{enumerate}
+If any condition fails, reconsider the identification strategy. Often, an honest acknowledgment of identification limitations is preferable to IV with a dubious exclusion restriction.
+\end{tcolorbox}
+
+\subsection*{Connection to Chapter 18 Applications}
+
+Several marketing applications in Chapter~\ref{ch:applications} use or discuss IV:
+\begin{itemize}
+\item \textbf{Price elasticity} (Section~\ref{sec:price-elasticity}): Cost shifters and promotion timing as instruments.
+\item \textbf{Dynamic pricing} (Section~\ref{sec:dynamic-pricing}): Fuel costs, competitor capacity, and algorithmic lags.
+\item \textbf{Digital attribution} (Section~\ref{sec:digital-attribution}): IV as an alternative when natural experiments are unavailable.
+\item \textbf{CLV attribution} (Section~\ref{sec:clv-acquisition}): Channel assignment instruments for selection correction.
+\end{itemize}
+In each case, the tables in Chapter~\ref{ch:applications} note the exclusion restriction required and the common concerns. Analysts should approach these applications with appropriate skepticism about instrument validity.
+
+\index{instrumental variables|)}

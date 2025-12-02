@@ -1,0 +1,138 @@
+\section{Causal Estimands for Staggered Adoption}
+\label{sec:staggered-estimands}
+
+A retailer rolls out a loyalty programme to different regions over two years. Some regions adopt in Q1 2022, others in Q3 2022, others in Q1 2023. The firm wants to know: What is the overall effect? How does the effect evolve over time? Do early adopters benefit more than late adopters? Each question requires a different estimand, and conflating them can mislead.
+
+\index{staggered adoption}Staggered adoption designs feature units adopting treatment at different times. Some units adopt in period $g = 2$, others in period $g = 5$, others in period $g = 8$, and some never adopt during the observation window ($g = \infty$). This creates rich variation: early adopters can be compared to never-adopters and to not-yet-treated units, and within-cohort comparisons over time trace dynamic effects. But it also creates complexity. Treatment effects may differ across cohorts (early vs late adopters), and effects may evolve over time post-adoption. These sources of heterogeneity mean a single summary statistic obscures important variation and can mislead.
+
+When no never-treated units exist---as happens when programmes eventually roll out everywhere---identification relies entirely on not-yet-treated units as controls. This raises additional concerns: anticipation effects may contaminate not-yet-treated outcomes if units change behaviour in expectation of future treatment, and selection into timing may correlate with potential outcomes. We return to these issues in Section~\ref{sec:staggered-identification}.
+
+Modern DiD methods address this complexity by defining estimands that respect heterogeneity and by aggregating those estimands in transparent, interpretable ways. The fundamental building block is the \index{ATT(g,t)|see{group-time effects}}cohort-time effect $\text{ATT}(g, t)$, the average treatment effect for units in adoption cohort $g$ in calendar period $t$, conditional on $t \geq g$ (so that cohort $g$ is treated in period $t$). These estimands extend the staggered-adoption setup and assignment-mechanism taxonomy introduced in Chapter~\ref{ch:frameworks} and Section~\ref{sec:assignment-estimands}. Formally,
+\[
+\text{ATT}(g, t) = \mathbb{E}[Y_{it}(g) - Y_{it}(\infty) \mid G_i = g, \, t \geq g],
+\]
+where $G_i$ is the adoption time for unit $i$. This estimand allows treatment effects to vary freely across cohorts and across calendar periods. A unit adopting in quarter two may experience a different effect in quarter three than a unit adopting in quarter four experiences in quarter five, either because the units differ in characteristics or because macroeconomic conditions, competitive landscapes, or other time-varying factors differ across periods.
+
+\subsection*{Worked Example: Computing Event-Time Effects}
+
+To make the aggregation concrete, consider a stylised loyalty programme rollout with three cohorts:
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Hypothetical Cohort-Time Treatment Effects}
+\label{tab:cohort-time-example}
+\begin{tabularx}{0.8\textwidth}{Y Y Y Y Y Y}
+\toprule
+\textbf{Cohort $g$} & \textbf{Stores} & \textbf{$k=0$} & \textbf{$k=1$} & \textbf{$k=2$} & \textbf{$k=3$} \\
+\midrule
+$g=2$ & 100 & 8 & 10 & 12 & 14 \\
+$g=4$ & 200 & 6 & 9 & 11 & -- \\
+$g=6$ & 150 & 5 & -- & -- & -- \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+The event-time effect $\theta_0$ (immediate impact) is a weighted average of cohort-specific effects at $k=0$:
+\[
+\theta_0 = \frac{100 \cdot 8 + 200 \cdot 6 + 150 \cdot 5}{100 + 200 + 150} = \frac{800 + 1200 + 750}{450} = \frac{2750}{450} \approx 6.1.
+\]
+The effect one quarter post-adoption ($\theta_1$) averages only cohorts $g=2$ and $g=4$, since cohort $g=6$ has not yet reached $k=1$ by the end of the panel:
+\[
+\theta_1 = \frac{100 \cdot 10 + 200 \cdot 9}{100 + 200} = \frac{1000 + 1800}{300} = 9.3.
+\]
+This weighted aggregation ensures that each cohort contributes to event-time effects in proportion to its size, but only for event times it has experienced. Note that these are point estimates; in practice, each $\theta_k$ comes with sampling uncertainty. The apparent increase from $\theta_0 = 6.1$ to $\theta_1 = 9.3$ could reflect genuine effect growth, or it could be noise. Confidence intervals (discussed in Chapter~\ref{ch:inference}) are essential for distinguishing real dynamics from sampling variation.
+
+Aggregating $\text{ATT}(g, t)$ across cohorts and time produces summary measures tailored to different policy questions. The overall ATT for ever-treated units is a weighted average of cohort-time effects:
+\[
+\text{ATT} = \sum_g \sum_{t \geq g} w_{gt} \, \text{ATT}(g, t),
+\]
+where the weights $w_{gt}$ reflect the relative sample sizes or other aggregation priorities (for example, weighting by treated unit-periods, by cohort size, or by importance to the business). Different weighting schemes can produce different overall estimates even when the underlying $\text{ATT}(g, t)$ are the same, so transparency about weights is essential. The weights are not merely an aggregation convenience---they define the target population. Weighting by cohort size estimates the effect for the average treated unit. Weighting by treated unit-periods estimates the effect for the average treated unit-period. These are different estimands with different policy implications, and the choice should be driven by the business question.
+
+Event-time aggregation pools cohort-time effects by time since adoption rather than by calendar time. Define event time $k = t - G_i$ as the number of periods since unit $i$ adopted treatment. The event-time effect $\theta_k$ is the average effect $k$ periods post-adoption, pooled across cohorts:
+\[
+\theta_k = \sum_g w_g \, \text{ATT}(g, g + k),
+\]
+where $w_g$ are cohort weights (typically proportional to cohort size). Event-time effects are natural when the goal is to trace the dynamic evolution of the treatment response. How does the effect grow or decay over time? Does the effect take multiple periods to fully materialise, as might occur with habit formation in a loyalty programme? Does the effect dissipate quickly, as might occur with a temporary promotion? The sequence $\{\theta_k\}_{k=0}^{K}$ answers these questions by estimating the effect at each event time $k$ relative to a baseline (typically $k = -1$, the period immediately before adoption).
+
+\textbf{Composition bias in event-time effects.} Because different cohorts contribute to different event times, the composition of units changes across $k$. If cohort $g=2$ experiences systematically larger effects than cohort $g=6$, and cohort $g=2$ contributes to all event times $k \geq 0$ while cohort $g=6$ contributes only to $k=0$, then the event-time profile $\{\theta_k\}$ conflates treatment effect dynamics with cohort composition. This composition bias means that an upward-sloping event-time profile could reflect either growing effects over time or simply that early-adopting cohorts (which dominate later event times) have larger effects. To diagnose composition bias, decompose event-time effects by cohort and inspect cohort-specific event-time profiles. If cohort-specific profiles have the same shape (same slopes across event times) but different intercepts, the aggregate profile reflects composition, not dynamics. If the shapes differ---some cohorts show growing effects while others show decay---heterogeneity in dynamics is present, and the aggregate profile masks important variation.
+
+We use $\theta$ for event-time effects and $\tau$ for calendar-time and cohort-specific effects to distinguish the different aggregation schemes.
+
+Calendar-time aggregation pools cohort-time effects by calendar period rather than by event time:
+\[
+\tau_t = \sum_{g \leq t} \omega_{gt} \, \text{ATT}(g, t),
+\]
+where the sum is over cohorts that are treated in period $t$ and $\omega_{gt}$ are calendar-time weights (which may differ from the overall ATT weights $w_{gt}$). Calendar-time effects are natural when the goal is to estimate the contemporaneous impact of the programme in specific periods, accounting for macroeconomic conditions, seasonal effects, or other time-specific factors. For example, if a loyalty programme is rolled out over two years and the goal is to estimate the total sales impact in each quarter, calendar-time aggregation provides the answer by summing effects across all treated units in each quarter.
+
+Cohort-specific aggregations pool over time for a single cohort:
+\[
+\tau_g = \sum_{t \geq g} \nu_{t|g} \, \text{ATT}(g, t),
+\]
+where $\nu_{t|g}$ are time weights within cohort $g$ (often uniform or proportional to the number of observations). These are useful for assessing whether early adopters experience different effects than late adopters, which can inform decisions about targeting or rollout strategy. If early adopters (who may be larger, more profitable, or in more competitive markets) experience larger effects, then prioritising early rollout to similar units makes business sense. If late adopters experience larger effects (perhaps because they learn from early adopters or because market conditions improve), then patience may pay off.
+
+\subsection*{Mapping Business Questions to Estimands}
+
+Different business questions call for different estimands. The table below maps common marketing questions to the appropriate target parameter:
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Estimand Selection Guide}
+\label{tab:estimand-selection}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Business Question} & \textbf{Estimand} & \textbf{Why This Estimand?} \\
+\midrule
+What is the overall programme effect? & Overall ATT & Single summary statistic for ROI calculation \\
+\addlinespace
+How does the effect evolve over time? & Event-time effects $\theta_k$ & Traces dynamics, habit formation, carryover \\
+\addlinespace
+Do early adopters benefit more than late adopters? & Cohort-specific $\tau_g$ & Reveals heterogeneity for targeting and prioritisation \\
+\addlinespace
+What was the impact in Q4 2023? & Calendar-time $\tau_t$ & Measures contemporaneous effect for specific period \\
+\addlinespace
+What is the cumulative vs immediate effect? & Long-run multiplier (LRM) & Quantifies carryover for budget allocation \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+In practice, report multiple estimands. The overall ATT provides a single summary for executive communication, event-time effects inform forecasting and payback period calculations, and cohort-specific effects guide rollout prioritisation. The table is a starting point, not a definitive guide: some questions admit multiple reasonable estimands, and the mapping depends on context. For example, "What is the overall programme effect?" could be answered by the overall ATT, by the cumulative effect, or by the average event-time effect---and these can differ when effects are heterogeneous or dynamic.
+
+Long-run and cumulative effects are central to marketing, where interventions are often intended to have persistent impacts rather than transient bumps. A loyalty programme aims to increase customer lifetime value by boosting retention and visit frequency over multiple quarters or years, not just to produce a one-time sales spike. Advertising seeks to build brand equity that endures beyond the campaign period. Platform entry aims to capture market share that persists.
+
+Estimating long-run effects requires observing treated units for many periods post-adoption, so that event-time effects $\theta_k$ can be traced out for large $k$. The cumulative effect over $K$ periods is
+\[
+\sum_{k=0}^{K} \theta_k,
+\]
+and the long-run multiplier, which compares the cumulative effect to the immediate effect, is
+\[
+\text{LRM} = \frac{\sum_{k=0}^{K} \theta_k}{\theta_0}.
+\]
+This formula assumes that effects at different event times can be summed---that the cumulative impact is the sum of period-specific impacts. This is valid for flow outcomes such as quarterly sales or monthly conversions, where each period's effect adds to the total. For stock outcomes such as market share or brand awareness, the cumulative effect is the final level, not the sum of changes. When working with stock outcomes, report the effect at the final event time $\theta_K$ rather than the sum $\sum_{k=0}^{K} \theta_k$.
+
+When the immediate effect $\theta_0$ is near zero---for example, in loyalty programmes where habit formation takes time, or advertising where brand awareness accumulates gradually---the long-run multiplier is undefined or unstable. In such cases, report the cumulative effect $\sum_{k=0}^{K} \theta_k$ without forming a ratio. Attempting to "fix" the denominator by averaging over periods where effects are "measurably non-zero" introduces researcher degrees of freedom and should be avoided.
+
+If $\text{LRM} > 1$, there is positive carryover, and the cumulative impact exceeds the immediate impact. If $\text{LRM} < 1$, the immediate effect overstates the long-run impact, perhaps because of decay or because of competitive responses that erode the effect over time. Chapter~\ref{ch:dynamics} develops methods explicitly designed for estimating dynamic and cumulative effects, including distributed lag models and structural dynamic panel models, but event-study specifications (discussed in Section~\ref{sec:event-dynamics}) provide a flexible, reduced-form approach that requires fewer assumptions.
+
+\subsection*{Linking Estimands to Marketing KPIs}
+
+Each estimand connects to familiar marketing metrics and decision frameworks. The overall ATT translates directly to total incremental revenue or profit, the numerator in return on investment (ROI) calculations. If a programme costs \$100K and generates an average lift of \$50 per store across 500 stores over four quarters, the total incremental revenue is $500 \times 4 \times \$50 = \$100\text{K}$, yielding break-even ROI. Larger lifts or longer horizons push ROI positive; smaller lifts or higher costs push it negative. The causal estimate provides the numerator; the finance team provides the denominator.
+
+Event-time effects $\theta_k$ inform payback period and customer lifetime value (CLV) projections. If $\theta_0 = \$20$, $\theta_1 = \$35$, $\theta_2 = \$45$, and effects plateau thereafter, the cumulative effect reaches break-even relative to a \$100 per-store cost after three quarters. CLV models incorporate the event-time trajectory to forecast long-run value, discounting future effects appropriately.
+
+Cohort-specific effects $\tau_g$ guide targeting and rollout prioritisation. If early-adopter cohorts (large stores, high-income areas) exhibit $\tau_g = \$60$ while late-adopter cohorts (small stores, competitive markets) show $\tau_g = \$10$, the firm prioritises expansion to markets resembling early adopters and delays or forgoes rollout to low-effect segments. This heterogeneity analysis transforms a single average effect into a targeting strategy.
+
+The long-run multiplier quantifies carryover for budget allocation across channels. If TV advertising has LRM = 2.5 (cumulative effect 2.5 times the immediate effect) while digital display has LRM = 1.2, the firm may shift budget toward TV to exploit its superior persistence, balancing immediate impact with long-run accumulation. These linkages ensure that causal estimates translate directly into actionable business insights rather than remaining abstract statistical parameters.
+
+The choice of estimand is not neutral. Different estimands can yield different magnitudes, signs, or conclusions. This is a feature: heterogeneity is real, and methods that acknowledge it and make aggregation explicit are more credible than those that impose homogeneity. Define the estimand \textit{ex ante}, choose an aggregation that aligns with the question, and report weights and assumptions transparently. The next section clarifies identification in staggered adoption.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/staggered_grid.pdf}
+\caption{Staggered Adoption: Cohort-Time Grid and Event-Time Alignment}
+\label{fig:staggered-grid}
+\small\textit{The left panel displays the cohort-time grid for a staggered adoption design with three treated cohorts (g=2, 5, 8) and never-treated units, observed over periods t=1 to 12. Cells are color-coded: white for never-treated (NT), light yellow for not-yet-treated (NYT), and dark green for treated (T). The grid shows when each cohort adopts treatment and which units can serve as valid controls in each period. The right panel shows event-time alignment, illustrating which cohorts contribute observations to each event time $k = t - g$. Early-adopting cohorts (g=2) contribute to a wider range of event times, while late-adopting cohorts (g=8) contribute primarily to early event times. The red dashed line marks $k=0$ (treatment adoption). Cohort composition changes across event times, which can affect the interpretation of aggregated event-time effects under heterogeneity.}
+\end{figure}

@@ -1,0 +1,54 @@
+
+\section{Assumptions}
+\label{sec:dml-assumptions}
+
+Double machine learning requires two types of assumptions: identification assumptions that enable causal interpretation, and regularity conditions that ensure valid inference when using ML methods. This section consolidates the key assumptions, clarifies their roles, and discusses diagnostics for assessing plausibility.
+
+\subsection*{Identification Assumptions}
+
+The following assumptions are substantive causal requirements. They must be justified based on the research design, institutional knowledge, and domain expertise. DML does not relax these assumptions; it simply provides a flexible estimation framework that respects them.
+
+\begin{assumption}[Unconfoundedness]
+\label{ass:dml-unconfoundedness}
+Treatment assignment is independent of potential outcomes conditional on observed covariates:
+\[
+W_i \perp\!\!\!\perp (Y_i(1), Y_i(0)) \mid X_i.
+\]
+In panel settings with unit fixed effects, this becomes conditional on both covariates and unit-level heterogeneity: $W_{it} \perp\!\!\!\perp (Y_{it}(1), Y_{it}(0)) \mid X_{it}, \alpha_i$.
+\end{assumption}
+
+Unconfoundedness is the core identification assumption. It asserts that, after conditioning on observables, treatment assignment is as good as random. Violations occur when unobserved factors affect both treatment and outcomes. In marketing, stores that adopt loyalty programmes may differ from non-adopters in unobserved ways (management quality, local competition) that also affect sales. The CRE approach from Section~\ref{sec:dml-estimators} helps by proxying for unit-level heterogeneity, but it cannot eliminate confounding from time-varying unobservables. Diagnostics include balance checks on observables, placebo tests using pre-treatment outcomes, and sensitivity analyses that assess how much unmeasured confounding would be needed to overturn conclusions.
+
+Overlap (Assumption~\ref{ass:dml-overlap}) and limited interference (discussed below) complete the identification requirements. Overlap ensures that for every covariate value, we observe both treated and control units. Limited interference ensures that one unit's treatment does not affect another unit's outcome.
+
+\subsection*{Regularity Conditions}
+
+The following assumptions are technical requirements for valid inference. They concern the estimation procedure rather than the causal structure.
+
+Neyman orthogonality (Definition~\ref{def:neyman-orthogonality}) ensures that the score function is first-order insensitive to nuisance estimation error. The doubly robust scores used throughout this chapter satisfy this condition by construction. Violations occur when analysts use non-orthogonal scores, such as naïve regression adjustment without propensity weighting. In such cases, regularisation bias from ML methods contaminates the treatment effect estimate.
+
+The nuisance rate conditions (Assumption~\ref{ass:nuisance-rates}) require that nuisance estimators converge at rates fast enough that their product error is $o(n^{-1/2})$. Modern ML methods (random forests, gradient boosting, neural networks) typically achieve the required $n^{-1/4}$ rates under smoothness conditions, though verification is difficult in practice. Diagnostics include cross-validation to assess nuisance model fit and sensitivity checks using different ML algorithms.
+
+Panel cross-fitting (Assumption~\ref{ass:panel-crossfit}) requires that sample splitting respects the dependence structure. Folds must partition units (not observations) to avoid within-unit correlation between training and test sets. The no-leakage condition prevents post-treatment outcomes from contaminating counterfactual estimates.
+
+\subsection*{Stability and Interference}
+
+Two additional assumptions merit discussion, though they are often implicit.
+
+\begin{assumption}[Stability]
+\label{ass:dml-stability}
+The conditional expectation $\mathbb{E}[Y_{it}(0) \mid X_{it}, \alpha_i]$ is stable across the sample period. Nuisance functions estimated on pre-treatment data or control units generalise to post-treatment counterfactuals for treated units.
+\end{assumption}
+
+Stability is a form of external validity for the nuisance functions. It fails when regime changes, seasonality shifts, or structural breaks alter the relationship between covariates and outcomes. In marketing, a pandemic or major competitor entry may invalidate outcome regressions estimated on pre-crisis data. Diagnostics include testing for parameter stability across subperiods and comparing nuisance model fit in early versus late periods.
+
+\begin{assumption}[Limited Interference]
+\label{ass:dml-interference}
+Treatment effects satisfy SUTVA: unit $i$'s potential outcomes depend only on its own treatment, not on the treatments of other units. Alternatively, interference is explicitly modelled using exposure mappings as in Chapter~\ref{ch:spillovers}.
+\end{assumption}
+
+Limited interference is Rubin's Stable Unit Treatment Value Assumption \citet{rubin1980randomization}. It fails when treated units affect untreated neighbours through competitive responses, word-of-mouth, or network effects. If a loyalty programme in one store cannibalises sales from nearby stores, the estimated treatment effect conflates the direct benefit to the treated store with the harm to neighbours. Diagnostics include testing for spillovers using spatial or network placebo regressions and comparing estimates under different interference assumptions.
+
+\subsection*{Summary}
+
+The assumptions fall into two categories. Identification assumptions (unconfoundedness, overlap, limited interference) are substantive causal requirements that must be justified by the research design. Regularity conditions (orthogonality, rate conditions, cross-fitting, stability) are technical requirements for valid inference when using ML methods. DML does not relax the identification assumptions. It provides a flexible estimation framework that respects them while enabling richer conditioning sets and nonlinear functional forms. The substantive assumptions must be defended using institutional knowledge, balance diagnostics, placebo tests, and sensitivity analyses, as in any causal panel analysis.

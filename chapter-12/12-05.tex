@@ -1,0 +1,65 @@
+
+\section{Heterogeneous Treatment Effects}
+\label{sec:dml-hte}
+
+Heterogeneous treatment effects (HTE) quantify how treatment effects vary across subgroups defined by pre-treatment characteristics. A retailer launching a loyalty programme may find that the programme lifts sales by 15\% in urban stores but only 5\% in rural stores. Understanding this heterogeneity enables targeted rollout decisions: prioritise high-response segments, redesign the intervention for low-response segments, or abandon it where effects are negligible.
+
+We formalise heterogeneity through the Conditional Average Treatment Effect (CATE). In panel settings, we typically define the CATE at the unit level, conditioning on time-invariant or pre-treatment characteristics.
+
+\begin{definition}[CATE]\label{def:cate}
+The Conditional Average Treatment Effect (CATE) for units with pre-treatment characteristics $X_i = x$ is:
+\[
+\tau(x) = \mathbb{E}[Y_i(1) - Y_i(0) | X_i = x],
+\]
+where $Y_i(1)$ and $Y_i(0)$ denote unit-level potential outcomes (possibly averaged over post-treatment periods). The CATE function $\tau: \mathcal{X} \to \mathbb{R}$ maps covariate values to treatment effects.
+\end{definition}
+
+In panels, $X_i$ typically comprises time-invariant unit characteristics (store demographics, customer tenure) or pre-treatment summaries of time-varying covariates (average pre-period sales). Time-varying covariates observed post-treatment should not enter $X_i$, as they may be affected by treatment and thus introduce post-treatment bias.
+
+Causal forests estimate $\tau(x)$ by adapting random forests to the causal inference setting. The key innovation is honest splitting: the tree structure is determined on one subsample, while leaf estimates are computed on a held-out subsample. This separation prevents the overfitting that would occur if the same data were used to both find heterogeneous subgroups and estimate effects within them.
+
+\begin{assumption}[Honest Splitting]\label{ass:honest-splitting}
+The causal forest estimator satisfies:
+\begin{enumerate}[(i)]
+    \item \textbf{Sample splitting:} The data is partitioned into a tree-building sample $\mathcal{I}_{\text{tree}}$ and an estimation sample $\mathcal{I}_{\text{est}}$ with $\mathcal{I}_{\text{tree}} \cap \mathcal{I}_{\text{est}} = \emptyset$;
+    \item \textbf{Honest trees:} Tree structure (splits) is determined using $\mathcal{I}_{\text{tree}}$; leaf estimates use only $\mathcal{I}_{\text{est}}$;
+    \item \textbf{Regularity:} Each leaf contains at least $\underline{n}$ observations from each treatment group, where $\underline{n} \to \infty$ as $N \to \infty$.
+\end{enumerate}
+\end{assumption}
+
+\begin{theorem}[Consistency of Causal Forest CATE]\label{thm:cate-consistency}
+Under Assumptions~\ref{ass:honest-splitting} and \ref{ass:dml-overlap}, and assuming unconfoundedness ($W_i \perp\!\!\!\perp (Y_i(1), Y_i(0)) | X_i$), the causal forest estimator $\hat{\tau}(x)$ satisfies:
+\begin{enumerate}[(i)]
+    \item \textbf{Pointwise consistency:} $\hat{\tau}(x) \xrightarrow{p} \tau(x)$ for each $x$ in the interior of $\mathcal{X}$;
+    \item \textbf{Asymptotic normality:} For interior points $x$,
+    \[
+    \frac{\hat{\tau}(x) - \tau(x)}{\hat{\sigma}(x)} \xrightarrow{d} \mathcal{N}(0, 1),
+    \]
+    where $\hat{\sigma}(x)$ is the estimated standard error from the forest.
+\end{enumerate}
+The convergence rate depends on the dimension of $X$ and the smoothness of $\tau(\cdot)$. In low dimensions with smooth effects, rates approaching $N^{-1/2}$ are achievable; in high dimensions, rates slow considerably.
+\end{theorem}
+
+For strategic decisions, a continuous CATE surface is often less useful than discrete segments. Marketing teams want to know which customer types respond best, not a function defined over a high-dimensional covariate space. We therefore aggregate CATEs into groups.
+
+\begin{definition}[Grouped Average Treatment Effect]\label{def:grouped-cate}
+For a partition $\{S_1, \ldots, S_J\}$ of the covariate space, the grouped average treatment effect (GATE) for subgroup $j$ is:
+\[
+\tau_j = \mathbb{E}[Y_i(1) - Y_i(0) | X_i \in S_j].
+\]
+When the CATE function $\tau(x)$ is well-defined, this equals $\mathbb{E}[\tau(X_i) | X_i \in S_j]$. The plug-in estimator averages estimated CATEs within the subgroup:
+\[
+\hat{\tau}_j = \frac{1}{|\{i: X_i \in S_j\}|}\sum_{i: X_i \in S_j} \hat{\tau}(X_i).
+\]
+\end{definition}
+
+\subsection{Panel Clustering Estimators (PaCE)}
+
+While causal forests estimate a continuous CATE surface, marketing strategy often requires discrete segmentation. A retailer wants to identify "high-response stores" versus "low-response stores," not a smooth function over fifty demographic variables. \citet{levi2024heterogeneous} introduce the Panel Clustering Estimator (PaCE), which partitions units into clusters with distinct treatment effects.
+
+PaCE combines recursive partitioning with panel-appropriate effect estimation. In the first stage, a regression tree greedily splits units based on covariates to minimise the within-cluster variance of treatment effects. Unlike standard CART, the splitting criterion accounts for the panel structure: it uses a loss function defined over time-varying potential outcomes rather than cross-sectional differences. In the second stage, the average treatment effect within each leaf is estimated using matrix completion or synthetic control methods rather than simple mean differences. This two-stage approach handles missing counterfactuals more robustly than methods that assume complete data.
+
+The method is particularly effective when the goal is to identify a small number of interpretable segments for targeted interventions. A causal forest might reveal that treatment effects vary smoothly with income, age, and purchase frequency, but PaCE distils this into three or four actionable segments that marketing teams can operationalise.
+
+\paragraph{Panel considerations for HTE estimation.}
+Estimating heterogeneous effects in panels introduces complications beyond the cross-sectional setting. When units are observed repeatedly, the effective sample size for estimating $\tau(x)$ depends on how much information each additional time period provides. If treatment effects are constant over time, additional periods reduce variance. If effects evolve dynamically, pooling across time may obscure important patterns. The CRE approach from Section~\ref{sec:dml-estimators} applies here: augment the feature set with unit-level averages $\bar{X}_i$ to proxy for unobserved heterogeneity when estimating the CATE. Causal forests and PaCE can both incorporate CRE-style features, ensuring that the estimated heterogeneity reflects true effect variation rather than confounding from omitted unit-level factors.

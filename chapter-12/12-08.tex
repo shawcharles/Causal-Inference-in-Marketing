@@ -1,0 +1,57 @@
+
+\section{Tuning and Implementation}
+\label{sec:dml-tuning}
+
+Implementing DML in marketing panels requires practical choices about overlap, hyperparameter tuning, learner selection, and leakage avoidance. This section provides guidance on these choices, balancing prediction accuracy, identification credibility, and computational tractability.
+
+\subsection*{Overlap and Trimming}
+
+Overlap diagnostics assess whether propensity scores are bounded away from zero and one, ensuring that treated and control units are comparable (Assumption~\ref{ass:dml-overlap}). Plot the distribution of estimated propensity scores $\hat{e}(X_i)$ separately for treated and control units, overlaying the distributions on the same axes. Compute the overlap statistic—the integral of the minimum of the two densities—which ranges from zero (no overlap) to one (perfect overlap).
+
+Flag observations with extreme propensities (for example, $\hat{e}(X_i) < 0.05$ or $\hat{e}(X_i) > 0.95$) as candidates for trimming. Modest trimming, excluding the most extreme 1–5 per cent of observations, improves precision and reduces sensitivity to outliers. However, trimming changes the target estimand from the effect over the full sample to the effect over the trimmed sample. Report the effective support after trimming—the range of covariate values and the number of treated and control observations retained—and discuss whether the trimmed sample is representative of the population of interest.
+
+\subsection*{Hyperparameter Tuning}
+
+Hyperparameters determine the complexity and flexibility of ML learners. For lasso and elastic net, the regularisation penalty $\lambda$ controls the trade-off between fit and sparsity. Small $\lambda$ fits the data closely but includes many covariates. Large $\lambda$ produces a sparse model but may underfit. For random forests, key parameters include the number of trees, maximum depth, minimum leaf size, and the fraction of covariates considered at each split. For gradient boosting, parameters include the learning rate, number of iterations, tree depth, and subsampling fraction.
+
+Tuning proceeds via cross-validation confined to training folds. Partition the training data into sub-folds, train the learner with different hyperparameter values, evaluate out-of-sample fit on held-out sub-folds, and select values that minimise prediction error (mean squared error for outcome regressions, log-likelihood for propensity scores). Grid search over pre-defined values is common but computationally expensive. Random search or Bayesian optimisation provide more efficient alternatives.
+
+\subsection*{Stability Checks}
+
+Stability checks assess whether treatment effect estimates are sensitive to hyperparameter choices. Estimate effects using multiple tuning configurations—varying the lasso penalty over a range, or varying the number of trees in random forests—and plot estimates against hyperparameter values.
+
+If estimates are stable across hyperparameters, conclusions are robust. If estimates vary widely, the analyst should report results for multiple tunings and discuss which is most plausible based on out-of-sample fit, domain knowledge, or design-based benchmarks. Reporting the range of estimates across tunings provides transparent evidence of sensitivity.
+
+\subsection*{Prediction versus Identification}
+
+Breiman's influential essay on statistical modelling cultures \citet{breiman2001statistical} highlights the tension between prediction and explanation. In causal inference, this tension takes a specific form: optimising learners for prediction accuracy does not guarantee valid counterfactuals.
+
+Prediction accuracy is the objective of cross-validation, achieved by fitting complex models that capture all predictive signal. However, an outcome regression that predicts treated outcomes extremely well by incorporating post-treatment information (leakage) or by overfitting to treated-unit idiosyncrasies provides biased counterfactuals.
+
+The solution is to constrain tuning to respect identification requirements. Train nuisance models only on pre-treatment data and out-of-fold units. Exclude post-treatment periods from tuning data. Compare DML estimates to design-based benchmarks (DiD, SC, event studies) to assess whether ML-based counterfactuals align with design-based identification. Balancing prediction and identification requires judgment informed by diagnostics, domain knowledge, and transparent reporting.
+
+\subsection*{Learner Selection}
+
+Learner choices include regularised GLMs (lasso, ridge, elastic net), boosting (XGBoost, LightGBM), forests (random forests, causal forests), and neural networks. Each has strengths and limitations.
+
+Regularised GLMs are interpretable, computationally efficient, and perform well when relationships are approximately linear. Boosting captures nonlinear relationships and interactions, handles high-dimensional covariates, and provides feature importance measures. Forests are robust to outliers, require minimal tuning, and provide stable predictions. Neural networks offer extreme flexibility but require large samples and careful tuning.
+
+The choice depends on the data structure and interpretability requirements. Sensitivity analyses comparing estimates across learner classes (lasso versus forests versus boosting) assess robustness to modelling choices.
+
+\subsection*{Shape Constraints}
+
+Monotonicity or shape constraints incorporate domain knowledge. Propensity scores must lie in $(0, 1)$, enforced using logistic regression or by truncating predictions. Outcome regressions may be constrained to be monotonic in certain covariates (for example, sales increasing in advertising spend) using isotonic regression or constrained boosting. CATEs may be constrained to be non-negative using constrained forests or projection methods. Imposing constraints reduces flexibility but improves credibility when domain knowledge strongly supports the constraint.
+
+\subsection*{Leakage Avoidance}
+
+Leakage occurs when nuisance models are trained on post-treatment data and used to impute counterfactuals, contaminating estimates with information about the treatment effect. This concern is central to panel cross-fitting (Assumption~\ref{ass:panel-crossfit} and Section~\ref{sec:dml-crossfit}).
+
+Consider an outcome regression trained on all periods for treated units, including post-treatment. The regression captures the treatment effect in its predictions. When used to impute counterfactuals for treated units, the imputed values are biased. The solution is to train nuisance models only on pre-treatment periods for treated units and on out-of-fold units.
+
+Diagnostics include verifying that training data exclude post-treatment observations, checking that estimates are stable when varying the pre-treatment cutoff, and comparing DML estimates to naïve estimates that use all data for nuisance training. If the naïve and proper estimates differ substantially, leakage was present.
+
+\subsection*{Block-Gap Cross-Validation for Time-Series ML}
+
+Block-gap, or $hv$-block, cross-validation makes this temporal discipline explicit. Rather than shuffling individual observations at random, you hold out contiguous blocks in time for validation and leave a gap of a few periods between those blocks and the data used for training. The gap breaks the strongest short-run serial correlation between the last training observations and the first validation observations, so that validation errors reflect genuine out-of-sample performance rather than leaked dependence. In spatial panels the same idea extends to neighbourhoods in space, where you hold out a cluster of units and avoid training on their immediate neighbours.
+
+\citet{babii202410} show that gap-based cross-validation delivers tuning parameters that remain reliable in high-dimensional time series with heavy tails and strong dependence. In this book we treat block-gap cross-validation as the default protocol for time-series ML in panels. When you tune nuisance learners for DML, you should block by unit or time as in Figure~\ref{fig:dml-crossfit}, and you should leave at least a modest temporal gap between training and validation windows whenever serial dependence is pronounced. This small change turns overly optimistic cross-validation scores into realistic estimates of how your nuisance models will perform when you roll them forward in time on truly unseen data.

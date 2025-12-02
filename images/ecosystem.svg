@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="1113px" preserveAspectRatio="none" style="width:709px;height:1113px;" version="1.1" viewBox="0 0 709 1113" width="709px" zoomAndPan="magnify"><defs/><g><!--MD5=[42e0aa433f5472c28d3f623374b4619a]
+entity EXP--><rect fill="#E3F2FD" height="246.1406" rx="7.5" ry="7.5" style="stroke: #1565C0; stroke-width: 2.0;" width="216" x="82" y="63"/><text fill="#000000" font-family="DejaVu Sans" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="176" x="102" y="93.2104">RANDOMISED EXPERIMENTS</text><text fill="#000000" font-family="DejaVu Sans" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="106" y="126.0151"/><text fill="#000000" font-family="DejaVu Sans" font-size="10" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="52" x="102" y="157.8916">A/B tests</text><text fill="#000000" font-family="DejaVu Sans" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="108" x="102" y="190.4604">Geo experiments</text><text fill="#000000" font-family="DejaVu Sans" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="152" x="102" y="223.2651">Holdout designs&lt;/size&gt;</text><text fill="#000000" font-family="DejaVu Sans" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="106" y="256.0698"/><text fill="#666666" font-family="DejaVu Sans" font-size="9" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="67" x="102" y="287.0181">Days - Weeks</text><!--MD5=[1701ec573e08e6dd14cff88d71cf78d4]
+entity PANEL--><rect fill="#E8F5E9" height="246.1406" rx="7.5" ry="7.5" style="stroke: #2E7D32; stroke-width: 2.0;" width="179" x="395.5" y="63"/><text fill="#000000" font-family="DejaVu Sans" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="107" x="415.5" y="93.2104">PANEL METHODS</text><text fill="#000000" font-family="DejaVu Sans" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="419.5" y="126.0151"/><text fill="#000000" font-family="DejaVu Sans" font-size="10" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="105" x="415.5" y="157.8916">DiD / Event studies</text><text fill="#000000" font-family="DejaVu Sans" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="109" x="415.5" y="190.4604">Synthetic control</text><text fill="#000000" font-family="DejaVu Sans" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="139" x="415.5" y="223.2651">Factor models&lt;/size&gt;</text><text fill="#000000" font-family="DejaVu Sans" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="419.5" y="256.0698"/><text fill="#666666" font-family="DejaVu Sans" font-size="9" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="73" x="415.5" y="287.0181">Months - Years</text><!--MD5=[91d4c0ef36b50607230522933237c3c9]
+entity MMM--><rect fill="#FFF3E0" height="246.1406" rx="7.5" ry="7.5" style="stroke: #EF6C00; stroke-width: 2.0;" width="202" x="496" y="428"/><text fill="#000000" font-family="DejaVu Sans" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="158" x="516" y="458.2104">MARKETING MIX MODELS</text><text fill="#000000" font-family="DejaVu Sans" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="520" y="491.0151"/><text fill="#000000" font-family="DejaVu Sans" font-size="10" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="116" x="516" y="522.8916">Aggregate response</text><text fill="#000000" font-family="DejaVu Sans" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="129" x="516" y="555.4604">Adstock / Saturation</text><text fill="#000000" font-family="DejaVu Sans" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="162" x="516" y="588.2651">Budget allocation&lt;/size&gt;</text><text fill="#000000" font-family="DejaVu Sans" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="520" y="621.0698"/><text fill="#666666" font-family="DejaVu Sans" font-size="9" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="85" x="516" y="652.0181">Weeks - Quarters</text><!--MD5=[c7eed959d82f39df06e05c1346f9c48a]
+entity ATTR--><rect fill="#F3E5F5" height="246.1406" rx="7.5" ry="7.5" style="stroke: #7B1FA2; stroke-width: 2.0;" width="208" x="325" y="793"/><text fill="#000000" font-family="DejaVu Sans" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="142" x="345" y="823.2104">ATTRIBUTION MODELS</text><text fill="#000000" font-family="DejaVu Sans" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="349" y="856.0151"/><text fill="#000000" font-family="DejaVu Sans" font-size="10" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="63" x="345" y="887.8916">Multi-touch</text><text fill="#000000" font-family="DejaVu Sans" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="75" x="345" y="920.4604">Data-driven</text><text fill="#000000" font-family="DejaVu Sans" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="168" x="345" y="953.2651">Customer journeys&lt;/size&gt;</text><text fill="#000000" font-family="DejaVu Sans" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="349" y="986.0698"/><text fill="#666666" font-family="DejaVu Sans" font-size="9" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="48" x="345" y="1017.0181">Real-time</text><!--MD5=[34edb54463ca85c70ccf1d305717ca68]
+entity CENTER--><rect fill="#FFECB3" height="136.0547" rx="7.5" ry="7.5" style="stroke: #F57C00; stroke-width: 2.0;" width="194" x="213" y="483"/><text fill="#000000" font-family="DejaVu Sans" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="101" x="233" y="506.2104">TRIANGULATION</text><text fill="#000000" font-family="DejaVu Sans" font-size="10" lengthAdjust="spacingAndGlyphs" textLength="83" x="233" y="538.0869">Multiple methods</text><text fill="#000000" font-family="DejaVu Sans" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="127" x="233" y="570.6558">Different assumptions</text><text fill="#000000" font-family="DejaVu Sans" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="154" x="233" y="603.4604">Robust conclusions&lt;/size&gt;</text><path d="M6,889.5 L6,942.9141 A7.5,7.5 0 0 0 13.5,950.4141 L282.5,950.4141 A7.5,7.5 0 0 0 290,942.9141 L290,892 L280,882 L166.89,882 L280.1,619 L158.89,882 L13.5,882 A7.5,7.5 0 0 0 6,889.5 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><path d="M280,882 L280,888.25 A3.75,3.75 0 0 0 283.75,892 L290,892 L280,882 " fill="#FBFB77" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="DejaVu Sans" font-size="11" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="76" x="22" y="907.2104">Key Insight:</text><text fill="#000000" font-family="DejaVu Sans" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="149" x="102" y="907.2104">Where methods converge,</text><text fill="#000000" font-family="DejaVu Sans" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="241" x="22" y="920.0151">evidence is strongest. No single approach</text><text fill="#000000" font-family="DejaVu Sans" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="243" x="22" y="932.8198">suffices for credible causal measurement.</text><!--MD5=[2f881f904da0d500f0aca396bc149bab]
+link EXP to CENTER--><!--MD5=[2f881f904da0d500f0aca396bc149bab]
+link EXP to CENTER--><path d="M184.56,309.14 C186.23,330.76 189.7,352.8 196,373 C207.77,410.74 229.93,448.18 251.62,478.84 " fill="none" id="EXP-&gt;CENTER" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="254.53,482.93,252.5506,473.2821,251.6225,478.8623,246.0423,477.9342,254.53,482.93" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="DejaVu Sans" font-size="9" lengthAdjust="spacingAndGlyphs" textLength="44" x="207" y="360.354">validates</text><!--MD5=[6c7c58afdcf81f6506df5c5a1ac9090d]
+link PANEL to CENTER--><!--MD5=[6c7c58afdcf81f6506df5c5a1ac9090d]
+link PANEL to CENTER--><path d="M395.43,271.25 C377.27,292.43 360.07,316.23 348,341 C327.27,383.53 317.78,435.92 313.46,477.6 " fill="none" id="PANEL-&gt;CENTER" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="312.96,482.63,317.8381,474.0741,313.4589,477.655,309.878,473.2758,312.96,482.63" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="DejaVu Sans" font-size="9" lengthAdjust="spacingAndGlyphs" textLength="38" x="359" y="360.354">extends</text><!--MD5=[fed9faff59453c6fa3215aade58ff8ae]
+link CENTER to MMM--><!--MD5=[c66073f5882fa899e40d156453b6b0af]
+link MMM to CENTER--><path d="M495.52,551 C468.49,551 439.27,551 412.19,551 " fill="none" id="MMM-&gt;CENTER" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="407.17,551,416.17,555,412.17,551,416.17,547,407.17,551" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="DejaVu Sans" font-size="9" lengthAdjust="spacingAndGlyphs" textLength="32" x="435.5" y="535.354">guides</text><!--MD5=[34cad4a9807ae065a7f3dc8f72831994]
+link CENTER to ATTR--><!--MD5=[67e6326125d9407d3a96337a56efabc4]
+link ATTR to CENTER--><path d="M339.57,792.94 C330.06,775.21 321.77,756.63 316,738 C304.75,701.67 302.58,659.43 303.52,624.39 " fill="none" id="ATTR-&gt;CENTER" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="303.68,619.27,299.3993,628.1399,303.5229,624.2675,307.3953,628.3912,303.68,619.27" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="DejaVu Sans" font-size="9" lengthAdjust="spacingAndGlyphs" textLength="36" x="327" y="725.354">informs</text><!--MD5=[0157e3d519af2f432d746377b6dc2e09]
+link EXP to PANEL--><path d="M303.43,186 C332.06,186 362.5,186 390.11,186 " fill="none" id="EXP-PANEL" style="stroke: #1565C0; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/><polygon fill="#1565C0" points="395.23,186,386.23,182,390.23,186,386.23,190,395.23,186" style="stroke: #1565C0; stroke-width: 1.0;"/><polygon fill="#1565C0" points="298.17,186,307.17,190,303.17,186,307.17,182,298.17,186" style="stroke: #1565C0; stroke-width: 1.0;"/><text fill="#000000" font-family="DejaVu Sans" font-size="8" lengthAdjust="spacingAndGlyphs" textLength="41" x="326.25" y="169.4258">calibration</text><!--MD5=[e8ef95982c051ec19704a80e5dbc7cd9]
+link PANEL to MMM--><path d="M524.21,314.09 C535.08,349.32 546.88,387.57 557.76,422.8 " fill="none" id="PANEL-MMM" style="stroke: #2E7D32; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/><polygon fill="#2E7D32" points="559.35,427.98,560.5202,418.2009,557.8766,423.202,552.8754,420.5584,559.35,427.98" style="stroke: #2E7D32; stroke-width: 1.0;"/><polygon fill="#2E7D32" points="522.68,309.14,521.5098,318.9191,524.1534,313.918,529.1546,316.5616,522.68,309.14" style="stroke: #2E7D32; stroke-width: 1.0;"/><text fill="#000000" font-family="DejaVu Sans" font-size="8" lengthAdjust="spacingAndGlyphs" textLength="46" x="552" y="359.4258">panel MMM</text><!--MD5=[6a931d19f5d6cb918e2142a5e965a2d0]
+link MMM to ATTR--><path d="M538.18,679.09 C521.81,714.47 504.03,752.88 487.67,788.24 " fill="none" id="MMM-ATTR" style="stroke: #EF6C00; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/><polygon fill="#EF6C00" points="485.47,792.98,492.8772,786.489,487.568,788.4415,485.6156,783.1322,485.47,792.98" style="stroke: #EF6C00; stroke-width: 1.0;"/><polygon fill="#EF6C00" points="540.47,674.14,533.055,680.6221,538.3665,678.676,540.3126,683.9876,540.47,674.14" style="stroke: #EF6C00; stroke-width: 1.0;"/><text fill="#000000" font-family="DejaVu Sans" font-size="8" lengthAdjust="spacingAndGlyphs" textLength="39" x="534" y="724.4258">validation</text><!--MD5=[5dd57bc5afb843be45c262e5fa142c3d]
+link ATTR to EXP--><path d="M353.62,788.58 C340,772.6 324.74,757.76 308,746 C243.75,700.88 185.38,760.6 138,698 C55.29,588.7 90.65,426.42 132.12,314.19 " fill="none" id="ATTR-EXP" style="stroke: #7B1FA2; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/><polygon fill="#7B1FA2" points="133.97,309.22,127.0834,316.2609,132.2269,313.9063,134.5815,319.0499,133.97,309.22" style="stroke: #7B1FA2; stroke-width: 1.0;"/><polygon fill="#7B1FA2" points="357.04,792.66,354.3166,783.1952,353.825,788.8306,348.1896,788.3391,357.04,792.66" style="stroke: #7B1FA2; stroke-width: 1.0;"/><text fill="#000000" font-family="DejaVu Sans" font-size="8" lengthAdjust="spacingAndGlyphs" textLength="36" x="149" y="553.4258">targeting</text><text fill="#000000" font-family="DejaVu Sans" font-size="10" lengthAdjust="spacingAndGlyphs" textLength="235" x="256.5" y="1100.2822">Figure 1.1 — The Marketing Analytics Ecosystem</text><!--MD5=[9647bb129ff4a6daa494d884cf2eef56]
+@startuml ecosystem
+
+skinparam backgroundColor white
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 11
+skinparam shadowing false
+skinparam roundCorner 15
+skinparam padding 10
+
+skinparam rectangle {
+    BorderThickness 2
+    FontStyle bold
+}
+
+skinparam card {
+    BorderThickness 2
+}
+
+
+together {
+    rectangle "<b>RANDOMISED EXPERIMENTS</b>\n\n<size:10>A/B tests\nGeo experiments\nHoldout designs</size>\n\n<color:#666><size:9>Days - Weeks</size></color>" as EXP #E3F2FD;line:1565C0
+}
+
+together {
+    rectangle "<b>PANEL METHODS</b>\n\n<size:10>DiD / Event studies\nSynthetic control\nFactor models</size>\n\n<color:#666><size:9>Months - Years</size></color>" as PANEL #E8F5E9;line:2E7D32
+}
+
+together {
+    rectangle "<b>MARKETING MIX MODELS</b>\n\n<size:10>Aggregate response\nAdstock / Saturation\nBudget allocation</size>\n\n<color:#666><size:9>Weeks - Quarters</size></color>" as MMM #FFF3E0;line:EF6C00
+}
+
+together {
+    rectangle "<b>ATTRIBUTION MODELS</b>\n\n<size:10>Multi-touch\nData-driven\nCustomer journeys</size>\n\n<color:#666><size:9>Real-time</size></color>" as ATTR #F3E5F5;line:7B1FA2
+}
+
+card "<b>TRIANGULATION</b>\n<size:10>Multiple methods\nDifferent assumptions\nRobust conclusions</size>" as CENTER #FFECB3;line:F57C00
+
+EXP -[hidden]down- CENTER
+PANEL -[hidden]down- CENTER  
+MMM -[hidden]up- CENTER
+ATTR -[hidden]up- CENTER
+
+EXP - -> CENTER : <size:9>validates</size>
+PANEL - -> CENTER : <size:9>extends</size>
+MMM - -> CENTER : <size:9>guides</size>
+ATTR - -> CENTER : <size:9>informs</size>
+
+EXP <.[#1565C0,dashed].> PANEL : <size:8>calibration</size>
+PANEL <.[#2E7D32,dashed].> MMM : <size:8>panel MMM</size>
+MMM <.[#EF6C00,dashed].> ATTR : <size:8>validation</size>
+ATTR <.[#7B1FA2,dashed].> EXP : <size:8>targeting</size>
+
+note bottom of CENTER
+  <b>Key Insight:</b> Where methods converge,
+  evidence is strongest. No single approach
+  suffices for credible causal measurement.
+end note
+
+caption <size:10>Figure 1.1 — The Marketing Analytics Ecosystem</size>
+@enduml
+
+PlantUML version 1.2020.02(Sun Mar 01 10:22:07 GMT 2020)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 11.0.28+6-post-Ubuntu-1ubuntu122.04.1
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: GB
+--></g></svg>

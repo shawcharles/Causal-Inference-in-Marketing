@@ -1,0 +1,101 @@
+\section{Workflow Checklist}
+\label{sec:hd-workflow}
+
+This section provides a compact, reproducible protocol for conducting regularisation analyses in marketing panels. The workflow integrates design, partialling, tuning, diagnostics, inference, and reporting, ensuring that conclusions are credible and transparent.
+
+\subsection*{Step 1: Define Target Estimand and Design}
+
+Clarify the target parameter (ATE, ATT, event-time effects $\theta_k$, or dose-response) and the design providing identification (DiD, event study, unconfoundedness conditional on controls). Document the estimand mathematically and discuss its policy relevance. For staggered adoption, define whether the target is cohort-time effects $\text{ATT}(g, t)$, event-time effects $\theta_k$, or the overall ATT.
+
+\subsection*{Step 2: Decide on Fixed Effects or Factor Partialling}
+
+Determine whether to remove unit and time fixed effects via within-transformation, to estimate latent factors via principal components or other methods (Chapter~\ref{ch:factor}), or to partial out both. For high-dimensional fixed effects or when parallel trends fails, factor partialling is preferred. For simpler settings with fewer units or periods, within-transformation suffices. Document the partialling strategy and justify the choice.
+
+\subsection*{Step 3: Choose Regulariser and Blocking Scheme}
+
+Select the regularisation method (lasso, elastic net, group lasso, hierarchical lasso) based on the covariate structure (sparse, correlated, grouped, hierarchical). For sparse, approximately independent controls, use lasso. For correlated controls, use elastic net. For grouped controls (lags, channels, competitors), use group lasso. For hierarchical controls (campaigns and creatives, main effects and interactions), use hierarchical lasso.
+
+Choose the blocking scheme for cross-validation (unit-level, time-level, or two-dimensional) based on the dependence structure. For most marketing panels, unit-level blocking suffices.
+
+\subsection*{Step 4: Run Double Selection or DML with Selection}
+
+For double selection, run lasso of outcomes on controls (without treatment), run lasso of treatment on controls, take the union of selected controls, and run OLS of outcomes on treatment and the union, with cluster-robust standard errors.
+
+For DML with selection, partition the data into folds, train outcome and propensity score lasso models on out-of-fold data, construct doubly robust scores, and solve for the treatment effect with influence-function-based standard errors. Document the penalties used (from blocked cross-validation or theoretical formulas), the selected controls (listing which controls are included), and the rationale for exclusions (post-treatment, endogenous, colliders).
+
+\subsection*{Step 5: Conduct Debiased Inference with Cluster-Robust SEs}
+
+For post-selection inference, compute cluster-robust standard errors aggregating residuals by unit (or two-way clustering by unit and time). For debiased lasso, construct the bias-corrected estimator using nodewise lasso to approximate the precision matrix, and compute cluster-robust standard errors for the debiased estimate.
+
+For small $G$ (fewer than 30 clusters), use wild cluster bootstrap (1,000 replications) to build a bootstrap distribution and construct confidence intervals from quantiles. Report point estimates, standard errors, confidence intervals, and p-values for the treatment effect, with annotations indicating whether inference is asymptotic (cluster-robust SE) or finite-sample (wild cluster bootstrap).
+
+\subsection*{Step 6: Validate via Diagnostics and Sensitivity}
+
+Assess post-selection balance (SMDs before and after adjustment), overlap (propensity score distributions and common support), residual dependence (autocorrelations and cross-correlations), inclusion frequency (how often each control is selected across folds), and sensitivity to penalty (estimates across multiple penalties).
+
+Compare regularised estimates to simpler estimates (two-way fixed effects DiD, synthetic control, event studies) for triangulation. Integrate with the design-diagnostics workflow in Chapter~\ref{ch:design-diagnostics}, running pre-trend tests, placebo tests, and overlap checks. Document diagnostics transparently, reporting which checks pass and which raise concerns.
+
+\subsection*{Step 7: Report Findings with Replication Materials}
+
+Report treatment effect estimates with confidence intervals, selected controls (listing which controls are included and providing rationale), diagnostics (balance, overlap, stability, sensitivity), and comparisons to simpler estimates.
+
+Discuss which penalty is used (for example, $\lambda_{1\text{se}}$ from blocked cross-validation), which blocking scheme is used (unit-level, time-level, or two-dimensional), and how estimates vary with penalty choice (reporting a range or plotting estimates against $\lambda$). Provide replication materials (data, scripts, documentation) to enable verification and alternative analyses. Transparent reporting builds confidence that regularisation provides credible causal evidence.
+
+By following this workflow, practitioners can conduct regularisation analyses that balance flexibility and parsimony, respecting identification requirements while managing high-dimensional controls. The workflow ensures that covariate selection is disciplined by design-based logic, that inference accounts for dependence and selection uncertainty, and that diagnostics provide transparent evidence on the credibility of conclusions.
+
+The result is causal evidence that withstands scrutiny and that informs strategic decisions with confidence.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{images/fig_hd_lasso_path.pdf}
+\caption{Lasso/Elastic-Net Path with Inclusion Frequencies. Left panel shows the lasso path: horizontal axis is $\log(\lambda)$ (penalty), vertical axis is standardised coefficients $\beta_j$. Lines show coefficient trajectories as $\lambda$ decreases (from right to left), with each line representing one covariate. Vertical lines indicate $\lambda_{\text{min}}$ (minimises cross-validation error) and $\lambda_{1\text{se}}$ (one standard error rule). Right panel shows inclusion frequencies: horizontal axis is covariate index, vertical axis is inclusion frequency (proportion of folds where the covariate is selected). Bars indicate frequency for each covariate, with colours distinguishing high-frequency (dark, $f_j > 0.8$), medium-frequency (medium, $0.2 < f_j < 0.8$), and low-frequency (light, $f_j < 0.2$) covariates.}
+\label{fig:hd-path}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{images/fig_hd_blocked_cv.pdf}
+\caption{Blocked Cross-Validation Schematic for Panels (by Unit/Time). Left panel shows unit-level blocking: matrix with units on rows, time on columns, coloured blocks indicate five unit-based folds. Training folds (darker shade) and validation fold (lighter shade) are distinguished. Right panel shows time-level blocking: matrix with units on rows, time on columns, coloured blocks indicate five time-based folds. Unit-level blocking respects within-unit serial dependence; time-level blocking respects within-period cross-sectional dependence.}
+\label{fig:hd-cv}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{images/fig_hd_cv_error.pdf}
+\caption{Penalty vs Validation Error Curve Under Clustering. Validation error (mean squared error) against $\log(\lambda)$ (penalty). The curve is U-shaped: high error at large $\lambda$ (underfitting), low error at intermediate $\lambda$ (optimal), high error at small $\lambda$ (overfitting). Vertical lines indicate $\lambda_{\text{min}}$ (minimises error) and $\lambda_{1\text{se}}$ (one standard error rule, sparser model). Error bars show standard errors across folds.}
+\label{fig:hd-cv-error}
+\end{figure}
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Mapping of Method to Assumptions, Tuning, and Use-Cases}
+\label{tab:hd-methods}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Method} & \textbf{Key Assumptions} & \textbf{Tuning and Inference} & \textbf{Use-Cases} \\
+\midrule
+Lasso & Approximate sparsity, overlap, dependence-aware blocking & Blocked CV, cluster-robust SE, $\lambda_{1\text{se}}$ rule & Sparse controls, high $p$, interpretability priority \\
+\addlinespace
+Elastic net & Approximate sparsity, overlap, dependence-aware blocking & Blocked CV, cluster-robust SE, tune $\alpha$ and $\lambda$ & Correlated controls, stability over pure lasso \\
+\addlinespace
+Group lasso & Approximate group sparsity, overlap, dependence-aware blocking & Blocked CV, cluster-robust SE, group penalties scaled by size & Grouped controls (lags, channels, competitors) \\
+\addlinespace
+Double selection & Approximate sparsity in outcome and treatment models, overlap, no colliders & Union of lasso selections, OLS with cluster-robust SE & Causal targets, reduces omitted-variable bias \\
+\addlinespace
+Debiased lasso & Approximate sparsity, overlap, nodewise sparsity for precision & Nodewise lasso for $\Theta$, cluster-robust SE or wild bootstrap & Asymptotically normal inference, small $s$ relative to $G$ \\
+\addlinespace
+Sparse DiD & Conditional parallel trends, no post-treatment controls, design alignment & Blocked CV, cohort-time structure, cluster-robust SE & Augment DiD with many controls while preserving identification \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 13.1: High-Dimensional Controls Checklist]
+Practitioners should follow a systematic checklist to ensure high-dimensional control strategies are robust. First, define the estimand (ATE, ATT, or dose-response) and document the design providing identification. Next, decide on partialling strategies, choosing between within-transformation or factor methods based on data structure.
+
+Select a regulariser (lasso, elastic net, or group lasso) that matches the covariate structure. Implement blocked cross-validation to select penalties, ensuring unit-level or time-level blocking respects dependence. Apply double selection or DML, running lasso for both outcome and treatment models and taking the union of selected controls.
+
+Conduct inference using cluster-robust standard errors or wild cluster bootstrap for small samples. Validate the model through rigorous diagnostics, including post-selection balance, overlap, and residual dependence checks. Triangulate findings by comparing regularised estimates to simpler designs. Finally, report results transparently with confidence intervals, selected controls, and replication materials, ensuring the analysis respects the design's temporal logic.
+\end{tcolorbox}
+\index{high-dimensional controls|)}

@@ -1,0 +1,190 @@
+\section{Extensions and Variants}
+\label{sec:sc-extensions}
+
+Synthetic control methods extend naturally to settings with multiple treated units, staggered adoption, regularised estimation, and continuous treatments. This section provides an overview of key extensions, connecting each to the bias framework from Sections~\ref{sec:sc-motivation}--\ref{sec:sc-identification} and providing forward references to detailed treatments in later chapters.
+
+\subsection*{Multiple Treated Units}
+
+When multiple units are treated at a common time $T_0$, estimate unit-specific treatment effects and aggregate.
+
+\textbf{Unit-Specific Estimation.} For each treated unit $i \in \mathcal{I}_{\text{treated}}$, construct a synthetic control using the donor pool $\mathcal{J}$ (excluding all treated units) and compute:
+\begin{equation}
+\hat{\tau}_{it} = Y_{it} - \sum_{j \in \mathcal{J}} w_{ij}^* Y_{jt}, \quad t > T_0.
+\label{eq:unit-specific-effect}
+\end{equation}
+
+\textbf{Aggregation.} The average treatment effect on the treated (ATT) at time $t$ is:
+\begin{equation}
+\widehat{\text{ATT}}_t = \sum_{i \in \mathcal{I}_{\text{treated}}} \omega_i \hat{\tau}_{it},
+\label{eq:att-multiple}
+\end{equation}
+where $\omega_i$ are aggregation weights summing to one. Common choices:
+\begin{itemize}
+\item Equal weights: $\omega_i = 1/|\mathcal{I}_{\text{treated}}|$
+\item Precision weights: $\omega_i \propto 1/\text{Var}(\hat{\tau}_{it})$
+\item Pre-treatment outcome weights: $\omega_i \propto \bar{Y}_{i,\text{pre}}$
+\end{itemize}
+
+\textbf{Identification.} Aggregation does not change the identification conditions. Each unit-specific estimate $\hat{\tau}_{it}$ requires the factor model, convex hull, and stability assumptions (Assumptions~\ref{assump:sc-no-anticipation}--\ref{assump:sc-hull}) for that unit. The aggregated ATT inherits the bias:
+\begin{equation}
+\text{Bias}(\widehat{\text{ATT}}_t) = \sum_{i \in \mathcal{I}_{\text{treated}}} \omega_i (\boldsymbol{\lambda}_t)' \boldsymbol{\Delta}_{\mu,i}.
+\label{eq:att-bias}
+\end{equation}
+
+\textbf{Inference.} Conduct in-space placebos for each treated unit and aggregate placebo gaps with the same weights. The distribution of aggregated placebo gaps provides inference for the aggregated ATT.
+
+\subsection*{Staggered Adoption}
+
+With staggered adoption (units treated at different times), standard SC faces challenges:
+\begin{itemize}
+\item Donor pools shrink as more units become treated
+\item Already-treated units contaminate comparisons for later-treated units
+\item Aggregation across adoption cohorts requires careful weighting
+\end{itemize}
+
+\textbf{Stacking Approach.} For each adoption cohort $g$ (units treated at time $T_g$), construct synthetic controls using never-treated units and not-yet-treated units as donors. Estimate cohort-time effects:
+\begin{equation}
+\hat{\tau}(g, t) = \frac{1}{|\mathcal{I}_g|} \sum_{i \in \mathcal{I}_g} \hat{\tau}_{it}, \quad t > T_g.
+\label{eq:cohort-time-effect}
+\end{equation}
+
+\textbf{Event-Time Aggregation.} Aggregate to event time $e = t - T_g$:
+\begin{equation}
+\hat{\tau}(e) = \sum_g \omega_g \hat{\tau}(g, T_g + e),
+\label{eq:event-time-effect}
+\end{equation}
+where $\omega_g$ are cohort weights.
+
+\textbf{Hybrid Methods.} Synthetic Difference-in-Differences (SDID) and Augmented Synthetic Control (ASCM) combine SC weights with DiD adjustments to address staggered adoption more robustly. See Chapter~\ref{ch:generalized-sc}. Event study aggregation and interpretation are developed in Chapters~\ref{ch:did} and~\ref{ch:event}.
+
+\subsection*{Ridge Synthetic Control}
+
+Ridge regularisation addresses overfitting when the pre-treatment period is short or the donor pool is large.
+
+\textbf{Regularised Objective.} Add a quadratic penalty to the weight optimisation:
+\begin{equation}
+\hat{\mathbf{w}}^{\text{Ridge}} = \arg\min_{\mathbf{w}} \left\| \mathbf{X}_1 - \mathbf{X}_0 \mathbf{w} \right\|_V^2 + \eta \|\mathbf{w} - \bar{\mathbf{w}}\|^2 \quad \text{s.t.} \quad w_j \geq 0, \; \sum_j w_j = 1,
+\label{eq:ridge-sc}
+\end{equation}
+where $\eta > 0$ is the regularisation parameter and $\bar{\mathbf{w}} = (1/N, \ldots, 1/N)'$ is the uniform weight vector.
+
+\textbf{Bias-Variance Tradeoff.} Regularisation introduces bias but reduces variance:
+\begin{equation}
+\text{MSE}(\hat{\tau}^{\text{Ridge}}) = \underbrace{(\boldsymbol{\lambda}_t' \boldsymbol{\Delta}_\mu^{\text{Ridge}})^2}_{\text{Bias}^2(\eta)} + \underbrace{\text{Var}(\hat{\tau}^{\text{Ridge}})}_{\text{Var}(\eta)}.
+\label{eq:ridge-mse}
+\end{equation}
+As $\eta \to 0$, Ridge SC approaches unregularised SC (low bias, high variance). As $\eta \to \infty$, weights approach uniform (high bias, low variance). Cross-validation selects $\eta$ to minimise MSE.
+
+\textbf{When to Use.} Ridge SC is particularly useful when:
+\begin{itemize}
+\item $N > T_0$: More donors than pre-treatment periods
+\item Many donors are similar: Unregularised SC may assign large weights to a few donors by chance
+\item Pre-treatment fit is poor: Regularisation can stabilise weights
+\end{itemize}
+
+\subsection*{Augmented Synthetic Control (ASCM)}
+
+Augmented Synthetic Control combines SC with regression adjustment to correct for imperfect pre-treatment fit.
+
+\textbf{Bias Correction.} After constructing SC weights $\mathbf{w}^*$, ASCM estimates a regression of pre-treatment outcomes on covariates and uses it to adjust the counterfactual:
+\begin{equation}
+\hat{\tau}_{1t}^{\text{ASCM}} = Y_{1t} - \sum_j w_j^* Y_{jt} - \hat{m}\left( \mathbf{X}_1 - \sum_j w_j^* \mathbf{X}_j \right),
+\label{eq:ascm}
+\end{equation}
+where $\hat{m}(\cdot)$ is the estimated regression function.
+
+\textbf{Bias Reduction.} Under the factor model, the ASCM correction targets the residual bias from imperfect balance:
+\begin{equation}
+\text{Bias}(\hat{\tau}^{\text{ASCM}}) = (\boldsymbol{\lambda}_t)' \boldsymbol{\Delta}_\mu - \hat{m}(\boldsymbol{\Delta}_X) \approx 0
+\label{eq:ascm-bias}
+\end{equation}
+if $\hat{m}$ correctly models the relationship between predictor imbalance and outcome imbalance.
+
+\textbf{Doubly Robust Property.} ASCM is consistent if either (a) SC weights achieve exact balance ($\boldsymbol{\Delta}_X = 0$), or (b) the regression function $\hat{m}$ is correctly specified. This double robustness makes ASCM more reliable than standard SC when pre-treatment fit is imperfect.
+
+See Chapter~\ref{ch:generalized-sc} for detailed treatment of ASCM and related hybrid methods.
+
+\subsection*{Factor Models and Matrix Methods}
+
+The connection to factor models (Chapter~\ref{ch:factor}) clarifies the role of low-rank structure in SC identification.
+
+\textbf{Factor Model Perspective.} Under the factor model:
+\begin{equation}
+Y_{it}(0) = \delta_t + \boldsymbol{\lambda}_t' \boldsymbol{\mu}_i + \varepsilon_{it},
+\label{eq:factor-reminder}
+\end{equation}
+SC identification requires $\boldsymbol{\mu}_1 = \sum_j w_j^* \boldsymbol{\mu}_j$. Factor models estimate $\boldsymbol{\mu}_i$ and $\boldsymbol{\lambda}_t$ directly, relaxing the convexity constraint.
+
+\textbf{SC as Constrained Factor Model.} SC is a factor model estimator with two constraints:
+\begin{enumerate}
+\item Convexity: Weights are non-negative and sum to one
+\item Sparsity: Loadings for treated unit are a weighted combination of donor loadings
+\end{enumerate}
+
+\textbf{When Factor Models Dominate.} Factor models may outperform SC when:
+\begin{itemize}
+\item The treated unit is outside the convex hull of donors
+\item The donor pool is small relative to the factor dimension
+\item The noise-to-signal ratio is low (factor structure is strong)
+\end{itemize}
+
+\subsection*{High-Dimensional Settings}
+
+High-dimensional predictors or donors require regularisation or selection methods.
+
+\textbf{Lasso Synthetic Control.} Apply L1 penalties to induce sparsity:
+\begin{equation}
+\hat{\mathbf{w}}^{\text{Lasso}} = \arg\min_{\mathbf{w}} \left\| \mathbf{X}_1 - \mathbf{X}_0 \mathbf{w} \right\|_2^2 + \lambda \|\mathbf{w}\|_1 \quad \text{s.t.} \quad w_j \geq 0.
+\label{eq:lasso-sc}
+\end{equation}
+Lasso selects a small number of donors, improving interpretability and reducing variance.
+
+\textbf{Double Machine Learning.} DML (Chapter~\ref{ch:ml-nuisance}) estimates nuisance functions (for example, conditional means) using flexible ML methods and constructs debiased SC estimators that are robust to nuisance function misspecification.
+
+See Chapter~\ref{ch:high-dim} for comprehensive treatment of high-dimensional methods in panel data.
+
+\subsection*{Continuous and Multivalued Treatments}
+
+When treatment intensity varies (for example, advertising spend, discount depth), dose-response SC estimates effects as a function of dose.
+
+\textbf{Dose-Response Synthetic Control.} For treated unit $i$ receiving dose $d_i$, construct counterfactual outcomes at alternative dose levels:
+\begin{equation}
+\hat{Y}_{it}(d) = \sum_{j: D_j = d} w_{ij}^* Y_{jt},
+\label{eq:dose-response-sc}
+\end{equation}
+where weights are estimated using donors at dose level $d$.
+
+\textbf{Identification.} Identification requires:
+\begin{enumerate}
+\item Donors exist at all relevant dose levels
+\item The factor model holds at each dose level
+\item Convex hull condition holds at each dose level
+\end{enumerate}
+
+See Chapter~\ref{ch:continuous} for generalised propensity scores, dose-response curves, and continuous treatment methods.
+
+\subsection*{Summary}
+
+Extensions and variants broaden SC applicability while preserving its design-based philosophy:
+
+\begin{table}[htbp]
+\centering
+\caption{SC Extensions: Key Features}
+\label{tab:sc-extensions}
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Extension} & \textbf{Addresses} & \textbf{Detailed Treatment} \\
+\midrule
+Multiple units & Aggregation, inference & This section \\
+Staggered adoption & Time-varying treatment & Chapter~\ref{ch:generalized-sc} \\
+Ridge SC & Overfitting, short $T_0$ & Section~\ref{sec:sc-construction} \\
+ASCM & Imperfect fit & Chapter~\ref{ch:generalized-sc} \\
+Factor models & Convex hull failure & Chapter~\ref{ch:factor} \\
+High-dimensional & Many predictors/donors & Chapter~\ref{ch:high-dim} \\
+Dose-response & Continuous treatment & Chapter~\ref{ch:continuous} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The core logic remains: construct a transparent, design-based counterfactual by reweighting control units to match the treated unit's pre-treatment trajectory, assess credibility through diagnostics, and quantify uncertainty through permutation-based or conformal inference.

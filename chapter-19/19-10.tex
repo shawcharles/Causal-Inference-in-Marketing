@@ -1,0 +1,70 @@
+\section{Assumptions and Guardrails}
+\label{sec:assumptions-guardrails}
+
+This section states the core assumptions underpinning data and measurement workflows. These assumptions are implicit in every causal analysis using marketing panel data; violations threaten validity. Each assumption links to diagnostic checks that can detect violations.
+
+\subsection*{Data Stability Assumptions}
+
+\begin{assumption}[Stable unit keys and measurement invariance]
+\label{assump:data-stability}
+Unit identifiers (store, SKU, DMA, user) remain stable across the study window, and outcome or exposure definitions do not change. Platform policy changes and schema migrations are documented and either excluded or modelled explicitly.
+\end{assumption}
+
+\paragraph{Diagnostics.} Check for key migrations or resets (Section~\ref{sec:identity-linking}). Monitor metric definitions for breaks (Section~\ref{sec:platform-metrics}). Compare pre/post summary statistics around suspected break dates.
+
+\begin{assumption}[Documented and stable attribution rules]
+\label{assump:data-attribution}
+Attribution windows, deduplication logic, and conversion definitions are documented and stable across the study window, or breakpoints are flagged and sensitivity is assessed.
+\end{assumption}
+
+\paragraph{Diagnostics.} Maintain policy changelogs (Section~\ref{sec:privacy-governance}). Run placebo tests around break dates. Report sensitivity to alternative attribution windows.
+
+\subsection*{Temporal Ordering Assumptions}
+
+\begin{assumption}[No leakage from post-treatment information]
+\label{assump:data-no-leakage}
+Joins, transformations, and feature engineering use only information available at or before the time of prediction or treatment assignment. Fold structures in cross-validation block on time to prevent training on future data.
+\end{assumption}
+
+\paragraph{Diagnostics.} Audit join keys for temporal ordering (Section~\ref{sec:identity-linking}). Verify that covariates are measured before treatment. Use time-blocked cross-validation (Chapter~\ref{ch:ml-nuisance}).
+
+\subsection*{Interference Assumptions}
+
+\begin{assumption}[Limited interference or explicit exposure mapping]
+\label{assump:data-interference}
+Treatment effects are confined to own unit (SUTVA) or spillovers are modelled via exposure mappings that aggregate neighbour treatments. Cross-device and cross-platform linkage is adequate or sensitivity to linkage failure is reported (Chapter~\ref{ch:spillovers}).
+\end{assumption}
+
+\paragraph{Diagnostics.} Test for spillovers using buffer zones or exposure gradients (Section~\ref{sec:platform-experiments}). Assess linkage rates and conduct sensitivity analysis for linkage failure (Section~\ref{sec:identity-linking}).
+
+\subsection*{Support and Overlap Assumptions}
+
+\begin{assumption}[Adequate support after privacy aggregation]
+\label{assump:data-support}
+Privacy-driven aggregation, consent-based sample restrictions, and trimming preserve sufficient variation in exposure and outcomes for identification. Overlap and balance diagnostics confirm common support as in Chapter~\ref{ch:design-diagnostics}.
+\end{assumption}
+
+\paragraph{Diagnostics.} Check propensity score overlap. Verify that trimming does not eliminate key subgroups. Report effective sample size after consent-based restrictions (Section~\ref{sec:privacy-governance}).
+
+\subsection*{Assumption Verification Summary}
+
+Table~\ref{tab:assumption-diagnostics} maps each assumption to its diagnostic checks and relevant sections.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Data assumptions and diagnostic checks}
+\label{tab:assumption-diagnostics}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Assumption} & \textbf{Diagnostic Check} & \textbf{Reference} \\
+\midrule
+Stable keys (Assump.~\ref{assump:data-stability}) & Key migration audit, break detection & Section~\ref{sec:identity-linking} \\
+Stable attribution (Assump.~\ref{assump:data-attribution}) & Policy changelog, placebo tests & Section~\ref{sec:platform-metrics} \\
+No leakage (Assump.~\ref{assump:data-no-leakage}) & Temporal ordering audit, time-blocked CV & Section~\ref{sec:identity-linking} \\
+Limited interference (Assump.~\ref{assump:data-interference}) & Buffer tests, linkage sensitivity & Chapter~\ref{ch:spillovers} \\
+Adequate support (Assump.~\ref{assump:data-support}) & Overlap diagnostics, effective sample size & Chapter~\ref{ch:design-diagnostics} \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}

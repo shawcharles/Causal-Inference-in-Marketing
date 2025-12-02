@@ -1,0 +1,177 @@
+\section{Computational Methods for Large-Scale Problems}
+\label{sec:computation}
+
+\subsection*{Scalability Challenges}
+
+Large-scale marketing panels pose computational challenges. A panel with 10,000 products, 1,000 stores, and 100 weeks contains one billion cells. Standard matrix completion algorithms (nuclear norm minimisation, SVD) have computational complexity $O(N^2 T)$ or higher, making them infeasible for such large panels.
+
+Memory constraints also bind. Storing a dense matrix of size $10,000 \times 100,000$ (products by store-weeks) requires 8 gigabytes (assuming 8 bytes per entry). Most marketing panels are sparse, but standard algorithms do not exploit sparsity. Sparse storage (e.g., CSR format) reduces memory to $O(|\Omega|)$, where $|\Omega|$ is the number of observed entries.
+
+\subsection*{Efficient Algorithms}
+
+\begin{proposition}[Computational Complexity]\label{prop:complexity}
+The computational complexity of key algorithms is:
+\begin{enumerate}[(i)]
+    \item \textbf{Nuclear norm minimisation via SVD:} $O(\min(N^2 T, N T^2))$ per iteration;
+    \item \textbf{Soft-Impute:} $O(|\Omega| R + (N + T) R^2)$ per iteration;
+    \item \textbf{Alternating Least Squares:} $O(|\Omega| R^2 + (N + T) R^3)$ per iteration;
+    \item \textbf{Stochastic Gradient Descent:} $O(B R)$ per iteration, where $B$ is the mini-batch size;
+    \item \textbf{MCMC (Gibbs sampling):} $O((N + T) R^2)$ per sample.
+\end{enumerate}
+\end{proposition}
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!50!black,title=Algorithm: Soft-Impute for Matrix Completion]
+\textbf{Input:} Observed entries $\{Y_{it}\}_{(i,t) \in \Omega}$, regularisation $\lambda$, rank $R$, tolerance $\epsilon$.
+
+\textbf{Initialise:} Set $\hat{\mathbf{L}}^{(0)} = \mathbf{0}_{N \times T}$.
+
+\textbf{For $k = 1, 2, \ldots$ until convergence:}
+\begin{enumerate}
+\item \textbf{Fill in missing entries:} Create completed matrix
+\[
+\tilde{\mathbf{Y}}^{(k)} = P_\Omega(\mathbf{Y}) + P_{\Omega^c}(\hat{\mathbf{L}}^{(k-1)}),
+\]
+where $P_\Omega$ projects onto observed entries and $P_{\Omega^c}$ onto missing entries.
+
+\item \textbf{Soft-thresholded SVD:} Compute SVD $\tilde{\mathbf{Y}}^{(k)} = \mathbf{U} \boldsymbol{\Sigma} \mathbf{V}^\top$ and apply soft-thresholding:
+\[
+\hat{\mathbf{L}}^{(k)} = \mathbf{U} \, \text{diag}((\sigma_r - \lambda)_+) \, \mathbf{V}^\top,
+\]
+where $(x)_+ = \max(0, x)$.
+
+\item \textbf{Check convergence:} If $\|\hat{\mathbf{L}}^{(k)} - \hat{\mathbf{L}}^{(k-1)}\|_F / \|\hat{\mathbf{L}}^{(k-1)}\|_F < \epsilon$, stop.
+\end{enumerate}
+
+\textbf{Output:} Low-rank estimate $\hat{\mathbf{L}}$.
+\end{tcolorbox}
+
+\paragraph{Why Soft-Impute is efficient.} Soft-Impute exploits sparsity by operating only on observed entries. The SVD step uses truncated (partial) SVD, computing only the top $R$ singular values. Complexity is $O(|\Omega| R + (N + T) R^2)$ per iteration—for sparse panels with $|\Omega| \ll NT$, this is much faster than dense SVD.
+
+\paragraph{Alternating Least Squares (ALS).} ALS alternates between updating loadings (fixing factors) and updating factors (fixing loadings). Each step is a least squares problem:
+\[
+\hat{\boldsymbol{\lambda}}_i = \left( \sum_{t: (i,t) \in \Omega} f_t f_t^\top + \lambda \mathbf{I} \right)^{-1} \sum_{t: (i,t) \in \Omega} Y_{it} f_t.
+\]
+ALS is particularly effective for tensor completion (Section~\ref{sec:tensor-completion}).
+
+\begin{theorem}[Convergence of Alternating Least Squares]\label{thm:als-convergence}
+For CP tensor decomposition via ALS, under mild regularity conditions:
+\begin{enumerate}[(i)]
+    \item The sequence of objective values $\{Q^{(k)}\}$ is non-increasing and converges;
+    \item Every limit point is a stationary point of the objective function;
+    \item With probability $1 - \delta$, convergence to an $\epsilon$-stationary point requires $K = O(\kappa^2 \log(1/\epsilon))$ iterations, where $\kappa$ is the condition number.
+\end{enumerate}
+\end{theorem}
+
+\paragraph{Stochastic Gradient Descent (SGD).} SGD updates using mini-batches of observed entries:
+\[
+\lambda_i^{(k+1)} = \lambda_i^{(k)} - \eta_k \sum_{t \in B_k} (Y_{it} - \lambda_i^{(k)\top} f_t^{(k)}) f_t^{(k)},
+\]
+where $B_k$ is a mini-batch of size $B$. SGD handles datasets that do not fit in memory but converges more slowly than batch methods.
+
+\subsection*{Algorithm Selection Guide}
+
+Table~\ref{tab:algorithm-comparison} compares algorithms across key dimensions.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Algorithm Comparison for Matrix Completion}
+\label{tab:algorithm-comparison}
+\begin{tabularx}{\textwidth}{Y Y Y Y Y}
+\toprule
+\textbf{Algorithm} & \textbf{Complexity} & \textbf{Memory} & \textbf{Sparsity} & \textbf{When to Use} \\
+\midrule
+Nuclear norm & $O(N^2 T)$ & $O(NT)$ & No & Small dense panels \\
+\addlinespace
+Soft-Impute & $O(|\Omega| R)$ & $O(|\Omega|)$ & Yes & Sparse panels \\
+\addlinespace
+ALS & $O(|\Omega| R^2)$ & $O(|\Omega|)$ & Yes & Tensors; known rank \\
+\addlinespace
+SGD & $O(BR)$ & $O(B)$ & Yes & Very large panels \\
+\addlinespace
+MCMC & $O((N+T)R^2)$ & $O(NT)$ & No & Uncertainty needed \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Practical Guidance: Algorithm Selection]
+\textbf{Decision tree for algorithm selection:}
+\begin{enumerate}
+\item \textbf{Need uncertainty quantification?} $\rightarrow$ Use MCMC (Section~\ref{sec:bayesian-matrix}).
+\item \textbf{Panel fits in memory?}
+  \begin{itemize}
+  \item If sparse ($>$90\% missing) $\rightarrow$ Use Soft-Impute.
+  \item If dense with known rank $\rightarrow$ Use ALS.
+  \item If dense, rank unknown $\rightarrow$ Use nuclear norm with cross-validation.
+  \end{itemize}
+\item \textbf{Panel does not fit in memory?} $\rightarrow$ Use SGD with mini-batches.
+\item \textbf{Tensor structure?} $\rightarrow$ Use CP-ALS (Section~\ref{sec:tensor-completion}).
+\end{enumerate}
+\end{tcolorbox}
+
+\subsection*{Approximation Methods}
+
+Sketching and randomised algorithms provide approximate solutions with provable error bounds.
+
+\paragraph{Randomised SVD.} Instead of computing the full SVD, randomised SVD projects the matrix onto a random low-dimensional subspace:
+\begin{enumerate}
+\item Generate random matrix $\boldsymbol{\Omega} \in \mathbb{R}^{T \times (R + p)}$, where $p$ is oversampling.
+\item Compute $\mathbf{Q} = \text{orth}(\mathbf{Y} \boldsymbol{\Omega})$ (orthonormal basis for range).
+\item Compute SVD of $\mathbf{Q}^\top \mathbf{Y}$ and project back.
+\end{enumerate}
+Complexity: $O(NTR)$ vs $O(NT^2)$ for exact SVD. Approximation error is bounded by $\|\mathbf{Y} - \hat{\mathbf{Y}}\|_F \leq (1 + \epsilon) \|\mathbf{Y} - \mathbf{Y}_R\|_F$, where $\mathbf{Y}_R$ is the best rank-$R$ approximation.
+
+\paragraph{Low-rank approximations.} Trade accuracy for speed by solving with smaller rank than the true rank. Error is bounded by the difference between true and approximate rank. Useful when true rank is unknown.
+
+\subsection*{Software and Implementation}
+
+\paragraph{R.}
+\begin{itemize}
+\item \texttt{softImpute}: Soft-impute algorithm. Handles matrices with millions of entries.
+\item \texttt{MatrixCompletion}: Nuclear norm minimisation.
+\item \texttt{tensorBF}: Bayesian tensor factorisation.
+\end{itemize}
+
+\paragraph{Python.}
+\begin{itemize}
+\item \texttt{fancyimpute}: Multiple imputation algorithms including Soft-Impute.
+\item \texttt{scikit-learn}: \texttt{NMF} for matrix factorisation.
+\item \texttt{tensorly}: Tensor decomposition (CP, Tucker).
+\item \texttt{implicit}: ALS for large sparse matrices (recommender systems).
+\end{itemize}
+
+\paragraph{Julia.}
+\begin{itemize}
+\item \texttt{LowRankModels.jl}: Generalised low-rank models.
+\item \texttt{TensorToolbox.jl}: Tensor decomposition.
+\end{itemize}
+
+\subsection*{Benchmarking}
+
+Benchmarking studies compare speed and accuracy of different algorithms. The following results are illustrative; actual performance depends on sparsity, rank, and hardware.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Illustrative Benchmark Results (Intel i7, 32GB RAM)}
+\label{tab:benchmarks}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Algorithm} & \textbf{Sparsity} & \textbf{Time (relative)} & \textbf{MSE (relative)} \\
+\midrule
+Nuclear norm & 1\% & 1.0x (baseline) & 1.0x \\
+\addlinespace
+Soft-Impute & 1\% & 0.1x (10x faster) & 1.05x \\
+\addlinespace
+ALS & 1\% & 0.15x & 1.02x \\
+\addlinespace
+Soft-Impute & 50\% & 0.5x & 1.0x \\
+\addlinespace
+ALS & 50\% & 0.2x & 1.0x \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\textbf{Caveats:} Performance depends heavily on matrix dimensions, sparsity pattern, rank, and implementation. For dense matrices, ALS is typically faster than Soft-Impute. For very sparse matrices ($>$99\% missing), Soft-Impute excels. For tensors, CP-ALS is typically 10--20x faster than Tucker decomposition. Always benchmark on your specific problem.

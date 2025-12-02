@@ -1,0 +1,236 @@
+\section{Estimation Strategies}
+\label{sec:dynamics-estimation}
+
+Estimating dynamic treatment effects requires choosing an estimation strategy that accommodates the data structure (binary or continuous treatment, staggered or common adoption) and provides unbiased estimates under the identification assumptions. This section presents heterogeneity-robust event studies, distributed-lag models, dynamic difference-in-differences, and continuous dose-response methods.
+
+For estimand definitions, see Section~\ref{sec:dynamics-estimands}. For identification assumptions, see Section~\ref{sec:dynamics-identification}. For event-study specification, see Chapter~\ref{ch:event}. For staggered DiD, see Chapter~\ref{ch:did}. For inference, see Chapter~\ref{ch:inference}.
+
+\subsection*{Overview of Estimation Methods}
+
+Table~\ref{tab:dynamics-estimation} summarises the main estimation approaches.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Comparison of Dynamic Estimation Methods}
+\label{tab:dynamics-estimation}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Method} & \textbf{Treatment Type} & \textbf{Key Assumptions} & \textbf{Output} \\
+\midrule
+Heterogeneity-robust event study & Binary, staggered & Parallel trends; no anticipation & Event-time effects $\theta_k$ \\
+\addlinespace
+Callaway-Sant'Anna & Binary, staggered & Parallel trends; no anticipation & $\text{ATT}(g,t)$; aggregated $\theta_k$ \\
+\addlinespace
+Distributed-lag (linear) & Continuous & Strict exogeneity & Impulse response $\beta_s$ \\
+\addlinespace
+Geometric (Koyck) ad-stock & Continuous & Strict exogeneity; geometric decay & $\beta_0$, $\delta$, LRM \\
+\addlinespace
+Almon polynomial & Continuous & Strict exogeneity; polynomial structure & Smooth impulse response \\
+\addlinespace
+LongBet (tree-based) & Binary/continuous & Sequential exogeneity & Heterogeneous $\tau(X_i, t, s)$ \\
+\addlinespace
+Dynamic DiD & Binary, staggered & Parallel trends; no anticipation & $\text{ATT}(g, t)$; $\theta_k$ \\
+\addlinespace
+Continuous dose-response & Continuous & Conditional exogeneity & Dose-response $\mu(w, k)$ \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Practical Guidance: Choosing an Estimation Method]
+\textbf{Binary treatment, common adoption timing:}
+\begin{itemize}
+\item Standard event study with two-way fixed effects.
+\end{itemize}
+
+\textbf{Binary treatment, staggered adoption:}
+\begin{itemize}
+\item Heterogeneity-robust event study (Callaway-Sant'Anna, Sun-Abraham).
+\item Aggregate $\text{ATT}(g,t)$ into event-time effects $\theta_k$.
+\end{itemize}
+
+\textbf{Continuous treatment (advertising GRPs, discount depth):}
+\begin{itemize}
+\item Distributed-lag model with flexible or constrained lags.
+\item Geometric (Koyck) if exponential decay is plausible.
+\item Almon polynomial for smooth, non-monotonic dynamics.
+\end{itemize}
+
+\textbf{Heterogeneous dynamics across units:}
+\begin{itemize}
+\item LongBet for tree-based heterogeneity in decay/lift.
+\item Interact event-time dummies with covariates.
+\end{itemize}
+
+\textbf{Goal is structural parameters (half-life, LRM):}
+\begin{itemize}
+\item Geometric ad-stock for closed-form $\delta$ and LRM.
+\item Fit decay curve to event-study estimates.
+\end{itemize}
+\end{tcolorbox}
+
+\subsection*{Heterogeneity-Robust Event Studies}
+
+Heterogeneity-robust event studies estimate event-time effects $\theta_k$ while accounting for heterogeneity in treatment timing and effects across cohorts. We defer regression specification to Chapter~\ref{ch:event}; here we focus on aggregation and dynamic-specific issues.
+
+Under staggered adoption with heterogeneous effects, two-way fixed effects estimates are biased because already-treated units serve as implicit controls. Heterogeneity-robust methods address this by estimating cohort-time effects $\text{ATT}(g, t)$ separately, then aggregating into $\theta_k$.
+
+\begin{definition}[Cohort-Time Average Treatment Effect]\label{def:att-gt}
+The average treatment effect for cohort $g$ in period $t \geq g$ is:
+\[
+\text{ATT}(g, t) = \mathbb{E}[Y_{it}(\underline{w}^{\text{adopt}}(g)) - Y_{it}(\underline{w}^{\text{never}}) | G_i = g].
+\]
+The sample analogue using never-treated controls is:
+\[
+\widehat{\text{ATT}}(g, t) = \frac{1}{N_g} \sum_{i: G_i = g} Y_{it} - \frac{1}{N_\infty} \sum_{j: G_j = \infty} Y_{jt},
+\]
+where $N_g = |\{i : G_i = g\}|$ and $N_\infty = |\{i : G_i = \infty\}|$.
+\end{definition}
+
+\begin{proposition}[Aggregation from Cohort-Time to Event-Time]\label{prop:aggregation}
+The event-time effect at lag $k$ is obtained by aggregating along the diagonal $t = g + k$:
+\[
+\hat{\theta}_k = \sum_{g \in \mathcal{G}_k} \omega_g^k \, \widehat{\text{ATT}}(g, g+k),
+\]
+where the cohort weights are:
+\begin{enumerate}[(i)]
+    \item \textbf{Cohort-size weights:} $\omega_g^k = N_g / \sum_{g' \in \mathcal{G}_k} N_{g'}$;
+    \item \textbf{Uniform weights:} $\omega_g^k = 1 / |\mathcal{G}_k|$.
+\end{enumerate}
+\end{proposition}
+
+\begin{theorem}[Consistency and Asymptotic Normality]\label{thm:event-consistency}
+Under Assumptions~\ref{ass:no-anticipation}, \ref{ass:pt-event}, and regularity conditions:
+\begin{enumerate}[(i)]
+\item $\hat{\theta}_k \xrightarrow{p} \theta_k$ as $N \to \infty$;
+\item $\sqrt{N}(\hat{\theta}_k - \theta_k) \xrightarrow{d} \mathcal{N}(0, V_k)$.
+\end{enumerate}
+The variance $V_k$ accounts for estimation error in each $\widehat{\text{ATT}}(g, g+k)$ and covariance across cohorts.
+\end{theorem}
+
+\paragraph{Binning and window selection.}
+Support shrinks at extreme lags. Common practice bins distant leads (e.g., $k \leq -5$) and lags (e.g., $k \geq 10$) into single categories. See Chapter~\ref{ch:event}, Sections~\ref{sec:event-specification} and \ref{sec:event-diagnostics} for guidance.
+
+\subsection*{Distributed-Lag Models}
+
+Distributed-lag models estimate impulse responses by regressing outcomes on current and lagged treatment:
+\[
+Y_{it} = \sum_{s=0}^{\bar{L}} \beta_s W_{i,t-s} + \alpha_i + \gamma_t + \varepsilon_{it}.
+\]
+
+\subsubsection*{Geometric (Koyck) Ad-Stock}
+
+\begin{definition}[Geometric (Koyck) Ad-Stock Model]\label{def:adstock}
+The geometric ad-stock model specifies:
+\[
+Y_{it} = \beta_0 W_{it} + \beta_1 A_{it} + \alpha_i + \gamma_t + \varepsilon_{it},
+\]
+where the ad-stock variable accumulates past treatment with geometric decay:
+\[
+A_{it} = \sum_{s=1}^{t-1} \delta^{s-1} W_{i,t-s} = \delta A_{i,t-1} + W_{i,t-1}, \quad A_{i1} = 0.
+\]
+The parameters are: $\beta_0$ (contemporaneous effect), $\beta_1$ (carryover effect per unit of ad-stock), and $\delta \in (0, 1)$ (decay rate). This two-parameter structure allows the contemporaneous effect to differ from the carryover pattern. The implied impulse response is $\beta_s = \beta_0 \mathbf{1}_{s=0} + \beta_1 \delta^{s-1} \mathbf{1}_{s \geq 1}$, and $\text{LRM} = \beta_0 + \beta_1 / (1 - \delta)$. The standard Koyck model is the special case $\beta_0 = \beta_1$.
+\end{definition}
+
+\begin{proposition}[Nonlinear Least Squares Estimation]\label{prop:nls-adstock}
+Estimate $(\beta_0, \beta_1, \delta)$ by grid search over $\delta \in \{0.5, 0.55, \ldots, 0.95\}$ with OLS for $(\beta_0, \beta_1)$ at each $\delta$, minimising the residual sum of squares.
+\end{proposition}
+
+\subsubsection*{Almon Polynomial Lags}
+
+\begin{proposition}[Almon Polynomial Lag Specification]\label{prop:almon}
+The Almon specification constrains the impulse response to lie on a polynomial of degree $q$:
+\[
+\beta_s = \sum_{j=0}^q \gamma_j s^j, \quad s = 0, 1, \ldots, \bar{L}.
+\]
+This imposes smoothness and reduces the number of free parameters from $\bar{L}+1$ to $q+1$.
+\end{proposition}
+
+\subsubsection*{Flexible Finite Lags}
+
+Estimate $\beta_s$ freely for $s = 0, 1, \ldots, \bar{L}$ without functional form. Use regularisation (ridge, lasso) to stabilise estimates; see Chapter~\ref{ch:ml-nuisance} for penalty choices.
+
+\begin{tcolorbox}[colback=orange!5!white,colframe=orange!50!black,title=Practical Guidance: Lag Length Selection]
+\textbf{Too short:} Truncates impulse response; biases LRM downward.
+
+\textbf{Too long:} Includes zero-effect lags; inflates standard errors; overfitting.
+
+\textbf{Selection criteria:}
+\begin{itemize}
+\item \textbf{Information criteria:} AIC/BIC penalise additional lags.
+\item \textbf{Substantive knowledge:} Advertising 6--12 weeks; loyalty 4--8 quarters.
+\item \textbf{Sensitivity analysis:} Report results for multiple $\bar{L}$.
+\item \textbf{Statistical significance:} Include lags until coefficients are consistently insignificant.
+\end{itemize}
+\end{tcolorbox}
+
+\subsection*{Dynamic Panel Models}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Technical Note: Causal Interpretation of Dynamic Panel Models]
+Traditional dynamic panel models include lagged outcomes:
+\[
+Y_{it} = \beta W_{it} + \rho Y_{it-1} + \alpha_i + \gamma_t + \varepsilon_{it}.
+\]
+Estimation uses GMM (Arellano-Bond) with lagged levels as instruments.
+
+\citet{marx2024heterogeneous} show that under sequential exogeneity (Assumption~\ref{ass:seq-exog}), the GMM estimand identifies a weighted average of heterogeneous intertemporal treatment effects. The coefficient $\beta$ captures the contemporaneous effect; $\rho$ captures persistence.
+
+\textbf{Caution:} If state dependence is spurious (driven by serial correlation in unobservables), the DPDM biases treatment effects. See \citet{arellano2003panel} for foundations.
+\end{tcolorbox}
+
+\subsection*{Tree-Based Dynamic Heterogeneity (LongBet)}
+
+Standard distributed-lag models assume constant decay rate $\delta$ across units. \citet{wang2024longbet} introduce \textbf{LongBet}, a tree-based method for heterogeneous dynamic treatment effects.
+
+LongBet decomposes outcomes into prognostic and treatment terms:
+\[
+Y_{it} = \mu(X_i, t) + \tau(X_i, t, s) W_{it} + \varepsilon_{it},
+\]
+where $s$ is time since treatment. Functions $\mu$ and $\tau$ are modelled using Bayesian Additive Regression Trees (BART). Crucially, $\tau(X_i, t, s)$ allows the entire dynamic trajectory to vary with unit characteristics $X_i$.
+
+\paragraph{Advantages for marketing dynamics.} LongBet offers three key advantages. First, it allows heterogeneous decay, discovering for example that premium customers have slower decay than price-sensitive switchers. Second, trees can learn non-monotonic patterns such as wear-in and delayed peaks without prespecifying functional form. Third, the prognostic term (seasonality, trends) is regularised separately from the treatment term, improving estimation of both.
+
+Implementation: \texttt{LongBet} package (R/Python). Visualise average impulse response functions for key subgroups. See Chapter~\ref{ch:ml-nuisance} for tree-based methods.
+
+\subsection*{Dynamic Difference-in-Differences}
+
+Dynamic DiD under staggered adoption aggregates $\text{ATT}(g, t)$ along event time $k = t - g$:
+\[
+\hat{\theta}_k = \frac{\sum_g N_g \widehat{\text{ATT}}(g, g+k)}{\sum_g N_g}.
+\]
+Plot $\hat{\theta}_k$ against $k$ to visualise dynamics. Test pre-trends by checking $\hat{\theta}_k \approx 0$ for $k < 0$. See Chapter~\ref{ch:did} for estimators, weights, and inference; avoid already-treated contamination per that chapter.
+
+\subsection*{Continuous Treatments and Dose-Response}
+
+For continuous treatment intensity (advertising GRPs, discount depth, points earned), the dose-response function $\mu(w, k)$ quantifies outcomes at lag $k$ for intensity $w$:
+\[
+\mu(w, k) = \mathbb{E}[Y_{i,g+k} \mid W_{ig} = w].
+\]
+
+Estimation requires controlling for confounders and dynamic structure. Double machine learning (DML) methods orthogonalise treatment effects against nuisance functions; see Chapter~\ref{ch:ml-nuisance}. Chapter~\ref{ch:continuous} provides comprehensive coverage of continuous treatments including identification, estimation, and diagnostics.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Software for Dynamic Treatment Effect Estimation}
+\label{tab:dynamics-software}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Method} & \textbf{R} & \textbf{Python/Stata} \\
+\midrule
+Callaway-Sant'Anna & \texttt{did} & \texttt{csdid} (Stata) \\
+\addlinespace
+Sun-Abraham & \texttt{fixest} & \texttt{eventstudyinteract} (Stata) \\
+\addlinespace
+Distributed-lag & \texttt{dynlm}, \texttt{plm} & \texttt{linearmodels} (Python) \\
+\addlinespace
+Geometric ad-stock & Custom NLS & Custom NLS \\
+\addlinespace
+LongBet & \texttt{LongBet} & \texttt{longbet} (Python) \\
+\addlinespace
+DML dose-response & \texttt{DoubleML} & \texttt{econml} (Python) \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}

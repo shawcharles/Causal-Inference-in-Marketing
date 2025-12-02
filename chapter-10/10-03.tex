@@ -1,0 +1,229 @@
+\section{Identification}
+\label{sec:dynamics-identification}
+
+Causal identification of dynamic treatment effects requires assumptions about how treated and control units would have evolved in the absence of treatment, about whether agents anticipate future treatments, and about the structure of the comparison group.
+
+This section articulates these assumptions, clarifies the role of parallel trends and no-anticipation, and discusses control group choices under staggered adoption. For estimand definitions, see Section~\ref{sec:dynamics-estimands}. For design checks and support/overlap diagnostics, see Chapter~\ref{ch:design-diagnostics}. For interference and spillovers, see Chapter~\ref{ch:spillovers}.
+
+\subsection*{Summary of Identification Assumptions}
+
+Table~\ref{tab:dynamics-assumptions} summarises the key assumptions for dynamic treatment effects.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Summary of Identification Assumptions}
+\label{tab:dynamics-assumptions}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Assumption} & \textbf{Requirement} & \textbf{When Required} \\
+\midrule
+Parallel trends & Treated and control share time shocks & Event-study, DiD \\
+\addlinespace
+No anticipation & Pre-treatment outcomes unaffected & Event-study, DiD \\
+\addlinespace
+Limited anticipation & Anticipation bounded by $\bar{a}$ periods & If anticipation present \\
+\addlinespace
+Overlap/support & Comparison group exists at each lag & All dynamic methods \\
+\addlinespace
+Strict exogeneity & $\mathbb{E}[\varepsilon_{it} \mid \underline{W}_i, \alpha_i] = 0$ & Distributed-lag, short panels \\
+\addlinespace
+Sequential exogeneity & $\mathbb{E}[\varepsilon_{it} \mid \underline{W}_{it}, \alpha_i] = 0$ & Dynamic panels, Arellano-Bond \\
+\addlinespace
+No carryover & Effects depend only on $W_t$ & Simplifies to static ATT \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{Parallel Trends for Event-Time Effects}
+
+The core identification assumption for event-time effects is parallel trends for dynamic contrasts.
+
+\begin{assumption}[Parallel Trends for Event-Time Identification]\label{ass:pt-event}
+For each cohort $g$ and event time $k$, the average untreated potential outcome for cohort $g$ evolves parallel to the comparison group:
+\[
+\mathbb{E}[Y_{i,g+k}(\underline{w}^{\text{never}}) - Y_{i,g-1}(\underline{w}^{\text{never}}) | G_i = g] = \mathbb{E}[Y_{j,g+k}(\underline{w}^{\text{never}}) - Y_{j,g-1}(\underline{w}^{\text{never}}) | j \in \mathcal{C}_{g,k}],
+\]
+where $\mathcal{C}_{g,k}$ is the comparison group for cohort $g$ at event time $k$ (never-treated or not-yet-treated units).
+\end{assumption}
+
+Parallel trends requires that the treated cohort and comparison group share the same time-varying shocks at each lag. This is testable for pre-treatment periods (see Proposition~\ref{prop:pretrend}).
+
+\subsection*{Control Group Choices}
+
+The comparison group $\mathcal{C}_{g,k}$ must be chosen carefully to avoid contamination and ensure parallel trends.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Comparison of Control Group Choices}
+\label{tab:control-groups}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Control Group} & \textbf{Definition} & \textbf{Advantages} & \textbf{Disadvantages} \\
+\midrule
+Never-treated & Units never adopting treatment & Stable benchmark; no contamination & May be non-representative; sparse if universal adoption \\
+\addlinespace
+Not-yet-treated & Units adopting later than cohort $g$ & Larger pool; more comparable to treated & Moving composition; shrinks at distant lags \\
+\addlinespace
+Clean controls & Early adopters excluded from sample & Avoids contamination from already-treated & May be sparse; selection issues \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Practical Guidance: Control Group Selection]
+\textbf{Primary recommendation:} Use never-treated units when available and comparable.
+
+\textbf{When never-treated sparse:} Use not-yet-treated units, but:
+\begin{itemize}
+\item Restrict event-time window to lags where control pool is stable and large.
+\item Report the number of control units at each lag (support plot).
+\item Bin distant lags when support is sparse.
+\end{itemize}
+
+\textbf{Avoid:} Already-treated units as controls (contaminated by their own treatment effects).
+
+See Chapter~\ref{ch:did} for comprehensive guidance on staggered adoption.
+\end{tcolorbox}
+
+\subsection*{Anticipation Assumptions}
+
+\begin{assumption}[No Anticipation]\label{ass:no-anticipation}
+Treatment does not affect outcomes before adoption:
+\[
+Y_{it}(\underline{w}) = Y_{it}(\underline{w}') \quad \text{for all } \underline{w}, \underline{w}' \text{ such that } w_s = w'_s \text{ for all } s \leq t.
+\]
+Equivalently, potential outcomes at time $t$ depend only on the treatment path up to time $t$:
+\[
+Y_{it}(\underline{w}) = Y_{it}(\underline{w}^t),
+\]
+where $\underline{w}^t = (w_1, \ldots, w_t)$.
+\end{assumption}
+
+No anticipation ensures that pre-treatment outcomes provide unbiased estimates of the treated group's untreated trajectory.
+
+\begin{assumption}[Limited Anticipation]\label{ass:limited-anticipation}
+Treatment can be anticipated up to $\bar{a}$ periods in advance:
+\[
+Y_{it}(\underline{w}) = Y_{it}(\underline{w}') \quad \text{for all } \underline{w}, \underline{w}' \text{ such that } w_s = w'_s \text{ for all } s \leq t + \bar{a}.
+\]
+For adoption at $g$, anticipatory effects may occur in periods $g - \bar{a}, \ldots, g - 1$, but outcomes in periods $t < g - \bar{a}$ are unaffected.
+\end{assumption}
+
+Limited anticipation relaxes no-anticipation by allowing a finite anticipation window. See Section~\ref{sec:dynamics-anticipation} for estimation under anticipation.
+
+\subsection*{Overlap and Support}
+
+\begin{assumption}[Overlap and Support in Event Time]
+\label{ass:dynamics-overlap}
+For each event time $k$, there exist treated units and comparison units such that:
+\[
+0 < P(G_i = g \mid X_i) < 1 \quad \text{and} \quad |\mathcal{C}_{g,k}| \geq M,
+\]
+where $X_i$ are unit characteristics, and $M$ is a minimum comparison group size (e.g., $M = 10$).
+\end{assumption}
+
+Overlap ensures comparability; support ensures stable estimates. Violations occur when treatment adoption is deterministic or when the comparison pool shrinks at distant lags.
+
+\paragraph{Diagnostics.} Plot the number of treated and control units at each lag (the support plot). Flag lags where support is sparse. Bin distant lags (e.g., pool lags 10--12 into a single bin) when necessary. See Chapter~\ref{ch:design-diagnostics}.
+
+\subsection*{Carryover and Exogeneity}
+
+\begin{assumption}[No Carryover]\label{ass:no-carryover}
+Treatment effects depend only on contemporaneous treatment:
+\[
+Y_{it}(\underline{w}) = Y_{it}(w_t) \quad \text{for all } \underline{w} \in \{0,1\}^T.
+\]
+This reduces the potential outcomes to $Y_{it}(0)$ and $Y_{it}(1)$, with treatment effect $\tau_{it} = Y_{it}(1) - Y_{it}(0)$.
+\end{assumption}
+
+No carryover is rarely satisfied in marketing (effects persist over time). When carryover is present, use distributed-lag or event-study methods that explicitly model dynamics.
+
+\begin{assumption}[Strict Exogeneity]\label{ass:strict-exog}
+In the distributed-lag model, treatment is strictly exogenous:
+\[
+\mathbb{E}[\varepsilon_{it} | W_{i1}, \ldots, W_{iT}, \alpha_i] = 0 \quad \text{for all } t = 1, \ldots, T.
+\]
+This requires that idiosyncratic shocks $\varepsilon_{it}$ are uncorrelated with treatment in all periods, ruling out feedback.
+\end{assumption}
+
+\begin{assumption}[Sequential Exogeneity]\label{ass:seq-exog}
+Treatment is sequentially exogenous (predetermined):
+\[
+\mathbb{E}[\varepsilon_{it} | W_{i1}, \ldots, W_{it}, \alpha_i] = 0 \quad \text{for all } t = 1, \ldots, T.
+\]
+This allows current outcomes to affect future treatment but requires that current shocks are uncorrelated with current and past treatment.
+\end{assumption}
+
+\begin{remark}[Hierarchy of Exogeneity Assumptions]
+The exogeneity assumptions form a hierarchy (strongest to weakest):
+\begin{enumerate}[(i)]
+    \item \textbf{Random assignment:} $W_{it} \perp \!\!\! \perp (Y_{i1}(0), \ldots, Y_{iT}(1), \alpha_i)$;
+    \item \textbf{Strict exogeneity:} $\mathbb{E}[\varepsilon_{it} | \underline{W}_i, \alpha_i] = 0$ for all $t$;
+    \item \textbf{Sequential exogeneity:} $\mathbb{E}[\varepsilon_{it} | \underline{W}_{it}, \alpha_i] = 0$ for all $t$;
+    \item \textbf{Contemporaneous exogeneity:} $\mathbb{E}[\varepsilon_{it} | W_{it}, \alpha_i] = 0$ for all $t$.
+\end{enumerate}
+Following \citet{arellano2003panel} and \citet{chamberlain1984panel}, strict exogeneity is required for within-group estimation in short panels; sequential exogeneity permits dynamic specifications but requires instrumental variables (Arellano-Bond).
+\end{remark}
+
+\subsection*{Relation to Factor Designs}
+
+Parallel trends requires that treated and control groups share the same time-varying shocks. This fails when groups differ in sensitivity to common shocks (e.g., large markets respond more to recessions). Factor models (Chapter~\ref{ch:factor}) relax parallel trends by allowing heterogeneous exposure, estimating unit-specific loadings. Factor-based identification can accommodate dynamics by imputing counterfactuals that evolve over lags.
+
+\subsection*{Identification Results}
+
+\begin{theorem}[Identification of Event-Time Effects]\label{thm:event-identification}
+Under Assumptions~\ref{ass:no-anticipation} and~\ref{ass:pt-event}, the cohort-specific event-time effect $\theta_k(g)$ is identified by:
+\[
+\theta_k(g) = \left(\mathbb{E}[Y_{i,g+k} | G_i = g] - \mathbb{E}[Y_{i,g-1} | G_i = g]\right) - \left(\mathbb{E}[Y_{j,g+k} | j \in \mathcal{C}_{g,k}] - \mathbb{E}[Y_{j,g-1} | j \in \mathcal{C}_{g,k}]\right).
+\]
+The aggregate event-time effect $\theta_k$ is identified by aggregating across cohorts:
+\[
+\theta_k = \sum_{g \in \mathcal{G}_k} \omega_g^k \, \theta_k(g).
+\]
+\end{theorem}
+
+\begin{proposition}[Pre-Trend Test]\label{prop:pretrend}
+Under Assumption~\ref{ass:no-anticipation}, the event-time effects at negative lags satisfy:
+\[
+\theta_k(g) = 0 \quad \text{for all } k < 0.
+\]
+This provides a testable implication: if $\hat{\theta}_k \neq 0$ for $k < 0$, then either:
+\begin{enumerate}[(i)]
+    \item Anticipation is present (Assumption~\ref{ass:no-anticipation} fails), or
+    \item Parallel trends fails (Assumption~\ref{ass:pt-event} fails).
+\end{enumerate}
+A joint test of $H_0: \theta_{-K} = \cdots = \theta_{-1} = 0$ provides the pre-trend diagnostic.
+\end{proposition}
+
+\begin{theorem}[Identification of Impulse Response]\label{thm:dl-identification}
+Under Assumption~\ref{ass:strict-exog} and the rank condition:
+\[
+\text{rank}\left(\mathbb{E}[\tilde{\mathbf{W}}_i \tilde{\mathbf{W}}_i']\right) = \bar{L} + 1,
+\]
+where $\tilde{\mathbf{W}}_i$ is the matrix of demeaned treatment lags, the impulse response coefficients $\{\beta_s\}_{s=0}^{\bar{L}}$ are identified and consistently estimated by within-group OLS.
+\end{theorem}
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!50!black,title=Summary: Which Assumptions When?]
+\textbf{For event-study designs:}
+\begin{itemize}
+\item Parallel trends (Assumption~\ref{ass:pt-event}) + No anticipation (Assumption~\ref{ass:no-anticipation}).
+\item Test pre-trends (Proposition~\ref{prop:pretrend}).
+\item Ensure overlap/support at each lag (Assumption~\ref{ass:dynamics-overlap}).
+\end{itemize}
+
+\textbf{For distributed-lag models:}
+\begin{itemize}
+\item Strict exogeneity (Assumption~\ref{ass:strict-exog}) for within-group estimation.
+\item Sequential exogeneity (Assumption~\ref{ass:seq-exog}) if lagged dependent variable present.
+\item Rank condition for identification.
+\end{itemize}
+
+\textbf{When parallel trends implausible:}
+\begin{itemize}
+\item Use factor models (Chapter~\ref{ch:factor}) with heterogeneous loadings.
+\item Use synthetic control (Chapter~\ref{ch:sc}) for data-driven weighting.
+\end{itemize}
+\end{tcolorbox}

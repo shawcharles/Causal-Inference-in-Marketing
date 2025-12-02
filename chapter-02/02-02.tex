@@ -1,0 +1,77 @@
+\section{Panel Data Structures and Indexing}
+\label{sec:data-structures}
+
+The shape of your panel --- how many units, how many periods --- determines which asymptotic approximations apply and which estimators are feasible. A method that works beautifully with 500 stores over 12 quarters may fail entirely with 5 markets over 100 weeks. This section classifies the data configurations you will encounter and clarifies the dimensions and sparsity patterns that drive method selection.
+
+\subsection{Proper Panels and Data Shapes}
+
+A proper panel tracks the same $N$ units over $T$ periods. We collect outcomes and treatment assignments into $N \times T$ matrices $\mathbf{Y}$ and $\mathbf{W}$:
+\[
+\mathbf{Y} = \begin{pmatrix}
+Y_{11} & \dots & Y_{1T} \\
+\vdots & \ddots & \vdots \\
+Y_{N1} & \dots & Y_{NT}
+\end{pmatrix}, \quad
+\mathbf{W} = \begin{pmatrix}
+W_{11} & \dots & W_{1T} \\
+\vdots & \ddots & \vdots \\
+W_{N1} & \dots & W_{NT}
+\end{pmatrix}.
+\]
+The relative magnitude of $N$ and $T$ determines the ``shape'' of the data frame, which in turn dictates the appropriate asymptotic approximations and estimation strategies.
+
+\subsubsection*{Thin Panels ($N \gg T$)}
+Thin panels are the classic setting in microeconometrics, with many units observed over few periods. In marketing, think of customer purchase histories: thousands of customers tracked over a handful of quarters, or hundreds of stores observed across a dozen months. The loyalty programme example from Chapter 1 --- 500 stores over 12 quarters --- falls squarely in this regime.
+\[
+\mathbf{Y}^{\text{thin}} = \begin{pmatrix}
+Y_{11} & Y_{12} & Y_{13} \\
+Y_{21} & Y_{22} & Y_{23} \\
+\vdots & \vdots & \vdots \\
+Y_{N1} & Y_{N2} & Y_{N3}
+\end{pmatrix} \quad (N \gg T).
+\]
+Asymptotics rely on $N \to \infty$ with fixed $T$. We can estimate unit fixed effects consistently, but the incidental parameter problem prevents consistent estimation of nonlinear models without bias correction. Random effects approaches work well here if the strict exogeneity and uncorrelatedness assumptions hold.
+
+\subsubsection*{Fat Panels ($N \ll T$)}
+Fat panels arise when we observe a few aggregate units over many periods. The TV advertising example from Chapter 1 --- 50 DMAs tracked over 100 weeks --- illustrates this shape. Brand-level sales data, where a handful of brands are tracked weekly for years, also falls here.
+\[
+\mathbf{Y}^{\text{fat}} = \begin{pmatrix}
+Y_{11} & Y_{12} & \dots & Y_{1T} \\
+Y_{21} & Y_{22} & \dots & Y_{2T} \\
+Y_{31} & Y_{32} & \dots & Y_{3T}
+\end{pmatrix} \quad (N \ll T).
+\]
+This setting resembles time-series analysis. Asymptotics rely on $T \to \infty$. We must account for serial correlation through HAC estimators, and inference requires care. Synthetic control methods (Chapter~\ref{ch:sc}) often operate in this regime.
+
+\subsubsection*{Square Panels ($N \approx T$)}
+Square panels have comparable unit and time dimensions. The platform entry example from Chapter 1 --- 50 cities over 24 months --- approaches this shape. Scanner data from 50 stores tracked over 52 weeks is another common instance.
+\[
+\mathbf{Y}^{\text{square}} = \begin{pmatrix}
+Y_{11} & \dots & Y_{1T} \\
+\vdots & \ddots & \vdots \\
+Y_{N1} & \dots & Y_{NT}
+\end{pmatrix} \quad (N \approx T).
+\]
+Inference here is challenging. Neither dimension dominates, so neither pure cross-sectional nor pure time-series asymptotics apply cleanly. Methods like matrix completion (Chapter~\ref{ch:factor}) and synthetic difference-in-differences (Chapter~\ref{ch:generalized-sc}) exploit the joint structure of $N$ and $T$, treating the panel as a matrix to be decomposed rather than a collection of independent units or time series.
+
+\subsection{Other Data Configurations}
+
+Not all marketing data arrive as proper panels. A second configuration arises when we observe different units in each period but can aggregate them into groups. Survey data, for instance, may sample different respondents each wave, but we can group respondents by demographic cell or geographic region. We then construct a panel of group-period means $\bar{Y}_{gt}$, where $g \in \{1, \dots, G\}$ indexes groups. The effective sample size becomes $G \times T$, not the number of individual observations. This grouped repeated cross-section structure requires care: within-group heterogeneity is averaged away, and inference must account for the estimation error in group means.
+
+A third configuration arises when observations are indexed by two dimensions with no natural time ordering. Customer-product matrices are a canonical example: rows index customers, columns index products, and entries record purchase quantities or ratings. This row-column exchangeable structure lacks the temporal ordering that defines a panel, so concepts like ``parallel trends'' must be reinterpreted as structural stability across dimensions.
+\[
+\mathbf{Y}^{\text{rc}} = \begin{pmatrix}
+Y_{11} & \dots & Y_{1J} \\
+\vdots & \ddots & \vdots \\
+Y_{I1} & \dots & Y_{IJ}
+\end{pmatrix}.
+\]
+Low-rank factor models (Chapter~\ref{ch:factor}) often provide the right framework for such data, decomposing the matrix into latent customer preferences and product attributes.
+
+\subsection{Indexing Staggered Adoption}
+
+When treatment adoption is staggered, we need notation that distinguishes calendar time from time relative to adoption. We define $G_i \in \{1, \dots, T\} \cup \{\infty\}$ as the adoption time for unit $i$ --- the first period in which unit $i$ receives treatment. Units that never adopt during the sample window have $G_i = \infty$ by convention.
+
+Event time measures periods relative to adoption: $k = t - G_i$. When $k = 0$, the unit has just adopted. When $k < 0$, the unit has not yet adopted. When $k > 0$, the unit has been treated for $k$ periods. This mapping transforms the calendar-time treatment matrix $\mathbf{W}$ into an event-time structure where all adopters are aligned at their adoption moment, regardless of when that moment occurred in calendar time.
+
+Consider the loyalty programme example. Some stores adopt in quarter 3, others in quarter 5, others in quarter 8. In calendar time, their treatment indicators turn on at different columns of the matrix. In event time, we align them so that $k = 0$ corresponds to the adoption quarter for each store, allowing us to trace out how effects evolve in the periods before and after adoption. This event-time indexing is essential for event-study designs (Chapter~\ref{ch:event}) and for understanding dynamic treatment effects (Chapter~\ref{ch:dynamics}).

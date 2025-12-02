@@ -1,0 +1,90 @@
+\section{The Challenge of Interference in Marketing}
+\label{sec:spillovers-intro}
+
+Marketing interventions rarely affect only the targeted units. When one customer receives a promotion, others may hear about it through word-of-mouth. When one firm advertises, competitors respond. When one store in a chain runs a sale, nearby stores experience traffic changes. These interconnections create interference, one of the most pervasive violations of standard causal inference assumptions in marketing settings.
+
+\subsection*{Why Interference Matters}
+
+Three examples illustrate the practical stakes:
+
+\paragraph{\index{word-of-mouth}Word-of-mouth spillovers.} A firm targets 10\% of customers with a referral incentive. Treated customers tell untreated friends about the product, generating sales among the "control" group. Ignoring this spillover underestimates the total treatment effect and contaminates the control group.
+
+\paragraph{Competitive response.} A retailer launches a price promotion. Competitors observe and match the price cut. The treated firm's sales lift is attenuated by competitive response, and competitors' sales become endogenous to the focal firm's treatment.
+
+\paragraph{\index{geo-experiment}Geographic spillovers.} A media campaign runs in 30 DMAs but not in 20 control DMAs. Consumers in control DMAs see the campaign when travelling or on social media. The control group is contaminated, biasing treatment effect estimates toward zero.
+
+These examples share a common structure: the outcome for one unit depends on the treatment status of other units. Standard methods that ignore this dependence produce biased estimates.
+
+\subsection*{The SUTVA Assumption}
+\label{sec:sutva-interference}
+
+A foundational assumption in much of the causal inference literature is the Stable Unit Treatment Value Assumption (SUTVA), introduced by \citet{rubin1980randomization}. We define it formally to identify precisely how it fails under interference.
+
+\begin{definition}[\index{SUTVA}Stable Unit Treatment Value Assumption]\label{def:sutva}
+SUTVA comprises two components:
+\begin{enumerate}[(i)]
+    \item \textbf{No interference:} The potential outcome for unit $i$ depends only on its own treatment:
+    \[
+    Y_{it}(\mathbf{w}) = Y_{it}(\mathbf{w}') \quad \text{whenever } w_i = w'_i,
+    \]
+    for all treatment vectors $\mathbf{w}, \mathbf{w}' \in \{0,1\}^N$.
+    \item \textbf{No hidden treatments (consistency):} There is only one version of each treatment level. If unit $i$ receives treatment $W_{it} = w$, then the observed outcome equals the potential outcome under that treatment:
+    \[
+    Y_{it} = Y_{it}(w) \quad \text{when } W_{it} = w.
+    \]
+\end{enumerate}
+Under SUTVA, potential outcomes reduce to $Y_{it}(0)$ and $Y_{it}(1)$, yielding two potential outcomes per unit-period rather than $2^N$.
+\end{definition}
+
+In marketing, SUTVA is frequently and spectacularly violated. The examples above illustrate why: customers talk to each other, firms compete, and geographic markets overlap.
+
+\subsection*{Potential Outcomes Under Interference}
+
+When SUTVA fails, we must index potential outcomes by the entire treatment vector.
+
+\begin{definition}[Potential Outcomes Under Interference]\label{def:po-interference}
+When SUTVA fails, the potential outcome for unit $i$ at time $t$ depends on the entire treatment vector:
+\[
+Y_{it}: \{0,1\}^N \to \mathbb{R}, \quad \mathbf{w} \mapsto Y_{it}(\mathbf{w}).
+\]
+The observed outcome satisfies:
+\[
+Y_{it} = Y_{it}(\mathbf{W}_t),
+\]
+where $\mathbf{W}_t = (W_{1t}, \ldots, W_{Nt})'$ is the realised treatment vector. The set of potential outcomes comprises $2^N$ elements. This combinatorial explosion motivates dimensionality reduction through exposure mappings (Section~\ref{sec:exposure-mappings}).
+\end{definition}
+
+\subsection*{Chapter Overview}
+
+Table~\ref{tab:spillovers-roadmap} provides the roadmap for this chapter.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Chapter Roadmap: Interference and Spillovers}
+\label{tab:spillovers-roadmap}
+\begin{tabularx}{\textwidth}{Y Y}
+\toprule
+\textbf{Section} & \textbf{Topic} \\
+\midrule
+\ref{sec:spillover-types} & Taxonomy of spillover mechanisms in marketing \\
+\addlinespace
+\ref{sec:exposure-mappings} & Exposure mappings and potential outcomes \\
+\addlinespace
+\ref{sec:partial-interference} & Partial interference framework \\
+\addlinespace
+\ref{sec:estimating-spillovers} & Estimation of direct and spillover effects \\
+\addlinespace
+\ref{sec:competition-saturation} & Competitive reactions and saturation effects \\
+\addlinespace
+\ref{sec:spillovers-diagnostics} & Diagnostic procedures \\
+\addlinespace
+\ref{sec:spillovers-applications} & Marketing applications \\
+\addlinespace
+\ref{sec:spillovers-conclusion} & Conclusions and workflow \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+For comparison with standard DiD methods that assume no interference, see Chapter~\ref{ch:did}. For dynamic effects under SUTVA, see Chapter~\ref{ch:dynamics}.

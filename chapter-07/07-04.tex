@@ -1,0 +1,74 @@
+\section{Synthetic Difference-in-Differences (SDID)}
+\label{sec:hybrid-sdid}
+
+\subsection*{The Problem That Motivates Time Weights}
+
+Return to the brand launching campaigns in twenty markets over three years. Markets adopt treatment at different times—some in Q1 2022, others in Q3 2022, still others in Q2 2023. Standard synthetic control matches each treated market to a weighted combination of controls based on pre-treatment outcomes. But the pre-treatment periods differ across cohorts. Early adopters have long pre-treatment histories; late adopters have short ones. Worse, the pre-treatment periods overlap with different seasonal patterns, economic conditions, and competitive environments.
+
+Standard synthetic control treats all pre-treatment periods equally. If the treated market experienced an unusual spike in month eight due to a local event, that spike receives as much weight in the matching objective as any other month. The optimisation finds donors that also spiked in month eight—but perhaps for unrelated reasons. The match reflects coincidence, not structural similarity.
+
+SDID addresses this by weighting time periods as well as units. Periods with unusual shocks receive lower weight. The matching objective focuses on periods where treated and control markets behave more comparably. The result is a synthetic control that reflects stable patterns rather than idiosyncratic fluctuations.
+
+\subsection*{The Estimator}
+
+Let $Y_{it}$ denote outcomes for unit $i$ in period $t$. SDID constructs two sets of weights: unit weights $\hat{w}_j$ for control units $j$ and time weights $\hat{\lambda}_t$ for pre-treatment periods $t$. Both satisfy convexity constraints: non-negative weights summing to one. The optimisation finds weights that minimise the weighted discrepancy between treated and control groups in the weighted pre-treatment period:
+\[
+\min_{w, \lambda} \sum_{i \in \mathcal{I}} \sum_{t \in \mathcal{T}_{\text{pre}}} \left( Y_{it} - \sum_{j \in \mathcal{J}} w_j Y_{jt} \right)^2 \lambda_t + \eta_w \| w \|^2 + \eta_\lambda \| \lambda \|^2,
+\]
+where $\eta_w$ and $\eta_\lambda$ are regularisation penalties that prevent overfitting. The treatment effect estimate takes a difference-in-differences form:
+\[
+\hat{\tau}^{\text{SDID}} = \underbrace{\left( \bar{Y}_{\text{treated,post}} - \sum_{j} \hat{w}_j \bar{Y}_{j,\text{post}} \right)}_{\text{post-treatment difference}} - \underbrace{\left( \sum_t \hat{\lambda}_t \bar{Y}_{\text{treated},t} - \sum_{j} \hat{w}_j \sum_t \hat{\lambda}_t Y_{jt} \right)}_{\text{weighted pre-treatment difference}}.
+\]
+The first term compares treated units to the weighted synthetic control in the post-treatment period. The second term subtracts the baseline difference in the weighted pre-treatment period. This double differencing removes both unit-specific levels and time-specific shocks, provided the weights achieve adequate balance.
+
+Figure~\ref{fig:hybrid-sdid} illustrates the structure. The unit weights pull the synthetic control toward donors that resemble the treated markets. The time weights down-weight periods with unusual shocks. The combination produces a counterfactual that tracks the treated markets more reliably than either SC or DiD alone.
+
+\subsection*{What SDID Does Differently}
+
+The innovation is the time weights. Standard synthetic control assigns equal importance to every pre-treatment period, asking: which donors match the treated unit's entire trajectory? If the trajectory includes idiosyncratic shocks, the match may be poor. Difference-in-differences assigns equal weight to all units and all periods, relying on fixed effects to absorb level differences. If units differ in their exposure to time-varying shocks, the parallel trends assumption fails.
+
+SDID relaxes both constraints. The unit weights allow the estimator to focus on control units that resemble the treated unit. The time weights allow the estimator to focus on periods where the treated and control units are most comparable. This double flexibility is valuable when treated units face different seasonal patterns, when pre-treatment periods include unusual events, or when parallel trends holds only after reweighting.
+
+Apply this to the campaign launch. The treated markets include both Sun Belt cities with strong summer sales and Midwestern cities with strong holiday sales. Standard SC struggles because no single weighting scheme fits both patterns. SDID estimates time weights that down-weight the summer months when Sun Belt and Midwest diverge, focusing the comparison on spring and autumn when patterns converge. The result is a synthetic control that captures the common trend without being distorted by seasonal heterogeneity.
+
+\subsection*{Identification}
+
+SDID requires weighted parallel trends: after applying the estimated unit and time weights, treated and control units must follow parallel trajectories in the absence of treatment. Formally, for post-treatment period $t$:
+\[
+\mathbb{E}\left[ Y_{1t}(0) - \sum_{s} \hat{\lambda}_s Y_{1s}(0) \right] = \mathbb{E}\left[ \sum_{j} \hat{w}_j \left( Y_{jt}(0) - \sum_{s} \hat{\lambda}_s Y_{js}(0) \right) \right].
+\]
+This says that the treated unit's deviation from its weighted pre-treatment mean would equal the synthetic control's deviation from its weighted pre-treatment mean, had treatment not occurred.
+
+Is this assumption weaker than standard parallel trends? It depends. Unweighted parallel trends requires that treated and control groups follow the same trajectory on average, without adjustment. Weighted parallel trends requires this only after reweighting—which can accommodate differential exposure to shocks if the weights successfully balance that exposure. But the weights are estimated, not fixed. If the optimisation finds weights that balance pre-treatment outcomes by coincidence rather than by capturing true structural similarity, the assumption may fail out of sample.
+
+The honest answer: SDID relaxes the assumption in one dimension (allowing reweighting) while adding dependence in another (relying on estimated weights). Whether this trade-off is favourable depends on the data structure. When the donor pool is large and the pre-treatment period long, weights can be estimated reliably, and SDID offers genuine flexibility. When the donor pool is small or the pre-treatment period short, weight estimation is noisy, and the relaxation may not help.
+
+\subsection*{Implementation}
+
+Implementing SDID requires specifying the donor pool, the pre-treatment window, the post-treatment window, and the regularisation parameters. For the campaign launch with twenty markets over three years, the donor pool includes all markets that never received the campaign or that have not yet received it (for staggered designs). The pre-treatment window should include enough periods to identify stable weights—typically at least eight to twelve months for marketing applications. The post-treatment window spans the period over which effects are of interest.
+
+The regularisation parameters $\eta_w$ and $\eta_\lambda$ control the bias-variance trade-off. Larger values shrink weights toward uniform, improving stability but reducing the estimator's ability to exploit heterogeneity. Cross-validation provides a principled choice: split the pre-treatment period, estimate weights on the training set, and select the $\eta$ values that minimise prediction error on the validation set.
+
+For the campaign launch, cross-validation selects $\eta_w = 0.1$ and $\eta_\lambda = 0.05$. The unit weights concentrate on six markets with similar demographic profiles. The time weights down-weight the holiday quarter, when campaign markets experienced promotional activity unrelated to the treatment. The resulting estimate shows a 4.2 per cent lift in sales, with a standard error of 1.1 per cent—tighter than the DiD estimate (5.8 per cent with SE 2.3 per cent) and more plausible than the SC estimate (2.1 per cent with poor pre-treatment fit).
+
+\subsection*{Connection to Factor Models}
+
+SDID can be understood through the factor model lens developed in Chapter~\ref{ch:factor}. If untreated potential outcomes decompose into unit loadings on time-varying factors, the unit weights in SDID estimate the treated unit's loadings as a convex combination of donor loadings. The time weights estimate the importance of each factor in the pre-treatment period. Together, the weights approximate a low-rank structure in the outcome matrix.
+
+This perspective clarifies when SDID works. If the outcome matrix is well-approximated by a low-rank factor structure, SDID's double weighting captures the essential variation, and the counterfactual is credible. If the outcome matrix is high-rank—many independent sources of variation, weak factor structure—the weights cannot summarise the data effectively, and SDID may perform poorly. Pre-treatment fit provides a diagnostic: tight fit suggests the factor structure is well-captured; loose fit suggests otherwise.
+
+\subsection*{Costs and Limitations}
+
+SDID is not a free lunch. The estimator is more complex than SC or DiD, requiring two sets of weights and two regularisation parameters. Interpretability suffers: explaining what a time-weighted, unit-weighted double difference means is harder than explaining a simple before-after comparison.
+
+The dependence on estimated weights creates fragility. If the pre-treatment period is short, weights are estimated imprecisely, and the \"weighted parallel trends\" assumption becomes a hope rather than a testable condition. If the donor pool is small, the unit weights are forced toward uniform, and SDID degenerates toward DiD.
+
+Staggered adoption adds further complexity. Each cohort requires separate weights, and aggregation to an overall treatment effect requires weighting across cohorts. The aggregation scheme matters: population-weighted averages, event-time averages, and variance-weighted averages can give different answers. Chapter~\ref{ch:did} develops aggregation in detail; the point here is that SDID does not eliminate the complications of staggered designs, only reframes them.
+
+\subsection*{When to Use SDID}
+
+Use SDID when you have a moderate number of treated units, a donor pool large enough to estimate meaningful unit weights, and a pre-treatment period long enough to estimate meaningful time weights. The method is particularly valuable when treated and control units face different seasonal patterns or when pre-treatment periods include idiosyncratic shocks. In these settings, the time weights accommodate heterogeneity that SC cannot handle.
+
+Do not use SDID as a default. If the donor pool is small (fewer than ten control units), unit weights will be noisy. If the pre-treatment period is short (fewer than eight periods), time weights will be noisy. In these settings, simpler methods—difference-in-differences with careful covariate adjustment, or augmented SC—may perform better.
+
+A robust workflow estimates SDID alongside SC and DiD. If all three agree, conclusions are robust. If they diverge, diagnose the source: Does SC show poor pre-treatment fit? Does DiD show parallel trends violations? Does SDID produce implausible weights? Report the comparison. Method choice is uncertainty, and honest reporting conveys that uncertainty rather than hiding it behind a single estimate.

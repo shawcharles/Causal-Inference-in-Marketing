@@ -1,0 +1,50 @@
+\section{Dose--Response Estimands}
+\label{sec:continuous-estimands}
+
+When treatment is continuous rather than binary, the estimand shifts from a single average treatment effect to a function describing how outcomes vary with treatment intensity. With a continuous treatment, our primary interest is often the average dose-response function (ADRF).
+
+\begin{definition}[Average Dose-Response Function]\label{def:adrf}
+For continuous treatment $D_{it} \in \mathcal{D} \subseteq \mathbb{R}$, the Average Dose-Response Function (ADRF) is:
+\[
+\mu(d) = \mathbb{E}[Y_{it}(d)], \quad d \in \mathcal{D},
+\]
+where $Y_{it}(d)$ is the potential outcome under dose $d$. The ADRF maps treatment intensities to average outcomes across the population.
+\end{definition}
+
+\begin{definition}[Conditional Dose-Response Function]\label{def:cdrf}
+The Conditional Dose-Response Function (CDRF) conditions on covariates $X$:
+\[
+\mu(d \mid x) = \mathbb{E}[Y_{it}(d) \mid X_{it} = x], \quad d \in \mathcal{D}, \quad x \in \mathcal{X}.
+\]
+The CDRF enables heterogeneity analysis and targeted policy design. The ADRF is recovered by integration: $\mu(d) = \mathbb{E}_X[\mu(d \mid X)]$.
+\end{definition}
+
+\begin{definition}[Marginal and Average Partial Effects]\label{def:marginal-effects}
+The marginal treatment effect at dose $d$ is:
+\[
+\tau(d) = \frac{\partial \mu(d)}{\partial d},
+\]
+quantifying the incremental effect of increasing treatment intensity. The average partial effect (APE) over a dose range $[d_0, d_1]$ is:
+\[
+\text{APE}(d_0, d_1) = \frac{\mu(d_1) - \mu(d_0)}{d_1 - d_0} = \frac{1}{d_1 - d_0} \int_{d_0}^{d_1} \tau(d) \, dd.
+\]
+The conditional marginal effect is $\tau(d \mid x) = \partial \mu(d \mid x) / \partial d$.
+
+In dynamic settings, this generalises to the \textbf{Average Causal Response (ACR)}, discussed in Section~\ref{sec:continuous-dynamics}.
+\end{definition}
+
+\begin{definition}[Treatment Effect Contrasts]\label{def:dose-contrasts}
+For doses $d_1, d_0 \in \mathcal{D}$, the average treatment effect of dose $d_1$ versus $d_0$ is:
+\[
+\text{ATE}(d_1, d_0) = \mu(d_1) - \mu(d_0) = \mathbb{E}[Y_{it}(d_1) - Y_{it}(d_0)].
+\]
+For policy optimisation, the optimal dose maximises welfare:
+\[
+d^* = \arg\max_{d \in \mathcal{D}} \left\{ \mu(d) - c(d) \right\},
+\]
+where $c(d)$ is the cost of dose $d$. At the optimum, $\tau(d^*) = c'(d^*)$.
+\end{definition}
+
+\subsection*{Connecting to Event Studies and Dynamics}
+
+Event-time summaries and dynamic multipliers are natural for marketing. When intensity changes at identified times, we can map $d$ into event time and aggregate to profiles of short-run and long-run effects, connecting to Chapter~\ref{ch:event} and Chapter~\ref{ch:dynamics}.

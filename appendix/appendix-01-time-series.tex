@@ -1,0 +1,355 @@
+\chapter{Time Series: Recap of Basic Principles}
+\label{app:time-series}
+
+\section*{Reader's Guide}
+This appendix provides the measure-theoretic foundations for the limit theorems and dynamic processes discussed in Part V (Dynamics, Heterogeneity, and Spillovers) and Part VII (Inference). While the main text relies on intuition and design-based identification, establishing the asymptotic properties of estimators in long panels ($T \to \infty$) requires the rigorous tools of time series analysis defined here.
+\begin{itemize}
+    \item Refer to \textbf{Section \ref{sec:ts-ergodicity}} for the ergodic properties that underpin distributed-lag estimators (Chapter \ref{ch:dynamics}).
+    \item Refer to \textbf{Section \ref{sec:ts-stationarity}} for formal definitions of stationarity, which are essential for detecting structural breaks (Chapter \ref{ch:threats}) and specifying correct error structures (Chapter \ref{ch:inference}).
+\end{itemize}
+
+Source: \citet{B17}.
+
+\section{What Is a Time Series?}
+\begin{definition}
+    Let \( k \in \mathbb{N} \), \( T \subseteq \mathbb{R} \). A function
+\[ x : T \rightarrow \mathbb{R}^{k}, \quad t \mapsto x_t \]
+or, equivalently, a set of indexed elements of \( \mathbb{R}^{k} \),
+\[ \{x_t | x_t \in \mathbb{R}^{k}, t \in T\} \]
+is called an observed time series. We also write
+\[ x_t \, (t \in T) \quad \text{or} \quad (x_t)_{t \in T}. \]
+\end{definition}
+
+\begin{definition}
+Let \( k \in \mathbb{N} \), \( T \subseteq \mathbb{R} \),
+\[ \Omega = (\mathbb{R}^{k})^{T} = \text{space of functions } X : T \rightarrow \mathbb{R}^{k}, \]
+\[ \mathcal{F} = \sigma\text{-algebra on } \Omega, \]
+\[ P = \text{probability measure on } (\Omega, \mathcal{F}). \]
+The probability space \( (\Omega, \mathcal{F}, P) \), or equivalently the set of indexed random variables
+\[ \{X_t | X_t \in \mathbb{R}^{k}, t \in T\}, \quad (X_t)_{t}\sim P \]
+    \label{def:ts}
+\end{definition}
+
+\begin{table}[htpb]
+\centering
+\caption{Types of time series \(X_t \in \mathbb{R}^k\) (\(t \in T\))}
+\label{tbl:ts}
+\begin{tabular}{ll}
+\toprule
+\textbf{Property} & \textbf{Terminology} \\
+\midrule
+\(k = 1\) & Univariate time series \\
+\(k \geq 2\) & Multivariate time series \\
+\(T\) countable, \(\forall a < b \in \mathbb{R} : T \cap [a,b] \) finite & Discrete time series \\
+\(T\) discrete, \(\exists u \in \mathbb{R}_{+}~\text{s.t.} ~t_{j+1} - t_j = u\) & Equidistant time \\
+\(T = [a,b] ~(a < b \in \mathbb{R}), T = \mathbb{R}_+ \text{ or } T = \mathbb{R}\) & Continuous time \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+A series \( (X_t)_{t \in T} \) is termed a time series, or time series model. Instead of \( (\Omega, \mathcal{F}, P) \) we also write \( X_t \, (t \in T) \) or \( (X_t)_{t \in T} \).
+
+Moreover, for a specific realization \(\omega \in \Omega\), we write \(X_t(\omega)\) and
+\[ (x_t)_{t \in T} = (X_t(\omega))_{t \in T} = \text{sample path of } (X_t)_{t \in T}, \]
+\[ (x_t)_{i=1,...,n} = (X_t(\omega))_{i=1,...,n} = \text{finite sample path of } X_t. \]
+
+\begin{remark} 
+\( \Omega \) may be more general than in Definition \ref{def:ts}. Similarly, the index set \( T \) may be more general than a subset of \( \mathbb{R} \), but it must be ordered and metric. Thus, \( (X_t)_{t \in T} \) is a stochastic process with an ordered metric index set \( T \).
+\end{remark}
+
+\begin{remark}
+An overview of the most common types of time series \( X_t \in \mathbb{R}^k \) (\( t \in T \), \( T \neq \emptyset \)) is given in Table \ref{tbl:ts}.
+\end{remark}
+
+\begin{remark}
+If \( X_t \) is an equidistant time series, then we may set without loss of generality \(T \subseteq \mathbb{Z}\).
+\end{remark}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Time Series Versus iid Data}
+
+What distinguishes statistical analysis of iid data from time series analysis? We illustrate the question by considering the case of equidistant univariate real-valued time series \(X_t \in \mathbb{R}\) (\(t \in T \subseteq \mathbb{Z}\)).
+
+%\begin{remark} 
+Is consistent estimation of \(P\) possible? The answer depends on available a priori information and assumptions one is willing to make. This is illustrated in the following.
+%\end{remark}
+
+Let \( F_{X_t}(x) \) denote the marginal distribution function of \( X_t \) at time \( t \),
+\[ F_{X_t}(x) = P(X_t \leq x) \]
+%which is the marginal distribution function of \( X_t \), 
+and let
+\[ F_n(x) = \frac{1}{n} \sum_{i=1}^n \mathbf{1}_{\{ X_i \leq x \}} \]
+be the empirical marginal distribution function.
+
+\begin{thrm}
+\textit{Assumption}:
+\[ X_t \in \mathbb{R} \text{ (} t \in \mathbb{Z} \text{) i.i.d.} \]
+
+\textit{Then}
+\[ \forall t \in \mathbb{Z}: F_{X_t} = F_{X_0} \]
+\[ \text{and} \]
+\[ P \text{ is fully specified by } F_{X_0}. \]
+\end{thrm}
+
+\begin{thrm}{(Glivenko-Cantelli)}
+\textit{Assumption}:
+\[ X_t \in \mathbb{R} \text{ (} t \in \mathbb{Z} \text{) i.i.d.} \]
+
+\textit{Then}
+\[ P \left( \lim_{n \to \infty} \sup_{x \in \mathbb{R}} | F_n(x) - F_{X_0}(x) | = 0 \right) = 1. \]
+
+\textit{Proof}: See e.g. \citet{vdW00}. 
+%For the original proofs see Glivenko (1933) and Cantelli (1933).
+
+\end{thrm}
+
+\textbf{Conclusion:} Given the i.i.d assumption, \( P \) can be estimated consistently. No additional assumptions are required.
+
+This is not true in general under non-i.i.d assumptions.
+
+\begin{ex}
+\[ X_t = \theta_t + Z_t \, ( t \in \mathbb{Z} ), Z_t \text{ i.i.d } \mathcal{N}(0, 1) \]
+\[ \theta_t \, ( t \in \mathbb{Z} ) \text{ unknown}. \]
+\end{ex}
+Consistent estimation of \(\theta_t\) is not possible, unless additional assumptions on \(\theta_t\) are imposed.
+
+
+\begin{ex}
+
+\[
+X_t = U \quad (t \in \mathbb{Z}),
+\]
+
+\[
+0 < p = P(U = 1) = 1 - P(U = 0) < 1.
+\]
+
+Consistent estimation of \(p\) is not possible.
+\end{ex}
+\textbf{Conclusion:} In general, consistent estimation of \(P\) is not possible, unless additional assumptions are imposed. The problem is:
+
+\[
+\begin{aligned}
+\text{observed time series} &= (x_1, \ldots, x_n) \\
+&= (X_1(\omega), \ldots, X_n(\omega)) \\
+&= \text{sample of size one from an } n\text{-dimensional distribution.} \\
+&\neq \text{sample from the infinite dimensional distribution } P \text{ on } \mathbb{R}^{\mathbb{Z}}.
+\end{aligned}
+\]
+
+
+In general, consistent estimation of \(P\) is not possible without additional assumptions. In this chapter, typical assumptions used in time series analysis are discussed. For simplicity we focus on equidistant univariate real valued time series \(X_t \in \mathbb{R} (t \in \mathbb{Z})\).
+
+\section{Fundamental Properties}
+\label{sec:ts-ergodicity}
+
+%\subsection{Ergodic Property with a Constant Limit}
+
+The asymptotic distribution of many statistics follows—sometimes after a complicated proof or suitable transformations—from the asymptotic distribution of sums.
+
+\begin{nota}
+\[ \bar{x} = \bar{x}_n = n^{-1} \sum_{t=1}^{n} X_t \]
+\end{nota}
+
+\begin{definition}
+\(X_t \in \mathbb{R} (t \in \mathbb{Z})\) has the almost sure ergodic property with a constant limit, or a.s. EPCL, if
+\[ \exists \mu \in \mathbb{R} \text{ s.t. } P \left( \lim_{n \rightarrow \infty} \bar{x} = \mu \right) = 1. \]
+Sometimes one also calls this the mean-ergodic property in the a.s. sense.
+\end{definition}
+
+\begin{definition}
+\(X_t \in \mathbb{R} (t \in \mathbb{Z})\) has the \(L^2\)-ergodic property with a constant limit, or \(L^2\)-EPCL, if
+\[ \exists \mu \in \mathbb{R} \text{ s.t. } \lim_{n \rightarrow \infty} \mathbb{E}[(\bar{x} - \mu)^2] = 0. \]
+Sometimes one also calls this the mean-ergodic property in the \(L^2\)-sense.
+
+Under which circumstances can it happen that the EPCL does not hold? Three main problems can occur, as outlined in the following.
+\end{definition}
+
+\begin{pr}
+Lack of stability: Distribution of \(X_{t+1}, X_{t+2}, \ldots, X_{t+n}\) changes too much as a function of \(t\) so that \((x_t)_{t=1,\ldots,n}\) is not sufficiently representative for \(P\) on \(\mathbb{R}^{\mathbb{Z}}\).
+\label{E1}
+\end{pr}
+
+\begin{ex}
+\(\epsilon_t\) iid, \(E(\epsilon_t) = 0\), \(\sigma^2 = \text{var}(\epsilon_t) < \infty\),
+
+\[ X_t = \beta t + \epsilon_t. \]
+
+Then
+
+\[ \bar{x} = \frac{\beta}{n} \left( \frac{n(n + 1)}{2} \right) + \bar{\epsilon}, \]
+
+\[ P(|\bar{x}| \rightarrow \infty) = 1. \]
+\end{ex}
+
+
+\begin{ex}
+\(\epsilon_t\) iid, \(E(\epsilon_t) = 0\), \(\sigma^2 < \infty\),
+
+\[ X_s = 0  (s \leq 0), 
+X_t = \sum_{s=1}^{t} \epsilon_s  (t \geq 1).
+ \]
+
+Then
+
+\[ \bar{x} = n^{-1} \sum_{t=1}^{n} \epsilon_{t-n+t}, \]
+
+\[ \text{var}(\bar{x}) = \frac{\sigma^2}{n^2} \sum_{t=1}^{n} t^2 \rightarrow \infty. \]
+\end{ex}
+
+\begin{pr} 
+High variability of the marginal distribution \(F_{X_t}\).
+\label{E2}
+\end{pr}
+
+
+\begin{ex}
+For Cauchy distributed iid \(X\), we have
+\[ \bar{x} = X_1. \]
+\end{ex}
+
+\begin{pr} 
+Absorbing states:
+\[ X_t \, (t \in \mathbb{Z}) \text{ is } \mathcal{F}\text{-measurable}, \]
+\[ \exists t \in \mathbb{Z}, A_t \in \mathcal{F}, s.t. \ 0 < P(X_t = A_t) < 1 \text{ and } P(\forall s > t : X_s \in A_t | A_t) = 1. \]
+Then
+\[ A_t \text{ is an absorbing state.} \]
+\label{E3}
+\end{pr}
+
+\begin{ex}
+\[ X_t = U \ (t \in \mathbb{Z}), \]
+\[ 0 < p = P(U = 1) = 1 - P(U = 0) < 1. \]
+Then
+\[ A_t = \{X_t = 1\} \text{ is an absorbing state.} \]
+\end{ex}
+
+\subsection{Strict Stationarity}
+\label{sec:ts-stationarity}
+
+\begin{definition} 
+\(X_t \in \mathbb{R} (t \in \mathbb{Z})\) is called strictly stationary or strongly stationary, if
+\[ \forall k \in \mathbb{Z}, \forall m \in \mathbb{N}, \forall t_1, \ldots, t_m \in \mathbb{Z}: (X_{t_1}, \ldots, X_{t_m}) \overset{d}{=} (X_{t_1+k}, \ldots, X_{t_m+k}). \]
+\end{definition} 
+
+\begin{ex}
+\(X_t \in \mathbb{R} (t \in \mathbb{Z})\) iid is strictly stationary.
+\end{ex}
+
+\begin{ex}
+\[ X_t = \sum_{j=0}^{q} \psi_j \varepsilon_{t-j} \ (t \in \mathbb{Z}), \]
+\[ \varepsilon_t \in \mathbb{R} (t \in \mathbb{Z}) \text{ iid}, \ \forall j \in \mathbb{R} (j = 0, \ldots, q) \]
+is strictly stationary. \(X_t\) is called a moving average process of order \(q\), or MA(\(q\)) process.
+\end{ex}
+
+\begin{remark}
+   Strict stationarity solves Problem \ref{E1}, but not Problems \ref{E2} and \ref{E3}. 
+\end{remark}
+
+\subsection{Weak Stationarity}
+
+\begin{definition} 
+Let
+\[ X_t \in \mathbb{R} \ (t \in \mathbb{Z}) \text{ s.t. } \forall t \in \mathbb{Z}: E(|X_t|) < \infty. \]
+Then
+\[ \mu_t = E(X_t) \ (t \in \mathbb{Z}) \]
+is called the expected value function, or mean function, of \(X\). If
+\[ E(X_t^2) < \infty, \]
+then
+\[ \gamma : \mathbb{Z} \times \mathbb{Z} \rightarrow \mathbb{R} \]
+with
+\[ \gamma (s, t) = \text{cov}(X_s, X_t) = E[(X_s - \mu_s)(X_t - \mu_t)] \]
+is called the autocovariance function (acf) of \(X\), and
+\[ \rho (s, t) = \text{corr}(X_s, X_t) = \frac{\gamma (s, t)}{\sqrt{\gamma (s, s) \gamma (t, t)}} \]
+is called the autocorrelation function (acf) of \(X\).
+\end{definition} 
+
+\begin{remark}
+\[ \gamma (t, t) = \text{var}(X_t), \quad \rho (t, t) = 1 \]
+\end{remark}
+
+\begin{remark}
+For
+\[ X_t \in \mathbb{C} \ (t \in \mathbb{Z}), \]
+we define
+\[ \gamma (s, t) = \text{cov}(X_s, X_t) = E[(X_s - \mu_s)(\overline{X_t - \mu_t})]. \]
+\end{remark}
+
+
+\begin{lem}
+\[ \gamma(t, s) = \gamma(s, t) \]
+\end{lem}
+
+\begin{proof}
+\[
+\overline{\gamma(s, t)}  
+= \overline{E[(X_s - \mu_s)\overline{(X_t - \mu_t) }] } \\
+= E \overline{[(X_s - \mu_s)(X_t - \mu_t)] } \\
+= E[(X_t - \mu_t)\overline{(X_s - \mu_s)}] \\
+= \gamma(t, s) \]
+\end{proof}
+
+\begin{definition} 
+\(X_t \in \mathbb{R}\) (\(t \in \mathbb{Z}\)) is called second order stationary, or weakly stationary, if
+\[ E(X_t^2) < \infty, \]
+\[ \exists \mu \in \mathbb{R} \text{ s.t. } \forall t \in \mathbb{Z} : E(X_t) = \mu, \]
+\[ \exists \gamma : \mathbb{Z} \rightarrow \mathbb{R} \text{ s.t. } \forall s, t \in \mathbb{Z} : \text{cov}(X_s, X_t) = \gamma(t - s). \]
+\end{definition}
+
+\begin{lem}
+\[ \text{weak stationarity} \centernot\Leftrightarrow \text{strong stationarity} \]
+\end{lem}
+
+\begin{proof}
+\textit{Counterexample for} \( \centernot \Rightarrow\):
+\[ X_{2i} = Z_i \quad (i \in \mathbb{Z}), \quad X_{2i+1} = \frac{Z_i^2 - 1}{\sqrt{2}} \quad (i \in \mathbb{Z}) \]
+where
+\[ Z_i \quad (i \in \mathbb{Z}) \text{ iid } \mathcal{N}(0, 1)\text{-variables} \]
+
+\textit{Counterexample for} \( \centernot\Leftarrow\):
+\[ X_t \quad (t \in \mathbb{Z}) \text{ iid, Cauchy distributed} \]
+
+\end{proof}
+\begin{lem}
+\textit{Assumptions}:
+\[ X_t \in \mathbb{R} \quad (t \in \mathbb{Z}) \text{ strictly stationary, } E(X_t^2) < \infty \]
+
+\end{lem}
+
+
+Then
+\[ X_t \ (t \in \mathbb{Z}) \text{ weakly stationary} \]
+
+\begin{proof}
+
+a) \(\mu\): The Cauchy-Schwarz inequality implies
+\[ E^2(|X_t|) \leq E[X_t^2] < \infty, \]
+and hence
+\[ \exists \mu_t = E(X_t) \in \mathbb{R}. \]
+Thus, together with strong stationarity
+\[ \forall s, t \in \mathbb{Z} : \mu_s = \mu_t = \mu \in \mathbb{R} \]
+
+b) \(\gamma\): The Cauchy-Schwarz inequality implies
+\[ E^2(X_s, X_t) \leq E^2(|X_s|, |X_t|) \leq E(X_s^2) E(X_t^2) < \infty. \]
+Together with strong stationarity we then have
+\[ \forall t, k \in \mathbb{Z} : E(X_t, X_{t+k}) = E(X_0, X_k), \]
+and
+\[ \text{cov}(X_t, X_{t+k}) = \text{cov}(X_0, X_k) = E(X_0 X_k) - \mu^2 = \gamma(k). \]
+
+\end{proof}
+
+
+\begin{remark}
+Weak stationarity solves Problem \ref{E1} w.r.t. first two moments of \(X_t\), and Problem \ref{E2} in the sense that \(E(X_t^2) < \infty\). It does not solve Problem \ref{E3}.
+\end{remark}
+\begin{ex}
+\[ X_t = U \ (t \in \mathbb{Z}) \]
+where
+\[ 0 < p = P(U = 1) = 1 - P(U = 0) < 1, \]
+is weakly and strictly stationary, but
+\[ A_t = \{X_t = 1\} \text{ is an absorbing state.} \]
+\end{ex}
+

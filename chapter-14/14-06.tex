@@ -1,0 +1,48 @@
+\section{Duration Models for Takeoff in Panels}
+\label{sec:duration-models}
+
+Marketing innovations often have a distinct takeoff point when growth accelerates. Duration models offer a natural framework for analysing this time-to-takeoff, modelling the hazard of transition from pre-takeoff to post-takeoff states.
+
+\begin{definition}[Hazard and Survival]\label{def:hazard-survival}
+For duration $T_i > 0$ (e.g., time to takeoff), the survival function is:
+\[
+S(t) = P(T_i > t),
+\]
+the probability of surviving past time $t$. The hazard function is the instantaneous rate of failure:
+\[
+h(t) = \lim_{\Delta t \to 0} \frac{P(t \leq T_i < t + \Delta t \mid T_i \geq t)}{\Delta t} = \frac{f(t)}{S(t)},
+\]
+where $f(t) = -S'(t)$ is the density. The cumulative hazard is $H(t) = \int_0^t h(s) \, ds = -\log S(t)$.
+\end{definition}
+
+\begin{definition}[Cox Proportional Hazards]\label{def:cox-ph}
+The Cox proportional hazards model specifies:
+\[
+h(t \mid X_i) = h_0(t) \exp(X_i'\beta),
+\]
+where $h_0(t)$ is the baseline hazard (unspecified) and $\exp(X_i'\beta)$ is the hazard ratio. For panel data with covariates varying over time:
+\[
+h(t \mid X_i(t)) = h_0(t) \exp(X_i(t)'\beta).
+\]
+The partial likelihood eliminates $h_0(t)$:
+\[
+\mathcal{L}(\beta) = \prod_{i: \text{event at } t_i} \frac{\exp(X_i'\beta)}{\sum_{j \in \mathcal{R}(t_i)} \exp(X_j'\beta)},
+\]
+where $\mathcal{R}(t)$ is the risk set at time $t$.
+\end{definition}
+
+\begin{definition}[Shared Frailty]\label{def:frailty}
+The shared frailty model introduces unit-level random effects to capture unobserved heterogeneity:
+\[
+h(t \mid X_i, \nu_i) = h_0(t) \exp(X_i'\beta + \nu_i),
+\]
+where $\nu_i \sim \mathcal{N}(0, \sigma^2_\nu)$ or $\exp(\nu_i) \sim \Gamma(1/\theta, 1/\theta)$. Frailty accounts for unobserved factors that affect the baseline hazard across units, analogous to random effects in panel models.
+\end{definition}
+
+\subsection*{Integration with Panel Causal Designs}
+
+Classic studies model takeoff hazards for consumer durables and international settings, documenting systematic roles for economics, culture, and innovativeness \citet{golder1997will,tellis2003international,hauser2007research}.
+
+Panel causal designs complement hazards when takeoff events are staggered. Event-time analyses trace pre-trend diagnostics and dynamic post-takeoff effects on outcomes. Synthetic control or factor methods provide counterfactual paths for early adopters versus later markets.
+
+Together, hazard models answer \emph{when} takeoff occurs, while panel designs answer \emph{what} changes after takeoff and by how much under credible identification.

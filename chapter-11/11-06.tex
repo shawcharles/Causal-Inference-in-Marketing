@@ -1,0 +1,131 @@
+
+\section{Competition and Saturation Effects}
+\label{sec:competition-saturation}
+
+Competitive reactions and saturation effects represent two distinct but related forms of interference in marketing. Both phenomena violate SUTVA and require careful modelling. For spillover types, see Section~\ref{sec:spillover-types}. For estimation strategies, see Section~\ref{sec:estimating-spillovers}. For dynamic effects, see Chapter~\ref{ch:dynamics}.
+
+\subsection*{Overview: Two Sources of Declining Effects}
+
+Table~\ref{tab:competition-saturation} compares the two mechanisms.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Competition vs Saturation Effects}
+\label{tab:competition-saturation}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Feature} & \textbf{Competitive Reactions} & \textbf{Saturation Effects} \\
+\midrule
+Mechanism & Rivals respond to focal firm's treatment & Treatment effect declines with aggregate treatment proportion \\
+\addlinespace
+Mathematical signature & $\partial Y_{it}/\partial W_{jt} \neq 0$ with $\rho_{ji} > 0$ & $\tau'(p) < 0$ \\
+\addlinespace
+Test & Competitors' actions respond to focal treatment & Later cohorts exhibit smaller effects \\
+\addlinespace
+Bias if ignored & Overestimate treatment effect & Misattribute declining effects to unit heterogeneity \\
+\addlinespace
+Optimal response & Coordinate treatment across firms & Partial treatment to avoid saturation \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{Competitive Reactions}
+
+Competitive reactions create dynamic spillovers that evolve over time. Consider a market with $N$ firms. Firm $i$ increases advertising expenditure at time $t$. If the advertising is effective, firm $i$ gains market share. Competitors observe this gain (with some lag) and respond by increasing their own advertising at time $t + 1$.
+
+This competitive response dampens firm $i$'s market share gain. The observed treatment effect at time $t + 1$ is smaller than at time $t$, not because the advertising wears off but because competition intensifies.
+
+\begin{definition}[Competitive Reaction Function]\label{def:reaction-function}
+In a market with $N$ firms, the competitive reaction function for firm $j$ in response to firm $i$'s treatment is:
+\[
+W_{jt} = R_j(W_{i,t-1}, \mathbf{X}_{jt}, \mathbf{W}_{-ij,t-1}) + \varepsilon_{jt},
+\]
+where $W_{i,t-1}$ is firm $i$'s lagged treatment, $\mathbf{X}_{jt}$ are firm $j$'s characteristics, and $\mathbf{W}_{-ij,t-1}$ are other firms' lagged treatments. The marginal reaction coefficient is:
+\[
+\rho_{ji} = \frac{\partial R_j}{\partial W_{i,t-1}},
+\]
+which is positive for strategic complements and negative for strategic substitutes.
+\end{definition}
+
+\begin{proposition}[Total Effect Accounting for Competition]\label{prop:total-effect-competition}
+Let $Y_{it}(W_{it}, \mathbf{W}_{-i,t})$ denote firm $i$'s outcome under its own treatment $W_{it}$ and competitors' treatments $\mathbf{W}_{-i,t}$. The total effect of firm $i$ increasing treatment by $\Delta W_i$, accounting for competitive reactions, is:
+\[
+\frac{\partial Y_{it}}{\partial W_{i,t-1}} = \underbrace{\frac{\partial Y_{it}}{\partial W_{it}}}_{\text{direct}} + \underbrace{\sum_{j \neq i} \frac{\partial Y_{it}}{\partial W_{jt}} \cdot \rho_{ji}}_{\text{spillover via reactions}}.
+\]
+If competitors' treatments harm firm $i$ ($\partial Y_{it} / \partial W_{jt} < 0$) and competitors respond positively ($\rho_{ji} > 0$), the spillover component is negative, reducing the total effect below the direct effect.
+\end{proposition}
+
+Identifying competitive reactions requires observing multiple firms and their actions over time. Panel vector autoregressions (VAR) provide a flexible framework. We estimate a system of equations where each firm's advertising depends on lagged advertising of all firms:
+\[
+W_{it} = \sum_{j=1}^N \sum_{\ell=1}^L \rho_{ij\ell} W_{j,t-\ell} + \alpha_i + \gamma_t + \varepsilon_{it},
+\]
+where $\rho_{ij\ell}$ captures the effect of firm $j$'s advertising at lag $\ell$ on firm $i$'s advertising. The coefficients $\rho_{ij\ell}$ for $j \neq i$ measure competitive reactions. Impulse response functions trace out the dynamic path of competitive reactions following a shock to one firm's advertising.
+
+Reduced-form approaches detect competitive reactions without estimating a full structural model. We test whether treatment of one firm predicts changes in competitors' actions. For example, in a difference-in-differences framework, we compare competitors of treated firms to competitors of control firms. If competitors of treated firms increase advertising more than competitors of control firms, this indicates competitive reactions.
+
+\subsection*{Saturation Effects}
+
+Saturation effects occur when treatment effects decline as the proportion of treated units increases. Consider a loyalty programme rolled out to stores in a retail chain. The first stores to adopt see large gains in customer retention because the programme is novel and provides a competitive advantage.
+
+As more stores adopt, the novelty wears off and the competitive advantage diminishes. The last stores to adopt see small gains because most customers are already enrolled through other stores.
+
+\begin{definition}[Saturation Function]\label{def:saturation}
+The saturation function $\tau(p)$ describes how the treatment effect varies with the aggregate treatment proportion $p$:
+\[
+\tau(p) = \mathbb{E}[Y_{it}(1, p) - Y_{it}(0, p)].
+\]
+Saturation is present if $\tau'(p) < 0$, meaning the treatment effect declines as more units are treated. A parametric saturation model is:
+\[
+\tau(p) = \tau_0 (1 - \kappa p)^+,
+\]
+where $\tau_0$ is the effect at zero saturation, $\kappa > 0$ is the saturation rate, and $(x)^+ = \max(0, x)$.
+\end{definition}
+
+\begin{proposition}[Saturation Test]\label{prop:saturation-test}
+In a staggered adoption design with cohorts $g = 1, \ldots, G$, let $p_{g+k}$ denote the aggregate treatment proportion at time $g + k$ (when cohort $g$ has been treated for $k$ periods). Saturation implies that later cohorts exhibit smaller effects:
+\[
+H_0: \theta_k(g) \text{ does not depend on } g \quad \text{vs} \quad H_1: \frac{\partial \theta_k(g)}{\partial g} < 0.
+\]
+The test regresses cohort-specific effects on cohort timing:
+\[
+\hat{\theta}_k(g) = \beta_0 + \beta_1 p_{g+k} + u_g,
+\]
+where $\beta_1 < 0$ indicates saturation. Rejecting $H_0: \beta_1 = 0$ in favour of $\beta_1 < 0$ provides evidence for saturation.
+\end{proposition}
+
+Distinguishing saturation from dynamic treatment effects (Chapter~\ref{ch:dynamics}) is challenging. Both generate declining treatment effects over time. Dynamic effects occur because the treatment wears off for individual units. Saturation effects occur because the market-level treatment intensity increases. We can distinguish them by examining heterogeneity. If effects decline more for units in markets with high treatment intensity, this suggests saturation. If effects decline uniformly across markets, this suggests dynamic decay.
+
+\subsection*{Implications for Causal Inference}
+
+Competitive reactions and saturation effects have important implications for causal inference in marketing panels. First, they bias standard estimators that assume SUTVA. Ignoring competitive reactions overestimates treatment effects (by failing to account for the dampening effect of competition). Ignoring saturation effects leads to incorrect inferences about treatment effect heterogeneity (attributing declining effects to unit characteristics rather than market-level saturation).
+
+Second, they complicate the interpretation of treatment effects in staggered adoption designs. A declining treatment effect over cohorts may reflect saturation, competitive reactions, or dynamic decay. Distinguishing these mechanisms requires additional data (on competitors' actions, market-level treatment intensity) or structural modelling (reaction functions, saturation curves).
+
+Third, they affect optimal treatment assignment. If saturation effects are strong, treating all units may be suboptimal. A partial treatment strategy (treating a subset of units) may generate larger average effects by avoiding saturation. If competitive reactions are strong, coordinated treatment (treating all firms simultaneously) may be preferable to staggered treatment (which triggers sequential competitive reactions).
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Practical Guidance: When to Worry About Each Mechanism]
+\textbf{Worry about competitive reactions when:}
+\begin{itemize}
+\item[$\square$] Firms observe each other's actions (advertising visible, prices public).
+\item[$\square$] Market share is roughly fixed (zero-sum competition).
+\item[$\square$] Competitors have capacity to respond quickly.
+\item[$\square$] Treatment effects decline even when market saturation is low.
+\end{itemize}
+
+\textbf{Worry about saturation effects when:}
+\begin{itemize}
+\item[$\square$] Treatment creates positive externalities that are exhaustible (novelty, network effects).
+\item[$\square$] Later adopters show smaller effects than early adopters.
+\item[$\square$] Effects decline more in high-penetration markets.
+\item[$\square$] Customer overlap across treated units is high.
+\end{itemize}
+
+\textbf{Distinguishing the two:}
+\begin{itemize}
+\item[$\square$] Do declining effects correlate with competitor actions? $\to$ Competition.
+\item[$\square$] Do declining effects correlate with aggregate treatment proportion? $\to$ Saturation.
+\item[$\square$] Do effects decline uniformly across markets? $\to$ Dynamic decay (Chapter~\ref{ch:dynamics}).
+\end{itemize}
+\end{tcolorbox}

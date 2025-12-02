@@ -1,0 +1,129 @@
+\section{Interactive Fixed Effects (IFE)}
+\label{sec:factor-ife}
+
+The interactive fixed effects (IFE) model decomposes untreated potential outcomes into unit-specific loadings and time-specific factors. This section formalises the model, discusses identification up to rotation, presents methods for selecting the number of factors, and describes estimation procedures for recovering loadings and factors from untreated observations.
+
+\subsection*{Model Specification}
+
+The general IFE model for untreated potential outcomes, introduced in Section~\ref{sec:factor-motivation}, includes both additive and interactive components:
+\[
+Y_{it}(0) = \alpha_i + \gamma_t + \lambda_i' f_t + \varepsilon_{it},
+\]
+where $\alpha_i$ is a unit fixed effect, $\gamma_t$ is a time fixed effect, $\lambda_i \in \mathbb{R}^R$ is the loading vector for unit $i$, $f_t \in \mathbb{R}^R$ is the factor vector for period $t$, and $\varepsilon_{it}$ is an idiosyncratic error with mean zero and finite variance.
+
+In practice, estimation proceeds by first removing the additive fixed effects through demeaning. Define the demeaned outcome $\tilde{Y}_{it} = Y_{it} - \bar{Y}_{i\cdot} - \bar{Y}_{\cdot t} + \bar{Y}_{\cdot\cdot}$, where $\bar{Y}_{i\cdot}$ is the unit mean, $\bar{Y}_{\cdot t}$ is the time mean, and $\bar{Y}_{\cdot\cdot}$ is the grand mean. If the original model holds, then
+\[
+\tilde{Y}_{it}(0) = \tilde{\lambda}_i' \tilde{f}_t + \tilde{\varepsilon}_{it},
+\]
+where $\tilde{\lambda}_i$ and $\tilde{f}_t$ are the demeaned loadings and factors. This pure factor model is what we estimate. The additive fixed effects $\hat{\alpha}_i$ and $\hat{\gamma}_t$ are recovered after factor estimation if needed for interpretation.
+
+For the remainder of this section, we work with the demeaned pure factor model:
+\[
+Y_{it}(0) = \lambda_i' f_t + \varepsilon_{it},
+\]
+understanding that $Y_{it}$ refers to demeaned outcomes when additive fixed effects are present.
+
+\subsection*{Interpretation of Loadings and Factors}
+
+The factors $f_t = (f_{t1}, \ldots, f_{tR})'$ represent common time-varying shocks that affect all units. The $r$-th factor $f_{tr}$ captures a distinct source of variation (e.g., a macroeconomic shock, a seasonal pattern, or a category trend). The loadings $\lambda_i = (\lambda_{i1}, \ldots, \lambda_{iR})'$ represent unit-specific sensitivities to these shocks. If unit $i$ has a large positive loading $\lambda_{ir}$ on factor $r$, then shocks in factor $r$ have a large positive effect on unit $i$'s outcomes.
+
+Good practice plots factors over time to identify patterns (e.g., seasonality, trends, structural breaks) and plots loadings against unit characteristics (e.g., size, demographics, location) to understand which units are most sensitive to which factors. Figure~\ref{fig:factor-schematic} illustrates a typical factor structure with three factors: a macro factor that affects all units similarly, a seasonal factor with heterogeneous loadings, and a regional factor that affects only a subset of units.
+
+\subsection*{Identification Up to Rotation}
+
+Factors and loadings are identified only up to rotation and scale. If $(\lambda_i, f_t)$ satisfy the model, then so do $(H \lambda_i, H^{-1'} f_t)$ for any invertible $R \times R$ matrix $H$:
+\[
+\lambda_i' f_t = (H \lambda_i)' (H^{-1'} f_t).
+\]
+This rotational invariance means that the estimated factors and loadings are not uniquely determined without normalisation.
+
+The standard Bai-Ng normalisation imposes: (1) orthonormal factors, $T^{-1} \sum_t f_t f_t' = I_R$, and (2) diagonal loading covariance, $N^{-1} \sum_i \lambda_i \lambda_i'$ is diagonal with distinct diagonal elements. These constraints pin down the scale and rotation up to sign flips. The first factor explains the most variance, the second explains the next most conditional on the first, and so on.
+
+The implication for causal inference is that factors and loadings should be viewed as summary representations of common structure rather than structural objects with causal interpretations. The product $\lambda_i' f_t$ is identified (up to the model), but the individual components are not separately identified. For treatment effect estimation, this is not a problem because only the product matters for constructing counterfactuals.
+
+\subsection*{Selecting the Number of Factors}
+
+Choosing the rank $R$ is critical. Too few factors underfit the data, leaving systematic co-movement unexplained and biasing counterfactuals. Too many factors overfit idiosyncratic noise, producing unstable estimates. Several approaches guide the choice:
+
+\paragraph{Information criteria.} The Bai-Ng information criteria (IC1, IC2, IC3) penalise model complexity and select $R$ to balance fit and parsimony. IC2 is commonly used: $\text{IC2}(R) = \log(\hat{\sigma}^2_R) + R \cdot \frac{(N+T)}{NT} \log(\min(N,T))$, where $\hat{\sigma}^2_R$ is the mean squared residual with $R$ factors.
+
+\paragraph{Eigenvalue ratios.} Plot the eigenvalues $\mu_1 \geq \mu_2 \geq \ldots$ of the sample covariance matrix $Y'Y/T$ (or $YY'/N$). Select $R$ at the ``elbow'' where eigenvalues drop sharply. The eigenvalue ratio test of Ahn and Horenstein (2013) formalises this: select $R$ to maximise $\mu_R / \mu_{R+1}$.
+
+\paragraph{Cross-validation.} Split the pre-treatment period into training and validation sets. For each candidate $R$, estimate factors on the training set and compute prediction error on the validation set. Select $R$ to minimise validation error. A practical implementation holds out the last 20 per cent of pre-treatment periods as the validation set.
+
+\paragraph{Economic reasoning.} Count the number of expected factor sources: seasonality (1-2 factors for annual and quarterly cycles), macroeconomic shocks (1 factor), category trends (1 factor per major category), regional effects (1 factor per region or region group). This provides a prior that disciplines purely statistical selection.
+
+In marketing panels, typical rank values are $R = 3$ to $R = 10$, depending on outcome granularity and time span. Reporting results for multiple values (e.g., $R = 3, 5, 7$) provides evidence on robustness.
+
+\subsection*{Least Squares Estimation}
+
+Estimation minimises the sum of squared residuals on observed (untreated) cells. Let $\Omega$ denote the set of observed unit-period pairs. The least squares estimator solves:
+\[
+\min_{\Lambda, \mathbf{F}} \sum_{(i,t) \in \Omega} (Y_{it} - \lambda_i' f_t)^2 \quad \text{subject to normalisation constraints.}
+\]
+
+\paragraph{Balanced panels (PCA).} When all pre-treatment cells are observed, the solution is obtained via principal components analysis (PCA). Stack outcomes in an $N \times T$ matrix $\mathbf{Y}$. The estimated factors $\hat{\mathbf{F}}$ are the first $R$ eigenvectors of $\mathbf{Y}'\mathbf{Y}$, scaled by $\sqrt{T}$. The estimated loadings are $\hat{\Lambda} = \mathbf{Y}\hat{\mathbf{F}}/T$. Equivalently, apply singular value decomposition (SVD): $\mathbf{Y} = \mathbf{U}\mathbf{S}\mathbf{V}'$, then $\hat{\Lambda} = \mathbf{U}_R \mathbf{S}_R / \sqrt{N}$ and $\hat{\mathbf{F}} = \sqrt{N} \mathbf{V}_R$, where subscript $R$ denotes the first $R$ components.
+
+The computational cost of full SVD is $O(\min(N,T) \cdot NT)$, which is feasible for typical marketing panels (e.g., 1000 units $\times$ 100 periods takes seconds). For very large panels ($N, T > 10,000$), randomised SVD or iterative methods provide faster approximations.
+
+\paragraph{Unbalanced panels (iterated least squares).} When some cells are missing (e.g., staggered treatment adoption), PCA is not directly applicable. Instead, use the following iterative algorithm:
+
+\begin{enumerate}
+\item \textbf{Initialise:} Set $\hat{\mathbf{F}}^{(0)}$ to the PCA solution on a balanced subset (e.g., control units only) or random initialisation.
+\item \textbf{Update loadings:} For each unit $i$, regress observed outcomes on current factors:
+\[
+\hat{\lambda}_i^{(k+1)} = \left( \sum_{t \in \Omega_i} \hat{f}_t^{(k)} \hat{f}_t^{(k)'} \right)^{-1} \sum_{t \in \Omega_i} \hat{f}_t^{(k)} Y_{it},
+\]
+where $\Omega_i = \{t : (i,t) \in \Omega\}$ is the set of observed periods for unit $i$.
+\item \textbf{Update factors:} For each period $t$, regress observed outcomes on current loadings:
+\[
+\hat{f}_t^{(k+1)} = \left( \sum_{i \in \Omega_t} \hat{\lambda}_i^{(k+1)} \hat{\lambda}_i^{(k+1)'} \right)^{-1} \sum_{i \in \Omega_t} \hat{\lambda}_i^{(k+1)} Y_{it},
+\]
+where $\Omega_t = \{i : (i,t) \in \Omega\}$ is the set of observed units for period $t$.
+\item \textbf{Normalise:} Apply the Bai-Ng normalisation to $\hat{\mathbf{F}}^{(k+1)}$ and $\hat{\Lambda}^{(k+1)}$.
+\item \textbf{Check convergence:} Compute the relative change in the objective function or the Frobenius norm of the estimated matrix. Converge when $|\text{obj}^{(k+1)} - \text{obj}^{(k)}| / |\text{obj}^{(k)}| < 10^{-6}$.
+\item \textbf{Iterate:} Repeat steps 2-5 until convergence, typically 10 to 50 iterations.
+\end{enumerate}
+
+Convergence is guaranteed to a local minimum because each step weakly decreases the objective. Multiple initialisations help avoid poor local minima; select the solution with the smallest objective.
+
+\subsection*{Consistency and Asymptotics}
+
+Under regularity conditions---weak dependence in $\varepsilon_{it}$, strong factors (eigenvalues of $\mathbf{F}'\mathbf{F}$ grow linearly with $T$), and sufficient observed cells---the least squares estimator is consistent. As $N, T \to \infty$, the space spanned by the estimated factors converges to the true factor space:
+\[
+\| \mathbf{P}_{\hat{\mathbf{F}}} - \mathbf{P}_{\mathbf{F}^0} \| \xrightarrow{p} 0,
+\]
+where $\mathbf{P}_{\mathbf{F}}$ is the projection matrix onto the column space of $\mathbf{F}$.
+
+The ``strong factors'' assumption requires that each factor explains a non-negligible share of variance. Weak factors (with eigenvalues that do not grow with $N$ or $T$) are harder to estimate consistently and may require regularisation. In marketing panels with clear seasonal and macro structure, factors are typically strong.
+
+\subsection*{Treatment Effect Estimation}
+
+For causal inference, estimation must be restricted to untreated cells to avoid contamination by treatment effects.
+
+\paragraph{Single treatment timing.} If treatment begins in period $T_0 + 1$ for a subset of units, estimate factors and loadings using: (a) all periods for never-treated control units, and (b) pre-treatment periods $t \leq T_0$ for treated units. The estimated loadings $\hat{\lambda}_i$ for treated units come from their pre-treatment data. The estimated factors $\hat{f}_t$ for post-treatment periods come from control units' outcomes in those periods.
+
+\paragraph{Staggered adoption.} When different units adopt treatment at different times, each unit $i$ has its own treatment start period $T_{0i}$. The observed untreated cells are $\Omega = \{(i,t) : t \leq T_{0i} \text{ or } i \text{ is never-treated}\}$. Apply the iterated least squares algorithm to this irregular observation pattern. The algorithm naturally handles unit-specific treatment timing by including only untreated cells in each unit's and period's regression.
+
+\paragraph{Counterfactual imputation.} For treated unit $i$ in post-treatment period $t > T_{0i}$, the counterfactual is:
+\[
+\hat{Y}_{it}^{\text{IFE}}(0) = \hat{\alpha}_i + \hat{\gamma}_t + \hat{\lambda}_i' \hat{f}_t,
+\]
+where the fixed effects are recovered from the demeaning step if present. The treatment effect estimate is:
+\[
+\hat{\tau}_{it} = Y_{it} - \hat{Y}_{it}^{\text{IFE}}(0).
+\]
+
+\subsection*{Practical Considerations}
+
+Several practical issues arise in implementation:
+
+\paragraph{Demeaning.} Always demean outcomes before factor estimation to remove additive fixed effects. The demeaned model is better identified and the factors are easier to interpret as deviations from unit and time means.
+
+\paragraph{Scaling.} Standardise outcomes (divide by the standard deviation) if units have very different scales. This prevents large-variance units from dominating the factor estimation.
+
+\paragraph{Seasonality.} If strong seasonal patterns are expected, include seasonal dummies in the demeaning step or estimate a separate seasonal factor. Cross-validation can determine whether explicit seasonal adjustment improves out-of-sample fit.
+
+\paragraph{Software.} The \texttt{gsynth} package in R implements IFE estimation with cross-validation for rank selection. The \texttt{fect} package provides IFE and matrix completion methods for causal panel analysis. Both handle staggered adoption and missing data.
+
+More advanced specifications---nuclear-norm regularisation, grouped factors, and connections to synthetic control---are developed in Section~\ref{sec:factor-matrix} and Chapter~\ref{ch:advanced-matrix}.

@@ -1,0 +1,196 @@
+\section{Platforms and Two-Sided Markets}
+\label{sec:platform-experiments}
+
+In platforms---ride-hailing, e-commerce marketplaces, food delivery---interference is the norm, not the exception. Treating drivers affects riders; treating sellers affects buyers; treating one side of the market equilibrates through prices, wait times, and matching quality to affect the other side. Standard experimental designs that assume no interference (SUTVA) yield biased estimates. This section develops methods for causal inference under platform interference.
+
+\begin{remark}[Platform Experiments in the Taxonomy]\label{rem:platform-taxonomy}
+In the taxonomy of Section~\ref{sec:taxonomy}, platform experiments are the canonical \emph{interference} problem: a unit's outcome depends on others' treatment status, violating SUTVA. Chapter~\ref{ch:spillovers} develops the theoretical foundations for causal inference under interference; this section applies those foundations to platform settings. Related applications include ranking algorithm effects (Section~\ref{sec:ranking-algorithms}) and seller interventions (Section~\ref{sec:seller-interventions}). Secondary considerations include dynamics: platform interventions may have carryover effects, and long-run network effects differ from short-run equilibrium responses.
+\end{remark}
+
+\subsection*{The Interference Problem}
+
+\begin{definition}[Platform Interference]\label{def:platform-interference}
+In a two-sided market, unit $i$'s outcome depends on the treatment vector of all units:
+\[
+Y_i = Y_i(W_i, \mathbf{W}_{-i}),
+\]
+where $W_i$ is unit $i$'s treatment and $\mathbf{W}_{-i}$ is the treatment vector of all other units. SUTVA is violated because $Y_i(1, \mathbf{W}_{-i}) \neq Y_i(1, \mathbf{W}'_{-i})$ when $\mathbf{W}_{-i} \neq \mathbf{W}'_{-i}$.
+\end{definition}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{images/fig_platform_interference.pdf}
+\caption{Network interference in two-sided markets}
+\label{fig:platform-interference}
+\small\textit{The diagram illustrates how treating a subset of supply-side units (drivers/sellers) spills over to demand-side units (riders/buyers) and subsequently affects untreated supply units through market equilibration. A driver incentive reduces wait times for all riders, not just those matched with treated drivers.}
+\end{figure}
+
+Table~\ref{tab:platform-interference} summarises the channels through which interference operates in platforms.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Interference channels in platform markets}
+\label{tab:platform-interference}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Channel} & \textbf{Mechanism} & \textbf{Example} \\
+\midrule
+Supply-side spillovers & Incentivising some suppliers increases total supply & Driver bonuses reduce wait times for all riders \\
+Demand-side spillovers & Promotions to some buyers increase total demand & Rider discounts raise prices for all riders \\
+Matching externalities & Treating one unit affects matches for others & Prioritising one rider delays others' matches \\
+Price equilibration & Interventions shift market-clearing prices & Seller promotions affect marketplace price levels \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{Estimand: Global Average Treatment Effect}
+
+Under interference, the standard ATE is not well-defined because potential outcomes depend on others' treatments. We instead target the Global Average Treatment Effect.
+
+\begin{definition}[Global Average Treatment Effect (GATE)]\label{def:gate}
+The GATE compares outcomes when everyone is treated to outcomes when no one is treated:
+\[
+\text{GATE} = \mathbb{E}[Y_i(\mathbf{1}) - Y_i(\mathbf{0})],
+\]
+where $\mathbf{1}$ is the all-treated vector and $\mathbf{0}$ is the all-control vector. This captures the total market effect of a policy, including all spillovers.
+\end{definition}
+
+The GATE answers the business question: "What happens to total platform outcomes if we roll out this policy to everyone?" It differs from the Direct Treatment Effect (DTE), which isolates the effect on treated units holding others' treatments fixed.
+
+\subsection*{Identification Strategy 1: Switchback Experiments}
+
+Switchback designs randomise treatment across time windows within a market, exploiting temporal variation.
+
+\begin{definition}[Switchback Design]\label{def:switchback}
+Divide time into windows $t = 1, \ldots, T$. Randomly assign each window to treatment ($W_t = 1$) or control ($W_t = 0$). All units in the market receive the same treatment during window $t$. The GATE estimator is:
+\[
+\hat{\tau}_{\text{SB}} = \frac{1}{|\mathcal{T}_1|} \sum_{t \in \mathcal{T}_1} \bar{Y}_t - \frac{1}{|\mathcal{T}_0|} \sum_{t \in \mathcal{T}_0} \bar{Y}_t,
+\]
+where $\mathcal{T}_1$ and $\mathcal{T}_0$ are the sets of treatment and control windows.
+\end{definition}
+
+\begin{assumption}[No Carryover Effects]\label{assump:no-carryover}
+Treatment in window $t$ does not affect outcomes in window $t+1$:
+\[
+Y_{it'}(W_t, W_{t'}) = Y_{it'}(W'_t, W_{t'}), \quad \forall t' > t.
+\]
+\end{assumption}
+
+This assumption fails if treatment effects persist (e.g., driver incentives change behaviour in subsequent periods). Mitigation strategies include buffer periods (excluding observations immediately after switches), longer windows (4-hour or daily instead of hourly), and carryover modelling (including lagged treatment indicators in the regression). See Chapter~\ref{ch:spillovers} for formal treatment of temporal spillovers.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/fig_switchback_timeline.pdf}
+\caption{Switchback experiment timeline}
+\label{fig:switchback-timeline}
+\small\textit{Treatment allocation alternates between Treatment (blue) and Control (orange) across time windows (e.g., hourly) within a market. Grey buffer periods between switches allow carryover effects to dissipate. Outcomes during buffer periods are excluded from analysis.}
+\end{figure}
+
+\subsection*{Identification Strategy 2: Graph Cluster Randomisation}
+
+When markets can be partitioned into weakly connected clusters, randomise at the cluster level.
+
+\begin{definition}[Graph Cluster Randomisation]\label{def:cluster-randomisation}
+Partition the market graph into clusters $\mathcal{C}_1, \ldots, \mathcal{C}_K$ such that interference within clusters is strong but interference across clusters is weak. Randomly assign clusters to treatment or control. The GATE estimator is:
+\[
+\hat{\tau}_{\text{GCR}} = \frac{1}{|\mathcal{K}_1|} \sum_{k \in \mathcal{K}_1} \bar{Y}_k - \frac{1}{|\mathcal{K}_0|} \sum_{k \in \mathcal{K}_0} \bar{Y}_k,
+\]
+where $\bar{Y}_k$ is the average outcome in cluster $k$.
+\end{definition}
+
+\begin{assumption}[Limited Cross-Cluster Interference]\label{assump:cluster-interference}
+Outcomes in cluster $k$ depend only on treatments within cluster $k$:
+\[
+Y_{ik}(\mathbf{W}_k, \mathbf{W}_{-k}) = Y_{ik}(\mathbf{W}_k, \mathbf{W}'_{-k}), \quad \forall \mathbf{W}_{-k}, \mathbf{W}'_{-k}.
+\]
+\end{assumption}
+
+This assumption is plausible when clusters are geographically separated (e.g., different cities) or temporally separated (e.g., different weeks). It fails when users travel across clusters or when platform-wide effects (e.g., reputation, learning) spill across clusters.
+
+\begin{remark}[Marketplace Applications]\label{rem:marketplace-interference}
+While the case study below focuses on ride-hailing, the same methods apply to e-commerce marketplaces and other multi-sided platforms:
+\begin{enumerate}
+\item \textbf{Seller promotions.} Subsidising some sellers affects buyer traffic and prices for all sellers. Cluster randomisation at the product category or geographic level can isolate effects.
+\item \textbf{Search ranking changes.} Changing ranking for some products affects visibility and sales of competing products. See Section~\ref{sec:ranking-algorithms}.
+\item \textbf{Commission structure.} Changing fees for some sellers affects their pricing, which spills over to buyer choices and competitor responses. See Section~\ref{sec:seller-interventions}.
+\end{enumerate}
+The key insight is that marketplace interventions operate through equilibrium effects: any treatment that shifts supply, demand, or prices for treated units will spill over to untreated units through the market mechanism.
+\end{remark}
+
+\subsection*{Estimation}
+
+For switchback experiments, use regression with time-window fixed effects and cluster standard errors at the window level:
+\[
+Y_{it} = \alpha + \tau W_t + \gamma_t + X_{it}'\beta + \varepsilon_{it},
+\]
+where $\gamma_t$ captures time-of-day and day-of-week effects. Cluster at the window level to account for within-window correlation.
+
+For graph cluster randomisation, use difference-in-means at the cluster level with cluster-robust standard errors. With few clusters, use randomisation inference over the set of possible cluster assignments.
+
+\subsection*{Variance and Power}
+
+Platform experiments face a variance-bias trade-off. Shorter time windows reduce carryover bias but increase variance (fewer independent observations). Fewer, larger clusters reduce cross-cluster spillover bias but also increase variance (fewer clusters to compare). The analyst must balance these considerations based on the expected magnitude of carryover effects and cross-cluster spillovers.
+
+\begin{remark}[Long-Run Platform Dynamics]\label{rem:platform-dynamics}
+Switchback experiments and short-run cluster trials capture immediate equilibrium effects but may miss long-run dynamics:
+\begin{enumerate}
+\item \textbf{Behavioral adaptation.} Drivers and sellers learn to game incentive structures over time. Short-run effects may overstate (novelty) or understate (learning curve) long-run effects.
+\item \textbf{Network effects.} Platform value grows with user base. Experiments in new markets may not generalise to mature markets with established network effects.
+\item \textbf{Reputation accumulation.} Driver and seller ratings accumulate over time, creating path dependence that short-run experiments cannot capture.
+\end{enumerate}
+For long-run dynamics, consider staggered market rollouts (Chapter~\ref{ch:did}) or structural models that extrapolate short-run estimates to long-run equilibria.
+\end{remark}
+
+\begin{definition}[Effective Sample Size for Switchback]\label{def:switchback-ess}
+With $T$ time windows of length $\ell$ and autocorrelation $\rho$ within windows, the effective sample size is approximately:
+\[
+N_{\text{eff}} \approx \frac{T}{1 + (n_\ell - 1)\rho},
+\]
+where $n_\ell$ is the number of observations per window. High autocorrelation dramatically reduces power.
+\end{definition}
+
+\subsection*{Diagnostic Checklist}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.14: Platform Experiment Diagnostic Checklist]
+\textbf{For Switchback Experiments:}
+\begin{itemize}
+    \item Carryover test: Compare outcomes in early vs. late portions of each window. Persistent differences suggest carryover.
+    \item Buffer adequacy: Vary buffer length and check stability of estimates.
+    \item Time-of-day balance: Verify that treatment and control windows are balanced across hours and days.
+    \item Autocorrelation: Estimate within-window autocorrelation to assess effective sample size.
+\end{itemize}
+
+\textbf{For Graph Cluster Randomisation:}
+\begin{itemize}
+    \item Cluster independence: Test for cross-cluster spillovers using outcomes in control clusters adjacent to treated clusters.
+    \item Cluster balance: Compare cluster-level covariates across treatment arms.
+    \item Few-cluster inference: With $< 20$ clusters, use randomisation inference rather than asymptotic standard errors.
+\end{itemize}
+
+\textbf{For Both Designs:}
+\begin{itemize}
+    \item GATE vs. DTE: Report both if possible. Large differences indicate strong interference.
+    \item Heterogeneity: Check whether effects differ by market size, time of day, or user segment.
+    \item External validity: Platform experiments in one city may not generalise to others.
+\end{itemize}
+\end{tcolorbox}
+
+\subsection*{Case Study: Ride-Hailing Driver Incentive}
+
+We illustrate the switchback approach with a hypothetical ride-hailing platform. The numbers are illustrative and do not represent real data.
+
+\paragraph{Setting.} A ride-hailing platform tests a driver incentive: \$5 bonus per completed ride during peak hours. The goal is to estimate the effect on completed rides (supply and demand equilibrium outcome).
+
+\paragraph{Design.} Switchback experiment in one city over 4 weeks. Time windows are 2 hours. Treatment and control alternate randomly, with 30-minute buffer periods between switches. Total: 336 windows (168 treatment, 168 control after excluding buffers).
+
+\paragraph{Data.} 1.2 million ride requests; 950,000 completed rides. Outcomes measured at the window level: completed rides, average wait time, driver earnings.
+
+\paragraph{Results.} The switchback estimate of the GATE on completed rides is +8.2\% (SE = 2.1\%, $p < 0.01$). Average wait time decreased by 1.4 minutes (SE = 0.3 min). Driver earnings per hour increased by \$4.20 (SE = \$0.80).
+
+\paragraph{Diagnostics.} Carryover test: outcomes in the first 30 minutes of each window are similar to outcomes in the last 30 minutes, suggesting the 30-minute buffer is adequate. Time-of-day balance: treatment and control windows are evenly distributed across hours (Kolmogorov-Smirnov $p = 0.72$). Autocorrelation within windows is $\rho = 0.35$, yielding effective sample size of approximately 120 independent observations.
+
+\paragraph{Cost-Benefit.} The incentive cost \$5 per ride × 950,000 rides × 0.5 (treatment share) = \$2.375 million. The 8.2\% increase in completed rides translates to approximately 78,000 additional rides. At \$15 average revenue per ride, incremental revenue is \$1.17 million. The incentive is not profitable in the short run.
+
+\paragraph{Interpretation.} The driver incentive increases supply and reduces wait times, leading to more completed rides. However, the direct cost exceeds the incremental revenue. The platform might consider: (1) targeting incentives to high-demand periods only; (2) reducing the bonus amount; or (3) valuing the long-run effects on driver retention and rider satisfaction that the short-run analysis misses.

@@ -1,0 +1,47 @@
+\section{Conformal and Distribution-Free Methods}
+\label{sec:conformal}
+\index{conformal inference|(}
+\index{prediction intervals}
+
+When our goal is prediction—such as constructing counterfactual trajectories in Synthetic Control (Chapter~\ref{ch:sc})—conformal inference provides rigorous finite-sample guarantees for prediction intervals, regardless of the underlying distribution.
+
+\begin{assumption}[Exchangeability]\label{assump:inference-exchangeability}
+The sequence of observations $(X_1, Y_1), \ldots, (X_n, Y_n), (X_{\text{new}}, Y_{\text{new}})$ is exchangeable, meaning its joint distribution is invariant to permutations of indices. This holds for i.i.d. data and certain martingale sequences.
+\end{assumption}
+
+\begin{definition}[Conformity Score]\label{def:conformity-score}
+For a prediction model $\hat{\mu}(X)$ and observation $(X_i, Y_i)$, the conformity score measures how well the observation conforms to the model:
+\[
+s_i = |Y_i - \hat{\mu}(X_i)|,
+\]
+or more generally $s_i = \mathcal{S}(X_i, Y_i; \hat{\mu})$ for some score function $\mathcal{S}$. Low scores indicate good conformity; high scores indicate the observation is unusual relative to the model.
+\end{definition}
+
+We use these scores to calibrate the uncertainty of future predictions.
+
+\begin{definition}[Split Conformal Prediction]\label{def:conformal-interval}
+Split conformal prediction constructs prediction intervals by splitting the data into a training set $\mathcal{I}_{\text{train}}$ and a calibration set $\mathcal{I}_{\text{cal}}$. First, fit the model $\hat{\mu}$ on $\mathcal{I}_{\text{train}}$. Then, compute conformity scores $s_i = |Y_i - \hat{\mu}(X_i)|$ for all $i \in \mathcal{I}_{\text{cal}}$.
+
+Find the $(1-\alpha)(1 + 1/|\mathcal{I}_{\text{cal}}|)$-quantile of the calibration scores, denoted $\hat{q}$. For a new point $X_{\text{new}}$, the prediction interval is $[\hat{\mu}(X_{\text{new}}) - \hat{q}, \hat{\mu}(X_{\text{new}}) + \hat{q}]$.
+\end{definition}
+
+This construction guarantees coverage.
+
+\begin{theorem}[Marginal Coverage]\label{thm:conformal-coverage}
+Under Assumption~\ref{assump:inference-exchangeability} (exchangeability of calibration and test observations), the conformal prediction interval satisfies:
+\[
+P(Y_{\text{new}} \in \hat{C}(X_{\text{new}})) \geq 1 - \alpha,
+\]
+where the probability is over the joint distribution of calibration data and new observation. The coverage is marginal (averaging over $X_{\text{new}}$) rather than conditional on $X_{\text{new}}$. No distributional assumptions beyond exchangeability are required.
+\end{theorem}
+
+\begin{remark}[Conformal Inference in Marketing]\label{rem:conformal-marketing}
+Conformal methods are valuable in marketing when:
+\begin{enumerate}
+\item \textbf{Synthetic control counterfactuals} (Chapter~\ref{ch:sc}): Constructing prediction intervals for the counterfactual trajectory $\hat{Y}_{\istar t}(0)$ without assuming normality.
+\item \textbf{Demand forecasting with uncertainty}: When point predictions inform decisions (pricing, inventory), conformal intervals provide valid coverage guarantees.
+\item \textbf{Heterogeneous treatment effects}: Conformal inference can provide prediction intervals for individual-level treatment effects in CATE estimation.
+\end{enumerate}
+The key limitation is that coverage is \emph{marginal} (averaging over test points), not conditional. In settings with substantial heterogeneity, intervals may be too wide for some observations and too narrow for others. Conditional conformal methods exist but require additional assumptions.
+\end{remark}
+\index{conformal inference|}

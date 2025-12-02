@@ -1,0 +1,115 @@
+\section{Diagnostics and Goodness of Fit}
+\label{sec:hybrid-diagnostics}
+
+Credible hybrid method analysis requires rigorous diagnostics that assess pre-treatment fit, balance, weight dispersion, influence, and sensitivity to specification choices. These diagnostics serve two purposes: they provide evidence that the hybrid method constructs a credible counterfactual, and they guide decisions about method selection, tuning, and donor curation. This section outlines the core diagnostic workflow, with forward references to the comprehensive treatment in Chapter~\ref{ch:design-diagnostics}. We emphasise method-specific considerations and the connection between diagnostic findings and remedial actions.
+
+\subsection*{Pre-Treatment Fit (RMSPE)}
+
+Pre-period RMSPE (root mean squared prediction error) quantifies how closely the hybrid synthetic control matches the treated unit in the pre-treatment period. The formula depends on the method.
+
+For standard synthetic control:
+\[
+\text{RMSPE}_{\text{pre}}^{\text{SC}} = \sqrt{\frac{1}{T_0} \sum_{t=1}^{T_0} \left( Y_{1t} - \sum_j \hat{w}_j Y_{jt} \right)^2}.
+\]
+
+For augmented synthetic control:
+\[
+\text{RMSPE}_{\text{pre}}^{\text{ASCM}} = \sqrt{\frac{1}{T_0} \sum_{t=1}^{T_0} \left( Y_{1t} - \sum_j \hat{w}_j Y_{jt} - X_{1t}' \hat{\beta} \right)^2}.
+\]
+
+For SDID (incorporating time weights):
+\[
+\text{RMSPE}_{\text{pre}}^{\text{SDID}} = \sqrt{\sum_{t=1}^{T_0} \hat{\lambda}_t \left( Y_{1t} - \sum_j \hat{w}_j Y_{jt} - \hat{\alpha} \right)^2},
+\]
+where $\hat{\lambda}_t$ are time weights and $\hat{\alpha}$ is the intercept shift.
+
+A useful threshold is RMSPE less than 5 to 10 per cent of the outcome's standard deviation (Section~\ref{sec:hybrid-tuning}). If RMSPE exceeds this threshold, the hybrid model does not fit well enough to provide a credible counterfactual. RMSPE should be compared across methods (SC, ASCM, SDID, DID). If the hybrid achieves RMSPE at least 20 per cent lower than the simpler method, the additional complexity is likely justified. If the improvement is marginal, the simpler method is preferable for transparency.
+
+\paragraph{Decision.} If RMSPE is high despite tuning, consider: (1) adding or removing predictors, (2) changing the augmentation model (for ASCM), (3) increasing regularisation to prevent overfitting, or (4) curating the donor pool to include more similar units. If no specification achieves acceptable fit, the treated unit may be too different from available donors, and the analyst should acknowledge this limitation.
+
+\subsection*{Covariate Balance}
+
+Balance metrics assess whether the hybrid synthetic control matches the treated unit on covariates. Standardised mean differences (SMDs) compare the covariate means for the treated unit to the weighted covariate means for the synthetic control:
+\[
+\text{SMD}_x = \frac{X_{1} - \sum_j \hat{w}_j X_{j}}{\sqrt{\text{Var}(X)}},
+\]
+where $X$ is a covariate, $X_1$ is the treated unit's value, $\sum_j \hat{w}_j X_j$ is the synthetic control's weighted mean, and $\text{Var}(X)$ is the variance of $X$ across all units.
+
+Thresholds from the matching literature \citet{austin2011introduction} suggest that SMD less than 0.1 (in absolute value) indicates good balance, SMD between 0.1 and 0.2 indicates acceptable balance, and SMD greater than 0.2 indicates poor balance. Balance tables report SMDs for all covariates, enabling the analyst to identify which covariates are well balanced and which are imbalanced.
+
+\paragraph{Decision.} If a covariate has SMD greater than 0.2, consider: (1) adding that covariate to the augmentation model (for ASCM), (2) including it as a predictor in the weighting optimisation, or (3) restricting the donor pool to units with similar values on that covariate. If balance cannot be achieved on theoretically important covariates, report the imbalance and discuss whether it threatens identification.
+
+\subsection*{Weight Dispersion}
+
+Weight dispersion measures how concentrated or diffuse the unit and time weights are. For unit weights, the effective number of donors (inverse Herfindahl index) is:
+\[
+N_{\text{eff}} = \frac{1}{\sum_j \hat{w}_j^2},
+\]
+which ranges from one (all weight on a single donor) to $N_0$ (uniform weights). For time weights in SDID:
+\[
+T_{\text{eff}} = \frac{1}{\sum_t \hat{\lambda}_t^2}.
+\]
+
+An effective number between 5 and 15 is typical for well-tuned hybrid methods (Section~\ref{sec:hybrid-tuning}). Effective number less than 3 suggests the synthetic control is driven by one or two idiosyncratic donors, raising overfitting concerns. Effective number approaching $N_0$ suggests the method is approaching uniform weighting, potentially ignoring relevant heterogeneity.
+
+\paragraph{Decision.} If $N_{\text{eff}}$ is too low, increase the ridge penalty $\eta$ to diffuse weights. If $N_{\text{eff}}$ is too high, the method may be over-regularised; reduce $\eta$ or verify that the treated unit genuinely resembles the average donor. For SDID, examine whether $T_{\text{eff}}$ is concentrated on recent periods (sensible if recent history is more predictive) or on specific periods (which may indicate data anomalies).
+
+\subsection*{Leverage and Influence}
+
+Leverage checks identify donors or periods with unusually large influence on the hybrid estimates. For unit weights, donors with large $\hat{w}_j$ have high leverage. For time weights (in SDID), periods with large $\hat{\lambda}_t$ have high leverage.
+
+Leave-one-donor-out and leave-one-period-out sensitivity analyses quantify influence. Re-estimate the hybrid method excluding each donor or period in turn. Compute the change in the treatment effect estimate. If excluding a single donor or period changes the estimate by more than 20 to 30 per cent, that donor or period is influential. Report the range of estimates across leave-one-out specifications.
+
+\paragraph{Decision.} If a single donor has outsized influence, investigate whether that donor is truly comparable or exhibits idiosyncratic patterns. Consider excluding highly influential donors and reporting both estimates (with and without). If a single time period has outsized influence (for SDID), check whether that period contains an unusual event or data error.
+
+\subsection*{Placebo-in-Time Tests}
+
+Placebo-in-time tests assess whether the hybrid model extrapolates correctly within the pre-treatment period. The test applies the hybrid procedure using a pseudo-intervention date in the middle of the pre-treatment period. Estimate weights and adjustments using only the early pre-treatment periods. Compute the pseudo treatment effect in the late pre-treatment periods.
+
+If the pseudo effect is near zero (statistically insignificant and small relative to the actual estimate), this supports the stability assumption: the model estimated on early pre-treatment data generalises to late pre-treatment data. If the pseudo effect is large (statistically significant or large relative to the actual estimate), the model does not extrapolate well, and the post-treatment estimate may be biased.
+
+\paragraph{Decision.} If placebo-in-time tests fail, the stability assumption may be violated. Consider: (1) using more flexible models (e.g., TROP with factor structure), (2) restricting to more recent pre-treatment periods, or (3) acknowledging the limitation and interpreting results cautiously.
+
+\subsection*{Residual Diagnostics}
+
+Plot the residuals $e_{1t} = Y_{1t} - \tilde{Y}_{1t}^{\text{syn}}$ (the difference between the treated unit's outcomes and the hybrid synthetic control's outcomes) over the full sample period, marking the intervention time.
+
+If the pre-treatment residuals are small, randomly scattered around zero, and exhibit no autocorrelation, the hybrid model fits well. If the pre-treatment residuals exhibit trends, seasonality, or large outliers, the model is misspecified. If the post-treatment residuals differ systematically from the pre-treatment residuals, this signals either a treatment effect or model instability.
+
+\paragraph{Decision.} If residuals exhibit seasonality, add seasonal dummies to the augmentation model or use time weights that account for seasonal patterns. If residuals exhibit trends, consider adding time trends to the model or using SDID with time weights. If residuals have outliers, investigate whether those periods contain data errors or unusual events.
+
+\subsection*{Method-Specific Diagnostic Considerations}
+
+Different hybrid methods have specific diagnostic considerations beyond the generic checks above.
+
+\paragraph{ASCM.} For augmented synthetic control, assess whether the augmentation model is stable. Compute the ridge or lasso path for the regression coefficients and verify that coefficients are not extreme. If the augmentation correction is large relative to the weighting component, the double robustness property is being invoked heavily, which increases sensitivity to the outcome model specification. Report the magnitude of the augmentation correction relative to the total counterfactual.
+
+\paragraph{SDID.} For synthetic difference-in-differences, examine the time weights $\hat{\lambda}_t$. If weights are concentrated on the final pre-treatment period, the method is essentially first-differencing. If weights are uniform, the method is averaging over all pre-treatment periods. Neither extreme is necessarily wrong, but both should be understood. Also verify that the intercept shift $\hat{\alpha}$ is not extreme relative to the outcome scale.
+
+\paragraph{TROP.} For triply robust panel estimation, the cross-validation-selected tuning parameters provide diagnostic information. If $\hat{\lambda}_{nn} \to \infty$ (large nuclear norm penalty), the factor structure is negligible and TROP reduces to SDID. If $\hat{\lambda}_{\text{unit}} \to \infty$, only the nearest donor contributes, suggesting extreme heterogeneity. Report the selected tuning parameters and interpret what they imply about the data structure.
+
+\subsection*{Practical Workflow}
+
+Implementing the diagnostic workflow proceeds through interrelated stages. The analyst begins by computing pre-period RMSPE for the hybrid method and for alternative methods (standard SC, SDID, DID). If the hybrid does not substantially improve fit, the simpler method is preferable. Next, the analyst assesses covariate balance using SMD tables, flagging any covariates with SMD greater than 0.2 and considering whether they require adjustment.
+
+Weight dispersion is then evaluated by computing $N_{\text{eff}}$ (and $T_{\text{eff}}$ for SDID) and comparing to the typical range of 5 to 15. If weights are too concentrated or too diffuse, the analyst adjusts regularisation or reviews donor curation. Leave-one-out sensitivity analyses follow, with the analyst re-estimating excluding each of the top five donors (by weight) and reporting the range of treatment effect estimates.
+
+Placebo-in-time tests provide evidence on model stability. The analyst applies the method at two or more pseudo-intervention dates within the pre-treatment period and verifies that pseudo effects are near zero. Finally, residual plots are inspected for trends, seasonality, autocorrelation, and outliers. Any patterns inform model refinement.
+
+Transparent reporting of these diagnostics builds confidence that the hybrid method provides a credible counterfactual. Good practice reports the RMSPE comparison, the balance table, $N_{\text{eff}}$, the range of leave-one-out estimates, the placebo test results, and the residual plot. This enables readers to assess the robustness of conclusions.
+
+\subsection*{Worked Example}
+
+Consider a brand evaluating a regional advertising campaign across five designated market areas (DMAs), with 25 control DMAs and 12 quarters of pre-treatment data. The analyst estimates ASCM with ridge regularisation selected by cross-validation ($\eta = 0.1$).
+
+Pre-treatment RMSPE for ASCM is 1.8 (outcome SD is 18), or 10 per cent of outcome SD. Standard SC achieves RMSPE 2.9 (16 per cent of SD). The 38 per cent reduction in RMSPE justifies the augmentation complexity. SDID achieves RMSPE 2.1 (12 per cent of SD), intermediate between ASCM and SC.
+
+Balance tables show SMD below 0.1 for household income, retail distribution, and media cost. Urbanisation has SMD of 0.15, which is acceptable but worth noting. Population density has SMD of 0.08 after augmentation, down from 0.22 for standard SC, illustrating how augmentation corrects imbalances.
+
+The effective number of donors is $N_{\text{eff}} = 8$, indicating moderate weight concentration. The three largest weights are 0.18, 0.14, and 0.12, with the remaining 22 donors sharing the rest. Leave-one-out sensitivity analysis (excluding the top five donors in turn) yields treatment effect estimates ranging from 4.2 to 5.4, with the base estimate at 4.9. This 24 per cent range is acceptable.
+
+Placebo-in-time tests at quarters 4 and 8 yield pseudo effects of 0.4 (SE 1.1) and -0.3 (SE 0.9), both statistically insignificant and small relative to the actual estimate. This supports the stability assumption.
+
+Residual plots show pre-treatment residuals scattered around zero with no clear trend. Post-treatment residuals are consistently positive, averaging 4.9 across five quarters, consistent with the treatment effect estimate. No unusual patterns or outliers are evident.
+
+Based on these diagnostics, the analyst concludes that ASCM provides a credible counterfactual. The augmentation improves fit substantially over SC, balance is good on key covariates, weights are reasonably dispersed, and the model extrapolates well within the pre-treatment period. The treatment effect estimate of 4.9 units (95 per cent CI: 2.1 to 7.7) is reported alongside these diagnostics, enabling readers to assess the strength of the evidence.

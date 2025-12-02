@@ -1,0 +1,120 @@
+\section{Identification, Assumptions, and Design Implications}
+\label{sec:factor-identification}
+
+Causal identification in factor models and matrix completion requires assumptions about the structure of untreated potential outcomes, the stability of this structure across pre-treatment and post-treatment periods, and the absence of anticipation or interference. This section articulates these assumptions using formal Assumption environments, clarifies their testable implications, and discusses when factor designs dominate alternative approaches.
+
+\subsection*{Formal Identification Assumptions}
+
+We state the identification assumptions using the potential outcomes framework introduced in Chapter~\ref{ch:frameworks}.
+
+\begin{assumption}[Low-Rank Structure]
+\label{assump:factor-lowrank}
+The matrix of untreated potential outcomes $\mathbf{Y}(0)$ admits a low-rank representation:
+\[
+\mathbb{E}[\mathbf{Y}(0) | \mathbf{F}, \Lambda] = \Lambda \mathbf{F}',
+\]
+where $\text{rank}(\Lambda \mathbf{F}') = R \ll \min(N, T)$. The idiosyncratic errors $\mathbf{E} = \mathbf{Y}(0) - \Lambda \mathbf{F}'$ satisfy $\mathbb{E}[E_{it}] = 0$ and weak dependence conditions.
+\end{assumption}
+
+\paragraph{Interpretation.} The low-rank assumption asserts that the $N \times T$ outcome matrix (with idiosyncratic errors removed) has rank $R$, meaning outcomes are driven by $R$ common factors rather than $N \times T$ independent shocks. In marketing panels, outcomes often exhibit strong common patterns (seasonality, macroeconomic shocks, category trends), making low-rank structure plausible. The condition $R \ll \min(N, T)$ ensures that the rank is small relative to the panel dimensions; in practice, $R$ ranges from 3 to 10 for typical marketing panels (Section~\ref{sec:factor-ife}).
+
+\paragraph{Testable implication.} Plot the eigenvalues of the outcome matrix (scree plot). If the first $R$ eigenvalues explain most of the variance and subsequent eigenvalues are small, the low-rank assumption is plausible. Information criteria (IC2) and eigenvalue ratio tests provide formal diagnostics.
+
+\begin{assumption}[Strong Factors]
+\label{assump:factor-strong}
+The factors and loadings are pervasive. Formally, as $N, T \to \infty$:
+\[
+\frac{1}{T} \mathbf{F}'\mathbf{F} \xrightarrow{p} \Sigma_F > 0, \quad \frac{1}{N} \Lambda'\Lambda \xrightarrow{p} \Sigma_\Lambda > 0,
+\]
+where $\Sigma_F$ and $\Sigma_\Lambda$ are positive definite matrices.
+\end{assumption}
+
+\paragraph{Interpretation.} ``Pervasive'' means that each factor affects many units with substantial intensity, and each unit is affected by multiple factors. This distinguishes factors from idiosyncratic noise: factor-driven variation grows with sample size, while noise averages out. Strong factors produce clear separation between signal and noise eigenvalues. Weak factors (affecting few units or with small intensity) are harder to estimate consistently and may require regularisation (Section~\ref{sec:factor-matrix}).
+
+\paragraph{Testable implication.} Examine the eigenvalue spectrum. Strong factors produce eigenvalues that grow linearly with $N$ or $T$; weak factors produce eigenvalues of constant order. If the first few eigenvalues are much larger than subsequent ones, factors are strong.
+
+\begin{assumption}[Pre-Treatment Validity]
+\label{assump:factor-pretreatment}
+For any treated unit $i$:
+\begin{enumerate}
+\item \textbf{Invertibility:} The pre-treatment factor matrix $\mathbf{F}_{\text{pre}}$ has full rank $R$, so the treated unit's loading $\lambda_i$ can be uniquely identified from pre-treatment outcomes.
+\item \textbf{No anticipation:} Outcomes in the pre-treatment period are not affected by future treatment: $Y_{it} = Y_{it}(0)$ for all $t \leq T_{0i}$.
+\end{enumerate}
+\end{assumption}
+
+\paragraph{Interpretation.} Invertibility ensures that the pre-treatment data contain enough information to estimate each unit's loading vector. This requires a sufficiently long pre-treatment period ($T_0 \geq R$) with enough variation to identify all factors. No anticipation ensures that pre-treatment observations for treated units reflect baseline factor structure, not anticipatory responses. Together, these conditions guarantee that the estimated loadings for treated units are unbiased.
+
+\paragraph{Testable implication.} Check that the pre-treatment period spans at least $R$ periods with distinct factor values. For no anticipation, conduct a placebo test: estimate the model using only early pre-treatment periods (before any anticipation could occur) and check whether the estimated loadings are stable when later pre-treatment periods are added. If loadings shift, anticipation may be present.
+
+\begin{assumption}[SUTVA or Explicit Interference Modelling]
+\label{assump:factor-sutva}
+Either:
+\begin{enumerate}
+\item \textbf{SUTVA:} The treatment applied to treated units does not affect the outcomes of control units: $Y_{it} = Y_{it}(0)$ for all control units $i$ and all periods $t$; or
+\item \textbf{Explicit modelling:} Interference is modelled through exposure mappings (Chapter~\ref{ch:spillovers}), so that $Y_{it}$ depends on treatment assignments of other units through known exposure functions.
+\end{enumerate}
+\end{assumption}
+
+\paragraph{Interpretation.} SUTVA ensures that control units provide valid information about untreated outcomes. If treated units spill over to controls (through competitive effects, customer migration, or supply chain linkages), control outcomes are contaminated, and the estimated factors and loadings are biased. Factor models inherit the same spillover challenges as synthetic control and difference-in-differences. The low-rank structure does not resolve interference violations.
+
+\paragraph{Testable implication.} Compare control units near treated units (potentially affected by spillovers) to control units far from treated units. If the ``near'' controls exhibit different post-treatment dynamics than ``far'' controls, spillovers may be present. Design-based solutions include buffer zones or excluding potentially contaminated controls.
+
+\begin{assumption}[Factor Stability]
+\label{assump:factor-stability}
+The factor structure that holds in the pre-treatment period and for control units continues to hold in the post-treatment period for treated units:
+\[
+Y_{it}(0) = \lambda_i' f_t + \varepsilon_{it} \quad \text{for all } i, t,
+\]
+where the loadings $\lambda_i$ and factors $f_t$ have the same structure (same rank $R$, same interpretation) across all cells.
+\end{assumption}
+
+\paragraph{Interpretation.} Stability ensures that the factor structure estimated from untreated cells (pre-treatment periods and control units) extrapolates correctly to treated cells (post-treatment periods for treated units). If the factor structure shifts---due to a macroeconomic shock, regulatory change, or competitive disruption that affects treated units differently than controls---the factor-imputed counterfactuals are biased.
+
+\paragraph{Testable implication.} Split the pre-treatment period into early and late subperiods. Estimate factors separately and check whether they are similar (stable factor trajectories). Examine control units' post-treatment outcomes: if they follow the estimated factor trajectory without large residuals, stability is plausible. Conduct robustness checks varying the rank or the estimation sample.
+
+\subsection*{Staggered Adoption}
+
+When treatment timing varies by unit (each unit $i$ has treatment start $T_{0i}$), the assumptions adapt as follows:
+
+\paragraph{Low-rank structure.} Unchanged---the outcome matrix has the same low-rank representation regardless of treatment timing.
+
+\paragraph{Pre-treatment validity.} Each unit's loading is identified from its own pre-treatment data. Units with longer pre-treatment periods provide more precise loading estimates. The no-anticipation condition applies to each unit's own treatment date.
+
+\paragraph{SUTVA.} Earlier-treated units may affect later-treated or never-treated units through spillovers. The control pool for later cohorts may be contaminated if spillovers propagate. Design should account for this by using not-yet-treated units carefully (Section~\ref{sec:factor-ife}).
+
+\paragraph{Factor stability.} Factors are identified from the pooled untreated cells $\Omega = \{(i,t) : t \leq T_{0i} \text{ or } i \text{ is never-treated}\}$. Stability requires that factors estimated from this irregular pattern generalise to the missing cells.
+
+\subsection*{When Factor Models Dominate}
+
+Factor models dominate parallel trends (DID) and synthetic control (SC) under specific conditions:
+
+\paragraph{Strong common shocks with heterogeneous exposure.} When outcomes co-move tightly due to a few macro, seasonal, or category factors, but units differ in their sensitivity to these shocks, parallel trends (which assumes identical sensitivity) is implausible. Factor models flexibly accommodate heterogeneous exposure by estimating loadings freely, producing accurate counterfactuals without requiring all units to respond identically.
+
+\paragraph{Treated units outside the convex hull.} Synthetic control requires that the treated unit's loading is a convex combination of control loadings. When treated units are outliers (larger, more urban, or otherwise different from all controls), SC cannot match them well. Factor models estimate loadings freely without convexity constraints, accommodating outliers.
+
+\paragraph{Few controls but long pre-treatment.} SC requires a donor pool of never-treated units; factor models can exploit long pre-treatment periods for treated units to estimate loadings, reducing reliance on never-treated controls. In panels with many treated units and few controls, factor models often provide more efficient estimates.
+
+\paragraph{When alternatives dominate.} Parallel trends or SC dominate when low-rank structure is weak (outcomes driven by many idiosyncratic shocks), because factor models overfit noise. If parallel trends is plausible (all units respond similarly to shocks) or if good SC matches exist, these simpler methods are more robust. The choice depends on diagnostic evidence: pre-treatment reconstruction error, factor stability, and sensitivity to rank.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Assumptions, Testable Implications, and Diagnostics}
+\label{tab:factor-assumptions}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Assumption} & \textbf{Testable Implication} & \textbf{Diagnostic} \\
+\midrule
+Low-Rank Structure & First $R$ eigenvalues explain most variance & Scree plot; IC2; eigenvalue ratio test \\
+\addlinespace
+Strong Factors & Eigenvalues grow with sample size & Eigenvalue spectrum; factor loadings non-sparse \\
+\addlinespace
+Pre-Treatment Validity & Loadings stable across pre-treatment subperiods & Early vs late pre-treatment estimation \\
+\addlinespace
+SUTVA & Near and far controls have similar dynamics & Placebo on ``buffer zone'' controls \\
+\addlinespace
+Factor Stability & Control post-treatment residuals near zero & Control RMSPE; factor trajectory plots \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}

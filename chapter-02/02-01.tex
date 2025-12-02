@@ -1,0 +1,60 @@
+\section{Potential Outcomes for Panels}
+\label{sec:potential-outcomes-panels}
+
+The measurement challenges outlined in Chapter 1 --- endogeneity, dynamics, spillovers --- demand a precise language for counterfactual comparisons. Without such a language, we cannot state clearly what we seek to learn, let alone estimate it credibly.
+
+The potential outcomes framework provides this foundation. Rubin formalised the framework \citet{rubin1974estimating}, and empirical economists now use it widely \citet{angrist2010credibility}. This section sets out the notation and assumptions that underpin the estimators developed in subsequent chapters, with particular attention to the complications that repeated observations introduce.
+
+We observe data on $N$ units indexed by $i = 1, \ldots, N$ over $T$ periods indexed by $t = 1, \ldots, T$. For each unit and period, we observe an outcome $Y_{it}$ and a treatment status $W_{it}$. In the simplest case, $W_{it}$ is binary: it takes the value one if unit $i$ is treated in period $t$ and zero otherwise. The treatment may be an intervention applied to the unit --- a store receiving a loyalty programme, a market exposed to an advertising campaign, a platform entering a city --- or it may represent a continuous intensity variable such as advertising expenditure or promotional discount depth. For now, we focus on the binary case. We return to continuous and multivalued treatments in Chapter~\ref{ch:continuous}.
+
+The potential outcomes framework posits that for each unit $i$ and period $t$, there exist multiple potential outcomes corresponding to different treatment states. In the binary case, we imagine two potential outcomes: $Y_{it}(0)$, the outcome that would be realised if unit $i$ were not treated in period $t$, and $Y_{it}(1)$, the outcome that would be realised if unit $i$ were treated in period $t$. The treatment assignment links the observed outcome $Y_{it}$ to these potential outcomes:
+\[
+Y_{it} = W_{it} Y_{it}(1) + (1 - W_{it}) Y_{it}(0).
+\]
+This switching equation clarifies that we observe only one potential outcome for each unit and period. We never observe the counterfactual outcome --- $Y_{it}(0)$ for treated observations and $Y_{it}(1)$ for control observations. Causal inference constructs credible estimates of these unobserved counterfactuals.
+
+In cross-sectional settings, where each unit is observed only once, the notation $Y_i(w)$ suffices to denote the potential outcome under treatment $w$ for unit $i$. Panel data introduce a complication: treatment may vary over time, and the effect of treatment in one period may depend on past treatments.
+
+Consider a customer who joins a loyalty programme. The effect of programme membership on purchases in the current quarter may depend not only on whether the customer is a member now but also on how long the customer has been a member, how many rewards the customer has accumulated, and whether the customer anticipates remaining a member in future quarters. These intertemporal linkages mean that potential outcomes in period $t$ may depend on the entire history of treatments up to that period, not just the current treatment $W_{it}$.
+
+To handle this reality, we adopt two representations of potential outcomes for panel data, each appropriate in different settings. The first, simpler representation assumes that potential outcomes depend only on the current treatment. We write $Y_{it}(w_t)$ to denote the potential outcome for unit $i$ in period $t$ if the treatment in period $t$ is $w_t$. This notation fits settings where treatment effects are instantaneous and history-independent --- where the impact of treating a unit in period $t$ does not depend on whether the unit was treated in earlier periods and where anticipation effects are absent.
+
+But marketing rarely offers such clean settings.
+
+The second, more general representation allows potential outcomes to depend on the entire treatment path. We use the notation $\underline{w}^t = (w_1, w_2, \ldots, w_t)$ to denote the vector of treatment assignments from period one through period $t$, where the underline emphasises that this is a treatment history rather than a scalar. The potential outcome $Y_{it}(\underline{w}^t)$ depends on this entire history. For example, if a store adopts a loyalty programme in quarter two and remains in the programme through quarter four, the potential outcome $Y_{i4}(\underline{w}^4)$ corresponds to the history $(0, 1, 1, 1)$, indicating no programme in quarter one and programme participation in quarters two through four. A different treatment path --- say, adopting the programme in quarter three, $(0, 0, 1, 1)$ --- would generally produce a different potential outcome even though the current treatment status in quarter four is the same.
+
+The path-dependent notation is essential for settings where carryover effects, habit formation, or strategic interactions create dynamic responses. Advertising effects typically exhibit carryover: exposures in previous weeks contribute to brand awareness and purchase propensity in the current week. Loyalty programmes create switching costs that grow over time as customers accumulate points. Competitive responses unfold over multiple periods as rivals observe actions and adjust strategies. Ignoring these dynamics biases both short-run and long-run estimates. Chapter~\ref{ch:dynamics} develops methods explicitly designed for path-dependent potential outcomes, including distributed lag models, dynamic panel specifications, and structural approaches that embed marketing actions in intertemporal optimisation problems.
+
+A further complication arises because treatment assignment itself often responds to past outcomes. Firms do not randomly allocate marketing budgets across time. They increase advertising spending when demand trends upward, launch loyalty programmes in markets where early indicators suggest success, and adjust promotional intensity based on competitor actions and recent sales performance. This endogeneity means that even if we correctly specify the dynamic structure of potential outcomes, we must still address why units receive particular treatment paths at particular times. The assignment mechanism --- whether treatments are allocated based on past outcomes, anticipated future trends, or exogenous factors --- determines which identification strategies are credible. We return to assignment mechanisms in detail in Section~\ref{sec:assignment-mechanisms}.
+
+We now formalise two assumptions that determine when we can simplify from the general framework to more tractable special cases. Panel methods frequently invoke both assumptions, though marketing contexts often violate them.
+
+\begin{assumption}[No Anticipation]
+\label{assump:no-anticipation}
+Potential outcomes in period $t$ do not depend on treatment assignments in periods $s > t$. Formally, for all units $i$, periods $t$, and any two treatment paths that agree through period $t$,
+\[
+Y_{it}(w_1, \ldots, w_t, w_{t+1}, \ldots, w_T) = Y_{it}(w_1, \ldots, w_t, w'_{t+1}, \ldots, w'_T)
+\]
+for any future paths $(w_{t+1}, \ldots, w_T)$ and $(w'_{t+1}, \ldots, w'_T)$.
+\end{assumption}
+
+No anticipation rules out the possibility that units respond to expected future treatments. In marketing, consumers may learn about an impending loyalty programme launch and alter their behaviour in advance. Retailers may preemptively adjust prices in anticipation of a competitor's entry. Firms may front-load advertising expenditures ahead of a major product launch. When anticipation is plausible, event-study specifications with pre-treatment leads (Chapter~\ref{ch:event}) can test for anticipatory effects, and identification must rely on comparisons that account for this anticipation.
+
+\begin{assumption}[Stable Unit Treatment Value Assumption (SUTVA) for Panels]
+\label{assump:sutva}
+The potential outcomes for unit $i$ depend only on unit $i$'s own treatment path and not on the treatment paths of other units. Moreover, there is a single, well-defined version of treatment at each level. Formally,
+\[
+Y_{it}(\underline{w}^t_1, \underline{w}^t_2, \ldots, \underline{w}^t_N) = Y_{it}(\underline{w}^t_i),
+\]
+where $\underline{w}^t_j$ denotes the treatment path for unit $j$.
+\end{assumption}
+
+Rubin formalised SUTVA \citet{rubin1980randomization}. It asserts that there are no spillovers or interference between units and that treatment is consistently defined.
+
+Marketing routinely violates this assumption. A loyalty programme offered to customers in one store may generate word-of-mouth effects that influence purchases at nearby stores. Advertising shown to users in one city may spill over to neighbouring cities through migration or media markets that overlap geographic boundaries. Competitive reactions create negative spillovers: when one firm increases advertising, competitors may respond, partially offsetting the effect. Even the definition of treatment may be ambiguous. A loyalty programme might be implemented differently across stores, with varying enrollment incentives, rewards structures, and customer service quality.
+
+Violations of SUTVA do not render causal inference impossible, but they require explicit modelling of the interference structure. Chapter~\ref{ch:spillovers} develops methods for settings where spillovers are present, including spatial econometric models, network-based approaches, and partial identification strategies that bound effects when the full interference structure is unknown. SUTVA is an assumption, not an axiom. Like all assumptions, it must be justified by institutional knowledge and subjected to sensitivity analysis.
+
+Figure~\ref{fig:po-indexing} contrasts the two notations visually. The contemporaneous notation $Y_{it}(w)$ assumes treatment effects depend only on current treatment status. The path-dependent notation $Y_{it}(\underline{w}^t)$ allows outcomes to depend on the entire treatment history. Marketing applications often require the richer path-dependent framework to capture carryover, habit formation, and strategic dynamics.
+
+Throughout this book, we adopt whichever notation is most appropriate for the method under discussion. In chapters focused on difference-in-differences and synthetic control (Chapters~\ref{ch:did}, \ref{ch:event}, \ref{ch:sc}, \ref{ch:generalized-sc}), we often use the contemporaneous notation $Y_{it}(w)$ when the focus is on clean comparisons of levels or changes. But we remind the reader that these comparisons may conflate short-run and accumulated effects if dynamics are present. In chapters on dynamics and spillovers (Chapters~\ref{ch:dynamics}, \ref{ch:spillovers}), we work explicitly with path-dependent potential outcomes $Y_{it}(\underline{w}^t)$ and develop estimators that identify and estimate the full dynamic response. Event-study specifications (Chapter~\ref{ch:event}) trace out how treatment effects evolve over event time, effectively estimating a sequence of path-dependent effects indexed by time since treatment adoption. Distributed lag models (Chapter~\ref{ch:dynamics}) parameterise the carryover structure, allowing current outcomes to depend on current and lagged treatments. The notation should serve the substance, not constrain it.

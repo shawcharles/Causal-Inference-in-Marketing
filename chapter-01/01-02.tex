@@ -1,0 +1,43 @@
+\section{What Are Panel Data Methods? A Conceptual Framework}
+\label{sec:conceptual-framework}
+
+Panel data methods exploit a fundamental asymmetry: by observing the same units repeatedly over time, we can learn about causal effects by comparing changes in outcomes for treated units to changes in outcomes for control units. This within-unit, over-time variation gives us leverage unavailable to cross-sectional or time-series analysis alone.
+
+Consider a cross-sectional comparison. Suppose we observe that stores participating in a loyalty programme have higher sales than stores without the programme. This correlation may reflect a causal effect. But it may equally reflect pre-existing differences between stores that adopt loyalty programmes and those that do not. Even if we measure and control for observable store characteristics -- size, location, demographics -- unobserved factors like management quality or local brand strength may confound the comparison.
+
+A pure time-series approach fares no better. If we observe that a single store's sales increase after launching a loyalty programme, we cannot determine whether the programme caused the increase or whether sales would have risen anyway due to seasonal trends, competitive changes, or macroeconomic conditions. Without observing a contemporaneous control group, we cannot separate the treatment effect from the counterfactual evolution that would have occurred in the treatment's absence.
+
+Panel data methods combine the strengths of both approaches. By observing multiple stores over multiple periods, we can compare the change in sales for stores that adopt a loyalty programme to the change in sales for stores that do not adopt the programme over the same period. If stores in the two groups are similar enough that they would have followed parallel trends in the absence of the programme, then the difference in changes identifies the causal effect of the programme. This difference-in-differences logic -- comparing differences across groups to differences over time -- eliminates both time-invariant confounding and common time trends.
+
+The comparison table below summarises how panel data methods sit within the broader landscape of causal inference approaches:
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Comparison of Causal Inference Approaches for Marketing}
+\label{tab:method-comparison}
+\begin{tabularx}{\textwidth}{Y Y Y Y Y}
+\toprule
+Method & Units & Time & Identification & Marketing Example \\
+\midrule
+Cross-section & Many independent customers or markets & Single snapshot ($t=1$) & Rich covariates support unconfoundedness; overlap diagnostics critical & One-off survey linking satisfaction to churn propensity with demographic controls \\
+Time series & Single unit observed frequently & Long horizon with $T \gg 1$ & Weak/strong stationarity, no structural breaks, lag structure well-specified & Brand-level sales decomposed into trend, seasonality, and promotion shocks for a flagship product \\
+Panel & Many units tracked over time & Balanced or unbalanced panel with $N$ and $T$ large & Parallel trends, interactive fixed effects, staggered adoption diagnostics; short-$T$ vs long-$T$ regimes, dynamic panels & Chain-wide store sales across 40 quarters to evaluate phased loyalty rollouts \\
+Multi-way (matrix/tensor) panel & Multiple cross-sectional indices (e.g., stores $\times$ products $\times$ regions) & Many periods with outcomes arranged as matrices or tensors & Low-rank factor structure, matrix/tensor completion, structural break and cross-section dependence tests & SKU-by-store weekly panel used to recover missing sales and estimate treatment effects via matrix completion \\
+Spatial/interference panel & Many units linked by geography or networks & Many periods with possible staggered exposure & Exposure mappings, partial interference, spillover and saturation models & Geo experiment where treated cities can shift demand into neighbouring markets via travel or word-of-mouth \\
+High-dimensional/ML panel & Many units with rich covariates & Many periods, often with complex dynamics & Unconfoundedness with high-dimensional controls; orthogonalised ML scores, regularisation and post-selection inference; large-$N$, large-$T$ clustered asymptotics & User-level ad impressions with behavioural history used in double machine learning to estimate incremental lift \\
+RCT & Many treatment and control units & Randomised in time or across units & Designed random assignment, compliance, SUTVA, no spillovers & Geo-level A/B test of email creative with pre-registered outcomes and clustered inference \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+We must be precise about what panel data means. The defining feature, and the source of its statistical power, is that we observe the *same* individual units over multiple time periods. This is distinct from 'repeated cross-sections', where different samples of a population are drawn at different points in time. Repeated cross-sections allow us to track group averages. Panel data allows us to control for unobserved individual characteristics.
+
+This advantage positions panel methods within a broader hierarchy of causal reasoning. Pearl \citet{pearl2009causality} articulates three ascending levels. At the lowest rung, association, we observe correlations in data: advertising expenditure covaries with sales. One step up, intervention, we reason about the consequences of actions: what would happen to sales if we increased advertising expenditure by ten per cent? At the summit, counterfactuals, we imagine alternative histories: what would sales have been in the past quarter if we had run a different campaign?
+
+Marketing strategy questions typically require intervention or counterfactual reasoning. We want to know not just what patterns exist in historical data, but what would happen if we changed our strategy going forward. Predictive models and dashboards operate at the association level -- they identify patterns but do not justify causal claims. Panel methods, by making explicit assumptions about the assignment mechanism and the structure of potential outcomes, enable intervention-level reasoning. Under stronger assumptions -- no dynamic effects, no spillovers, correct specification of the outcome model -- some panel methods aspire to counterfactual reasoning by imputing the missing potential outcomes for treated units in treated periods.
+
+Moving up Pearl's hierarchy requires stronger assumptions. Association requires only that we observe variables and measure their relationships. Intervention requires assumptions about which variables are confounders, whether parallel trends hold, or whether a factor structure adequately captures unobserved heterogeneity. Counterfactuals require yet stronger assumptions about the stability of the data-generating process under hypothetical changes. Panel methods make these assumptions explicit, testable where possible, and subject to sensitivity analysis -- an approach we emphasise throughout this book.
+
+We develop these conceptual foundations systematically in Chapters~\ref{ch:did}--\ref{ch:spillovers}, always grounding abstract identification arguments in the concrete marketing measurement challenges introduced in Section~\ref{sec:measurement-crisis}.

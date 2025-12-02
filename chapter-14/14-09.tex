@@ -1,0 +1,16 @@
+\section{Tuning and Implementation}
+\label{sec:continuous-tuning}
+
+Implementing dose-response estimators requires careful choices about basis functions, weighting, and cross-validation design.
+
+\subsection*{Basis and Model Specification}
+
+Basis choice for dose uses splines or series with degrees selected by cross-validation confined to training folds. Interactions between dose and key moderators are allowed parsimoniously to avoid overfit. GPS models can be parametric or ML-based.
+
+\subsection*{Weighting and Trimming}
+
+Stabilised weights improve precision, with careful truncation to cap extremes. Common-support checks guide modest trimming, and sparse tail regions are binned or reported with wider bands.
+
+\subsection*{Cross-Validation Design}
+
+Fold design respects dependence by blocking at the unit or time level, or both when needed. Avoid leakage from post-treatment to pre-treatment periods when training nuisance functions \citet{angrist2010credibility}.

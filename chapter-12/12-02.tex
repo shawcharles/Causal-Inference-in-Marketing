@@ -1,0 +1,69 @@
+
+\section{Orthogonalisation and Neyman Orthogonality}
+\label{sec:dml-orthogonal}
+
+Orthogonalisation is the conceptual foundation of double machine learning. It ensures that treatment effect estimates are first-order insensitive to errors in nuisance function estimates.
+
+This insensitivity enables analysts to use flexible ML methods for nuisance estimation without biasing the target parameter. We formalise this using Neyman orthogonality.
+
+We present the theory in cross-sectional notation for clarity, then discuss panel adaptations. Let $Z = (Y, W, X)$ denote a single observation comprising outcome $Y$, treatment indicator $W \in \{0,1\}$, and covariates $X$.
+
+In panel settings, $Z$ corresponds to a unit-period observation $(Y_{it}, W_{it}, X_{it})$, and the expectations below are taken over the joint distribution of units and time periods. Section~\ref{sec:dml-crossfit} addresses the dependence structure that panels introduce.
+
+\begin{definition}[Neyman Orthogonality]\label{def:neyman-orthogonality}
+Let $\psi(Z; \tau, \eta)$ be a score function for target parameter $\tau \in \mathbb{R}$ with nuisance parameter $\eta \in \mathcal{H}$, where $\mathcal{H}$ is a function space. The score is Neyman-orthogonal at $(\tau_0, \eta_0)$ if:
+\begin{enumerate}[(i)]
+    \item \textbf{Moment condition:} $\mathbb{E}[\psi(Z; \tau_0, \eta_0)] = 0$;
+    \item \textbf{Orthogonality:} The Gateaux derivative of the expected score with respect to $\eta$ vanishes at $\eta_0$. For any direction $h$ in the tangent space,
+    \[
+    \left.\frac{d}{dt}\mathbb{E}[\psi(Z; \tau_0, \eta_0 + th)]\right|_{t=0} = 0.
+    \]
+\end{enumerate}
+\end{definition}
+
+This condition ensures that the bias from nuisance estimation is of second order. To achieve valid inference, we also require rate conditions on the nuisance estimators.
+
+The orthogonality condition has a concrete implication: if the nuisance estimator $\hat{\eta}$ converges to $\eta_0$ at rate $r_n$, then the bias in $\hat{\tau}$ is of order $r_n^2$ rather than $r_n$. This quadratic relationship is what permits slower-than-parametric nuisance rates while preserving $\sqrt{n}$-inference for $\tau$.
+
+\begin{assumption}[Nuisance Rate Conditions]\label{ass:nuisance-rates}
+Let $\hat{\eta} = (\hat{\mu}_0, \hat{e})$ denote the estimated nuisance functions, where $\mu_0(x) = \mathbb{E}[Y | W=0, X=x]$ is the outcome regression under control and $e(x) = P(W=1 | X=x)$ is the propensity score. The estimators satisfy:
+\begin{enumerate}[(i)]
+    \item \textbf{Product rate:} $\|\hat{\mu}_0 - \mu_0\|_{L^2} \cdot \|\hat{e} - e\|_{L^2} = o_P(n^{-1/2})$;
+    \item \textbf{Individual rates:} $\|\hat{\mu}_0 - \mu_0\|_{L^2} = o_P(n^{-1/4})$ and $\|\hat{e} - e\|_{L^2} = o_P(n^{-1/4})$;
+    \item \textbf{Complexity condition:} The function classes containing $\mu_0$ and $e$ satisfy entropy bounds that permit uniform convergence.
+\end{enumerate}
+The product rate ensures that the bias from nuisance estimation is $o_P(n^{-1/2})$, negligible relative to sampling variance. In panels, $n$ generally refers to the number of independent units $N$ (when clustering by unit) rather than total observations $NT$. If $T$ is large and fixed, rates scale with $N$. If both grow, rates scale with $NT$.
+\end{assumption}
+
+We now construct a score that satisfies Neyman orthogonality. The doubly robust score combines outcome regression and propensity weighting in a way that protects against misspecification of either component.
+
+\begin{definition}[Doubly Robust Score for ATT]\label{def:dr-score}
+For the Average Treatment Effect on the Treated (ATT), define $p = P(W=1)$ as the marginal treatment probability. The doubly robust score is:
+\[
+\psi^{\text{ATT}}(Z; \tau, \eta) = \frac{W}{p}\bigl(Y - \mu_0(X) - \tau\bigr) - \frac{e(X)(1-W)}{p(1-e(X))}\bigl(Y - \mu_0(X)\bigr),
+\]
+where $\eta = (\mu_0, e)$ collects the nuisance functions. Under unconfoundedness, $\mu_0(x) = \mathbb{E}[Y | W=0, X=x] = \mathbb{E}[Y(0) | X=x]$, so the outcome regression identifies the counterfactual mean for treated units.
+\end{definition}
+
+\begin{proposition}[Double Robustness]\label{prop:double-robustness}
+The moment condition $\mathbb{E}[\psi^{\text{ATT}}(Z; \tau_0, \eta)] = 0$ holds, and hence the estimator $\hat{\tau}$ solving the sample analogue is consistent for $\tau_0$, if either of the following holds:
+\begin{enumerate}[(i)]
+    \item The outcome regression is correctly specified: $\mu_0(x) = \mathbb{E}[Y(0) | X = x]$;
+    \item The propensity score is correctly specified: $e(x) = P(W = 1 | X = x)$.
+\end{enumerate}
+When both nuisance functions are correctly specified, the score achieves the semiparametric efficiency bound for the ATT.
+\end{proposition}
+
+\begin{proposition}[Neyman Orthogonality of DR Score]\label{prop:dr-orthogonality}
+The doubly robust score $\psi^{\text{ATT}}$ is Neyman-orthogonal with respect to $\eta = (\mu_0, e)$. For any perturbations $h_\mu$ and $h_e$,
+\[
+\left.\frac{d}{dt}\mathbb{E}[\psi^{\text{ATT}}(Z; \tau_0, \eta_0 + t(h_\mu, 0))]\right|_{t=0} = 0, \quad \left.\frac{d}{dt}\mathbb{E}[\psi^{\text{ATT}}(Z; \tau_0, \eta_0 + t(0, h_e))]\right|_{t=0} = 0.
+\]
+Consequently, estimation errors in $\hat{\mu}_0$ and $\hat{e}$ contribute only second-order bias to $\hat{\tau}$.
+\end{proposition}
+
+The intuition is straightforward. The first term in the DR score uses the outcome regression to predict counterfactuals; the second term reweights control observations to match the treated covariate distribution.
+
+When the outcome regression errs, the reweighting corrects for it. When the propensity score errs, the outcome regression provides the right answer directly.
+
+This complementarity is what makes the score orthogonal: perturbing one nuisance function does not change the expected score at the true parameter values, because the other nuisance function absorbs the perturbation.

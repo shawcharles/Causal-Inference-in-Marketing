@@ -1,0 +1,138 @@
+\section{Marketing Applications}
+\label{sec:dynamics-marketing}
+
+Dynamic treatment effects are ubiquitous in marketing, where interventions generate time-varying responses through awareness-building, habit formation, stockpiling, and decay. This section illustrates dynamic methods through three hypothetical marketing applications. The numerical examples are illustrative and demonstrate how dynamic analysis would proceed in practice.
+
+For estimation methods, see Section~\ref{sec:dynamics-estimation}. For diagnostics, see Section~\ref{sec:dynamics-diagnostics}. For inference, see Section~\ref{sec:dynamics-inference}.
+
+\subsection*{Overview of Applications}
+
+Table~\ref{tab:dynamics-applications} summarises the three applications.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Summary of Marketing Applications}
+\label{tab:dynamics-applications}
+\begin{tabularx}{\textwidth}{Y Y Y Y Y}
+\toprule
+\textbf{Application} & \textbf{Method} & \textbf{Data} & \textbf{Key Finding} & \textbf{Policy Implication} \\
+\midrule
+TV advertising & Distributed-lag (geometric ad-stock) & Weekly DMA sales & Carryover with decay & Pulsing vs continuous \\
+\addlinespace
+Promotions & Event study & Weekly store sales & Spike then dip pattern & Promotion spacing \\
+\addlinespace
+Loyalty programme & Dynamic DiD & Quarterly store revenue & Gradual ramp-up & ROI forecasting \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{Application 1: Television Advertising with Carryover}
+
+Television advertising provides a canonical setting for dynamic methods. The distributed-lag framework has a rich history in advertising response modelling \citet{tellis2000which,tellis2006optimal}. Meta-analytic evidence shows that advertising elasticities average 0.10 in the short run and 0.22 in the long run, with substantial heterogeneity \citet{sethuraman2011advertising}.
+
+\paragraph{Setting.} Suppose a CPG brand launches a national TV campaign in 50 DMAs over four weeks, with varying GRPs across markets. Weekly sales are observed for 52 weeks before and 26 weeks after.
+
+\paragraph{Goal.} Estimate the dynamic sales response; quantify half-life and LRM.
+
+\paragraph{Method.} Geometric ad-stock model:
+\[
+\log(\text{Sales}_{it}) = \beta_0 \text{GRP}_{it} + \beta_1 A_{it} + \alpha_i + \gamma_t + \varepsilon_{it},
+\]
+where $A_{it} = \delta A_{i,t-1} + \text{GRP}_{i,t-1}$ is ad-stock with decay rate $\delta$.
+
+\paragraph{Estimation.} NLS grid search over $\delta \in [0.5, 0.95]$.
+
+\paragraph{Illustrative results.} Suppose the estimates yield $\hat{\beta}_0 = 0.03$ (3\% immediate lift per 100 GRPs), $\hat{\beta}_1 = 0.02$ (2\% lift per 100 units of ad-stock), and $\hat{\delta} = 0.8$ (20\% weekly decay). The implied half-life would be $\log 2 / (-\log 0.8) \approx 3.1$ weeks, and the LRM would be $(0.03 + 0.02/0.2) \times 100 = 13\%$ cumulative lift.
+
+\paragraph{Diagnostics.} Residuals show no autocorrelation (Durbin-Watson). Geometric decay provides better fit than Almon polynomial (lower BIC). Cluster-robust SE clustered by DMA.
+
+\paragraph{Policy.} The 3-week half-life implies pulsed schedules maintain awareness better than continuous. LRM informs budget allocation across markets.
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Box 10.1: Meta-Analytic Evidence on Advertising Elasticity]
+
+Sethuraman, Tellis, and Briesch conduct a meta-analysis of 751 short-term and 402 long-term advertising elasticities from 56 studies spanning 1960--2008 \citet{sethuraman2011advertising}.
+
+\textbf{Key findings:}
+\begin{itemize}
+\item Short-run elasticity averages 0.10; long-run averages 0.22.
+\item Long-run/short-run ratio $\approx 2.2$ reflects carryover through awareness and habit.
+\item Durables $>$ non-durables; TV $>$ print; new brands $>$ established brands.
+\item Weekly data yield higher elasticities than monthly (aggregation bias).
+\end{itemize}
+
+\textbf{Implications:} Expect modest average effects (10\% elasticity means doubling ad spending increases sales by 10\%) but substantial heterogeneity. Context-specific estimation is essential.
+\end{tcolorbox}
+
+\subsection*{Application 2: Promotions with Post-Promotion Dips}
+
+Multi-period promotions induce stockpiling, creating post-promotion dips that reduce net cumulative effect.
+
+\paragraph{Setting.} Suppose a retailer offers 20\% discount every 4 weeks for 6 months (6 cycles) in 30 stores. Weekly sales are observed for 12 weeks before and 12 weeks after.
+
+\paragraph{Goal.} Estimate dynamic sales response; quantify post-promotion dip; compute net cumulative effect.
+
+\paragraph{Method.} Event-study specification:
+\[
+\log(\text{Sales}_{it}) = \sum_{k = -3}^{+5} \theta_k \mathds{1}\{t - g_{im} = k\} + \alpha_i + \gamma_t + \varepsilon_{it},
+\]
+where $g_{im}$ is the week of the $m$-th promotion, with $k = -1$ as reference.
+
+\paragraph{Illustrative results.} Suppose the event-study estimates show $\hat{\theta}_0 = 0.35$ (42\% sales lift in promotion week), followed by $\hat{\theta}_1 = -0.15$ (14\% dip one week after) and $\hat{\theta}_2 = -0.10$ (10\% dip two weeks after), with return to baseline by week three. If pre-trends are near zero, the net cumulative effect would be $0.35 - 0.15 - 0.10 = 0.10$ (10\% net lift).
+
+\paragraph{Diagnostics.} Support adequate (all 6 cycles contribute). Pre-trend test: F-test $p = 0.42$. Window sensitivity: results stable for $k \in [0, 8]$. Wild cluster bootstrap with 1,000 replications.
+
+\paragraph{Policy.} In this hypothetical example, the post-promotion dip reduces the net effect to less than one-third of the immediate lift. Spacing promotions further apart would allow inventories to deplete and increase the net cumulative effect.
+
+\subsection*{Application 3: Loyalty Programmes with Ramp-Up}
+
+Loyalty programmes generate effects that build gradually as customers enrol, learn benefits, and develop habits.
+
+\paragraph{Setting.} Suppose a retailer launches a loyalty programme in 50 stores over 6 quarters (staggered adoption, 10 stores per cohort). Quarterly revenue is observed for 8 quarters before and 8 quarters after.
+
+\paragraph{Goal.} Estimate dynamic revenue response; quantify ramp-up period; assess persistence.
+
+\paragraph{Method.} Dynamic DiD with heterogeneity-robust aggregation:
+\[
+\hat{\theta}_k = \frac{\sum_g N_g \widehat{\text{ATT}}(g, g+k)}{\sum_g N_g},
+\]
+where $\text{ATT}(g, t)$ compares cohort $g$ to never-treated stores.
+
+\paragraph{Illustrative results.} Suppose the dynamic DiD estimates show a gradual ramp-up: $\hat{\theta}_0 = 0.02$ (2\% lift in first quarter), $\hat{\theta}_1 = 0.05$ (5\% in second quarter), $\hat{\theta}_2 = 0.08$ (8\% in third quarter), stabilising at approximately 10\% lift thereafter. If pre-trends are near zero, this pattern suggests a 3-quarter ramp-up period with persistent effects.
+
+\paragraph{Diagnostics.} Support adequate for $k \in [-3, 8]$. Pre-trend test: F-test $p = 0.68$. Cohort weights: uniform vs size-weighted produce similar estimates (homogeneous effects). Cluster-robust SE clustered by store.
+
+\paragraph{Policy.} In this hypothetical example, the 3-quarter ramp-up would inform ROI forecasting. Cumulative revenue lift compared to operating costs determines programme viability.
+
+\subsection*{Vector Autoregressions for Marketing-Finance Links}
+
+VARs trace dynamic feedback among marketing investments, consumer response, and firm value. Shocks to advertising or satisfaction propagate through sales and user-generated content to stock returns. Identification relies on timing restrictions or external instruments, and impulse responses summarise horizon-by-horizon returns to marketing assets \citet{srinivasan2009marketing,tirunillai2012chatter}.
+
+\subsection*{Summary: Method Selection}
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Practical Guidance: Matching Method to Application]
+\textbf{Continuous treatment with carryover (advertising):}
+\begin{itemize}
+\item Distributed-lag model with geometric ad-stock.
+\item Estimate half-life, LRM.
+\end{itemize}
+
+\textbf{Discrete treatment with stockpiling (promotions):}
+\begin{itemize}
+\item Event-study design.
+\item Visualise spike, dip, and net cumulative effect.
+\end{itemize}
+
+\textbf{Staggered adoption with ramp-up (loyalty programmes):}
+\begin{itemize}
+\item Dynamic DiD with heterogeneity-robust aggregation.
+\item Estimate ramp-up period and persistence.
+\end{itemize}
+
+\textbf{Marketing-finance linkages:}
+\begin{itemize}
+\item VAR with impulse response functions.
+\item Trace shocks through to stock returns.
+\end{itemize}
+\end{tcolorbox}

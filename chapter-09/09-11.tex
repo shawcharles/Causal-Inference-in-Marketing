@@ -1,0 +1,181 @@
+\section{Practical Workflow and Software}
+\label{sec:adv-matrix-workflow}
+
+This section provides a complete practical workflow for implementing the advanced matrix and tensor methods from this chapter. For detailed method comparisons, see Section~\ref{sec:adv-matrix-connections}; for diagnostics, see Section~\ref{sec:adv-matrix-diagnostics}; for marketing applications, see Section~\ref{sec:adv-matrix-applications}.
+
+\begin{tcolorbox}[title=Box 9.1: Advanced Matrix/Tensor Workflow]
+\small
+\begin{quote}
+Start by selecting the method—standard MC, tensor, robust, or covariate-assisted—based on the data structure (2D, 3D+, outliers, rich covariates). Then, clearly separate observed outcomes from those to be imputed under counterfactual treatment paths.
+
+Next, tune the rank and regularisation parameters using cross-validation on held-out untreated data, reporting the chosen parameters and validation performance. Perform outlier and stability checks: if using robust methods, inspect the sparse outlier matrix; for all methods, run placebo-in-time tests.
+
+Finally, estimate the effects by imputing counterfactuals and computing the ATT, reporting any heterogeneity. Follow the protocols in Chapter~\ref{ch:design-diagnostics} for diagnostics and Chapter~\ref{ch:inference} for valid uncertainty estimates that account for panel dependence.
+\end{quote}
+\end{tcolorbox}
+
+\subsection*{Decision Tree for Method Selection}
+
+Which advanced method should you use? The choice depends on data characteristics, research questions, and computational constraints. For a summary table, see Section~\ref{sec:adv-matrix-connections}.
+
+\begin{enumerate}
+\item \textbf{Data structure:}
+  \begin{itemize}
+  \item Multi-way (products $\times$ stores $\times$ time)? $\rightarrow$ Tensor completion (Section~\ref{sec:tensor-completion}).
+  \item Two-way? $\rightarrow$ Matrix completion.
+  \end{itemize}
+
+\item \textbf{Data quality:}
+  \begin{itemize}
+  \item Outliers present (stockouts, data errors)? $\rightarrow$ Robust MC (Section~\ref{sec:robust-matrix}).
+  \item Clean data? $\rightarrow$ Standard MC.
+  \end{itemize}
+
+\item \textbf{Covariates:}
+  \begin{itemize}
+  \item Rich side information (demographics, weather)? $\rightarrow$ Covariate-assisted MC (Section~\ref{sec:matrix-side-info}).
+  \item Minimal covariates? $\rightarrow$ Standard MC.
+  \end{itemize}
+
+\item \textbf{Stationarity:}
+  \begin{itemize}
+  \item Structural breaks or algorithm changes? $\rightarrow$ Time-varying rank (Section~\ref{sec:time-varying-rank}).
+  \item Stable factor structure? $\rightarrow$ Standard MC.
+  \end{itemize}
+
+\item \textbf{Uncertainty quantification:}
+  \begin{itemize}
+  \item Need posterior distributions and credible intervals? $\rightarrow$ Bayesian MC (Section~\ref{sec:bayesian-matrix}).
+  \item Point estimates sufficient? $\rightarrow$ Frequentist MC.
+  \end{itemize}
+
+\item \textbf{Computational constraints:}
+  \begin{itemize}
+  \item Very large panel ($>$10M cells)? $\rightarrow$ Efficient algorithms: Soft-Impute, SGD (Section~\ref{sec:computation}).
+  \item Moderate panel? $\rightarrow$ Standard algorithms (ALS, nuclear norm).
+  \end{itemize}
+\end{enumerate}
+
+\subsection*{Step-by-Step Implementation Guide}
+
+\paragraph{Step 1: Prepare the data.}
+\begin{itemize}
+\item Organise outcomes into a matrix or tensor.
+\item Code treatment indicators (1 for treated, 0 for untreated).
+\item Collect covariates (unit characteristics, time-varying variables).
+\item Check for missing data and outliers.
+\item Visualise data (heatmaps, time series plots) to understand patterns.
+\end{itemize}
+
+\paragraph{Step 2: Select the method.}
+Use the decision tree above. If unsure, start with standard matrix completion as a baseline, then try advanced methods and compare.
+
+\paragraph{Step 3: Choose tuning parameters.}
+\begin{itemize}
+\item Select rank $R$ using cross-validation, information criteria, or eigenvalue ratio test (Section~\ref{sec:adv-matrix-diagnostics}).
+\item Select regularisation parameters ($\eta$, $\lambda$, $\gamma$) using cross-validation.
+\item For Bayesian methods, choose priors based on domain knowledge or use weakly informative priors.
+\end{itemize}
+
+\paragraph{Step 4: Estimate the model.}
+\begin{itemize}
+\item Run the chosen algorithm (ALS, ADMM, Soft-Impute, MCMC).
+\item Check convergence (plot objective function, compare multiple initialisations).
+\item Compute imputed counterfactuals for treated cells.
+\item Calculate treatment effects (observed minus imputed).
+\end{itemize}
+
+\paragraph{Step 5: Conduct diagnostics.}
+Follow the diagnostic checklist in Section~\ref{sec:adv-matrix-diagnostics}:
+\begin{itemize}
+\item Rank selection (scree plots, stability across subsamples).
+\item Outlier detection (residual plots, robust vs non-robust comparison).
+\item Covariate relevance (variable importance, partial dependence).
+\item Computational validation (convergence, solution stability).
+\end{itemize}
+
+\paragraph{Step 6: Perform inference.}
+\begin{itemize}
+\item Compute standard errors using bootstrap, asymptotic theory, or posterior distributions.
+\item Construct confidence intervals or credible intervals.
+\item Conduct placebo tests (treat random pre-treatment cells as missing).
+\item Report treatment effects with uncertainty quantification.
+\end{itemize}
+
+\paragraph{Step 7: Report results.}
+\begin{itemize}
+\item Present treatment effect estimates with confidence intervals.
+\item Discuss heterogeneity (across units, time, subgroups).
+\item Compare to alternative methods (SC, DiD).
+\item Discuss limitations (assumptions, sensitivity to tuning).
+\item Provide replication materials (data, code, documentation).
+\end{itemize}
+
+
+\subsection*{Software Recommendations}
+
+For detailed algorithm comparisons and benchmarks, see Section~\ref{sec:computation}.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Software Packages by Task and Language}
+\label{tab:software-summary}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Task} & \textbf{R} & \textbf{Python} & \textbf{Julia} \\
+\midrule
+Standard MC & \texttt{softImpute} & \texttt{fancyimpute} & \texttt{LowRankModels.jl} \\
+\addlinespace
+Tensor decomposition & \texttt{rTensor} & \texttt{tensorly} & \texttt{TensorToolbox.jl} \\
+\addlinespace
+Robust PCA & \texttt{MASS} & \texttt{sklearn.decomposition} & — \\
+\addlinespace
+Bayesian inference & \texttt{rstan}, \texttt{JAGS} & \texttt{pymc}, \texttt{numpyro} & \texttt{Turing.jl} \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\paragraph{Package recommendations by use case:}
+\begin{itemize}
+\item \textbf{Fastest for sparse matrices:} \texttt{softImpute} (R).
+\item \textbf{Most flexible for tensors:} \texttt{tensorly} (Python).
+\item \textbf{Most user-friendly for Bayesian:} \texttt{pymc} (Python).
+\item \textbf{Most general:} \texttt{LowRankModels.jl} (Julia)—handles arbitrary loss functions and regularisers.
+\end{itemize}
+
+\subsection*{Common Pitfalls and Solutions}
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Common Pitfalls and Solutions}
+\label{tab:pitfalls}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Pitfall} & \textbf{Symptom} & \textbf{Solution} \\
+\midrule
+Overfitting & Poor out-of-sample $R^2$; rank too large & Cross-validation; prefer smaller ranks; regularise aggressively \\
+\addlinespace
+Computational bottleneck & Algorithm too slow for panel size & Soft-Impute, SGD; exploit sparsity; distributed computing \\
+\addlinespace
+Interpretation challenges & Factors lack meaning & Plot loadings; relate to domain; use rotation (varimax) \\
+\addlinespace
+Parameter sensitivity & Results change with tuning & Report multiple specifications; sensitivity analysis; data-driven selection \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\paragraph{Overfitting in high dimensions.}
+When the rank is too large, the model fits noise. In Case Study 1 (Section~\ref{sec:adv-matrix-applications}), cross-validation selected $R = 10$ over larger alternatives. Solution: prefer parsimony; regularise with large $\eta$.
+
+\paragraph{Computational bottlenecks.}
+Large panels require efficient algorithms. In Case Study 2, the 800 $\times$ 150 $\times$ 104 panel (12M cells) used ADMM with sparse operations. Solution: see algorithm comparison in Section~\ref{sec:computation}.
+
+\paragraph{Interpretation challenges.}
+Many factors can be hard to interpret. In Case Study 3, factor loadings were related to market demographics. Solution: plot loadings over time; use rotation methods; report interpretations.
+
+\paragraph{Sensitivity to tuning parameters.}
+Results may depend on rank and regularisation. In Case Study 2, sensitivity analysis showed estimates stable for $\lambda \in [0.10, 0.20]$. Solution: report results for multiple tuning parameters; use data-driven selection.

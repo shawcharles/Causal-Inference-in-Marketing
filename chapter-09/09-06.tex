@@ -1,0 +1,212 @@
+\section{Bayesian Matrix Completion}
+\label{sec:bayesian-matrix}
+
+\subsection*{Bayesian Framework for Uncertainty Quantification}
+
+Bayesian matrix completion provides a principled framework for uncertainty quantification. We place priors on the rank, loadings, and factors, then use the data to update these priors to posterior distributions. This approach yields credible intervals for counterfactuals and treatment effects that properly account for estimation uncertainty.
+
+\begin{definition}[Bayesian Factor Model]
+The Bayesian specification for untreated potential outcomes is:
+\begin{align*}
+Y_{it}(0) | \lambda_i, f_t, \sigma^2 &\sim \mathcal{N}(\lambda_i^\top f_t, \sigma^2), \\
+\lambda_i | \Sigma_\lambda &\overset{\text{iid}}{\sim} \mathcal{N}(0, \Sigma_\lambda), \quad i = 1, \ldots, N, \\
+f_t | \Sigma_f &\overset{\text{iid}}{\sim} \mathcal{N}(0, \Sigma_f), \quad t = 1, \ldots, T, \\
+\Sigma_\lambda &\sim \text{IW}(\nu_\lambda, \Psi_\lambda), \\
+\Sigma_f &\sim \text{IW}(\nu_f, \Psi_f), \\
+\sigma^2 &\sim \text{IG}(a_\sigma, b_\sigma),
+\end{align*}
+where $\text{IW}$ denotes the inverse-Wishart distribution and $\text{IG}$ denotes the inverse-gamma distribution.
+\end{definition}
+
+\begin{definition}[ARD Prior for Rank Selection]
+To automatically determine the rank, we use an Automatic Relevance Determination (ARD) prior:
+\[
+\lambda_{ir} | \tau_r \overset{\text{ind}}{\sim} \mathcal{N}(0, \tau_r^{-1}), \quad \tau_r \overset{\text{iid}}{\sim} \text{Gamma}(a_\tau, b_\tau),
+\]
+where the precision parameters $\tau_r$ are shared across units. Large $\tau_r$ shrinks factor $r$ to zero, effectively reducing the rank.
+\end{definition}
+
+\paragraph{Effective rank.} The effective rank is:
+\[
+\hat{R}_{\text{eff}} = \sum_{r=1}^{R_{\max}} \mathbf{1}\left\{ \frac{1}{\bar{\tau}_r} > \epsilon \right\},
+\]
+where $\bar{\tau}_r$ is the posterior mean of $\tau_r$ and $\epsilon$ is a threshold. \textbf{Choosing $\epsilon$:} Set $\epsilon$ to a small fraction (e.g., 1\%) of the average loading variance: $\epsilon = 0.01 \times \text{Var}(\hat{\lambda})$. Alternatively, use cross-validation to select $\epsilon$ that minimises held-out prediction error.
+
+\begin{theorem}[Posterior Consistency]\label{thm:posterior-consistency}
+Suppose the true data generating process satisfies Assumption~\ref{ass:tensor-low-rank} with true rank $R^*$. Under the Bayesian specification with ARD prior and $R_{\max} \geq R^*$, as $N, T \to \infty$ with $N/T \to c \in (0, \infty)$:
+\begin{enumerate}[(i)]
+    \item The posterior probability of the true rank converges to one: $\mathbb{P}(R = R^* | \mathbf{Y}) \to 1$;
+    \item The posterior mean of counterfactuals is consistent: $\mathbb{E}[\hat{Y}_{it}(0) | \mathbf{Y}] \overset{p}{\to} Y_{it}^*(0)$;
+    \item Posterior credible intervals have correct asymptotic coverage.
+\end{enumerate}
+\end{theorem}
+
+\begin{proposition}[Credible Intervals for Treatment Effects]
+Let $\{\tau^{(s)}\}_{s=1}^S$ denote posterior draws of the ATT from MCMC. The $100(1-\alpha)\%$ equal-tailed credible interval is:
+\[
+\text{CI}_{1-\alpha}(\tau_{\text{ATT}}) = \left[ \tau^{(\lfloor S\alpha/2 \rfloor)}, \tau^{(\lceil S(1-\alpha/2) \rceil)} \right],
+\]
+where $\tau^{(k)}$ denotes the $k$-th order statistic. Under regularity conditions, this interval has asymptotically correct frequentist coverage.
+\end{proposition}
+
+\subsection*{Gibbs Sampler Algorithm}
+
+Posterior inference proceeds via Markov Chain Monte Carlo (MCMC). The following Gibbs sampler provides a practical implementation.
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!50!black,title=Algorithm: Gibbs Sampler for Bayesian Matrix Completion]
+\textbf{Input:} Observed data $\{Y_{it}\}_{(i,t) \in \Omega}$, maximum rank $R_{\max}$, hyperparameters $(\nu_\lambda, \Psi_\lambda, \nu_f, \Psi_f, a_\sigma, b_\sigma, a_\tau, b_\tau)$, iterations $S$, burn-in $B$.
+
+\textbf{Initialise:} Set $\lambda_i^{(0)}$, $f_t^{(0)}$, $\tau_r^{(0)}$, $\sigma^{2(0)}$ using SVD on observed data.
+
+\textbf{For each iteration $s = 1, \ldots, S$:}
+\begin{enumerate}
+\item \textbf{Sample loadings:} For each unit $i$, sample
+\[
+\lambda_i^{(s)} | \mathbf{Y}, \mathbf{f}^{(s-1)}, \tau^{(s-1)}, \sigma^{2(s-1)} \sim \mathcal{N}(\mu_{\lambda,i}, \Sigma_{\lambda,i}),
+\]
+where $\Sigma_{\lambda,i}^{-1} = \text{diag}(\tau^{(s-1)}) + \sigma^{-2(s-1)} \sum_{t: (i,t) \in \Omega} f_t^{(s-1)} f_t^{(s-1)\top}$.
+
+\item \textbf{Sample factors:} For each time $t$, sample
+\[
+f_t^{(s)} | \mathbf{Y}, \boldsymbol{\lambda}^{(s)}, \sigma^{2(s-1)} \sim \mathcal{N}(\mu_{f,t}, \Sigma_{f,t}).
+\]
+
+\item \textbf{Sample precision (ARD):} For each factor $r$,
+\[
+\tau_r^{(s)} | \boldsymbol{\lambda}^{(s)} \sim \text{Gamma}\left( a_\tau + \frac{N}{2}, b_\tau + \frac{1}{2} \sum_{i=1}^N \lambda_{ir}^{(s)2} \right).
+\]
+
+\item \textbf{Sample noise variance:}
+\[
+\sigma^{2(s)} | \mathbf{Y}, \boldsymbol{\lambda}^{(s)}, \mathbf{f}^{(s)} \sim \text{IG}\left( a_\sigma + \frac{|\Omega|}{2}, b_\sigma + \frac{1}{2} \sum_{(i,t) \in \Omega} (Y_{it} - \lambda_i^{(s)\top} f_t^{(s)})^2 \right).
+\]
+
+\item \textbf{Impute counterfactuals:} For treated cells $(i,t) \in \mathcal{T}$, draw
+\[
+\hat{Y}_{it}^{(s)}(0) \sim \mathcal{N}(\lambda_i^{(s)\top} f_t^{(s)}, \sigma^{2(s)}).
+\]
+
+\item \textbf{Compute treatment effect:} $\tau^{(s)}_{\text{ATT}} = \frac{1}{|\mathcal{T}|} \sum_{(i,t) \in \mathcal{T}} (Y_{it} - \hat{Y}_{it}^{(s)}(0))$.
+\end{enumerate}
+
+\textbf{Output:} Posterior draws $\{\tau^{(s)}_{\text{ATT}}\}_{s=B+1}^S$, credible intervals, effective rank $\hat{R}_{\text{eff}}$.
+\end{tcolorbox}
+
+\paragraph{Variational alternative.} Variational inference approximates the posterior with a factorised Gaussian, minimising the KL divergence. Variational methods are faster than MCMC but provide less accurate uncertainty quantification. Use variational methods for exploratory analysis; use MCMC for final inference.
+
+\subsection*{Hierarchical Models}
+
+Hierarchical Bayesian models share information across related panels. Suppose we observe sales for multiple product categories. Each category has its own factor structure, but categories share common patterns (seasonality, macro shocks).
+
+\begin{definition}[Hierarchical Factor Model]
+The hierarchical specification is:
+\[
+Y_{ijt} = \lambda_{ij}^\top f_{jt} + \varepsilon_{ijt}, \quad f_{jt} \sim \mathcal{N}(\mu_t, \Sigma), \quad \mu_t \sim \mathcal{N}(0, \Sigma_0),
+\]
+where $i$ indexes products, $j$ indexes categories, $t$ indexes time, $f_{jt}$ is the category-level factor, and $\mu_t$ is the population-level factor.
+\end{definition}
+
+This specification shrinks category-level factors toward the population mean, improving estimates for small categories with limited data.
+
+\subsection*{Model Selection and Comparison}
+
+Bayesian model selection uses the marginal likelihood, which penalises complexity and favours parsimonious models. Bayes factors compare marginal likelihoods: $\text{BF}_{12} = p(\mathbf{Y} | M_1) / p(\mathbf{Y} | M_2)$. A Bayes factor greater than 10 provides strong evidence for one model.
+
+Posterior predictive checks assess model fit by comparing observed data to data simulated from the posterior predictive distribution.
+
+\subsection*{Comparison: Frequentist vs Bayesian Inference}
+
+Table~\ref{tab:bayes-freq} compares frequentist (bootstrap) and Bayesian (credible intervals) approaches.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Frequentist vs Bayesian Inference for Matrix Completion}
+\label{tab:bayes-freq}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Aspect} & \textbf{Frequentist (Bootstrap)} & \textbf{Bayesian (MCMC)} \\
+\midrule
+Uncertainty & Confidence intervals & Credible intervals \\
+\addlinespace
+Interpretation & Long-run coverage & Posterior probability \\
+\addlinespace
+Rank selection & Cross-validation & ARD prior (automatic) \\
+\addlinespace
+Computation & Resampling (parallelisable) & MCMC (sequential) \\
+\addlinespace
+Small samples & May undercover & Better with informative priors \\
+\addlinespace
+When to use & Large panels; no prior info & Small panels; prior knowledge \\
+\addlinespace
+Software & \texttt{boot}, custom & \texttt{Stan}, \texttt{pymc} \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{Software Implementation}
+
+Several packages support Bayesian matrix completion:
+
+\paragraph{Python.}
+\begin{itemize}
+\item \texttt{pymc}: General Bayesian modelling. Supports custom factor models with ARD priors.
+\item \texttt{bpmf}: Bayesian Probabilistic Matrix Factorisation. Gibbs sampler for low-rank models.
+\item \texttt{edward2} / \texttt{tensorflow-probability}: Variational inference for large-scale problems.
+\end{itemize}
+
+\paragraph{R.}
+\begin{itemize}
+\item \texttt{blavaan}: Bayesian latent variable models. Supports factor analysis with MCMC.
+\item \texttt{brms}: Bayesian regression models via Stan. Can specify custom factor structures.
+\item \texttt{MCMCpack}: General MCMC samplers. Includes factor model implementations.
+\end{itemize}
+
+\paragraph{Stan.}
+\begin{itemize}
+\item Stan provides a flexible language for specifying custom Bayesian models. The factor model can be implemented directly with ARD priors.
+\item \texttt{rstan} (R) and \texttt{pystan} (Python) provide interfaces.
+\end{itemize}
+
+\subsection*{Application: Hierarchical Demand Across Categories}
+
+Consider a retailer with 10 product categories, each containing 50 products, observed over 52 weeks. A promotional campaign is applied to 5 products in each category for 4 weeks.
+
+\paragraph{Estimation.} We compare three approaches:
+\begin{enumerate}
+\item \textbf{Standard MC:} Separate factor model for each category.
+\item \textbf{Pooled MC:} Single factor model across all categories.
+\item \textbf{Hierarchical Bayesian MC:} Population-level factors with category-level shrinkage.
+\end{enumerate}
+
+\paragraph{Results.}
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Treatment Effect Estimates by Category Size}
+\label{tab:bayes-application}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Category Size} & \textbf{Standard MC} & \textbf{Hierarchical Bayesian} & \textbf{SE Reduction} \\
+\midrule
+Large ($>40$ products) & 15\% (SE 2.5) & 15\% (SE 2.3) & 8\% \\
+\addlinespace
+Medium (20--40 products) & 12\% (SE 4.0) & 13\% (SE 3.2) & 20\% \\
+\addlinespace
+Small ($<20$ products) & 10\% (SE 6.5) & 12\% (SE 4.5) & 31\% \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+The hierarchical model reduces standard errors by 8--31\%, with larger gains for small categories. For small categories, the hierarchical model borrows strength from larger categories, shrinking estimates toward the population mean.
+
+\paragraph{Credible intervals.}
+\begin{itemize}
+\item Largest category (50 products): ATT = 15\% (95\% CI: [12\%, 18\%]).
+\item Smallest category (15 products): ATT = 12\% (95\% CI: [8\%, 16\%]).
+\end{itemize}
+The wider interval for the smallest category reflects greater uncertainty.
+
+\paragraph{Model comparison.} Bayes factor comparing hierarchical vs pooled: $\text{BF} = 45$, providing strong evidence for the hierarchical model.

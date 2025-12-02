@@ -1,0 +1,104 @@
+\section{Types of Spillovers in Marketing Panels}
+\label{sec:spillover-types}
+
+Interference manifests through distinct mechanisms in marketing data. This section formalises three primary mechanisms: geographic, network, and competitive spillovers. For the general framework of exposure mappings that enable estimation under interference, see Section~\ref{sec:exposure-mappings}. For partial interference assumptions that enable tractable identification, see Section~\ref{sec:partial-interference}.
+
+\subsection*{Overview of Spillover Types}
+
+Table~\ref{tab:spillover-types} summarises the three primary spillover mechanisms.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Comparison of Spillover Types in Marketing}
+\label{tab:spillover-types}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Type} & \textbf{Exposure Measure} & \textbf{Decay Function} & \textbf{Marketing Example} \\
+\midrule
+Geographic & $\sum_{j} W_j \cdot h(d_{ij})$ & Inverse distance; exponential & Retail promotions; local advertising \\
+\addlinespace
+Network & $\sum_{j \in \mathcal{N}_i} W_j$ or fraction & None (binary connection) & Word-of-mouth; referral programmes \\
+\addlinespace
+Competitive & $\sum_{j \neq i} W_j \cdot \rho_{ij}$ & Market overlap; similarity & Price competition; ad wars \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{Interference Structure}
+
+\begin{definition}[Interference Structure]\label{def:interference-structure}
+An interference structure specifies which units can affect which other units. Let $\mathcal{I} = \{1, \ldots, N\}$ denote the set of units. An interference structure is a collection $\{\mathcal{S}_i\}_{i \in \mathcal{I}}$, where $\mathcal{S}_i \subseteq \mathcal{I} \setminus \{i\}$ denotes the set of units whose treatment can affect unit $i$'s outcome. Three common structures are:
+\begin{enumerate}[(i)]
+    \item \textbf{Geographic:} $\mathcal{S}_i = \{j : d_{ij} \leq \bar{d}\}$, where $d_{ij}$ is distance and $\bar{d}$ is a threshold;
+    \item \textbf{Network:} $\mathcal{S}_i = \mathcal{N}_i$, where $\mathcal{N}_i = \{j : A_{ij} = 1\}$ is the set of network neighbours;
+    \item \textbf{Competitive:} $\mathcal{S}_i = \{j : \rho_{ij} > 0\}$, where $\rho_{ij}$ is product similarity or market overlap.
+\end{enumerate}
+\end{definition}
+
+\subsection*{Geographic Spillovers}
+
+Geographic spillovers occur when treatment in one spatial unit affects outcomes in nearby units.
+
+\paragraph{Setting.} A retailer operates 200 stores across 50 metropolitan areas. The retailer launches a promotional campaign in 20 randomly selected stores. Customers near treated stores travel to take advantage of the promotion. Customers near untreated stores may also travel to treated stores.
+
+\paragraph{Mechanism.} Cross-shopping creates a negative spillover on untreated stores (sales decline) and a positive spillover on treated stores (additional sales from customers travelling from untreated areas).
+
+\paragraph{Formal specification.} Let $d_{ij}$ denote distance between stores $i$ and $j$. The potential outcome depends on own treatment and distance-weighted neighbour treatment:
+\[
+Y_{it} = Y_{it}\left(W_{it}, \sum_{j \neq i} W_{jt} \cdot h(d_{ij})\right),
+\]
+where $h(d_{ij})$ is a decay function: inverse distance $h(d) = 1/d$, inverse squared $h(d) = 1/d^2$, or exponential $h(d) = \exp(-\lambda d)$.
+
+\paragraph{Distance decay.} Spillovers typically decay with distance. Stores more than 10 km apart exhibit negligible spillovers. This decay motivates the partial interference framework (Section~\ref{sec:partial-interference}), which partitions space into clusters and assumes spillovers are contained within clusters.
+
+\paragraph{Data requirements.} Geographic information systems (GIS) data on store locations, customer addresses, and travel patterns inform the specification of decay functions and cluster boundaries.
+
+\subsection*{Network Spillovers}
+
+Network spillovers propagate through social or professional connections between individuals.
+
+\paragraph{Setting.} A social media platform launches a new feature for a randomly selected subset of users. Treated users discuss the feature with friends, generating awareness and adoption among untreated users.
+
+\paragraph{Mechanism.} Word-of-mouth creates a positive spillover. Direct platform interactions (messages, content sharing) create additional spillover pathways.
+
+\paragraph{Formal specification.} Let $\mathcal{N}_i$ denote user $i$'s network neighbours. The potential outcome depends on own treatment and neighbour treatment:
+\[
+Y_{it} = Y_{it}\left(W_{it}, \sum_{j \in \mathcal{N}_i} W_{jt}\right).
+\]
+Alternative: use fraction of treated neighbours $\frac{1}{|\mathcal{N}_i|} \sum_{j \in \mathcal{N}_i} W_{jt}$ to normalise by degree.
+
+\paragraph{Identification challenges.} Network spillovers raise several identification concerns. Selection on network position arises when high-degree users are more likely to be treated and have different baseline outcomes. Homophily creates confounding because users choose friends with similar characteristics. Solutions include stratifying by degree, including fixed effects for network clusters, or exploiting exogenous network variation such as random roommate assignments.
+
+\subsection*{Competitive Spillovers}
+
+Competitive spillovers arise from strategic interactions between firms.
+
+\paragraph{Setting.} Firm A launches an advertising campaign. If effective, Firm A gains market share at the expense of Firms B and C. Competitors respond with their own advertising, promotions, or price adjustments.
+
+\paragraph{Mechanism.} Competitive reactions create negative spillovers on Firm A (campaign effect dampened) and positive spillovers on competitors (outcomes improve from reactions).
+
+\paragraph{Formal specification.} Let $W_{it}$ denote firm $i$'s treatment intensity at time $t$. The potential outcome depends on own treatment and competitor treatment:
+\[
+Y_{it} = Y_{it}\left(W_{it}, \sum_{j \neq i} W_{jt} \cdot \rho_{ij}\right),
+\]
+where $\rho_{ij}$ is market share, geographic proximity, or product similarity.
+
+\paragraph{Strategic interactions.} Competitive spillovers can operate in either direction. Under strategic substitutes, competitors' actions dampen the focal firm's effect, creating negative spillovers. Under strategic complements, competitors' actions reinforce the focal firm's effect, creating positive spillovers.
+
+\paragraph{Identification.} Panel data on firm-level outcomes and treatment intensities enable estimation of reaction functions and spillover effects. Instrumental variables (firm-specific cost shocks, regulations) provide exogenous variation.
+
+\paragraph{Interaction with dynamics.} Competitive spillovers complicate staggered adoption designs (Chapter~\ref{ch:did}). If early adopters trigger competitive reactions, treatment effects may decline over time due to competition, not treatment decay. Distinguishing dynamic effects (Chapter~\ref{ch:dynamics}) from competitive spillovers requires explicit modelling or sensitivity analysis.
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Box 11.1: Illustrative Spillover Scenarios]
+The following hypothetical scenarios illustrate how spillovers can bias treatment effect estimates.
+
+\textbf{Geographic spillovers (retail).} Suppose treated stores experience a 15\% sales increase, while untreated stores within 5 km experience a 3\% sales decline due to cross-shopping. The net effect is 12\%, compared to the 15\% naive estimate that ignores spillovers.
+
+\textbf{Network spillovers (social media).} Suppose users with one treated friend are 20\% more likely to adopt a feature, while users with three or more treated friends are 40\% more likely. This non-linear pattern suggests saturation effects as exposure increases.
+
+\textbf{Competitive spillovers (retail pricing).} Suppose a 10\% price cut by the focal store induces a 5\% cut by competitors within 1 km. The direct effect might be a 12\% sales increase, but the net effect is only 8\% after accounting for competitive response.
+
+\textbf{Implication.} Ignoring spillovers biases treatment effect estimates. The direction of bias depends on spillover sign (positive or negative) and mechanism.
+\end{tcolorbox}

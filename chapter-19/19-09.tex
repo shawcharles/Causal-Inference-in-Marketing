@@ -1,0 +1,130 @@
+\section{Pipelines and Reproducibility}
+\label{sec:pipelines-reproducibility}
+
+A reproducible data pipeline is the foundation of credible causal inference. This section provides practical guidance on building pipelines that are transparent, auditable, and reproducible—from raw data extraction to final estimates.
+
+\subsection*{Extract-Transform-Load (ETL) Pipelines}
+
+The ETL process documents the full lineage of data, from raw logs to analysis-ready panels.
+
+\paragraph{Extract.} Pull data from source systems (platform APIs, databases, data warehouses) with explicit timestamps and version identifiers. Document the extraction query, date range, and any filters applied.
+
+\paragraph{Transform.} Apply cleaning, joining, deduplication, aggregation, and feature engineering. Each transformation should be:
+\begin{itemize}
+    \item \textbf{Documented:} What does this step do and why?
+    \item \textbf{Version-controlled:} Code in Git with meaningful commit messages.
+    \item \textbf{Tested:} Unit tests verify expected behaviour (e.g., no duplicate keys after deduplication).
+    \item \textbf{Idempotent:} Running the same code on the same inputs produces identical outputs.
+\end{itemize}
+
+\paragraph{Load.} Write the analysis-ready panel to a versioned location with schema documentation. Tag the output with a version identifier (date, hash, or semantic version).
+
+\paragraph{Tools.} Common tools for reproducible ETL include:
+\begin{itemize}
+    \item \textbf{dbt:} SQL-based transformations with testing and documentation.
+    \item \textbf{Airflow/Prefect/Dagster:} Workflow orchestration for scheduled pipelines.
+    \item \textbf{Great Expectations:} Data quality testing and validation.
+    \item \textbf{Git:} Version control for code; Git LFS for large files.
+\end{itemize}
+
+\subsection*{Pre-Registration for Observational Studies}
+
+Pre-registration—specifying the analysis plan before seeing outcome data—prevents specification searching and p-hacking in observational studies.
+
+\paragraph{What to pre-register:}
+\begin{itemize}
+    \item \textbf{Estimand:} The causal quantity of interest (ATT, ATE, dose-response).
+    \item \textbf{Design:} The identification strategy (DiD, SC, IV, RDD).
+    \item \textbf{Sample:} Inclusion/exclusion criteria, time windows, geographic scope.
+    \item \textbf{Treatment definition:} How treatment is operationalised from raw data.
+    \item \textbf{Outcome definition:} Primary and secondary outcomes with measurement details.
+    \item \textbf{Controls/donors:} Covariates for adjustment or donor pool for SC.
+    \item \textbf{Diagnostics:} Pre-trend tests, balance checks, placebo tests to run.
+    \item \textbf{Inference:} Standard error method, confidence level, multiple testing correction.
+\end{itemize}
+
+\paragraph{When to pre-register.} Before accessing outcome data. It is acceptable to explore treatment and covariate data to refine the design, but outcome data should remain blinded until the plan is locked.
+
+\paragraph{Where to register.} Options include OSF, AsPredicted, internal wikis with timestamps, or email to stakeholders with a fixed date.
+
+\subsection*{Design Timelines and Policy Documentation}
+
+Design timelines document the temporal structure of the study and anchor comparability claims.
+
+\paragraph{Key dates to document:}
+\begin{itemize}
+    \item Treatment rollout dates (by unit, cohort, or geography).
+    \item Platform policy changes (attribution windows, auction updates, privacy changes).
+    \item Data collection start and end dates.
+    \item Known confounding events (holidays, competitor actions, economic shocks).
+\end{itemize}
+
+\paragraph{Policy changelogs.} Maintain a changelog that maps dates to definition changes. This supports sensitivity analysis around break dates and justifies window restrictions.
+
+\subsection*{Snapshotting and Version Control}
+
+Snapshotting inputs at a fixed date prevents silent updates from altering results.
+
+\paragraph{Data snapshots.} Extract and freeze input data at a specific date. Store snapshots with version identifiers. Never overwrite historical snapshots.
+
+\paragraph{Code version control.} All analysis code should be in Git. Tag releases corresponding to published results. Document dependencies (package versions) in requirements files or lock files.
+
+\paragraph{Environment reproducibility.} Use Docker containers or virtual environments to freeze the computational environment. This ensures that code runs identically on different machines.
+
+\subsection*{Audit Trails and Checksums}
+
+Audit trails support accountability and debugging.
+
+\paragraph{What to log:}
+\begin{itemize}
+    \item Dataset versions accessed (with hashes or version IDs).
+    \item Code commits used for each analysis run.
+    \item Analyst identity and timestamp for each action.
+    \item Key intermediate outputs (row counts, summary statistics).
+\end{itemize}
+
+\paragraph{Checksums.} Compute checksums (MD5, SHA-256) on key outputs. An independent researcher with access to the same snapshots and code should regenerate identical checksums, validating reproducibility.
+
+\subsection*{Common Reproducibility Failures}
+
+\paragraph{Silent data updates.} Source data changes without notification, altering results. \textit{Prevention:} Snapshot inputs; compare checksums across runs.
+
+\paragraph{Dependency drift.} Package updates change function behaviour. \textit{Prevention:} Pin package versions; use lock files; containerise environments.
+
+\paragraph{Undocumented manual steps.} Analyst performs ad-hoc fixes not captured in code. \textit{Prevention:} Automate all steps; code review before merge.
+
+\paragraph{Path dependencies.} Code assumes specific file paths that differ across machines. \textit{Prevention:} Use relative paths or configuration files.
+
+\paragraph{Random seed omission.} Stochastic algorithms produce different results each run. \textit{Prevention:} Set and document random seeds.
+
+\subsection*{Reproducibility Checklist}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 19.9: Reproducibility Checklist]
+\textbf{Pipeline:}
+\begin{itemize}
+    \item Is the full ETL pipeline documented and version-controlled?
+    \item Are transformations tested with unit tests?
+    \item Are input data snapshots versioned and immutable?
+\end{itemize}
+
+\textbf{Pre-registration:}
+\begin{itemize}
+    \item Was the analysis plan registered before accessing outcome data?
+    \item Are estimand, design, sample, and diagnostics pre-specified?
+    \item Are deviations from the pre-registered plan documented and justified?
+\end{itemize}
+
+\textbf{Environment:}
+\begin{itemize}
+    \item Are package versions pinned in requirements or lock files?
+    \item Is the computational environment containerised or documented?
+    \item Are random seeds set and recorded?
+\end{itemize}
+
+\textbf{Validation:}
+\begin{itemize}
+    \item Can an independent researcher regenerate results from snapshots and code?
+    \item Do checksums on key outputs match across runs?
+    \item Is there an audit trail of dataset versions, code commits, and analyst actions?
+\end{itemize}
+\end{tcolorbox}

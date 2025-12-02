@@ -1,0 +1,41 @@
+\section{Inference after Selection and ML}
+\label{sec:inference-ml}
+\index{double machine learning!inference|(}
+\index{cross-fitting}
+
+Using machine learning to select controls or nuisance parameters introduces additional uncertainty. We use Double Machine Learning (DML) to separate the selection step from the inference step. This section covers inference for the DML estimators introduced in Chapter~\ref{ch:ml-nuisance}.
+
+\begin{theorem}[Double/Debiased ML Inference]\label{thm:dml-inference}
+Under Assumptions in Chapter~\ref{ch:ml-nuisance} (orthogonality, rate conditions, cross-fitting), the DML estimator satisfies:
+\[
+\sqrt{N}(\hat{\tau}^{\text{DML}} - \tau_0) \xrightarrow{d} \mathcal{N}(0, V),
+\]
+where $V = \mathbb{E}[\psi(Z; \tau_0, \eta_0)^2]$ is the influence function variance. The variance estimator is:
+\[
+\hat{V} = \frac{1}{N} \sum_{k=1}^K \sum_{i \in \mathcal{I}_k} \psi(Z_i; \hat{\tau}, \hat{\eta}^{(-k)})^2,
+\]
+aggregating squared scores across folds. Under clustering, aggregate within-cluster scores before squaring.
+\end{theorem}
+
+Recent work on direct debiased machine learning shows that these orthogonal scores can be constructed systematically through a Riesz representer estimated by Bregman-Riesz regression \citep{kato2025unified}. In average treatment effect settings the Riesz representer coincides with a density-ratio between treated and control covariate distributions, and Riesz regression becomes a particular direct density-ratio estimator \citep{kato2025riesz}.
+
+Treating the weight function as a density-ratio links the stability of estimated weights directly to the finite-sample behaviour of the influence-function estimator. Inference based on DML scores therefore depends not only on asymptotic theory but also on whether the estimated weights are well behaved in finite samples, so diagnostics for weight dispersion and covariate balance play a dual role as design checks and as informal checks on the quality of the influence-function approximation.
+
+\begin{proposition}[Variance from Cross-Fitting Randomness]\label{prop:repeated-splits}
+Let $\hat{\tau}^{(r)}$ denote the DML estimate from the $r$-th random partition into folds, $r = 1, \ldots, R$. The final estimator and variance accounting for split randomness are:
+\[
+\bar{\tau} = \frac{1}{R} \sum_{r=1}^R \hat{\tau}^{(r)}, \quad \hat{V}_{\text{total}} = \frac{1}{R} \sum_{r=1}^R \hat{V}^{(r)} + \frac{1}{R-1} \sum_{r=1}^R (\hat{\tau}^{(r)} - \bar{\tau})^2,
+\]
+where the second term captures variance from cross-fitting randomness. With $R \geq 50$ splits, the contribution from split randomness is typically small.
+\end{proposition}
+
+\begin{remark}[DML Inference in Marketing Applications]\label{rem:dml-marketing}
+DML inference is relevant for marketing when:
+\begin{enumerate}
+\item \textbf{CATE estimation} (Section~\ref{sec:dml-hte}): When using ML to estimate heterogeneous treatment effects across customer segments, DML provides valid confidence intervals for segment-level effects.
+\item \textbf{High-dimensional controls} (Chapter~\ref{ch:high-dim}): When many covariates are available (purchase history, demographics, browsing behaviour), ML-based control selection requires DML for valid inference.
+\item \textbf{Propensity score estimation}: When the propensity score is estimated with flexible ML methods, DML ensures that uncertainty in the propensity model is properly accounted for.
+\end{enumerate}
+The key practical concern is weight stability: if estimated propensity weights are extreme, influence function variance inflates and confidence intervals become unreliable. Diagnostics for weight dispersion (Section~\ref{sec:overlap-balance}) should accompany all DML analyses.
+\end{remark}
+\index{double machine learning!inference|}

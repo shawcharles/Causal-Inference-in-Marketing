@@ -1,0 +1,112 @@
+\section{Workflow Checklist}
+\label{sec:event-workflow}
+
+This section provides a numbered end-to-end protocol for conducting event-study analyses in marketing panels. Box~5.1 (Section~\ref{sec:event-diagnostics}) focuses on specification and diagnostic choices; this workflow extends to the full analysis pipeline including business outputs. Check off each step as you proceed, and treat each one as a decision point where you may conclude that the design is not credible enough to support a causal interpretation.
+
+\subsection*{Step 1: Define Estimands and Baseline}
+
+\begin{enumerate}
+\item[$\square$] State the substantive research question clearly
+\item[$\square$] Define target event-time effects $\theta_k$ precisely (immediate effect $\theta_0$, specific horizons, or full profile?)
+\item[$\square$] Specify the baseline period (typically $k = -1$, or an average of several pre-periods when a single period is noisy or affected by anticipation)
+\item[$\square$] Choose aggregation weights (cohort-size, uniform, or treated-unit-period), recognising that this choice changes which units and periods the estimand emphasises
+\item[$\square$] Align estimands to business question: immediate effects for go/no-go, cumulative effects for ROI, long-run effects for strategy
+\end{enumerate}
+
+\subsection*{Step 2: Assess Data Support}
+
+\begin{enumerate}
+\item[$\square$] Construct support table: observations and cohorts by event time $k$
+\item[$\square$] Flag thin-support regions (for example, fewer than about 30 observations or a single cohort)
+\item[$\square$] Check cohort composition across $k$ for composition bias risk
+\item[$\square$] Choose event-time window based on support and substantive interest, truncating or heavily binning horizons where support is thin or composition changes sharply
+\item[$\square$] Pre-specify binning for extreme event times where support is thin
+\end{enumerate}
+
+\subsection*{Step 3: Select Estimator}
+
+\begin{enumerate}
+\item[$\square$] Choose heterogeneity-robust estimator: Sun--Abraham, Callaway--Sant'Anna, or Borusyak--Jaravel--Spiess
+\item[$\square$] Match estimator to design: for example, use Sun--Abraham for staggered adoption with balanced panels, Callaway--Sant'Anna for group-time average treatment effects with flexible control sets, and Borusyak--Jaravel--Spiess when an imputation-based approach suits unbalanced panels or irregular adoption
+\item[$\square$] Estimate TWFE as benchmark (but not primary specification), and interpret differences in light of its distinct weighting scheme and potential for negative weights
+\item[$\square$] Document estimator choice and rationale
+\end{enumerate}
+
+\subsection*{Step 4: Run Pre-Trend and Anticipation Checks}
+
+\begin{enumerate}
+\item[$\square$] Estimate event study with multiple pre-treatment leads
+\item[$\square$] Test joint significance of pre-treatment coefficients using a Wald test with cluster-robust standard errors (a standard F-test assumes homoskedasticity and is inappropriate when errors are clustered), recognising that these tests have limited power when the number of treated units or clusters is small
+\item[$\square$] Plot pre-treatment coefficients with confidence intervals
+\item[$\square$] Conduct placebo-in-time test using only pre-treatment data
+\item[$\square$] Interpret ``no significant pre-trend'' cautiously: failure to reject does not prove parallel trends and should be weighed against subject-matter knowledge and visual evidence
+\item[$\square$] If substantial pre-trends are detected, first reconsider the design. In some cases the right conclusion is that parallel trends is not credible. Where appropriate, consider conditional parallel trends, factor models, or synthetic control (Chapter~\ref{ch:sc}) as alternative identification strategies
+\end{enumerate}
+
+\subsection*{Step 5: Estimate and Plot Event-Time Profile}
+
+\begin{enumerate}
+\item[$\square$] Estimate chosen heterogeneity-robust estimator
+\item[$\square$] Construct event-time profile $\{\theta_k\}_{k=-K_-}^{K_+}$ with confidence intervals
+\item[$\square$] Plot with vertical line at $k=0$ and marker for omitted bin ($k=-1$)
+\item[$\square$] Show support by event time in secondary panel or table
+\item[$\square$] Overlay cohort-specific profiles if heterogeneity is material
+\end{enumerate}
+
+\subsection*{Step 6: Select Inference Procedure}
+
+\begin{enumerate}
+\item[$\square$] Cluster standard errors by unit (default)
+\item[$\square$] Consider two-way clustering if cross-unit correlation is plausible
+\item[$\square$] If $G < 50$: use wild cluster bootstrap or permutation inference
+\item[$\square$] Decide multiplicity adjustment: joint tests for hypothesis families, or individual adjustments (Bonferroni, FDR, Romano-Wolf), and pre-specify which families are primary
+\item[$\square$] Ensure that clustering and resampling choices align with the dependence structure in the data (see Chapter~\ref{ch:inference} for detailed guidance on variance estimators and permutation strategies)
+\item[$\square$] Label primary vs exploratory analyses clearly
+\end{enumerate}
+
+\subsection*{Step 7: Conduct Sensitivity Analyses}
+
+\begin{enumerate}
+\item[$\square$] Vary control set (never-treated only vs including not-yet-treated)
+\item[$\square$] Vary event-time window (short vs long)
+\item[$\square$] Vary binning choices (fine vs coarse)
+\item[$\square$] Vary covariate adjustments (none vs rich controls)
+\item[$\square$] Construct specification curve for key event times ($\theta_0$, $\theta_5$, cumulative) to summarise how estimates vary across reasonable specifications, as discussed further in Chapter~17
+\item[$\square$] Conduct leave-one-cohort-out and leave-one-time-out analyses
+\item[$\square$] Compare estimates across estimators (Sun--Abraham, Callaway--Sant'Anna, Borusyak--Jaravel--Spiess, TWFE)
+\item[$\square$] Treat sensitivity analyses as a way to assess robustness rather than to search for a single ``best'' specification
+\end{enumerate}
+
+\subsection*{Step 8: Compute Event-Time Metrics}
+
+This step translates the event-time profile into quantitative business outputs (see Section~\ref{sec:event-marketing} for details). Because these metrics are functions of estimated event-time effects, they should be interpreted with appropriate uncertainty, for example by reporting ranges across specifications or confidence intervals where feasible.
+
+\begin{enumerate}
+\item[$\square$] \textit{Anticipation}: Check whether $\theta_{-2}, \theta_{-3} \neq 0$; interpret for timing decisions and reconcile with pre-trend diagnostics from Step 4
+\item[$\square$] \textit{Ramp-up rate}: Compute $(\theta_K - \theta_0) / K$; report average per-period effect growth, noting that the estimate can be noisy when individual $\theta_k$ are imprecise
+\item[$\square$] \textit{Time-to-maturity}: Identify $k^*$ where $|\theta_{k+1} - \theta_k| < \epsilon$; report when programme reaches steady state, acknowledging that this depends on the chosen tolerance $\epsilon$ and sampling variability in $\theta_k$
+\item[$\square$] \textit{Effect multiplier}: Compute $\theta_K / \theta_0$; report short-run vs long-run value
+\item[$\square$] \textit{Half-life} (if decay profile): Identify $k$ where $\theta_k = \theta_{\text{peak}} / 2$; report persistence, treating this as an approximate rather than exact calendar time
+\item[$\square$] \textit{Cumulative effect}: Compute $\sum_{k=0}^{K} \theta_k$; use as ROI numerator
+\end{enumerate}
+
+\subsection*{Step 9: Document and Report}
+
+\begin{enumerate}
+\item[$\square$] State research question and data structure (panel dimensions, adoption pattern)
+\item[$\square$] Document estimand definition, baseline, and chosen estimator
+\item[$\square$] Report diagnostic results (pre-trends, placebo, support, composition)
+\item[$\square$] Present primary estimates: event-time profile and event-time metrics (Step 8)
+\item[$\square$] Report sensitivity analyses: specification curve, leave-one-out, estimator comparison
+\item[$\square$] Document inference procedures (clustering, bootstrap, multiplicity)
+\item[$\square$] Provide substantive interpretation linking to business decisions
+\item[$\square$] Note any deviations from pre-specified analysis plan
+\item[$\square$] Archive replication materials: scripts, data (or simulated substitute), software versions
+\end{enumerate}
+
+\bigskip
+
+By following this workflow, practitioners can conduct event-study analyses that are transparent, rigorous, and aligned with modern best practices. The workflow integrates design-based reasoning, heterogeneity-robust estimation, diagnostic testing, sensitivity analysis, and business-relevant metrics, ensuring that conclusions are credible and assumptions are articulated and assessed.
+
+This chapter has developed event-study designs from their foundations through practical implementation in marketing panels. We have defined event-time estimands and their aggregations, specified lead-lag regressions with appropriate normalisation and binning, presented \index{heterogeneity-robust estimators}heterogeneity-robust estimation methods, articulated identification assumptions and diagnostic workflows, and introduced quantitative metrics---\index{ramp-up}ramp-up rate, \index{half-life}effect multiplier, decay half-life---that translate event-time profiles into actionable business insights. Event studies provide a flexible, transparent framework for estimating dynamic treatment effects, testing for anticipation and pre-trends, and communicating causal narratives to technical and non-technical audiences. Chapter~\ref{ch:sc} extends panel methods to synthetic control designs, which provide an alternative identification strategy when parallel trends is implausible and when a single treated unit or a small number of treated units can be compared to a weighted combination of control units.
+\index{event study|)}

@@ -1,0 +1,106 @@
+\section{Regularisation Methods}
+\label{sec:hd-methods}
+
+This section presents several regularisation methods adapted for panel data, including lasso, elastic net, and group lasso. We also discuss how to choose the penalty parameter when the data are clustered.
+
+Lasso (Least Absolute Shrinkage and Selection Operator) applies an L1 penalty to the regression coefficients, encouraging a sparse model by shrinking many coefficients to exactly zero.
+
+\begin{definition}[Lasso Estimator]\label{def:lasso}
+For the panel model $Y_{it} = \tau W_{it} + X_{it}' \beta + \alpha_i + \gamma_t + \varepsilon_{it}$ with within-transformed variables $\tilde{Y}_{it}, \tilde{W}_{it}, \tilde{X}_{it}$, the lasso estimator solves:
+\[
+(\hat{\tau}^{\text{lasso}}, \hat{\beta}^{\text{lasso}}) = \arg\min_{\tau, \beta} \left\{ \frac{1}{NT} \sum_{i,t} (\tilde{Y}_{it} - \tau \tilde{W}_{it} - \tilde{X}_{it}' \beta)^2 + \lambda \sum_{j=1}^p |\beta_j| \right\},
+\]
+where $\lambda > 0$ is the regularisation parameter and the penalty is applied only to control coefficients $\beta$, not to the target parameter $\tau$.
+\end{definition}
+
+While lasso offers interpretability, it can be unstable. If covariates are highly correlated, it may arbitrarily select one from a group. For causal inference, this is a problem. It suggests the findings depend on which particular covariate was selected by chance.
+
+\begin{definition}[Elastic Net Estimator]\label{def:elastic-net}
+The elastic net estimator combines $\ell_1$ and $\ell_2$ penalties:
+\[
+(\hat{\tau}^{\text{enet}}, \hat{\beta}^{\text{enet}}) = \arg\min_{\tau, \beta} \left\{ \frac{1}{NT} \sum_{i,t} (\tilde{Y}_{it} - \tau \tilde{W}_{it} - \tilde{X}_{it}' \beta)^2 + \lambda_1 \sum_{j=1}^p |\beta_j| + \lambda_2 \sum_{j=1}^p \beta_j^2 \right\},
+\]
+where $\lambda_1 > 0$ controls sparsity ($\ell_1$ penalty) and $\lambda_2 > 0$ controls stability ($\ell_2$ penalty). The mixing parameter $\alpha = \lambda_1 / (\lambda_1 + \lambda_2) \in [0,1]$ interpolates between ridge ($\alpha = 0$) and lasso ($\alpha = 1$).
+\end{definition}
+
+\begin{definition}[Group Lasso Estimator]\label{def:group-lasso}
+For controls partitioned into $M$ groups $\mathcal{G}_1, \ldots, \mathcal{G}_M$ with $\bigcup_{m=1}^M \mathcal{G}_m = \{1, \ldots, p\}$, the group lasso estimator solves:
+\[
+(\hat{\tau}^{\text{group}}, \hat{\beta}^{\text{group}}) = \arg\min_{\tau, \beta} \left\{ \frac{1}{NT} \sum_{i,t} (\tilde{Y}_{it} - \tau \tilde{W}_{it} - \tilde{X}_{it}' \beta)^2 + \lambda \sum_{m=1}^M \sqrt{|\mathcal{G}_m|} \|\beta_{\mathcal{G}_m}\|_2 \right\},
+\]
+where $\beta_{\mathcal{G}_m} = (\beta_j)_{j \in \mathcal{G}_m}$ is the coefficient subvector for group $m$, and $\sqrt{|\mathcal{G}_m|}$ scales the penalty by group size. The group lasso sets entire groups to zero ($\beta_{\mathcal{G}_m} = \mathbf{0}$) or retains all coefficients in a group.
+\end{definition}
+
+Hierarchical group lasso imposes structure on nested groups, encouraging coarser groups to be selected before finer groups. For example, a hierarchical structure might specify that main effects must be included before interactions, or that lower-order lags must be included before higher-order lags.
+
+The penalty enforces this hierarchy by applying group penalties to coarser groups with larger weights, ensuring that finer groups are excluded unless coarser groups are included. Hierarchical lasso improves interpretability and reduces overfitting by respecting the natural order of covariates.
+
+\subsection{Theoretical Foundations}
+
+The validity of regularisation for causal inference rests on formal properties of the design matrix and the sparsity of the true model.
+
+\begin{assumption}[Restricted Eigenvalue Condition]\label{ass:restricted-eigenvalue}
+The design matrix $\tilde{\mathbf{X}} \in \mathbb{R}^{NT \times p}$ of within-transformed controls satisfies the restricted eigenvalue (RE) condition with parameters $(\kappa, c_0)$: for all vectors $\delta \in \mathbb{R}^p$ with $\|\delta_{S^c}\|_1 \leq c_0 \|\delta_S\|_1$ (where $S$ is the support of the true coefficient and $S^c$ its complement),
+\[
+\frac{1}{NT} \|\tilde{\mathbf{X}} \delta\|_2^2 \geq \kappa \|\delta_S\|_2^2.
+\]
+The constant $\kappa > 0$ is the restricted eigenvalue. This condition ensures that the design matrix is not too collinear in directions relevant to the sparse solution.
+\end{assumption}
+
+\begin{assumption}[Sparsity]\label{ass:sparsity-rate}
+The true coefficient vector $\beta_0$ is $s$-sparse: $|\text{supp}(\beta_0)| = s$, where $s$ satisfies:
+\[
+s^2 \frac{\log p}{N} \to 0 \quad \text{as } N \to \infty.
+\]
+For clustered panels with $G$ clusters, the condition becomes $s^2 \log p / G \to 0$. This ensures that the sparsity level grows slowly enough relative to sample size and dimension.
+\end{assumption}
+
+\begin{theorem}[Lasso Estimation Error]\label{thm:lasso-error}
+Under Assumptions~\ref{ass:restricted-eigenvalue} and~\ref{ass:sparsity-rate}, with penalty $\lambda \geq 2 \|\tilde{\mathbf{X}}' \varepsilon / (NT)\|_\infty$, the lasso estimator satisfies:
+\begin{enumerate}[(i)]
+    \item $\ell_2$ error: $\|\hat{\beta}^{\text{lasso}} - \beta_0\|_2 \leq 3\lambda \sqrt{s} / \kappa$;
+    \item $\ell_1$ error: $\|\hat{\beta}^{\text{lasso}} - \beta_0\|_1 \leq 12\lambda s / \kappa$;
+    \item Prediction error: $\frac{1}{NT}\|\tilde{\mathbf{X}}(\hat{\beta}^{\text{lasso}} - \beta_0)\|_2^2 \leq 9\lambda^2 s / \kappa$.
+\end{enumerate}
+With high probability, $\lambda = C\sigma\sqrt{\log p / (NT)}$ for some constant $C > 0$ suffices, yielding $\|\hat{\beta}^{\text{lasso}} - \beta_0\|_2 = O_P(\sqrt{s \log p / (NT)})$.
+\end{theorem}
+
+\begin{theorem}[Support Recovery]\label{thm:oracle-property}
+Under Assumptions~\ref{ass:restricted-eigenvalue} and~\ref{ass:sparsity-rate}, and an irrepresentability condition:
+\[
+\|\tilde{\mathbf{X}}_{S^c}' \tilde{\mathbf{X}}_S (\tilde{\mathbf{X}}_S' \tilde{\mathbf{X}}_S)^{-1}\|_\infty < 1 - \eta
+\]
+for some $\eta > 0$, the lasso recovers the true support with high probability:
+\[
+P(\text{supp}(\hat{\beta}^{\text{lasso}}) = \text{supp}(\beta_0)) \geq 1 - \delta,
+\]
+for $\delta \to 0$ as $N \to \infty$. The irrepresentability condition requires that irrelevant covariates are not too correlated with relevant ones.
+\end{theorem}
+
+\subsection*{Penalty Choice under Dependence}
+
+Penalty choice under dependence requires adapting theoretical penalty formulas or cross-validation procedures to account for clustering or serial dependence. Theoretical penalties for lasso in independent data are typically $\lambda = \Phi^{-1}(1 - \alpha / 2p) \cdot \sigma / \sqrt{N}$, where $\Phi^{-1}$ is the inverse normal CDF, $\alpha$ is a significance level, $\sigma$ is the error standard deviation, and $N$ is the sample size. This formula ensures that the penalty is large enough to exclude irrelevant controls with high probability.
+
+Under clustering, the penalty must be inflated to account for the effective sample size (the number of clusters) rather than the nominal sample size (the number of observations). A practical adjustment is $\lambda = \Phi^{-1}(1 - \alpha / 2p) \cdot \sigma / \sqrt{G}$, where $G$ is the number of clusters, reflecting the fact that the effective sample size for inference is $G$ rather than $N \times T$.
+
+\subsection*{Blocked Cross-Validation}
+
+Blocked cross-validation partitions units (or periods) into folds, ensuring that all observations from each unit (or period) are either in the training set or the validation set. For unit-blocked cross-validation with $K$ folds, partition the $N$ units into $K$ groups, train the lasso on $K-1$ groups (using all time periods for those units), predict outcomes for the held-out group, and compute the validation error. Repeat for all folds and select the penalty $\lambda$ that minimises the average validation error.
+
+Unit-blocking respects within-unit dependence by preventing observations from the same unit from appearing in both the training and validation sets. Time-blocking respects within-period dependence by partitioning periods rather than units. Two-dimensional blocking respects both forms of dependence but is computationally expensive and reduces the effective validation set size.
+
+\subsection*{Practical Penalty Grids}
+
+Practical penalty grids for cross-validation use a sequence of penalties $\lambda_1 > \lambda_2 > \cdots > \lambda_L$ spaced logarithmically (for example, $\lambda_{\ell} = \lambda_{\max} \cdot r^{\ell-1}$, where $\lambda_{\max}$ is the smallest penalty that shrinks all coefficients to zero and $r \in (0, 1)$ is a decay rate, typically $r = 0.9$ or $r = 0.95$).
+
+For each $\lambda_{\ell}$, compute the lasso solution and the validation error. Plot the validation error against $\lambda$ (the penalty path), identify the penalty that minimises validation error ($\lambda_{\text{min}}$), and report estimates for $\lambda_{\text{min}}$ and for a slightly larger penalty that produces a sparser model within one standard error of the minimum ($\lambda_{1\text{se}}$). The $\lambda_{1\text{se}}$ rule trades a small increase in validation error for a simpler, more interpretable model, aligning with the principle that parsimony is valuable for causal inference when predictive performance is comparable.
+
+\subsection*{Standardisation and Preprocessing}
+
+Standardising controls before regularisation is essential. Because the penalties are scale-dependent, covariates with different scales can be penalised unevenly. We standardise by dividing each covariate by its standard deviation, ensuring all are on the same scale. The resulting coefficients are transformed back to their original scale for interpretation.
+
+\subsection*{Interactions and Lags}
+
+Handling interactions and lags requires care to respect the hierarchical structure and to avoid collinearity. Interactions between treatment and covariates (for example, $W_{it} \times X_{jt}$) capture effect modification (heterogeneity in treatment effects across values of $X_j$) and should be included if heterogeneity is of interest. Group lasso can select interactions jointly with main effects, ensuring that an interaction is included only if its main effects are included.
+
+Lags of covariates (for example, $X_{j,t-1}, X_{j,t-2}, \ldots, X_{j,t-L}$) capture dynamic relationships and distributed effects. Group lasso can select all lags of a covariate jointly, or hierarchical lasso can enforce that lower-order lags are included before higher-order lags. Chapter~\ref{ch:dynamics} provides comprehensive coverage of distributed lags and dynamic effects in panels.

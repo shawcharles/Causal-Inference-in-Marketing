@@ -1,0 +1,59 @@
+
+\section{Dose-Response Extensions}
+\label{sec:dml-dose-response}
+
+Many marketing treatments are continuous rather than binary. Advertising spend, discount depth, price levels, and promotion duration all vary in intensity. The question is not simply whether to advertise, but how much to spend. DML extends naturally to this setting, estimating dose-response functions that map treatment intensity to expected outcomes.
+
+Chapter~\ref{ch:continuous} develops the theory of continuous treatments in detail, including identification via the generalised propensity score (GPS) and various estimation strategies. This section focuses on the DML contribution: doubly robust estimation that combines flexible ML methods for nuisance functions with orthogonal scores for the dose-response curve.
+
+\begin{definition}[Dose-Response and Marginal Effect]\label{def:dose-response}
+For continuous treatment $W \in \mathcal{W} \subseteq \mathbb{R}$, the average dose-response function (ADRF) is:
+\[
+\mu(w) = \mathbb{E}[Y_i(w)],
+\]
+the average potential outcome under dose $w$. The marginal treatment effect at dose $w$ is:
+\[
+\tau(w) = \frac{\partial \mu(w)}{\partial w},
+\]
+quantifying the incremental effect of increasing treatment intensity. In marketing, $\tau(w)$ answers questions like: "What is the marginal return to an additional dollar of advertising spend when current spend is $w$?"
+\end{definition}
+
+\begin{assumption}[Continuous Treatment Unconfoundedness]\label{ass:continuous-unconfound}
+For all $w \in \mathcal{W}$:
+\[
+Y_i(w) \perp\!\!\!\perp W_i \mid X_i.
+\]
+Additionally, the generalised propensity score $r(w \mid X_i) = f(W_i = w \mid X_i)$ is bounded away from zero on the support: $r(w \mid X_i) \geq \underline{r} > 0$ for all $w$ in the region of interest.
+\end{assumption}
+
+The GPS $r(w \mid X)$ is the continuous analogue of the binary propensity score. It is a density rather than a probability, measuring how likely a unit with covariates $X$ is to receive dose $w$. Chapter~\ref{ch:continuous} establishes that the GPS has a balancing property analogous to the binary case (Proposition~\ref{prop:gps-balance}).
+
+\subsection*{Doubly Robust Estimation}
+
+The DML approach to dose-response estimation combines outcome regression with GPS weighting in a doubly robust score. Define the outcome regression at dose $w$ as $m(w, x) = \mathbb{E}[Y_i \mid W_i = w, X_i = x]$.
+
+\begin{definition}[Doubly Robust ADRF Estimator]\label{def:dr-adrf-dml}
+For a target dose $w$, the doubly robust estimator of $\mu(w)$ is:
+\[
+\hat{\mu}(w) = \frac{1}{n} \sum_{i=1}^{n} \left[ \hat{m}(w, X_i) + \frac{K_h(W_i - w)}{\hat{r}(W_i \mid X_i)} \bigl(Y_i - \hat{m}(W_i, X_i)\bigr) \right],
+\]
+where $K_h(\cdot)$ is a kernel function with bandwidth $h$ that localises around dose $w$, and $\hat{r}(w \mid x)$ is the estimated GPS.
+\end{definition}
+
+The estimator has two components. The first term, $\hat{m}(w, X_i)$, imputes the outcome at dose $w$ using the outcome regression. The second term corrects for bias when the outcome regression is misspecified, weighting the residual $(Y_i - \hat{m}(W_i, X_i))$ by the inverse GPS. The kernel $K_h$ ensures that only observations with doses near $w$ contribute to the correction.
+
+This estimator is doubly robust: it is consistent if either the outcome regression $\hat{m}$ or the GPS $\hat{r}$ is correctly specified. When both are estimated using ML methods that satisfy the rate conditions of Assumption~\ref{ass:nuisance-rates}, the estimator achieves $\sqrt{n}$-consistency and asymptotic normality at each dose $w$.
+
+\subsection*{Panel Considerations}
+
+In panels, continuous treatment unconfoundedness (Assumption~\ref{ass:continuous-unconfound}) must hold conditional on unit heterogeneity. The CRE approach from Section~\ref{sec:dml-estimators} applies: augment the covariate set with unit-level averages $\bar{X}_i$ and $\bar{W}_i$ to proxy for unobserved heterogeneity when estimating both the outcome regression and the GPS.
+
+Cross-fitting proceeds as in the binary case. Partition units into folds, estimate nuisance functions on out-of-fold units, and evaluate the doubly robust score on held-out units. The no-leakage condition requires that outcome regressions for treated units exclude post-treatment observations, though with continuous treatments the distinction between "treated" and "control" periods is less sharp.
+
+\subsection*{Marketing Applications}
+
+Dose-response estimation addresses core marketing questions. What is the optimal advertising budget? At what point do diminishing returns set in? How does price elasticity vary with price level?
+
+Consider a retailer setting promotional discount depths. The dose $W_i$ is the discount percentage (0\% to 50\%), and the outcome $Y_i$ is unit sales. The ADRF $\mu(w)$ traces out expected sales as a function of discount depth. The marginal effect $\tau(w) = \partial \mu(w) / \partial w$ reveals whether deeper discounts yield proportionally more sales (increasing returns) or proportionally fewer (diminishing returns). Profit maximisation requires finding the discount depth where marginal revenue equals marginal cost.
+
+DML enables flexible estimation of this curve without imposing parametric assumptions on the shape of the dose-response relationship. The doubly robust estimator protects against misspecification of either the sales-discount relationship or the distribution of discounts across stores.

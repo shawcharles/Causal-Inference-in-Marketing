@@ -1,0 +1,76 @@
+\section{Multiplicity and Multiple Testing}
+\label{sec:multiple-testing}
+\index{multiple testing|(}
+\index{familywise error rate}
+\index{false discovery rate}
+
+When testing many hypotheses—such as effects on multiple outcomes or across multiple subgroups—we must control the error rate for the family of tests. This arises frequently in marketing when analysing heterogeneous treatment effects (Chapter~\ref{ch:ml-nuisance}) or testing across customer segments.
+
+\begin{definition}[FWER Control]\label{def:fwer}
+For a family of $m$ null hypotheses $H_1, \ldots, H_m$, the familywise error rate is:
+\[
+\text{FWER} = P(\text{reject at least one true } H_j).
+\]
+A procedure controls FWER at level $\alpha$ if $\text{FWER} \leq \alpha$ regardless of which hypotheses are true. Bonferroni correction rejects $H_j$ if $p_j \leq \alpha/m$. Holm's stepdown rejects $H_{(j)}$ (ordered by p-value) if $p_{(j)} \leq \alpha/(m - j + 1)$.
+\end{definition}
+
+Sometimes controlling the proportion of mistakes is more appropriate than avoiding any mistake.
+
+\begin{definition}[FDR Control]\label{def:fdr}
+The false discovery rate is the expected proportion of false rejections among all rejections:
+\[
+\text{FDR} = \mathbb{E}\left[\frac{V}{R \vee 1}\right],
+\]
+where $V$ is the number of false rejections and $R$ is the total number of rejections. The Benjamini-Hochberg procedure:
+\begin{enumerate}
+    \item Order p-values: $p_{(1)} \leq \cdots \leq p_{(m)}$.
+    \item Find largest $k$ such that $p_{(k)} \leq k\alpha/m$.
+    \item Reject $H_{(1)}, \ldots, H_{(k)}$.
+\end{enumerate}
+This controls FDR at level $\alpha$ under independence.
+\end{definition}
+
+For correlated tests, we can gain power by using resampling.
+
+\begin{definition}[Resampling-Based Stepdown]\label{def:romano-wolf}
+The Romano-Wolf procedure accounts for dependence among test statistics:
+\begin{enumerate}
+    \item Compute observed statistics $t_1, \ldots, t_m$ and p-values $p_1, \ldots, p_m$.
+    \item Generate bootstrap samples $b = 1, \ldots, B$ respecting dependence structure.
+    \item For each $b$, compute $t_j^{(b)}$ under the null (centering at null values).
+    \item At step $s$: for remaining hypotheses, compute adjusted p-value as fraction of bootstrap samples where $\max_j |t_j^{(b)}| \geq |t_{(s)}|$.
+    \item Reject if adjusted p-value $\leq \alpha$; remove rejected hypothesis and repeat.
+\end{enumerate}
+This provides FWER control while exploiting correlation to improve power over Bonferroni.
+\end{definition}
+\index{Romano-Wolf procedure}
+
+\begin{remark}[Choosing Between FWER and FDR Control]\label{rem:fwer-fdr-choice}
+The choice between FWER and FDR depends on the research context:
+\begin{enumerate}
+\item \textbf{FWER (Bonferroni, Holm, Romano-Wolf)} is appropriate when:
+   \begin{itemize}
+   \item Any false positive is costly (e.g., launching an ineffective campaign)
+   \item Testing a small number of pre-specified hypotheses
+   \item Confirmatory analysis with regulatory or business decision implications
+   \end{itemize}
+\item \textbf{FDR (Benjamini-Hochberg)} is appropriate when:
+   \begin{itemize}
+   \item Screening many hypotheses for follow-up (e.g., which segments respond?)
+   \item Exploratory analysis where some false positives are acceptable
+   \item Large-scale testing where Bonferroni would have no power
+   \end{itemize}
+\end{enumerate}
+\end{remark}
+
+\begin{remark}[Multiple Testing in Marketing]\label{rem:multiple-marketing}
+Common marketing scenarios requiring multiplicity adjustment:
+\begin{enumerate}
+\item \textbf{Subgroup analysis}: Testing treatment effects across customer segments (high-value, new, churned) inflates false positive rates without correction.
+\item \textbf{Multiple outcomes}: Testing effects on revenue, retention, engagement, and satisfaction simultaneously.
+\item \textbf{Multiple time periods}: Event-study coefficients across many pre- and post-periods (use joint bands from Section~\ref{sec:joint-inference}).
+\item \textbf{A/B test variants}: Testing multiple treatment arms against control.
+\end{enumerate}
+Romano-Wolf is preferred when test statistics are correlated (e.g., outcomes measured on the same customers), as it exploits the correlation structure for tighter inference.
+\end{remark}
+\index{multiple testing|}

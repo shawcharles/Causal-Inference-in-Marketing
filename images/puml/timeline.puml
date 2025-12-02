@@ -1,0 +1,70 @@
+@startuml timeline
+' Methodological Evolution Timeline
+' Generates: timeline.svg / timeline.png
+
+skinparam backgroundColor white
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 11
+skinparam shadowing false
+skinparam roundCorner 10
+skinparam padding 8
+
+skinparam rectangle {
+    BorderThickness 1.5
+    BackgroundColor white
+    BorderColor #666666
+}
+
+skinparam arrow {
+    Color #888888
+    Thickness 1.5
+}
+
+title <b>The Evolution of Panel Data Methods</b>\n<size:12>From Fixed Effects to Machine Learning</size>
+
+' --- 1980s-1990s ---
+package "<b>1980s–1990s</b>\n<color:#d62728>Classical Panel Methods</color>" as ERA1 <<Frame>> #FFF5F5 {
+    rectangle "**Two-Way Fixed Effects**\n\n//Mundlak (1978)//\n//Hausman & Taylor (1981)//\n\n<color:#555>Apps: Brand effects,</color>\n<color:#555>Store heterogeneity</color>" as TWFE #FFFFFF
+    
+    rectangle "**Random Effects / Within**\n\n//Baltagi (1995)//\n//Wooldridge (2002)//\n\n<color:#555>Apps: Marketing mix,</color>\n<color:#555>Customer panels</color>" as RE #FFFFFF
+}
+
+' --- 2000s ---
+package "<b>2000s</b>\n<color:#1f77b4>Design-Based Revolution</color>" as ERA2 <<Frame>> #F0F8FF {
+    rectangle "**Synthetic Control**\n\n//Abadie & Gardeazabal (2003)//\n//Abadie et al. (2010)//\n\n<color:#555>Apps: Market entry,</color>\n<color:#555>Policy evaluation</color>" as SC #FFFFFF
+    
+    rectangle "**Difference-in-Differences**\n\n//Bertrand et al. (2004)//\n//Card & Krueger (1994)//\n\n<color:#555>Apps: Geo experiments,</color>\n<color:#555>Rollout studies</color>" as DID #FFFFFF
+}
+
+' --- 2010s ---
+package "<b>2010s</b>\n<color:#9467bd>Modern Methods & Heterogeneity</color>" as ERA3 <<Frame>> #F3E5F5 {
+    rectangle "**Interactive Fixed Effects**\n\n//Bai (2009)//\n//Pesaran (2006)//\n\n<color:#555>Apps: Common shocks,</color>\n<color:#555>Factor models</color>" as IFE #FFFFFF
+    
+    rectangle "**Staggered DiD**\n(Heterogeneity-Robust)\n\n//Callaway & Sant'Anna (2021)//\n//Sun & Abraham (2021)//\n\n<color:#555>Apps: Loyalty programs,</color>\n<color:#555>Staggered rollouts</color>" as SDID #FFFFFF
+}
+
+' --- 2020s ---
+package "<b>2020s</b>\n<color:#2ca02c>ML Integration</color>" as ERA4 <<Frame>> #F0FFF0 {
+    rectangle "**Synthetic DiD / Matrix Comp.**\n\n//Arkhangelsky et al. (2021)//\n//Athey et al. (2021)//\n\n<color:#555>Apps: Platform entry,</color>\n<color:#555>Sparse panels</color>" as SDID_MC #FFFFFF
+    
+    rectangle "**Double ML / High-Dim**\n\n//Chernozhukov et al. (2018)//\n//Belloni et al. (2017)//\n\n<color:#555>Apps: Rich covariates,</color>\n<color:#555>Heterogeneous effects</color>" as DML #FFFFFF
+}
+
+' --- Layout & Connections ---
+
+' Vertical flow with main transition labels
+ERA1 -down-> ERA2 : <color:#888><i>Design-Based Thinking</i></color>
+ERA2 -down-> ERA3 : <color:#888><i>Heterogeneity Awareness</i></color>
+ERA3 -down-> ERA4 : <color:#888><i>ML Integration</i></color>
+
+' Cross-era logical connections (dashed to be subtle)
+TWFE -[#aaa,dashed]-> DID
+DID  -[#aaa,dashed]-> SDID
+SDID -[#aaa,dashed]-> SDID_MC
+
+RE  -[hidden]-> IFE
+IFE -[hidden]-> DML
+SC  -[hidden]-> SDID_MC
+
+caption Figure 1.2 — Methodological Timeline
+@enduml

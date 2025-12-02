@@ -1,0 +1,190 @@
+\section{Connections and Comparisons}
+\label{sec:adv-matrix-connections}
+
+This section synthesises the advanced methods presented in this chapter, providing guidance on when to use each approach.
+
+\subsection*{Tensor vs Matrix Completion}
+
+Tensor completion (Section~\ref{sec:tensor-completion}) preserves multi-way structure while matrix completion flattens it. When should we use each?
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Tensor vs Matrix Completion}
+\label{tab:tensor-vs-matrix}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Aspect} & \textbf{Tensor Completion} & \textbf{Matrix Completion} \\
+\midrule
+Structure & Preserves multi-way (product $\times$ store $\times$ time) & Flattens to two-way \\
+\addlinespace
+Interactions & Captures mode interactions & Ignores mode structure \\
+\addlinespace
+Computation & $O(|\Omega| R^K)$ where $K$ = modes & $O(|\Omega| R)$ \\
+\addlinespace
+Identification & Better when treatment concentrated in one mode & Requires variation across all cells \\
+\addlinespace
+When to use & Informative multi-way structure & Large panels; limited resources \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\paragraph{Computational trade-offs.} Tensor algorithms scale poorly with the number of modes. A four-way tensor (products $\times$ stores $\times$ weeks $\times$ regions) requires estimating loadings for four modes. Flattening to a matrix (product-store-region combinations $\times$ weeks) reduces the problem to two modes.
+
+\paragraph{Identification advantages.} Tensor completion excels when treated cells are concentrated in one mode. If treatment affects all products in a few stores, tensor completion leverages the product and time modes to impute counterfactuals. Matrix completion treats product-store combinations as independent units.
+
+\subsection*{Robust vs Standard Methods}
+
+Robust methods (Section~\ref{sec:robust-matrix}) separate outliers from the low-rank structure.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Robust vs Standard Matrix Completion}
+\label{tab:robust-vs-standard}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Aspect} & \textbf{Standard MC} & \textbf{Robust MC} \\
+\midrule
+Model & $Y = L + E$ & $Y = L + S + E$ \\
+\addlinespace
+Outlier handling & Absorbed into $L$ (bias) & Separated into $S$ \\
+\addlinespace
+Variance & Lower (one component) & Higher (two components) \\
+\addlinespace
+When to use & Outliers rare ($<$1\%) & Outliers common ($>$5\%) \\
+\addlinespace
+Diagnostic & Gaussian residuals & Heavy-tailed residuals \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\paragraph{Diagnostic tests.} Plot the distribution of residuals from standard matrix completion. If residuals have heavy tails (many values $>$3 standard deviations), outliers are present and robust methods are warranted. If residuals are approximately Gaussian, standard methods suffice.
+
+\paragraph{When is robustness critical?} Robust methods are essential when outliers are common ($>$5\% of cells) and large ($>$3 standard deviations). They are less important when outliers are rare ($<$1\%) or small ($<$2 standard deviations).
+
+\subsection*{Frequentist vs Bayesian}
+
+Frequentist methods (nuclear norm, ALS; Section~\ref{sec:computation}) provide point estimates. Bayesian methods (Section~\ref{sec:bayesian-matrix}) provide posterior distributions.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Frequentist vs Bayesian Matrix Completion}
+\label{tab:freq-vs-bayes}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Aspect} & \textbf{Frequentist} & \textbf{Bayesian} \\
+\midrule
+Output & Point estimate + CI & Posterior distribution + credible interval \\
+\addlinespace
+Uncertainty & Asymptotic or bootstrap & Posterior probability \\
+\addlinespace
+Interpretation & 95\% of CIs cover true value & 95\% probability parameter in interval \\
+\addlinespace
+Computation & Fast (SVD, ALS) & Slower (MCMC, variational) \\
+\addlinespace
+Prior sensitivity & None (implicit assumptions) & Requires sensitivity analysis \\
+\addlinespace
+When to use & Large panels; speed needed & Small panels; uncertainty critical \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\paragraph{Prior sensitivity.} Bayesian results may depend on prior choice. Sensitivity analysis (varying priors and checking robustness) is essential. Frequentist methods avoid explicit priors but make implicit assumptions (e.g., fixed rank).
+
+\subsection*{Nonlinear Panels with Interactive Fixed Effects}
+
+Nonlinear panel models with interactive fixed effects combine the low-rank factor structure (Chapter~\ref{ch:factor}) with non-Gaussian likelihoods (logit, probit, Poisson).
+
+\paragraph{The challenge.} The fixed effects estimator treats the latent matrix of interactive effects as a low-rank nuisance and estimates it jointly with structural coefficients. In practice, this requires solving a non-convex optimisation problem that is computationally intractable for realistic $N$ and $T$.
+
+\paragraph{Tractable estimation.} \citet{zeleneev2025tractable} propose a two-step procedure:
+\begin{enumerate}
+\item \textbf{Nuclear norm regularisation:} Solve a convex nuclear-norm-regularised problem to obtain preliminary estimates of the interactive effects matrix and parameters.
+\item \textbf{Gradient descent refinement:} Run gradient descent on the original likelihood starting from the nuclear norm solution, converging to the fixed effects estimator under local convexity conditions.
+\end{enumerate}
+
+\paragraph{Marketing applications.}\begin{itemize}
+\item \textbf{Binary outcomes:} Customer adoption or churn decisions with latent demand factors. Use logit likelihood with interactive fixed effects to model unobserved heterogeneity.
+\item \textbf{Count outcomes:} Weekly purchase counts with latent category-time effects. Use Poisson likelihood with interactive fixed effects.
+\item \textbf{Network models:} Social network effects with homophily in unobservables. The factor structure captures latent similarity.
+\end{itemize}
+
+The Zeleneev and Zhang estimator serves as the computational workhorse; this chapter provides intuition about why low-rank regularisation recovers the underlying factor structure.
+
+\subsection*{Integration with Other Methods}
+
+Matrix completion can be combined with other causal inference methods.
+
+\paragraph{Matrix completion + Synthetic control.} Synthetic control constructs weights to match treated unit's pre-treatment outcomes. Matrix completion imputes using low-rank structure. The hybrid uses SC weights as covariates in MC:
+\[
+\hat{Y}_{it}(0) = \sum_{j \in \text{donor}} w_j Y_{jt} + \hat{L}_{it},
+\]
+where $w_j$ are synthetic control weights and $\hat{L}_{it}$ is the low-rank residual.
+
+\paragraph{Matrix completion + Difference-in-differences.} DiD estimates unit and time fixed effects. The hybrid applies MC to residuals:
+\[
+\tilde{Y}_{it} = Y_{it} - \hat{\alpha}_i - \hat{\gamma}_t, \quad \hat{Y}_{it}(0) = \hat{\alpha}_i + \hat{\gamma}_t + \hat{L}_{it}.
+\]
+
+\paragraph{Ensemble approaches.} Average predictions from multiple methods:
+\[
+\hat{\tau}_{\text{ensemble}} = \sum_{m=1}^M \omega_m \hat{\tau}_m, \quad \text{where } \sum_m \omega_m = 1.
+\]
+\textbf{Weight selection:}
+\begin{itemize}
+\item \textbf{Cross-validation:} Choose weights that minimise held-out prediction error on untreated cells.
+\item \textbf{Inverse variance:} $\omega_m \propto 1/\text{Var}(\hat{\tau}_m)$, giving more weight to methods with smaller standard errors.
+\item \textbf{Equal weights:} Simple averaging often performs well when methods are diverse.
+\end{itemize}
+Ensemble approaches are robust to model misspecification.
+
+\subsection*{Practical Guidance: Method Selection}
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Decision Flowchart for Method Selection]
+\textbf{1. Data structure:}
+\begin{itemize}
+\item Multi-way structure informative? $\rightarrow$ Tensor completion (Section~\ref{sec:tensor-completion}).
+\item Two-way structure sufficient? $\rightarrow$ Matrix completion.
+\end{itemize}
+
+\textbf{2. Data quality:}
+\begin{itemize}
+\item Outliers present ($>$5\% of cells, $>$3 SD)? $\rightarrow$ Robust MC (Section~\ref{sec:robust-matrix}).
+\item Clean data? $\rightarrow$ Standard MC.
+\end{itemize}
+
+\textbf{3. Side information:}
+\begin{itemize}
+\item Rich covariates available? $\rightarrow$ Covariate-assisted MC (Section~\ref{sec:matrix-side-info}).
+\item Network structure? $\rightarrow$ Graph-regularised MC.
+\end{itemize}
+
+\textbf{4. Stability:}
+\begin{itemize}
+\item Structural breaks present? $\rightarrow$ Time-varying MC (Section~\ref{sec:time-varying-rank}).
+\item Stable factor structure? $\rightarrow$ Standard MC.
+\end{itemize}
+
+\textbf{5. Inference:}
+\begin{itemize}
+\item Full uncertainty quantification needed? $\rightarrow$ Bayesian MC (Section~\ref{sec:bayesian-matrix}).
+\item Point estimate sufficient? $\rightarrow$ Frequentist MC.
+\end{itemize}
+
+\textbf{6. Scale:}
+\begin{itemize}
+\item Very large panel ($>$10M cells)? $\rightarrow$ SGD or Soft-Impute (Section~\ref{sec:computation}).
+\item Moderate panel? $\rightarrow$ ALS or nuclear norm.
+\end{itemize}
+
+\textbf{7. Outcome type:}
+\begin{itemize}
+\item Continuous? $\rightarrow$ Standard factor model.
+\item Binary/count? $\rightarrow$ Nonlinear IFE (Zeleneev--Zhang).
+\end{itemize}
+\end{tcolorbox}

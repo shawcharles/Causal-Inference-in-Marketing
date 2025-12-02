@@ -1,0 +1,197 @@
+\section{Anticipation, Carryover, and Mediation}
+\label{sec:dynamics-anticipation}
+
+Dynamic treatment effects arise from three distinct mechanisms: anticipation (forward-looking behaviour adjusting current outcomes in response to expected future treatments), carryover (lagged effects of past treatments persisting into current periods), and mediation (indirect effects operating through intermediate variables).
+
+This section discusses how to diagnose and interpret each mechanism. For identification assumptions, see Section~\ref{sec:dynamics-identification}. For estimation, see Section~\ref{sec:dynamics-estimation}.
+
+\subsection*{Overview of Dynamic Mechanisms}
+
+Table~\ref{tab:dynamic-mechanisms} summarises the three mechanisms.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Comparison of Dynamic Mechanisms}
+\label{tab:dynamic-mechanisms}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Mechanism} & \textbf{Direction} & \textbf{Marketing Examples} & \textbf{Diagnostic} \\
+\midrule
+Anticipation & Future $\to$ Present & Delay buying before promotion; stockpile before price increase & Event-time leads ($k < 0$) \\
+\addlinespace
+Carryover & Past $\to$ Present & Advertising builds awareness; promotion generates trial & Event-time lags ($k > 0$) \\
+\addlinespace
+Mediation & Treatment $\to$ Mediator $\to$ Outcome & Advertising $\to$ Awareness $\to$ Sales & Path analysis; front-door \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{Anticipation}
+
+Anticipation occurs when agents are forward-looking and adjust current behaviour in response to expected future treatments. In marketing, consumers may delay buying in anticipation of a promotion (reducing current sales) or accelerate buying before a price increase (stockpiling). Search intensity often increases before a product launch, generating buzz. Firms may also adjust pricing, advertising, or inventory in anticipation of competitor actions.
+
+Anticipatory responses bias event-time estimates if they occur in the pre-treatment period, because pre-treatment outcomes no longer reflect the untreated potential outcome but rather a mixture of the untreated outcome and the anticipatory response. This violates Assumption~\ref{ass:no-anticipation}.
+
+\subsubsection*{Diagnosing Anticipation}
+
+Estimate the event-study specification including leads ($k < 0$) alongside lags ($k \geq 0$). Plot $\hat{\theta}_k$ for $k < 0$ and test whether they are jointly zero using an F-test.
+
+\begin{itemize}
+\item \textbf{Leads near zero:} No anticipation is supported.
+\item \textbf{Leads large:} Anticipation or pre-trends present.
+\end{itemize}
+
+\subsubsection*{Distinguishing Anticipation from Pre-Trends}
+
+\begin{tcolorbox}[colback=orange!5!white,colframe=orange!50!black,title=Distinguishing Anticipation from Pre-Trends]
+\textbf{Evidence for anticipation:}
+\begin{itemize}
+\item Effect begins exactly one period before treatment.
+\item Effect is absent at earlier leads ($k = -2, -3, \ldots$).
+\item Institutional knowledge confirms agents could anticipate (pre-announcement).
+\end{itemize}
+
+\textbf{Evidence for pre-trends:}
+\begin{itemize}
+\item Effect present at multiple leads.
+\item Linear trend pattern across leads.
+\item Agents could not have known about treatment.
+\end{itemize}
+
+\textbf{Design-based test:} Compare pre-announced vs surprise treatments. If the dip is present only for pre-announced treatments, anticipation is supported.
+\end{tcolorbox}
+
+\subsubsection*{Handling Anticipation}
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Practical Guidance: Options When Anticipation is Present]
+\textbf{Option 1: Model anticipation explicitly.}
+\begin{itemize}
+\item Include leads in the specification and interpret them as anticipatory effects.
+\item Report both anticipatory effects (leads) and post-treatment effects (lags).
+\item Discuss total effect = anticipation + post-treatment.
+\end{itemize}
+
+\textbf{Option 2: Redefine intervention time.}
+\begin{itemize}
+\item If consumers anticipate one period in advance, redefine treatment to switch on at $g-1$.
+\item Captures onset of anticipation as the treatment.
+\end{itemize}
+
+\textbf{Option 3: Exclude anticipation period.}
+\begin{itemize}
+\item Use only periods $t \leq g - \bar{a}$ as pre-treatment, where $\bar{a}$ is anticipation window.
+\item Restricts comparison to periods before anticipation began.
+\end{itemize}
+
+\textbf{Choice depends on:} Substantive question; strength of evidence; whether anticipation is of independent interest.
+\end{tcolorbox}
+
+\subsection*{Carryover and Decay}
+
+Carryover describes how treatment effects persist and dissipate over lags.
+
+\paragraph{Positive carryover.} Past treatments can increase current outcomes. Advertising builds brand awareness as a cumulative stock. Promotions generate trial that leads to repeat buying. Loyalty programmes create habits and routines.
+
+\paragraph{Negative carryover.} Past treatments can also decrease current outcomes. Promotions may exhaust demand through stockpiling. Repeated exposures can cause satiation and wear-out.
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Box 10.4: The Attention Paradox in Dynamic Advertising Effects]
+\textbf{Setting.} A video platform runs a six-week campaign with a high-frequency pre-roll ad for a focal brand. Let $W_{it}$ indicate exposure to the high-frequency schedule in week $t$ for market $i$, and let $G_i$ be the week when the schedule is turned on. We estimate cohort-specific event-time effects $\theta_k(g)$ and aggregated effects $\theta_k$ as in Definition~\ref{def:event-time-effects}, with $k = t - G_i$.
+
+\textbf{Dynamic pattern.} Suppose the estimated profile $\{\hat{\theta}_k\}$ for $k = 0,1,\ldots,8$ shows:
+\begin{itemize}
+\item $\hat{\theta}_0, \hat{\theta}_1, \hat{\theta}_2 > 0$: early weeks of high attention increase sales and brand search.
+\item $\hat{\theta}_3 \approx 0$: additional exposure is neutral.
+\item $\hat{\theta}_4, \hat{\theta}_5 < 0$: further weeks of the same creative reduce sales relative to a counterfactual with shorter duration.
+\end{itemize}
+The cumulative effect through horizon $H$ is $\text{LRM}(H) = \hat{\theta}_H$ if event-time effects are cumulative, or $\sum_{k=0}^H \hat{\beta}_k$ if working with incremental impulse responses $\hat{\beta}_k = \hat{\theta}_k - \hat{\theta}_{k-1}$. In this pattern $\text{LRM}(3)$ is positive and substantial, but $\text{LRM}(6)$ is only slightly larger or even smaller if the late negative effects dominate. More ``attention'' in the sense of longer exposure to the same ad generates negative carryover.
+
+\textbf{Measurement implication.} Focusing only on early positive lags or on total impressions obscures the attention paradox: past a point, incremental event-time effects turn negative even as exposure accumulates. Reporting the full $\hat{\theta}_k$ trajectory, cumulative effects $\text{LRM}(H)$ for multiple horizons, and confidence bands helps identify where attention becomes counterproductive and informs optimal campaign duration and rotation of creatives.
+\end{tcolorbox}
+
+\subsubsection*{Interpreting Lag Profiles}
+
+Interpreting lag profiles as carryover requires care. Elevated post-treatment sales could reflect true carryover (consumers who tried during promotion continue buying) or sample selection (promotion attracted high-valuation consumers who would have bought eventually).
+
+Distinguishing these requires additional evidence (e.g., tracking same consumers over time; comparing exposed vs unexposed consumers).
+
+\subsubsection*{Geometric Decay}
+
+Geometric decay is the most common functional form:
+\[
+\beta_s = \beta_0 \delta^s,
+\]
+where $\beta_0$ is the immediate effect and $\delta \in (0, 1)$ is the decay rate.
+
+The long-run multiplier is $\text{LRM} = \beta_0 / (1 - \delta)$, and the half-life is $h^* = \log 2 / (-\log \delta)$.
+
+\paragraph{Sensitivity analysis.} Compare geometric, polynomial, and flexible lags to assess robustness to functional form.
+
+\subsection*{Mediation}
+
+Mediation channels describe pathways through which treatments affect outcomes.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Mediation Channels in Marketing}
+\label{tab:mediation-channels}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Treatment} & \textbf{Mediators} & \textbf{Outcome} \\
+\midrule
+Advertising & Awareness $\to$ Consideration $\to$ Trial & Sales \\
+\addlinespace
+Promotions & Deal-seeking $\to$ Stockpiling $\to$ Category expansion & Sales \\
+\addlinespace
+Loyalty programmes & Switching costs $\to$ Habit formation $\to$ Rewards & Retention, Sales \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+Understanding mediation channels informs design (which channels to activate), targeting (which customers respond to which channels), and optimisation (how to allocate budget across channels).
+
+\subsubsection*{Caution: Post-Treatment Conditioning}
+
+\begin{tcolorbox}[colback=red!5!white,colframe=red!50!black,title=Warning: Post-Treatment Conditioning Bias]
+\textbf{Problem:} Naïve mediation analysis conditions on post-treatment mediators (e.g., regressing sales on treatment and reward redemption). This:
+\begin{itemize}
+\item Opens backdoor paths through confounders of mediator-outcome.
+\item Closes frontdoor paths that represent the causal effect.
+\item Produces estimates without causal interpretation.
+\end{itemize}
+
+\textbf{Requirements for credible mediation:}
+\begin{itemize}
+\item Sequential ignorability (no unmeasured confounding of mediator-outcome).
+\item Specialised methods: front-door adjustment, IV for mediator.
+\end{itemize}
+
+See \citet{pearl2009causality} for formal treatment.
+\end{tcolorbox}
+
+\subsubsection*{Practical Guidance for Mediation}
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Practical Guidance: Mediation in Marketing Panels]
+\textbf{Report total effects as primary estimand:}
+\begin{itemize}
+\item Total effect = overall effect of treatment on outcome.
+\item Clear causal interpretation; informs policy.
+\end{itemize}
+
+\textbf{Report path-specific effects only when:}
+\begin{itemize}
+\item Sequential ignorability is plausible.
+\item Assumptions are explicitly discussed.
+\item Sensitivity analyses assess robustness.
+\end{itemize}
+
+\textbf{Avoid conditioning on post-treatment variables} without explicit justification.
+
+\textbf{When feasible, use experimental variation in mediators:}
+\begin{itemize}
+\item Randomise mediator (e.g., reward reminders).
+\item Isolates specific channels with design-based credibility.
+\end{itemize}
+\end{tcolorbox}

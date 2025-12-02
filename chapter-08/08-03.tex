@@ -1,0 +1,134 @@
+\section{Matrix Completion Perspective}
+\label{sec:factor-matrix}
+
+The matrix completion perspective views the outcome matrix as partially observed, with missing or treated cells, and seeks to impute the unobserved entries by exploiting low-rank structure. This section presents nuclear-norm minimisation as a convex surrogate for rank minimisation, discusses missingness patterns and their implications for recovery, and addresses the bias-variance trade-off through regularisation. See Chapter~\ref{ch:advanced-matrix} for advanced matrix and tensor methods when panels are multi-way, non-stationary, or outlier-contaminated.
+
+\subsection*{Formalisation and Rank Minimisation}
+
+Matrix completion formalises the imputation problem as follows. The $N \times T$ outcome matrix $\mathbf{Y}$ is partially observed. We observe entries $Y_{it}$ for $(i, t) \in \Omega$, where $\Omega$ is the set of observed cells (untreated unit-period pairs). We seek to impute entries $Y_{it}$ for $(i, t) \notin \Omega$ (treated or missing cells).
+
+If $\mathbf{Y}$ has low rank---the IFE model with rank $R$ implies that the noiseless component $\Lambda F'$ has rank $R$---then the unobserved entries can be recovered by solving:
+\[
+\min_{\mathbf{M}} \text{rank}(\mathbf{M}) \quad \text{subject to} \quad M_{it} = Y_{it} \text{ for all } (i, t) \in \Omega.
+\]
+This optimisation finds the lowest-rank matrix $\mathbf{M}$ that matches the observed entries exactly.
+
+Figure~\ref{fig:factor-matrix} illustrates the matrix completion setup. The observed cells (control units and pre-treatment periods) are shaded, while the treated cells to be imputed are blank. The low-rank structure implies that the observed cells contain enough information to recover the missing entries.
+
+\subsection*{Nuclear-Norm Minimisation}
+
+The rank minimisation problem is computationally intractable (NP-hard), motivating convex relaxation. The nuclear norm of a matrix $\mathbf{M}$, defined as the sum of its singular values,
+\[
+\| \mathbf{M} \|_* = \sum_{k=1}^{\min(N,T)} \sigma_k(\mathbf{M}),
+\]
+serves as a convex surrogate for rank \citet{candes2009exact,candes2010power}. The regularised matrix completion estimator solves:
+\[
+\hat{\mathbf{M}} = \arg\min_{\mathbf{M}} \left( \frac{1}{2} \sum_{(i,t) \in \Omega} (Y_{it} - M_{it})^2 + \lambda \| \mathbf{M} \|_* \right),
+\]
+where $\lambda > 0$ is a regularisation parameter that controls the complexity (effective rank) of the solution. Large $\lambda$ encourages low-rank solutions; small $\lambda$ prioritises fitting the observed entries.
+
+\subsection*{Soft-Impute Algorithm}
+
+The nuclear-norm optimisation is solved using the Soft-Impute algorithm, which applies singular value thresholding (SVT) iteratively. Define the projection operators: $P_\Omega(\mathbf{Y})$ extracts the observed entries of $\mathbf{Y}$ (setting unobserved entries to zero), and $P_{\Omega^\perp}(\mathbf{M})$ extracts the unobserved entries of $\mathbf{M}$ (setting observed entries to zero).
+
+\begin{enumerate}
+\item \textbf{Initialise:} Set $\mathbf{M}^{(0)} = \mathbf{0}$ or a warm start from a previous $\lambda$ value.
+\item \textbf{Fill missing entries:} Construct the filled matrix:
+\[
+\mathbf{Z}^{(k)} = P_\Omega(\mathbf{Y}) + P_{\Omega^\perp}(\mathbf{M}^{(k)}).
+\]
+This replaces observed entries with observed outcomes and missing entries with current imputations.
+\item \textbf{Apply SVT:} Compute the SVD $\mathbf{Z}^{(k)} = \mathbf{U} \mathbf{S} \mathbf{V}'$ and apply soft-thresholding:
+\[
+\mathbf{M}^{(k+1)} = \mathbf{U} (\mathbf{S} - \lambda \mathbf{I})_+ \mathbf{V}',
+\]
+where $(\mathbf{S} - \lambda \mathbf{I})_+$ sets singular values below $\lambda$ to zero and shrinks others by $\lambda$.
+\item \textbf{Check convergence:} Converge when the relative change in the Frobenius norm is small:
+\[
+\frac{\| \mathbf{M}^{(k+1)} - \mathbf{M}^{(k)} \|_F}{\| \mathbf{M}^{(k)} \|_F} < 10^{-5}.
+\]
+\item \textbf{Iterate:} Repeat steps 2-4 until convergence, typically 20 to 100 iterations.
+\end{enumerate}
+
+The algorithm is efficient because the SVD can be computed incrementally (only the first few singular values are needed when the solution is low-rank). Warm-starting from a nearby $\lambda$ value speeds up computation when searching over a grid.
+
+\subsection*{Regularisation and Bias-Variance Trade-Off}
+
+The regularisation parameter $\lambda$ controls the bias-variance trade-off:
+
+\paragraph{Small $\lambda$} prioritises fitting the observed entries, producing low bias but high variance. The imputed matrix may overfit idiosyncratic noise in the observed cells, leading to volatile counterfactuals that change dramatically with small data perturbations.
+
+\paragraph{Large $\lambda$} prioritises low rank, producing high bias but low variance. The imputed matrix is smooth but may underfit systematic structure, biasing counterfactuals toward zero.
+
+\paragraph{Optimal $\lambda$} balances these extremes. Cross-validation provides a data-driven choice: partition the observed cells $\Omega$ into training (80 per cent) and validation (20 per cent) sets; solve the nuclear-norm problem on the training set for a grid of $\lambda$ values (e.g., $\lambda \in \{0.1, 0.5, 1, 2, 5, 10, 20\} \times \sigma_1$, where $\sigma_1$ is the largest singular value of the observed matrix); select the $\lambda$ minimising validation error.
+
+\subsection*{Connection to IFE}
+
+Matrix completion with nuclear-norm regularisation is closely related to IFE estimation (Section~\ref{sec:factor-ife}). Both exploit low-rank structure to impute counterfactuals. The key differences are:
+
+\paragraph{Rank selection.} IFE requires specifying the rank $R$ before estimation. Matrix completion selects the effective rank implicitly through the regularisation parameter $\lambda$. Larger $\lambda$ produces lower effective rank.
+
+\paragraph{Estimation.} IFE uses PCA or iterated least squares on the demeaned outcome matrix. Matrix completion uses nuclear-norm-penalised optimisation, which can be viewed as soft-thresholding the singular values rather than hard-thresholding (keeping only the first $R$).
+
+\paragraph{Demeaning.} For IFE, we demean before factor estimation to remove additive fixed effects. For matrix completion, demeaning is also recommended: apply two-way demeaning to the observed entries, solve the nuclear-norm problem on the demeaned matrix, then add back the fixed effects for imputation.
+
+When to use each approach: use IFE when the rank is well-determined by information criteria or economic reasoning, and when you want explicit loadings and factors for interpretation. Use matrix completion when the rank is uncertain, when you want automatic rank selection, or when the missingness pattern is complex.
+
+\subsection*{Recovery Conditions}
+
+The quality of matrix completion depends on the missingness pattern. \citet{candes2009exact} established that if the rank-$R$ matrix has incoherent singular vectors and the observed cells are sampled uniformly at random, then the matrix can be recovered exactly with high probability if the number of observed cells satisfies:
+\[
+|\Omega| \geq C \cdot R (N + T) \log^2(N + T),
+\]
+where $C$ is a constant. This means that recovery requires observing at least $O(R)$ entries per row and per column on average.
+
+\paragraph{Random missingness.} If each cell is observed independently with probability $p$, recovery is feasible when $p \geq C R \log(NT) / \min(N,T)$. For a rank-5 matrix with $N = T = 100$, this requires observing roughly 50 per cent of entries.
+
+\paragraph{Design-driven missingness.} In causal inference, missingness is not random but determined by the treatment assignment. Treated cells are missing by definition. Recovery is feasible if the observed cells span both the row space (loadings) and the column space (factors). This requires that control units are similar to treated units (their loadings span the same subspace) and that pre-treatment periods are similar to post-treatment periods (factors are stable).
+
+\subsection*{Implications for Causal Inference}
+
+The quality of counterfactual imputation depends on two conditions:
+
+\paragraph{Loading overlap.} The treated units' loadings must lie in (or near) the span of the control units' loadings. If treated units are outliers with loadings far from any control unit, imputation extrapolates and is unreliable. This is analogous to the convex hull requirement in synthetic control (Chapter~\ref{ch:sc}), though matrix completion does not require strict convexity.
+
+\paragraph{Factor stability.} The post-treatment factors must be similar to pre-treatment factors (no structural breaks). If the factor structure changes at the treatment date, the pre-treatment data do not inform post-treatment imputation. Diagnostics should assess whether factors are stable over time.
+
+The connection to synthetic control is instructive. SC constructs the counterfactual as $\hat{Y}_{it}(0) = \sum_j w_j Y_{jt}$, assuming the treated unit's loading is a convex combination of control loadings. Matrix completion constructs the counterfactual as $\hat{Y}_{it}(0) = \hat{M}_{it}$, assuming the treated unit's loading and post-treatment factors lie in the span of observed cells. Matrix completion is more flexible (no convexity constraint) but requires stronger rank assumptions.
+
+\subsection*{Treatment Effect Estimation}
+
+With the imputed matrix $\hat{\mathbf{M}}$, treatment effects are computed as the difference between observed and imputed outcomes:
+\[
+\hat{\tau}_{it} = Y_{it} - \hat{M}_{it} \quad \text{for } (i,t) \notin \Omega.
+\]
+For the overall ATT, aggregate across treated cells:
+\[
+\hat{\tau} = \frac{1}{|\{(i,t) \notin \Omega\}|} \sum_{(i,t) \notin \Omega} (Y_{it} - \hat{M}_{it}).
+\]
+Event-time effects and cohort-specific effects can be computed by aggregating over appropriate subsets, as in Chapter~\ref{ch:generalized-sc}.
+
+\subsection*{Practical Implementation}
+
+Practical implementation requires several choices:
+
+\paragraph{Pre-processing.} Construct the outcome matrix with units as rows and periods as columns. Flag missing or treated cells. Demean rows and columns (two-way demeaning) to remove additive fixed effects before applying nuclear-norm minimisation. Alternatively, include fixed effects in an extended model.
+
+\paragraph{Algorithm.} Use Soft-Impute (described above), alternating least squares, or proximal gradient descent. Soft-Impute is widely used for its simplicity and efficiency.
+
+\paragraph{Tuning.} Choose $\lambda$ by cross-validation on the observed cells. Compute the solution path for a grid of $\lambda$ values (from large to small, warm-starting each iteration). Select $\lambda$ at the minimum of the validation curve or at the ``elbow'' where validation error flattens.
+
+\paragraph{Post-processing.} Add back the demeaned fixed effects to the imputed matrix. The counterfactual for treated cell $(i,t)$ is $\hat{Y}_{it}(0) = \hat{\alpha}_i + \hat{\gamma}_t + \hat{M}_{it}$, where $\hat{\alpha}_i$ and $\hat{\gamma}_t$ are the row and column means from the demeaning step.
+
+\paragraph{Software.} In R, the \texttt{softImpute} package provides general matrix completion with nuclear-norm regularisation. The \texttt{MCPanel} package implements matrix completion for causal panel analysis, including cross-validation and treatment effect estimation. In Python, \texttt{fancyimpute} and \texttt{surprise} provide matrix completion methods.
+
+\paragraph{Uncertainty.} Quantify uncertainty using bootstrap (resample units or cells) or cross-validation-based intervals. Section~\ref{sec:factor-inference} discusses inference for factor models and matrix completion.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{images/fig_factor_matrix.pdf}
+\caption{Matrix Completion Setup for Causal Panel Analysis}
+\label{fig:factor-matrix}
+\small
+\textit{Note}: The $N \times T$ outcome matrix is partially observed. Shaded cells (control units across all periods; treated units in pre-treatment periods) are observed. Blank cells (treated units in post-treatment periods) are imputed using the low-rank structure estimated from observed cells. The nuclear-norm penalty encourages low-rank solutions that generalise from observed to missing cells.
+\end{figure}

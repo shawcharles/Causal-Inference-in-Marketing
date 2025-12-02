@@ -1,0 +1,90 @@
+\section{Nonlinear Panel Outcome Models}
+\label{sec:nonlinear-panels}
+
+When outcomes are not continuous, we must choose an appropriate nonlinear model. This section covers fixed-effects logit for binary outcomes, fixed-effects Poisson for counts, and the computation of average marginal effects for causal interpretation.
+
+\begin{definition}[Conditional Fixed-Effects Logit]\label{def:fe-logit}
+For binary outcomes $Y_{it} \in \{0, 1\}$, the fixed-effects logit model specifies:
+\[
+P(Y_{it} = 1 \mid D_{it}, X_{it}, \alpha_i) = \Lambda(\alpha_i + D_{it}\tau + X_{it}'\beta),
+\]
+where $\Lambda(z) = e^z / (1 + e^z)$ is the logistic CDF. The conditional likelihood, conditioning on $\sum_t Y_{it}$, eliminates the incidental parameters:
+\[
+\mathcal{L}_i^{\text{cond}}(\tau, \beta) = P\left(\{Y_{it}\}_{t=1}^T \mid \sum_{t=1}^T Y_{it}, \{D_{it}, X_{it}\}_{t=1}^T\right).
+\]
+\end{definition}
+
+\begin{proposition}[Incidental Parameters Bias]\label{prop:incidental-params}
+In nonlinear fixed-effects models with $N \to \infty$ and $T$ fixed, the maximum likelihood estimator (MLE) for $(\alpha_1, \ldots, \alpha_N, \tau, \beta)$ is inconsistent for $\tau$ due to the presence of incidental parameters $\alpha_i$. This bias is of order $O(1/T)$ and does not vanish as $N \to \infty$.
+
+For the fixed-effects logit specifically, the conditional MLE conditioning on sufficient statistics $\sum_t Y_{it}$ eliminates the incidental parameters and yields consistent estimates of $\tau$. For probit models, no such exact conditioning exists, requiring bias-corrected estimators.
+\end{proposition}
+
+\begin{definition}[Fixed-Effects Poisson]\label{def:fe-poisson}
+For count outcomes $Y_{it} \in \{0, 1, 2, \ldots\}$, the fixed-effects Poisson model specifies:
+\[
+\mathbb{E}[Y_{it} \mid D_{it}, X_{it}, \alpha_i] = \exp(\alpha_i + D_{it}\tau + X_{it}'\beta).
+\]
+The log-likelihood is:
+\[
+\ell(\tau, \beta, \{\alpha_i\}) = \sum_{i,t} \left[ Y_{it}(\alpha_i + D_{it}\tau + X_{it}'\beta) - \exp(\alpha_i + D_{it}\tau + X_{it}'\beta) \right].
+\]
+\end{definition}
+
+\begin{theorem}[Poisson Fixed-Effects Consistency]\label{thm:poisson-consistency}
+The fixed-effects Poisson estimator is consistent for $\tau$ under three conditions:
+\begin{enumerate}
+\item The conditional mean is correctly specified as $\mathbb{E}[Y_{it} \mid D_{it}, X_{it}, \alpha_i] = \exp(\alpha_i + D_{it}\tau + X_{it}'\beta)$.
+\item The variance need not equal the mean; the Poisson pseudo-MLE is robust to overdispersion.
+\item As $N \to \infty$ with $T$ fixed, the estimator $\hat{\tau}$ converges in probability to $\tau_0$.
+\end{enumerate}
+Standard errors should be cluster-robust to account for overdispersion and within-unit dependence.
+\end{theorem}
+
+\begin{definition}[Average Marginal Effect]\label{def:ame}
+For nonlinear model $\mathbb{E}[Y_{it} \mid D, X, \alpha] = g(\alpha + D\tau + X'\beta)$, the average marginal effect (AME) of treatment is:
+\[
+\text{AME} = \mathbb{E}\left[ \frac{\partial g(\alpha_i + D_{it}\tau + X_{it}'\beta)}{\partial D} \right] = \mathbb{E}\left[ g'(\alpha_i + D_{it}\tau + X_{it}'\beta) \cdot \tau \right].
+\]
+For logit: $\text{AME} = \mathbb{E}[\Lambda(\cdot)(1 - \Lambda(\cdot))] \cdot \tau$. For Poisson: $\text{AME} = \mathbb{E}[\exp(\cdot)] \cdot \tau$. Report AME rather than coefficients for economic interpretation.
+\end{definition}
+
+\subsection*{Nonlinear Panels with Interactive Fixed Effects}
+
+Interactive fixed effect models extend the two-way fixed effects structure by allowing unit and time effects to interact through a low-rank factor. In a logit or Poisson panel, this means that the latent index contains both observed covariates and an unobserved matrix of factors that capture common shocks and heterogeneous exposure across units.
+
+These models are appealing in marketing when latent demand or category conditions move in ways that cannot be summarised by a single time effect or by observed covariates.
+
+The difficulty is computation rather than notation. The fixed-effects estimator studied in the nonlinear panel literature is defined as the global solution of a high-dimensional non-convex likelihood. For realistic numbers of products, stores, and periods, this optimisation problem is not straightforward to solve.
+
+\citet{zeleneev2025tractable} propose a practical two-step approach. They first solve a convex nuclear-norm regularised problem to obtain a low-rank approximation to the unobserved factor structure and the coefficients. They then run local optimisation of the original likelihood starting from this preliminary estimate, showing that the resulting estimator is asymptotically equivalent to the full fixed-effects estimator.
+
+For the applied reader, the message is operational. If you want to fit a logit or Poisson panel with interactive fixed effects, you can use nuclear-norm tools to initialise the problem and then rely on a standard gradient-based optimiser.
+
+The low-rank matrix plays the same role as in Chapter~\ref{ch:advanced-matrix}, but now it enters a nonlinear likelihood rather than a least-squares loss. This makes interactive fixed-effects logit and Poisson models a realistic option even in large marketing panels.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Outcome-link decision guide and incidental-parameter cautions}
+\label{tab:link-decision}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Outcome type} & \textbf{When appropriate} & \textbf{Pitfalls and remedies} \\
+\midrule
+Binary (logit/probit) & Probabilities in $[0,1]$ with panel fixed effects & Incidental parameters in short $T$. Use conditional logit or shrinkage. Report marginal effects on probability scale. \\
+Count (Poisson) & Non-negative counts with exposure offsets & Overdispersion. Use robust variance, consider quasi-Poisson or fixed-effects negative binomial with care. \\
+Limited (tobit-like) & Censoring or truncation present & Bias with fixed effects. Prefer semiparametric or distribution-free approaches. Validate with sensitivity checks. \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{Practitioner's Note: Profit-Aware Classification}
+Standard classification models, such as logistic regression or XGBoost, typically optimise for statistical accuracy. They implicitly assume that all errors are created equal: a false positive (predicting a purchase that never happens) carries the same penalty as a false negative (missing a high-value customer).
+
+Marketing reality rarely aligns with this symmetry. The cost of spamming a disinterested user is often negligible compared to the lost revenue from missing a conversion.
+
+We can align our models with business goals by redefining the objective function. \citet{babii202410} demonstrate that a simple re-weighted logistic regression allows us to maximise economic value rather than mere accuracy. You define the costs and benefits for each outcome---such as the profit from a retention offer versus the cost of the incentive---and use these to weight the observations in your training set.
+
+This adjustment forces the algorithm to prioritise the errors that actually damage the bottom line. The result is a model that may have lower overall accuracy but generates significantly higher profit, transforming abstract ``churn prediction'' into a direct tool for value maximisation.

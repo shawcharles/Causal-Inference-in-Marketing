@@ -1,0 +1,178 @@
+\section{Data Fusion for Cold-Start Problems}
+\label{sec:sc-data-fusion}
+
+A fundamental limitation of synthetic control is the requirement for a long pre-treatment period to learn donor weights. In ``cold-start'' scenarios---a crisis response, product launch in a new market, or entry into a new category---pre-intervention data for the target unit may be unavailable or sparse. This section introduces Causal Data Fusion \citet{yang2024causal}, which addresses cold-start by leveraging an auxiliary reference domain.
+
+\subsection*{The Cold-Start Problem}
+
+The synthetic control estimator requires pre-treatment outcomes $\{Y_{1t}\}_{t \leq T_0}$ to estimate weights $\mathbf{w}^*$. When $T_0$ is small or zero, identification fails:
+\begin{itemize}
+\item Weight optimisation has insufficient data to distinguish factor-driven variation from noise
+\item The convex hull condition (Assumption~\ref{assump:sc-hull}) cannot be assessed
+\item Pre-treatment fit diagnostics are unavailable
+\end{itemize}
+
+\textbf{Marketing Examples.}
+\begin{itemize}
+\item A retailer launches a loyalty programme in a new market with no historical data
+\item A brand responds to a competitor's sudden market entry
+\item A new product category is introduced (no pre-launch sales)
+\item A crisis requires immediate intervention (no time for baseline data collection)
+\end{itemize}
+
+\subsection*{Causal Data Fusion Framework}
+
+The key insight of data fusion is that while the target domain $Y$ may lack pre-treatment data, a related reference domain $F$ may have rich historical information. If the relationship between the treated unit and donors is similar across domains, weights learned from the reference domain can be transferred to the target domain.
+
+\textbf{Notation.} Let:
+\begin{itemize}
+\item $Y_{it}^{\text{target}}$: Outcome in the target domain (for example, sales of new product)
+\item $F_{it}^{\text{ref}}$: Outcome in the reference domain (for example, sales of established product, foot traffic)
+\item $\mathcal{T}^{\text{ref}} = \{1, \ldots, T^{\text{ref}}\}$: Time periods observed in reference domain
+\item $\mathcal{T}^{\text{target}} = \{T_0 + 1, \ldots, T\}$: Post-treatment periods in target domain
+\end{itemize}
+
+\subsection*{The Equi-Confounding Assumption}
+
+Identification relies on equi-confounding: the relationship between the treated unit and donors in the reference domain mirrors the relationship in the target domain.
+
+\begin{assumption}[Equi-Confounding]
+\label{assump:equi-confounding}
+The target and reference domains share the same factor loading structure:
+\[
+Y_{it}^{\text{target}}(0) = \delta_t^Y + (\boldsymbol{\lambda}_t^Y)' \boldsymbol{\mu}_i + \varepsilon_{it}^Y, \quad F_{it}^{\text{ref}} = \delta_t^F + (\boldsymbol{\lambda}_t^F)' \boldsymbol{\mu}_i + \varepsilon_{it}^F,
+\]
+where the factor loadings $\boldsymbol{\mu}_i$ are shared across domains.
+\end{assumption}
+
+\textbf{Interpretation.} Under equi-confounding, units that are similar in the reference domain (similar $\boldsymbol{\mu}_i$) are also similar in the target domain. The factor evolution $\boldsymbol{\lambda}_t$ may differ across domains, but the factor loadings $\boldsymbol{\mu}_i$ are common.
+
+\begin{definition}[Linear Equi-Confounding]
+The linear equi-confounding condition holds if:
+\begin{equation}
+\mathbb{E}[Y_{1t}^{\text{target}}(0)] - \sum_j w_j \mathbb{E}[Y_{jt}^{\text{target}}(0)] = \lambda \left( \mathbb{E}[F_{1t}^{\text{ref}}] - \sum_j w_j \mathbb{E}[F_{jt}^{\text{ref}}] \right),
+\label{eq:linear-equi-confounding}
+\end{equation}
+where $\lambda$ is a (possibly unknown) scaling factor. If weights $\mathbf{w}$ balance the reference domain (RHS $= 0$), they also balance the target domain (LHS $= 0$).
+\end{definition}
+
+\subsection*{Identification under Equi-Confounding}
+
+\begin{proposition}[Identification via Data Fusion]
+\label{prop:data-fusion}
+Under Assumption~\ref{assump:equi-confounding} (equi-confounding) and the standard SC assumptions (no anticipation, no interference), if weights $\mathbf{w}^*$ satisfy:
+\begin{enumerate}
+\item[(i)] Convexity: $w_j^* \geq 0$, $\sum_j w_j^* = 1$
+\item[(ii)] Reference domain balance: $\sum_j w_j^* \boldsymbol{\mu}_j = \boldsymbol{\mu}_1$
+\end{enumerate}
+then the data fusion estimator $\hat{\tau}_{1t}^{\text{fusion}} = Y_{1t}^{\text{target}} - \sum_j w_j^* Y_{jt}^{\text{target}}$ identifies the treatment effect:
+\[
+\mathbb{E}[\hat{\tau}_{1t}^{\text{fusion}}] = \tau_{1t}.
+\]
+\end{proposition}
+
+\textit{Sketch of argument.} Under equi-confounding, weights that balance factor loadings in the reference domain also balance them in the target domain. The proof follows Theorem~\ref{thm:sc-identification}, with the reference domain providing the data to estimate weights.
+
+\subsection*{Data Fusion Algorithm}
+
+\begin{enumerate}
+\item \textbf{Reference Matching}: Construct synthetic control weights using the reference domain:
+\[
+\hat{\mathbf{w}} = \arg\min_{\mathbf{w}} \sum_{t \in \mathcal{T}^{\text{ref}}} \left( F_{1t}^{\text{ref}} - \sum_{j \in \mathcal{J}} w_j F_{jt}^{\text{ref}} \right)^2 \quad \text{s.t.} \quad w_j \geq 0, \; \sum_j w_j = 1.
+\]
+
+\item \textbf{Weight Transfer}: Apply the estimated weights to target domain outcomes:
+\[
+\hat{Y}_{1t}^{\text{target}}(0) = \sum_{j \in \mathcal{J}} \hat{w}_j Y_{jt}^{\text{target}}.
+\]
+
+\item \textbf{Estimation}: Compute the treatment effect:
+\[
+\hat{\tau}_{1t}^{\text{fusion}} = Y_{1t}^{\text{target}} - \hat{Y}_{1t}^{\text{target}}(0).
+\]
+\end{enumerate}
+
+\subsection*{Bias Analysis}
+
+If equi-confounding fails (factor loadings differ across domains), the data fusion estimator is biased.
+
+\textbf{Bias Decomposition.} Let $\boldsymbol{\mu}_i^Y$ and $\boldsymbol{\mu}_i^F$ denote the factor loadings in the target and reference domains, respectively. If equi-confounding fails:
+\begin{equation}
+\text{Bias}(\hat{\tau}_{1t}^{\text{fusion}}) = (\boldsymbol{\lambda}_t^Y)' \underbrace{\left( \boldsymbol{\mu}_1^Y - \sum_j w_j^* \boldsymbol{\mu}_j^Y \right)}_{\text{target domain mismatch}}.
+\label{eq:fusion-bias}
+\end{equation}
+
+If the reference domain weights $\mathbf{w}^*$ balance reference domain loadings but not target domain loadings, the mismatch term is non-zero.
+
+\textbf{Domain Mismatch.} The bias is large when:
+\begin{itemize}
+\item Reference and target domains have different factor structures (for example, different drivers of variation)
+\item The reference domain is measured with error or aggregated differently
+\item Structural changes occur between reference and target domain observation periods
+\end{itemize}
+
+\subsection*{Diagnostics for Equi-Confounding}
+
+Since equi-confounding is not directly testable (it involves unobserved factor loadings), diagnostics provide indirect evidence.
+
+\textbf{Partial Pre-Treatment Data.} If any target domain pre-treatment data are available (even sparse), assess whether reference-domain weights fit the target domain:
+\begin{equation}
+\text{RMSPE}^{\text{target}}_{\text{pre}} = \sqrt{\frac{1}{|\mathcal{T}_{\text{pre}}^{\text{target}}|} \sum_{t \in \mathcal{T}_{\text{pre}}^{\text{target}}} \left( Y_{1t}^{\text{target}} - \sum_j \hat{w}_j Y_{jt}^{\text{target}} \right)^2}.
+\label{eq:fusion-rmspe}
+\end{equation}
+Small RMSPE$^{\text{target}}_{\text{pre}}$ supports equi-confounding.
+
+\textbf{Covariate Balance.} If pre-treatment covariates are available for both domains, check whether reference-domain weights achieve balance in the target domain.
+
+\textbf{Reference Domain Fit Quality.} Good fit in the reference domain (small RMSPE$^{\text{ref}}_{\text{pre}}$) is necessary but not sufficient. It indicates that the convex hull condition is satisfied in the reference domain.
+
+\textbf{Sensitivity Analysis.} Vary the reference domain (for example, different product categories, different outcome measures) and assess stability of conclusions. Robust results across reference domains support equi-confounding.
+
+\subsection*{Inference for Data Fusion}
+
+Conformal inference (Section~\ref{sec:sc-inference}) can be adapted to data fusion. The key difference is that calibration uses the reference domain rather than target domain pre-treatment data.
+
+\textbf{Conformal Data Fusion.}
+\begin{enumerate}
+\item Compute reference-domain residuals: $e_{1t}^{\text{ref}} = F_{1t}^{\text{ref}} - \sum_j \hat{w}_j F_{jt}^{\text{ref}}$ for $t \in \mathcal{T}^{\text{ref}}$
+\item Under equi-confounding, these residuals calibrate the target domain uncertainty
+\item Construct confidence intervals by scaling reference-domain residuals to the target domain scale
+\end{enumerate}
+
+\textbf{Uncertainty from Equi-Confounding.} Confidence intervals should account for uncertainty in the equi-confounding assumption. Conservative intervals add a sensitivity parameter for domain mismatch.
+
+\subsection*{Marketing Application: New Product Launch}
+
+\textbf{Scenario.} A consumer goods company launches a new product category (organic snacks) in a flagship DMA. No historical sales data exist for this category. However, the company has years of sales data for its established products (conventional snacks) across all DMAs.
+
+\textbf{Data Fusion Application.}
+\begin{enumerate}
+\item \textbf{Reference domain}: Sales of conventional snacks across all DMAs over 24 pre-launch months
+\item \textbf{Target domain}: Sales of organic snacks in post-launch period
+\item \textbf{Reference matching}: Construct synthetic control for the flagship DMA using conventional snack sales
+\item \textbf{Weight transfer}: Apply weights to organic snack sales in donor DMAs
+\item \textbf{Estimation}: Estimate launch effect on organic snack sales
+\end{enumerate}
+
+\textbf{Equi-Confounding Rationale.} The assumption holds if DMAs that are similar in conventional snack sales are also similar in organic snack sales—plausible if both categories are driven by common factors (population, income, health consciousness, retail density).
+
+\textbf{Diagnostics.} If any organic snack pilot data exist (even a few weeks), assess whether conventional-snack weights fit organic-snack trajectories.
+
+\subsection*{When to Use Data Fusion}
+
+Data fusion is appropriate when:
+\begin{enumerate}
+\item Target domain pre-treatment data are unavailable or sparse
+\item A related reference domain with rich historical data exists
+\item Equi-confounding is plausible based on institutional knowledge
+\item Some target domain data are available for diagnostic validation
+\end{enumerate}
+
+Data fusion is inappropriate when:
+\begin{enumerate}
+\item Reference and target domains have fundamentally different structures
+\item No institutional basis for equi-confounding exists
+\item Target domain data are sufficient for standard SC
+\end{enumerate}
+
+\textbf{Caution.} Data fusion relies on an untestable assumption (equi-confounding). Use diagnostics, sensitivity analysis, and institutional knowledge to assess plausibility. Report uncertainty honestly, acknowledging that identification depends on cross-domain stability.

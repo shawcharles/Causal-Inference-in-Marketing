@@ -1,0 +1,175 @@
+\section{Estimation Strategies for Direct and Spillover Effects}
+\label{sec:estimating-spillovers}
+
+Estimating direct and spillover effects requires methods that exploit variation in own treatment and exposure. We present five approaches: regression with exposure controls, difference-in-differences with spillover groups, two-stage designs, spatial Hausman--Taylor, and spatial vertical regression.
+
+For the partial interference framework, see Section~\ref{sec:partial-interference}. For regression and DiD specifications, see Chapters~\ref{ch:event} and~\ref{ch:did}. For inference, see Chapter~\ref{ch:inference}. For design diagnostics, see Chapter~\ref{ch:design-diagnostics}.
+
+\subsection*{Overview of Estimation Approaches}
+
+Table~\ref{tab:spillover-estimation-methods} summarises the five estimation approaches.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Estimation Methods for Spillover Effects}
+\label{tab:spillover-estimation-methods}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Method} & \textbf{Data Requirements} & \textbf{Identifies} \\
+\midrule
+Regression with exposure & Panel; exposure mapping; exogenous exposure & Direct + spillover (additively separable) \\
+\addlinespace
+DiD with spillover groups & Panel; treated/spillover/control partition & Total, spillover, direct (by difference) \\
+\addlinespace
+Two-stage design & Cluster + individual randomisation & Direct, spillover, total (by comparison) \\
+\addlinespace
+Spatial Hausman--Taylor & Panel; spatial weights matrix; instruments & Time-invariant coefficients with spatial dependence \\
+\addlinespace
+Spatial Vertical Regression & Location-based treatment; distance rings & Treatment effect surface $\tau(d)$ \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{Regression with Exposure Controls}
+
+\begin{theorem}[Consistency of Exposure Regression]\label{thm:consistency-exposure}
+Consider the regression model:
+\[
+Y_{it} = \alpha_i + \gamma_t + \tau W_{it} + \delta E_{it} + \varepsilon_{it},
+\]
+where $E_{it}$ is the exposure mapping. Under Assumptions~\ref{ass:exposure-sufficiency} and~\ref{ass:exposure-regularity}, and assuming:
+\begin{enumerate}[(i)]
+    \item Strict exogeneity: $\mathbb{E}[\varepsilon_{it} | W_{i1}, \ldots, W_{iT}, E_{i1}, \ldots, E_{iT}, \alpha_i] = 0$;
+    \item Rank condition: $\text{rank}(\mathbb{E}[\tilde{\mathbf{Z}}_i \tilde{\mathbf{Z}}_i']) = 2$, where $\tilde{\mathbf{Z}}_i$ contains demeaned treatment and exposure;
+    \item Bounded moments: $\mathbb{E}[Y_{it}^4], \mathbb{E}[W_{it}^4], \mathbb{E}[E_{it}^4] < \infty$,
+\end{enumerate}
+the within-group estimators $\hat{\tau}$ and $\hat{\delta}$ are consistent: $\hat{\tau} \xrightarrow{p} \tau$, $\hat{\delta} \xrightarrow{p} \delta$.
+\end{theorem}
+
+\begin{proposition}[Asymptotic Normality]\label{prop:asy-normal-spillover}
+Under the conditions of Theorem~\ref{thm:consistency-exposure}, with $G$ clusters:
+\[
+\sqrt{G}\begin{pmatrix} \hat{\tau} - \tau \\ \hat{\delta} - \delta \end{pmatrix} \xrightarrow{d} \mathcal{N}(\mathbf{0}, \mathbf{V}),
+\]
+where $\mathbf{V}$ is the asymptotic variance. Use cluster-robust standard errors (Chapter~\ref{ch:inference}).
+\end{proposition}
+
+\paragraph{Interpretation.} $\tau$ is the direct effect; $\delta$ is the spillover effect per unit of exposure.
+
+\paragraph{Interaction term.} To allow direct effect to vary with exposure:
+\[
+Y_{it} = \alpha_i + \gamma_t + \tau W_{it} + \delta E_{it} + \theta (W_{it} \times E_{it}) + \varepsilon_{it}.
+\]
+If $\theta > 0$: complementarity (direct effect larger when exposure high). If $\theta < 0$: substitutability.
+
+\paragraph{Identification threat.} Exposure must be exogenous conditional on fixed effects. Violated if treatment correlated with time-varying characteristics affecting exposure.
+
+\subsection*{Difference-in-Differences with Spillover Groups}
+
+When treatment is staggered or clustered, partition untreated units into spillover units (exposed) and pure control units (not exposed).
+
+\paragraph{Three-group partition.} Table~\ref{tab:did-spillover-groups} defines the groups.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{DiD Spillover Groups}
+\label{tab:did-spillover-groups}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Group} & \textbf{Definition} & \textbf{Indicator} & \textbf{Identifies (vs Pure Control)} \\
+\midrule
+Treated & Received treatment & $D_{it}^{\text{treat}}$ & Total effect $\tau^{\text{total}}$ \\
+\addlinespace
+Spillover & Untreated but exposed & $D_{it}^{\text{spillover}}$ & Spillover effect $\tau^{\text{spillover}}$ \\
+\addlinespace
+Pure control & Untreated and unexposed & Reference & Baseline \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\paragraph{Regression specification.}
+\[
+Y_{it} = \alpha_i + \gamma_t + \tau^{\text{total}} D_{it}^{\text{treat}} + \tau^{\text{spillover}} D_{it}^{\text{spillover}} + \varepsilon_{it}.
+\]
+Direct effect: $\tau^{\text{direct}} = \tau^{\text{total}} - \tau^{\text{spillover}}$ (assuming equal spillovers for treated and untreated).
+
+\paragraph{Group definition.} For geographic spillovers, define spillover units as those within distance $\bar{d}$ of treated units and pure controls as those beyond $\bar{d}$. For network spillovers, define spillover units as those with at least one treated neighbour and pure controls as those with no treated neighbours. Robustness checks should vary $\bar{d}$ or the neighbour threshold.
+
+\subsection*{Two-Stage Designs}
+
+Two-stage designs randomise at cluster and unit levels (see Section~\ref{sec:partial-interference}).
+
+\paragraph{Four groups.} Two-stage designs create four groups: (1) treated units in treated clusters (high exposure), (2) untreated units in treated clusters (high exposure), (3) treated units in control clusters (if any; zero exposure), and (4) untreated units in control clusters (zero exposure).
+
+\paragraph{Identification.} The direct effect is identified by comparing groups 1 versus 2 (within treated clusters). The spillover effect is identified by comparing groups 2 versus 4 (untreated units across cluster types). The total effect is identified by comparing groups 1 versus 4 (treated in treated clusters versus untreated in control clusters).
+
+\paragraph{Implementation.} Balance at both stages required. Stratify by cluster characteristics for small clusters.
+
+\subsection*{Spatial Hausman--Taylor}
+
+When spillovers follow a spatial process and time-invariant regressors are central, spatial variants of Hausman--Taylor combine quasi-demeaning with instrumental variables in spatial error or spatial autoregressive panels \citet{baltagi2012small}.
+
+\paragraph{Idea.} Use within-unit deviations of exogenous time-varying regressors as instruments for endogenous time-varying regressors; unit means as instruments for potentially endogenous time-invariant regressors; model spatial dependence through weights matrix $W$.
+
+\paragraph{Diagnostics.} Report first-stage fits, alternative $W$ specifications, sensitivity to instrument partitions.
+
+\paragraph{Use case.} Coefficients on time-invariant covariates with correlated unit effects and spatial dependence.
+
+\subsection*{Spatial Vertical Regression (SVR)}
+
+For treatments at specific locations (new store, infrastructure), \citet{grossi2025spatial} introduce SVR, a Bayesian extension of Synthetic Control modelling spatial decay.
+
+\begin{definition}[SVR Estimator]\label{def:svr}
+For treated areas at distance $d$ from intervention site, SVR estimates:
+\[
+\hat{\tau}(d, t) = Y_{d,t} - \sum_{j \in \mathcal{C}} \hat{w}_j(d) Y_{j,t},
+\]
+where weights $\hat{w}_j(d)$ are posterior means from a Gaussian Process:
+\[
+w_{j}(\cdot) \sim \mathcal{GP}(0, K_{\theta}).
+\]
+The kernel $K_{\theta}$ enforces smooth spatial weights.
+\end{definition}
+
+\paragraph{Use case.} ``Impact zone'' studies: cannibalization radius of flagship store, effective reach of billboard campaign. Recovers full function $\tau(d)$ to identify where treatment effect fades to zero.
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Method Selection Guidance]
+\textbf{Regression with exposure.} \textit{Example: Retail panel with distance-weighted exposure to promoted stores.}
+\begin{itemize}
+\item[$\square$] Continuous exposure measure available.
+\item[$\square$] Exposure plausibly exogenous conditional on fixed effects.
+\item[$\square$] Direct and spillover effects approximately additive.
+\end{itemize}
+
+\textbf{DiD with spillover groups.} \textit{Example: New store opening affecting nearby stores (spillover) vs distant stores (control).}
+\begin{itemize}
+\item[$\square$] Clear partition into treated, spillover, pure control feasible.
+\item[$\square$] Staggered or clustered treatment adoption.
+\item[$\square$] Parallel trends plausible for all three groups.
+\end{itemize}
+
+\textbf{Two-stage design.} \textit{Example: Geo-experiment with varying treatment intensity across DMAs.}
+\begin{itemize}
+\item[$\square$] Randomisation at cluster and unit levels possible.
+\item[$\square$] Partial interference assumption credible.
+\item[$\square$] Sufficient clusters for cluster-level inference.
+\end{itemize}
+
+\textbf{Spatial Hausman--Taylor.} \textit{Example: Brand equity effect on sales with spatial correlation.}
+\begin{itemize}
+\item[$\square$] Time-invariant coefficients needed.
+\item[$\square$] Spatial weights matrix known or estimable.
+\item[$\square$] Instruments for time-invariant regressors available.
+\end{itemize}
+
+\textbf{SVR.} \textit{Example: Measuring cannibalization radius of flagship store opening.}
+\begin{itemize}
+\item[$\square$] Treatment at specific geographic location.
+\item[$\square$] Interest in treatment effect decay with distance.
+\item[$\square$] Sufficient distance rings with control units.
+\end{itemize}
+\end{tcolorbox}

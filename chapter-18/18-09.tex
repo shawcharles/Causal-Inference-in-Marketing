@@ -1,0 +1,191 @@
+\section{Dynamic Pricing in Transport Networks}
+\label{sec:dynamic-pricing}
+
+Transport operators---airlines, railways, ride-hailing platforms---use dynamic pricing algorithms that adjust prices in real time based on demand forecasts. Estimating the causal effect of price on demand is challenging because prices respond to demand: high prices occur precisely when demand is high (simultaneity). Naive regression of bookings on price yields biased estimates, typically finding elasticities that are too small or even positive.
+
+\begin{remark}[Dynamic Pricing in the Taxonomy]\label{rem:dynamic-pricing-taxonomy}
+In the taxonomy of Section~\ref{sec:taxonomy}, dynamic pricing estimation is primarily an \emph{endogeneity} problem: prices are set algorithmically in response to demand signals, creating simultaneity bias. The term ``dynamic'' here refers to real-time algorithmic pricing, not dynamic treatment effects in the temporal sense of Chapter~\ref{ch:dynamics}. However, temporal considerations do arise: customers may anticipate price changes and shift purchases intertemporally, and past prices affect reference price expectations. For retail price elasticity using similar identification strategies, see Section~\ref{sec:price-elasticity}.
+\end{remark}
+
+\subsection*{Estimand: Dynamic Price Elasticity}
+
+We define the causal effect of price on demand in the transport context.
+
+\begin{definition}[Route-Time Price Elasticity]\label{def:transport-elasticity}
+For route $r$ at departure time $t$ with booking window $d$ (days before departure), the price elasticity is:
+\[
+\eta_{rtd} = \frac{\partial \log Q_{rtd}}{\partial \log P_{rtd}},
+\]
+where $Q_{rtd}$ is quantity demanded (bookings) and $P_{rtd}$ is the posted price. Dynamic pricing implies that $\eta$ may vary with $d$: customers booking far in advance may be more price-sensitive than last-minute travellers.
+\end{definition}
+
+For ride-hailing, the estimand is often the effect of surge pricing on completed rides:
+\[
+\tau_{\text{surge}} = \mathbb{E}[Q_{it}(\text{surge}) - Q_{it}(\text{no surge}) | \text{surge triggered}].
+\]
+
+\subsection*{Identification Challenge: Simultaneity}
+
+Dynamic pricing algorithms set prices based on predicted demand. If the algorithm observes signals that predict high demand (e.g., a concert ending, bad weather), it raises prices. This creates positive correlation between price and demand even if the causal effect is negative.
+
+\begin{assumption}[Exogeneity Failure in Dynamic Pricing]\label{assump:pricing-endogeneity}
+Let $U_{rtd}$ be unobserved demand shocks. Under algorithmic pricing:
+\[
+\text{Cov}(P_{rtd}, U_{rtd}) > 0,
+\]
+because the algorithm sets $P_{rtd}$ as a function of demand forecasts that include $U_{rtd}$. OLS is biased toward zero (or positive).
+\end{assumption}
+
+\subsection*{Identification Strategy 1: Algorithmic Discontinuities (RDD)}
+
+Many pricing algorithms exhibit discrete jumps at thresholds, creating regression discontinuity designs.
+
+\begin{definition}[Pricing Algorithm RDD]\label{def:pricing-rdd}
+If the pricing algorithm increases price discretely when a threshold is crossed (e.g., days to departure, capacity utilisation), we estimate the demand response at the discontinuity:
+\[
+\hat{\eta}_{\text{RDD}} = \frac{\lim_{x \downarrow c} \mathbb{E}[\log Q | X = x] - \lim_{x \uparrow c} \mathbb{E}[\log Q | X = x]}{\lim_{x \downarrow c} \mathbb{E}[\log P | X = x] - \lim_{x \uparrow c} \mathbb{E}[\log P | X = x]},
+\]
+where $X$ is the running variable (e.g., days to departure) and $c$ is the threshold. This is a fuzzy RDD where the first stage is the price jump.
+\end{definition}
+
+Table~\ref{tab:pricing-discontinuities} summarises common algorithmic discontinuities that enable RDD estimation.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Algorithmic discontinuities for pricing RDD}
+\label{tab:pricing-discontinuities}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Discontinuity} & \textbf{Running Variable} & \textbf{Application} \\
+\midrule
+Days to departure & Calendar time before flight & Airlines: tiers at 21, 14, 7, 3 days \\
+Capacity thresholds & Load factor (\% seats sold) & Airlines/hotels: jumps at 70\%, 85\%, 95\% \\
+Surge multipliers & Demand/supply ratio & Ride-hailing: discrete tiers (1.0\texttimes, 1.5\texttimes, 2.0\texttimes) \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\begin{remark}[Strategic Anticipation and RDD Validity]\label{rem:strategic-anticipation}
+Algorithmic pricing rules are increasingly transparent. Sophisticated travellers know that airline prices rise as departure approaches; apps like Hopper advise when to buy. If customers strategically time purchases to avoid price jumps, several issues arise:
+\begin{enumerate}
+\item \textbf{Bunching.} Customers may cluster bookings just before price thresholds, violating the continuity assumption.
+\item \textbf{Selected population.} Those who book after a price jump may be systematically different (less price-sensitive, higher willingness to pay), so the RDD identifies a local effect for a non-representative population.
+\item \textbf{Algorithm response.} If the platform observes strategic behaviour, it may adjust thresholds, creating a moving target.
+\end{enumerate}
+McCrary density tests detect bunching, but absence of bunching does not guarantee that anticipation is absent---customers may shift purchases smoothly rather than bunch. Interpret RDD elasticities as local to the threshold and population.
+\end{remark}
+
+\subsection*{Identification Strategy 2: Instrumental Variables}
+
+Cost shifters and algorithmic features provide instruments for price.
+
+\begin{assumption}[Transport Pricing Instruments]\label{assump:transport-iv}
+Let $Z_{rtd}$ be an instrument satisfying:
+\[
+\text{Cov}(Z_{rtd}, P_{rtd}) \neq 0, \quad \text{Cov}(Z_{rtd}, U_{rtd}) = 0.
+\]
+The instrument affects price but not demand directly.
+\end{assumption}
+
+Table~\ref{tab:transport-instruments} summarises potential instruments.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Instruments for transport pricing}
+\label{tab:transport-instruments}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Instrument} & \textbf{Mechanism} & \textbf{Exclusion Restriction} \\
+\midrule
+Fuel costs & Jet fuel prices shift airline operating costs & Fuel affects demand only via ticket price \\
+Competitor capacity & Competitor seats shift focal carrier pricing & Capacity affects demand only via price \\
+Algorithmic lags & Delayed price updates create timing variation & Lagged signals uncorrelated with current shocks \\
+Surge in adjacent zones & Nearby surge affects driver supply, thus local price & Demand shocks are spatially local \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{Network Structure and Spatial Dependence}
+
+Transport networks exhibit spatial dependence: demand shocks on one route affect prices and demand on substitute routes. This has two implications.
+
+\begin{remark}[Two-Sided Markets in Ride-Hailing]\label{rem:two-sided-pricing}
+Ride-hailing platforms operate two-sided markets where surge pricing affects both sides:
+\begin{enumerate}
+\item \textbf{Rider side.} Higher prices reduce rider demand (the elasticity we seek to estimate).
+\item \textbf{Driver side.} Higher prices attract driver supply, reducing wait times and improving service quality.
+\end{enumerate}
+The equilibrium effect on completed rides depends on both responses. A price increase that reduces rider requests may be partially offset by improved driver availability. Estimating rider-side elasticity alone understates the platform's pricing power. Conversely, ignoring supply-side effects overstates the revenue loss from price increases. Full analysis requires modelling both sides of the market, which is beyond our scope but important for platform pricing optimisation.
+\end{remark}
+
+\begin{definition}[Spatial Dependence in Transport]\label{def:spatial-transport}
+Let $r$ and $r'$ be routes sharing an origin or destination. Demand shocks are spatially correlated:
+\[
+\text{Cov}(U_{rt}, U_{r't}) \neq 0.
+\]
+Standard errors that ignore this correlation are too small, leading to over-rejection.
+\end{definition}
+
+Use Driscoll-Kraay standard errors or cluster at the origin-destination-time level to account for cross-route correlation. For ride-hailing, cluster at the city-hour level.
+
+\subsection*{Estimation}
+
+For RDD, use local polynomial regression with the Calonico-Cattaneo-Titiunik bandwidth selector. The first stage is the price jump; the reduced form is the demand response; the ratio is the elasticity.
+
+For IV, use 2SLS with route-time fixed effects:
+\begin{align}
+\text{First stage:} \quad \log P_{rtd} &= \pi_0 + \pi_1 Z_{rtd} + \alpha_r + \gamma_t + u_{rtd}, \\
+\text{Second stage:} \quad \log Q_{rtd} &= \beta_0 + \eta \widehat{\log P_{rtd}} + \alpha_r + \gamma_t + \varepsilon_{rtd}.
+\end{align}
+
+For ride-hailing with high-frequency data, include hour-of-day and day-of-week fixed effects to absorb predictable demand patterns.
+
+\subsection*{Diagnostic Checklist}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.12: Dynamic Pricing Diagnostic Checklist]
+\textbf{For Algorithmic RDD:}
+\begin{itemize}
+    \item Discontinuity verification: Confirm that price actually jumps at the threshold. Plot price against the running variable.
+    \item Manipulation: Test for bunching of observations just below the threshold (e.g., strategic booking timing).
+    \item Covariate balance: Check that route characteristics are smooth through the threshold.
+    \item Bandwidth sensitivity: Report estimates at 0.5×, 1×, and 2× optimal bandwidth.
+\end{itemize}
+
+\textbf{For IV:}
+\begin{itemize}
+    \item First-stage strength: Target $F > 10$. Fuel cost instruments may be weak for short time series.
+    \item Exclusion restriction: Argue why the instrument affects demand only through price.
+    \item Overidentification: If multiple instruments, report Hansen J-test.
+\end{itemize}
+
+\textbf{For Spatial Dependence:}
+\begin{itemize}
+    \item Clustering: Cluster at origin-destination-time or city-hour level.
+    \item Driscoll-Kraay: Use if cross-sectional dependence is pervasive.
+    \item Spillover test: Check whether price changes on route $r$ affect demand on substitute routes $r'$.
+\end{itemize}
+\end{tcolorbox}
+
+\subsection*{Case Study: Airline Pricing with Days-to-Departure RDD}
+
+We illustrate the algorithmic RDD approach with a hypothetical airline. The numbers are illustrative and do not represent real data.
+
+\paragraph{Setting.} A low-cost carrier uses a pricing algorithm that increases fares by approximately 15\% when bookings occur within 7 days of departure. We estimate the price elasticity at this threshold.
+
+\paragraph{Data.} 500,000 bookings across 200 routes over 12 months. Running variable is days to departure; outcome is log bookings per route-day; treatment is log price.
+
+\paragraph{First Stage.} At the 7-day threshold, log price jumps by 0.14 (approximately 15\%). The discontinuity is sharp and precisely estimated (SE = 0.02).
+
+\paragraph{Reduced Form.} Log bookings drop by 0.21 at the threshold (SE = 0.05). Customers booking within 7 days face higher prices and book less.
+
+\paragraph{Elasticity Estimate.} The fuzzy RDD elasticity is $\hat{\eta} = -0.21 / 0.14 = -1.5$ (SE = 0.4). A 10\% price increase reduces bookings by 15\%.
+
+\paragraph{Diagnostics.} No bunching is detected at the 7-day threshold (McCrary $p = 0.42$). Covariate balance is good: route distance, competitor presence, and day-of-week are smooth through the threshold. The estimate is stable across bandwidths: $-1.3$ (half), $-1.5$ (optimal), $-1.6$ (double).
+
+\paragraph{Heterogeneity.} Elasticity varies by customer segment: leisure routes show $\hat{\eta} = -1.9$, while business routes show $\hat{\eta} = -0.8$. Business travellers are less price-sensitive, consistent with lower flexibility.
+
+\paragraph{Interpretation.} The elasticity of $-1.5$ implies that demand is elastic at this threshold: a 10\% price increase reduces bookings by 15\%, and since $|\eta| > 1$, the percentage quantity loss exceeds the percentage price gain, so \emph{revenue falls}. This suggests the airline may be over-pricing at the 7-day threshold---a lower price jump would increase revenue. The heterogeneity analysis reinforces this: business routes with $|\eta| = 0.8 < 1$ (inelastic) can sustain price increases, while leisure routes with $|\eta| = 1.9$ (elastic) should see smaller increases. Differentiated pricing by route type could improve overall revenue.

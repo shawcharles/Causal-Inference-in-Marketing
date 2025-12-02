@@ -1,0 +1,92 @@
+
+\section{Regression Mechanics and Inference in Panels}
+\label{sec:regression-mechanics}
+
+The two-way fixed effects regression is the workhorse of applied panel analysis. It is also frequently misused. This section reviews when TWFE works, when it fails, and what inference issues you must address. Many of the methods developed in later chapters build on or react against this baseline, so understanding its strengths and limitations provides essential context.
+
+\subsection*{Within Estimation and Fixed Effects}
+
+The canonical fixed effects regression for panel data takes the form
+\[
+Y_{it} = \alpha_i + \beta_t + \tau W_{it} + X_{it}' \gamma + \varepsilon_{it},
+\]
+where $\alpha_i$ are unit fixed effects, $\beta_t$ are time fixed effects, $W_{it}$ is the treatment indicator (or continuous treatment intensity), $X_{it}$ are time-varying covariates, and $\varepsilon_{it}$ is an error term assumed to satisfy $\mathbb{E}[\varepsilon_{it} \mid \alpha_i, \beta_t, W_{it}, X_{it}] = 0$. The coefficient $\tau$ on the treatment indicator is the parameter of interest, interpreted as the average effect of treatment on the outcome when treatment effects are constant across units and time.
+
+Unit fixed effects $\alpha_i$ control for time-invariant differences across units. A store with persistently high sales due to a prime location, a strong manager, or loyal customer base has a large $\alpha_i$, and this component is absorbed by the unit fixed effect rather than confounding the estimate of $\tau$. Time fixed effects $\beta_t$ control for common shocks that affect all units in a given period. $\beta_t$ capture seasonal demand, macroeconomic conditions, national advertising campaigns, and industry-wide trends. With both unit and time fixed effects, the regression identifies $\tau$ from within-unit, over-time variation in treatment that remains after removing unit means and period means.
+
+We obtain the within estimator --- also called the fixed effects estimator --- by demeaning the data at the unit level (subtracting $\bar{Y}_i$, $\bar{W}_i$, $\bar{X}_i$) and at the time level (subtracting $\bar{Y}_t$, $\bar{W}_t$, $\bar{X}_t$), then running OLS on the demeaned data. If $\varepsilon_{it}$ is uncorrelated with the demeaned treatments and covariates, the within estimator is consistent for $\tau$ as $N \to \infty$ with fixed $T$, or as both $N$ and $T$ grow. The within estimator is numerically equivalent to including dummy variables for all units and all time periods (omitting one of each to avoid collinearity) and running OLS, but the demeaning formulation clarifies the identifying variation.
+
+\subsection*{Pitfalls of Two-Way Fixed Effects with Heterogeneity and Staggered Timing}
+
+Despite its simplicity and widespread use, the two-way fixed effects (TWFE) regression can produce misleading estimates when treatment effects are heterogeneous and treatment adoption is staggered.
+
+The problem is that the TWFE estimator is a weighted average of many underlying two-by-two comparisons, and some of these comparisons involve using already-treated units as controls for newly treated units. When treatment effects grow over time or differ across cohorts, these comparisons can receive negative weights, meaning that the TWFE coefficient $\tau$ is not a convex combination of $\text{ATT}(g, t)$ effects. The weights can be negative, zero, or positive, and the aggregate estimate can be biased toward zero, away from zero, or even have the wrong sign.
+
+To see the intuition, consider a setting where units adopt treatment at different times and where the treatment effect grows over time. A unit that adopted treatment early has a large effect, while a unit that adopted recently has a small effect. A TWFE regression comparing the recently treated unit to the early-treated unit attributes the difference in outcomes to the recent treatment, but the comparison confounds the small positive effect of recent treatment with the large positive effect of early treatment, potentially producing a negative coefficient. Modern heterogeneity-robust estimators (Chapter~\ref{ch:did}) avoid this problem by constructing clean comparisons --- comparing treated units to never-treated or not-yet-treated units --- and aggregating $\text{ATT}(g, t)$ effects with known, non-negative weights.
+
+Despite these pitfalls, TWFE remains useful as a benchmark and for settings where treatment effects are constant over time and across units. It is also computationally simple and scales to large datasets. The key is to understand when TWFE can be trusted and when more sophisticated methods are required. Event-study specifications that include leads and lags of treatment (Chapter~\ref{ch:event}) provide a diagnostic: if the TWFE estimates of pre-treatment leads are non-zero or if the post-treatment coefficients exhibit unexpected patterns, this signals that heterogeneity and staggered timing are confounding the TWFE estimate.
+
+\subsection*{Random Effects and the Mundlak Device}
+
+An alternative to fixed effects is the random effects model, which treats $\alpha_i$ as a random variable drawn from a distribution with mean zero and variance $\sigma_\alpha^2$. The random effects estimator uses generalised least squares (GLS) to exploit both within-unit and between-unit variation, weighting each source of variation according to the relative magnitudes of $\sigma_\alpha^2$ and the error variance. Random effects can produce smaller standard errors than fixed effects when their assumptions hold, but they require $\alpha_i$ to be uncorrelated with the regressors --- often implausible in marketing settings where treatment assignment depends on unit characteristics.
+
+The Mundlak device offers a middle ground. By including unit-level means of the time-varying covariates as additional regressors --- $\bar{X}_i = T^{-1} \sum_t X_{it}$ --- the Mundlak-augmented regression relaxes the strict exogeneity required for random effects while retaining a mixed model interpretation. The coefficient on $W_{it}$ then has a within-unit interpretation equivalent to fixed effects --- it identifies the effect from within-unit variation --- but the model can accommodate random slopes and other sources of heterogeneity while retaining computational efficiency. In practice, modern marketing applications rarely rely on random effects, preferring the transparency of fixed effects or the flexibility of methods that allow for richer forms of heterogeneity.
+
+\subsection*{Correlated Random Effects IV: Hausman--Taylor}
+
+When time-invariant regressors matter and unit effects are correlated with covariates, the Hausman--Taylor (HT) estimator provides a useful bridge between fixed effects and random effects. Partition time-varying regressors into those plausibly exogenous with respect to unit effects, $x_{1,it}$, and those potentially correlated, $x_{2,it}$. Similarly partition time-invariant regressors into exogenous $z_{1,i}$ and potentially endogenous $z_{2,i}$. HT applies the random-effects quasi-demeaning and then instruments $x_{2,it}$ using within-unit deviations of $x_{1,it}$ and instruments $z_{2,i}$ using unit means of $x_{1,it}$. This internal-instrument strategy allows consistent estimation of coefficients on time-invariant regressors while permitting correlation between unit effects and a subset of regressors \citet{hausman1981panel}.
+
+HT is most compelling when you have credible a priori splits of regressors into exogenous and endogenous blocks, time-invariant regressors are substantively central, and internal instruments are strong. Diagnostics mirror IV practice: test for weak instruments and overidentifying restrictions, report first-stage fits, and probe sensitivity to alternative partitions and variance-component choices. Amemiya--MaCurdy provide an efficiency-enhanced variant under additional structure \citet{amemiya1986instrumental}. Mundlak’s device remains a transparent alternative when you can treat correlation with unit effects as captured by including unit means \citet{mundlak1978pooling}.
+
+The Hausman--Taylor estimator provides a more sophisticated approach when time-invariant regressors matter and you need to allow correlation with unit effects.
+
+\medskip
+\noindent\fbox{\parbox{\textwidth}{\small
+\textbf{Box: Hausman--Taylor instruments and moments.} Consider
+\[
+ y_{it} = x_{1,it}'\beta_1 + x_{2,it}'\beta_2 + z_{1,i}'\alpha_1 + z_{2,i}'\alpha_2 + u_i + \varepsilon_{it},\quad i=1,\ldots,N,\ t=1,\ldots,T,
+\]
+with unit effects $u_i$ potentially correlated with $(x_{2,it}, z_{2,i})$ and uncorrelated with $(x_{1,it}, z_{1,i})$. Let $\bar{v}_i = T^{-1}\sum_t v_{it}$ and define quasi-demeaning $\tilde{v}_{it} = v_{it} - \theta\,\bar{v}_i$, where $\theta \in [0,1)$ is estimated from variance components in a preliminary RE step.
+
+\emph{Instrument set.} Stack observations by unit. A valid HT instrument matrix for unit $i$ is
+\[
+ Z_i = \big[\ (x_{1,it}-\bar{x}_{1,i})_{t=1}^T\ \big|\ z_{1,i}\ \big|\ \bar{x}_{1,i}\ \big],
+\]
+that is, within-unit deviations of exogenous time-varying regressors instrument endogenous $x_{2,it}$, unit means of exogenous $x_{1,it}$ instrument endogenous time-invariant $z_{2,i}$, and exogenous time-invariant $z_{1,i}$ instrument themselves. The HT estimating equation uses quasi-demeaned regressors $\tilde{x}_{\cdot,it}$ and the error $\tilde{\varepsilon}_{it}$.
+
+\emph{Moment conditions.} Let $\tilde{y}_i$ and $\tilde{W}_i$ stack quasi-demeaned outcomes and regressors for unit $i$. The HT moments are
+\[
+ \mathbb{E}\big[\, Z_i'\, (\tilde{y}_i - \tilde{W}_i\,\delta)\,\big] = 0,\quad \delta = (\beta_1',\beta_2',\alpha_1',\alpha_2')'.
+\]
+Estimation proceeds by 2SLS on the quasi-demeaned equation using $Z_i$ as instruments, with $\theta$ obtained from a feasible GLS step. Amemiya--MaCurdy modifies weighting to improve efficiency.
+
+\emph{Checklist for practice.}
+\begin{itemize}
+ \item \textbf{Partition credibility.} Justify $x_1, x_2, z_1, z_2$ using institutional arguments and pre-trend evidence. Avoid classifying many regressors as exogenous by default.
+ \item \textbf{Instrument strength.} Report first-stage fits for $x_{2,it}$ and $z_{2,i}$ (e.g. F/KP rk statistics by endogenous block). Weak instruments bias toward RE.
+ \item \textbf{Overidentification.} When overidentified, report Sargan/Hansen $J$ tests with caution under heteroskedasticity and many instruments.
+ \item \textbf{Sensitivity.} Re-estimate under alternative partitions (move borderline regressors between $x_1/x_2$) and alternative variance-component choices $\theta$.
+ \item \textbf{Time-invariant leverage.} Ensure $\bar{x}_{1,i}$ varies across units and is relevant for $z_{2,i}$; otherwise coefficients on $z_{2,i}$ will be weakly identified.
+\end{itemize}
+\medskip
+For weak-instrument diagnostics (KP rk, OP effective $F$) and identification-robust tests (AR, CLR), see Chapter~\ref{ch:inference}, Section~\ref{sec:weak-iv}\footnotemark.
+}}
+\footnotetext{When KP/OP indicate weak instruments, prefer LIML or Fuller as default fallbacks.}
+
+\subsection*{Serial Correlation and Clustering}
+
+Panel data violate the independence assumption that underlies classical standard error formulas. Outcomes for the same unit observed in different periods are typically correlated because of persistent unobservables, autocorrelated shocks, or dynamic feedback. Ignoring this serial correlation leads to standard errors that are too small and hypothesis tests that reject too often.
+
+We cluster standard errors by unit, allowing for arbitrary correlation of $\varepsilon_{it}$ within units while maintaining independence across units. Clustering by unit is appropriate when the primary source of correlation is persistence within units over time -- the typical case in marketing panels where store characteristics, customer preferences, or market conditions create serial dependence. Two-way clustering, by both unit and time, becomes necessary when errors are also correlated across units within a period -- for example, if all stores in a region are affected by a regional shock, or if all markets experience a common demand shock in a particular quarter. The cost of two-way clustering is larger standard errors and potential over-correction when cross-unit correlation is weak. Multi-way clustering can be computationally intensive, but packages implementing the method are widely available.
+
+When the number of clusters is small -- fewer than about 50 -- cluster-robust standard errors may be unreliable because the asymptotic approximation breaks down. In such cases, the wild cluster bootstrap (Chapter~\ref{ch:inference}) provides a more accurate approach to inference by resampling entire clusters. Permutation tests, which do not rely on asymptotic approximations, offer another route to valid inference when the number of treated units or clusters is small. These refinements are essential in marketing applications where the number of DMAs, regions, or firms may be modest.
+
+For panels with long time series ($T$ large), heteroskedasticity and autocorrelation consistent (HAC) standard errors that account for serial correlation up to a lag length chosen by the researcher provide an alternative to clustering. HAC estimators are particularly relevant in fat panels where the time dimension dominates and where clustering by unit would produce very few clusters. Newey-West standard errors, which down-weight covariances at longer lags, are a common choice. The key trade-off is that HAC methods require choosing a lag length (often based on rules of thumb like $T^{1/4}$), while clustering makes no such assumption but requires a sufficient number of clusters for asymptotic validity. Chapter~\ref{ch:inference} provides detailed guidance on choosing between clustering, HAC, and bootstrap methods depending on panel dimensions and error structure.
+
+\subsection*{Stationarity, Trends, and Spurious Regression in Panels}
+
+Panel regressions often pool many short time series. With short $T$, nonstationarity receives less attention because unit root asymptotics have little power. With longer $T$ or macro-style outcomes, stochastic trends matter. Time fixed effects remove shocks and trends that are common across units, but they do not remove unit-specific stochastic trends. In a state-by-year panel, year dummies absorb the aggregate cycle, yet each state can drift as an $I(1)$ process. Regressing one $I(1)$ variable on another without cointegration risks spurious relationships.
+
+Practical guidance follows a simple sequence. When $T$ is short and identification uses within-unit, high-frequency variation (policy dummies, staggered rollouts), fixed effects with time effects are typically adequate. When $T$ is longer or variables plausibly follow $I(1)$ processes (macro aggregates, prices, levels), test for unit roots with panel methods that allow heterogeneity and cross-section dependence (LLC, IPS, CIPS) and consider unit-specific trends. If variables are $I(1)$ but cointegrated, estimate cointegrating relationships and use error-correction specifications; if not cointegrated, difference or transform to stationarity and interpret coefficients accordingly. Differencing removes unit effects and unit-specific stochastic trends, but it also removes long-run level information; dynamic specifications in Chapter~\ref{ch:dynamics} discuss these trade-offs.
+
+Appendix~\ref{app:stationarity-panels} summarises panel unit root tests (Levin--Lin--Chu; Im--Pesaran--Shin; Pesaran CIPS), panel cointegration tests (Pedroni; Westerlund), and offers a brief decision guide. Classic macro evidence on unit roots cautions that distinguishing trend-stationary from difference-stationary is difficult in practice, reinforcing the case for design-based identification and transparent diagnostics.

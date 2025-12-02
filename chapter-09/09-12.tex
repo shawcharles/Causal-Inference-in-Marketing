@@ -1,0 +1,88 @@
+\section{Conclusion and Future Directions}
+\label{sec:adv-matrix-conclusion}
+
+This chapter has extended the matrix completion framework from Chapter~\ref{ch:factor} to cover advanced methods for complex panel structures. Table~\ref{tab:advanced-matrix-comparison} summarises the methods.
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!50!black,title=Chapter 9: Key Takeaways]
+\begin{enumerate}
+\item \textbf{Tensor completion} (Section~\ref{sec:tensor-completion}) preserves multi-way structure and improves imputation accuracy when data have natural multi-way organisation.
+\item \textbf{Robust methods} (Section~\ref{sec:robust-matrix}) separate outliers from the low-rank structure and reduce bias when data quality issues are present.
+\item \textbf{Covariate-assisted methods} (Section~\ref{sec:matrix-side-info}) incorporate side information and reveal treatment effect heterogeneity.
+\item \textbf{Time-varying rank models} (Section~\ref{sec:time-varying-rank}) adapt to non-stationary environments and structural breaks.
+\item \textbf{Bayesian methods} (Section~\ref{sec:bayesian-matrix}) provide principled uncertainty quantification through posterior distributions.
+\item \textbf{Efficient algorithms} (Section~\ref{sec:computation}) scale to large panels with millions of cells.
+\end{enumerate}
+\end{tcolorbox}
+
+\subsection*{When to Use Advanced Methods}
+
+For detailed method selection guidance, see Section~\ref{sec:adv-matrix-connections} and Section~\ref{sec:adv-matrix-workflow}.
+
+\begin{itemize}
+\item \textbf{Tensor completion:} Data are naturally multi-way and the multi-way structure is informative.
+\item \textbf{Robust methods:} Outliers are common ($>$5\% of cells) and large ($>$3 standard deviations).
+\item \textbf{Covariate-assisted:} Rich side information is available and treatment effects are heterogeneous.
+\item \textbf{Time-varying rank:} Structural breaks are present in the factor structure.
+\item \textbf{Bayesian:} Uncertainty quantification is critical and computational resources permit.
+\end{itemize}
+
+\subsection*{Open Research Questions}
+
+Several research questions remain open:
+\begin{enumerate}
+\item How can we extend tensor completion to handle time-varying rank in multi-way panels?
+\item How can we combine robust methods with Bayesian uncertainty quantification?
+\item How can we scale Bayesian methods to panels with billions of cells?
+\item How can we incorporate network structure (spatial correlation, competitive relationships) into tensor completion?
+\item How can we handle non-convex regularisers (e.g., rank constraints) efficiently?
+\end{enumerate}
+
+\subsection*{Emerging Methods}
+
+\paragraph{Deep learning for matrix completion.} Neural networks can learn nonlinear low-rank structures that linear methods miss. Autoencoders provide a natural framework for matrix completion. Generative adversarial networks (GANs) can impute counterfactuals by learning the distribution of untreated outcomes. However, deep learning methods require large datasets and careful tuning. They are most promising for very large panels (millions of cells) where traditional methods are computationally infeasible.
+
+\paragraph{Integration with causal machine learning.} Matrix completion can be combined with double machine learning to estimate heterogeneous treatment effects (Chapters~\ref{ch:ml-nuisance} and~\ref{ch:high-dim}). Lasso and group-lasso can select relevant covariates in covariate-assisted matrix completion. Cross-fitting avoids overfitting in high-dimensional settings. These hybrid methods combine the strengths of matrix completion (exploiting low-rank structure) and machine learning (handling high-dimensional covariates).
+
+\subsection*{Summary}
+
+The practical workflow and software recommendations in Section~\ref{sec:adv-matrix-workflow} provide a starting point for implementation. The four case studies in Section~\ref{sec:adv-matrix-applications} demonstrate value in real marketing applications. By carefully selecting the appropriate method and conducting rigorous diagnostics (Section~\ref{sec:adv-matrix-diagnostics}), practitioners can achieve credible causal estimates in challenging settings.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Comparison of Advanced Matrix Methods}
+\label{tab:advanced-matrix-comparison}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Method} & \textbf{Key Feature} & \textbf{When to Use} & \textbf{Computational Cost} \\
+\midrule
+Tensor Completion & Preserves multi-way structure & Multi-way data with informative structure & High (scales with modes) \\
+\addlinespace
+Robust MC & Separates outliers from low-rank & Outliers present ($>$5\% of cells) & Medium (ADMM) \\
+\addlinespace
+Covariate-Assisted & Incorporates side information & Rich covariates available & Low \\
+\addlinespace
+Time-Varying Rank & Adapts to structural breaks & Non-stationary factor structure & Medium \\
+\addlinespace
+Bayesian & Uncertainty quantification & Credible intervals needed & High (MCMC) \\
+\addlinespace
+Soft-Impute & Efficient for sparse data & Large sparse panels & Low \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\caption{Tensor Completion Schematic for Three-Way Panels}
+\label{fig:tensor-schematic}
+\textit{[Figure placeholder: Three-dimensional visualisation of a tensor (products $\times$ stores $\times$ time) with treated cells highlighted. Panel A: full tensor with observed (blue) and missing/treated (red) cells. Panel B: CP decomposition into product loadings, store loadings, and time factors. Panel C: imputed counterfactuals for treated cells.]}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\caption{Robust Matrix Completion: Separating Low-Rank Structure from Outliers}
+\label{fig:robust-decomposition}
+\textit{[Figure placeholder: Three panels showing decomposition $Y = L + S + E$. Panel A: observed outcome matrix $Y$ as heatmap with outliers visible. Panel B: estimated low-rank component $L$ (smooth structure). Panel C: estimated sparse component $S$ (outliers only).]}
+\end{figure}
+

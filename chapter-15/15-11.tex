@@ -1,0 +1,10 @@
+\section{Sensitivity Analyses}
+\label{sec:sensitivity-analyses-threats}
+
+Sensitivity analyses quantify robustness to violations of key assumptions. For parallel trends, sensitivity frameworks vary the allowable departure from exact parallel trends and report the range of estimates consistent with bounded violations (Theorem~\ref{thm:did-bias-bounds}). For unobserved confounding, bounding strategies ask how strong a confounder must be to overturn the main conclusion (Proposition~\ref{prop:rosenbaum-bounds}).
+
+Specification curves systematically vary design choices such as control sets, time windows, and donor pools, then plot the distribution of estimates. When the distribution is tight and the sign is stable, robustness is high. When results are fragile, sensitivity is reported alongside the preferred specification with explanations for the choice.
+
+Alternative windows restrict attention to subsamples with stronger pre-trend evidence or exclude transitional policy periods. Alternative donor sets remove near neighbours, restrict to similar units, or reweight by recent similarity.
+
+Bounded-effect analyses present worst-case and best-case scenarios under explicit assumptions about omitted variables. All sensitivity results should be reported with the main estimates, giving readers a complete picture of robustness \citet{arkhangelsky2024causal}.

@@ -1,0 +1,213 @@
+\section{Ranking and Recommendation Algorithms}
+\label{sec:ranking-algorithms}
+
+Ranking algorithms determine what users see first---in search results, product listings, content feeds, and recommendations. Items in top positions receive more clicks, but this conflates two effects: the item's intrinsic relevance and the position's prominence. Estimating the causal effect of position is essential for optimising ranking algorithms and for understanding how much of an item's success is due to algorithmic placement rather than quality.
+
+\begin{remark}[Ranking in the Taxonomy]\label{rem:ranking-taxonomy}
+In the taxonomy of Section~\ref{sec:taxonomy}, ranking algorithm evaluation involves both \emph{endogeneity} and \emph{interference}. On the identification axis, position is endogenous: the algorithm assigns top positions to items with high predicted relevance, creating simultaneity bias. On the interference axis, ranking is a zero-sum system: moving one item up necessarily moves others down. The effect on the promoted item includes the displacement effect on demoted items. For the broader platform context, see Section~\ref{sec:platform-experiments}; for seller-side interventions that affect rankings, see Section~\ref{sec:seller-interventions}.
+\end{remark}
+
+\subsection*{Estimand: Position and Relevance Effects}
+
+We decompose the click probability into position and relevance components.
+
+\begin{definition}[Position Effect]\label{def:position-effect}
+Let $Y_{ij} \in \{0, 1\}$ indicate whether user $i$ clicks on item $j$. Let $P_{ij} \in \{1, 2, \ldots, K\}$ denote the position of item $j$ in user $i$'s ranking. The position effect is:
+\[
+\tau_p = \mathbb{E}[Y_{ij} | P_{ij} = p] - \mathbb{E}[Y_{ij} | P_{ij} = p'],
+\]
+holding item relevance fixed. This measures how much click probability changes when the same item moves from position $p'$ to position $p$.
+\end{definition}
+
+\begin{definition}[Relevance Effect]\label{def:relevance-effect}
+Let $R_j$ denote the intrinsic relevance of item $j$ (e.g., quality, match to user preferences). The relevance effect is:
+\[
+\tau_r = \mathbb{E}[Y_{ij} | R_j = r] - \mathbb{E}[Y_{ij} | R_j = r'],
+\]
+holding position fixed. This measures how much click probability changes when a more relevant item replaces a less relevant one at the same position.
+\end{definition}
+
+The standard click model decomposes click probability multiplicatively:
+\[
+P(Y_{ij} = 1) = \theta_{P_{ij}} \times \gamma_{R_j},
+\]
+where $\theta_p$ is the position bias (probability of examining position $p$) and $\gamma_r$ is the relevance probability (probability of clicking given examination).
+
+\subsection*{Identification Challenge: Confounding by Relevance}
+
+Ranking algorithms place relevant items in top positions. Naive comparison of click rates across positions confounds position effects with relevance effects.
+
+\begin{assumption}[Endogenous Ranking]\label{assump:endogenous-ranking}
+Let $R_j$ be item relevance. Under algorithmic ranking:
+\[
+\text{Cov}(P_{ij}, R_j) < 0,
+\]
+because more relevant items receive higher (lower-numbered) positions. Naive regression of clicks on position is biased: top positions appear more effective than they are because they contain better items.
+\end{assumption}
+
+\begin{remark}[Zero-Sum Interference in Rankings]\label{rem:ranking-interference}
+Ranking is inherently a zero-sum system: there is exactly one position 1, one position 2, and so on. Improving one item's position necessarily worsens others'. This creates interference:
+\begin{enumerate}
+\item \textbf{Displacement effects.} Moving item A from position 5 to position 1 displaces items B, C, D, E downward. The platform-level effect includes both A's gain and the displaced items' losses.
+\item \textbf{Competitive dynamics.} If sellers can influence rankings (via advertising, pricing, or quality improvements), one seller's gain comes at competitors' expense.
+\item \textbf{GATE interpretation.} The Global Average Treatment Effect of a ranking policy change must account for winners and losers. Item-level position effects do not aggregate simply.
+\end{enumerate}
+Experiments that randomise position for a subset of items must consider how displacement affects the non-randomised items.
+\end{remark}
+
+\subsection*{Identification Strategy 1: Position Randomisation}
+
+The gold standard is randomising position for a subset of traffic.
+
+\begin{definition}[Position Randomisation Experiment]\label{def:position-randomisation}
+For a random subset of users, shuffle the ranking of items (fully or partially). Compare click rates across positions in the randomised sample:
+\[
+\hat{\theta}_p = \frac{\sum_i \sum_j Y_{ij} \cdot \mathbf{1}(P_{ij} = p)}{\sum_i \sum_j \mathbf{1}(P_{ij} = p)},
+\]
+where the expectation is over the randomised assignment.
+\end{definition}
+
+\begin{assumption}[Random Position Assignment]\label{assump:random-position}
+In the experimental sample, position is independent of relevance:
+\[
+P_{ij} \perp\!\!\!\perp R_j.
+\]
+\end{assumption}
+
+Full randomisation degrades user experience (irrelevant items appear at top). Partial randomisation—swapping adjacent pairs or randomising within quality tiers—balances identification with user experience.
+
+\subsection*{Identification Strategy 2: Instrumental Variables}
+
+When randomisation is infeasible, instruments exploit exogenous variation in position.
+
+\begin{assumption}[Position Instrument]\label{assump:position-iv}
+Let $Z_{ij}$ be an instrument that affects position but not relevance directly:
+\[
+\text{Cov}(Z_{ij}, P_{ij}) \neq 0, \quad \text{Cov}(Z_{ij}, R_j) = 0.
+\]
+\end{assumption}
+
+Table~\ref{tab:position-instruments} summarises potential instruments for position.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Instruments for position effects}
+\label{tab:position-instruments}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Instrument} & \textbf{Mechanism} & \textbf{Exclusion Restriction} \\
+\midrule
+Algorithmic tie-breaking & Equal predicted relevance resolved by arbitrary rule (item ID, random seed) & Tie-breaker uncorrelated with true relevance \\
+Display constraints & Screen size or pagination creates visibility discontinuities & Items near boundary have similar relevance \\
+Temporal variation & Algorithm updates change rankings for non-quality reasons & Updates uncorrelated with item quality changes \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{Identification Strategy 3: Regression Discontinuity}
+
+Pagination and screen boundaries create sharp discontinuities in visibility.
+
+\begin{definition}[Pagination RDD]\label{def:pagination-rdd}
+If users must click "next page" to see items beyond position $K$, compare outcomes for items at positions $K$ and $K+1$:
+\[
+\hat{\tau}_{\text{RDD}} = \lim_{p \downarrow K} \mathbb{E}[Y_{ij} | P_{ij} = p] - \lim_{p \uparrow K+1} \mathbb{E}[Y_{ij} | P_{ij} = p].
+\]
+This estimates the effect of being on the first page vs. second page.
+\end{definition}
+
+\begin{assumption}[Continuity of Relevance at Page Boundary]\label{assump:pagination-rdd}
+Expected item relevance is continuous at the page boundary:
+\[
+\lim_{p \downarrow K} \mathbb{E}[R_j | P_{ij} = p] = \lim_{p \uparrow K+1} \mathbb{E}[R_j | P_{ij} = p].
+\]
+Since visibility jumps discontinuously at $K$ (first page vs.~second page), any discontinuity in click rates at the boundary is attributable to the visibility difference.
+\end{assumption}
+
+This assumption is plausible when the algorithm's ranking is noisy near the page boundary, so items at positions $K$ and $K+1$ have similar predicted relevance.
+
+\subsection*{Estimation}
+
+For position randomisation, estimate position effects using the randomised sample only. Fit the multiplicative click model:
+\[
+\log P(Y_{ij} = 1) = \log \theta_{P_{ij}} + \log \gamma_{R_j},
+\]
+using item fixed effects to absorb relevance and position dummies to estimate $\theta_p$.
+
+For IV, use 2SLS with the instrument predicting position in the first stage.
+
+For RDD, use local polynomial regression at the page boundary.
+
+\begin{remark}[Dynamic Considerations in Ranking]\label{rem:ranking-dynamics}
+Position effects may vary over time and across user experience levels:
+\begin{enumerate}
+\item \textbf{User learning.} Experienced users learn ranking patterns and may scroll further or trust algorithmic ordering less. Position effects may decay with user sophistication.
+\item \textbf{Algorithm updates.} As ranking algorithms improve, the relevance gap between positions shrinks, potentially reducing position effects.
+\item \textbf{Item lifecycle.} New items may benefit more from top positions (discovery) than established items (already known to users).
+\end{enumerate}
+Reporting position effects by user tenure and item age provides insight into these dynamics.
+\end{remark}
+
+\subsection*{Diagnostic Checklist}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.15: Ranking Algorithm Diagnostic Checklist]
+\textbf{For Position Randomisation:}
+\begin{itemize}
+    \item Balance: Verify that item quality is balanced across positions in the experimental sample.
+    \item User experience: Monitor bounce rates and session duration in the randomised group.
+    \item Sample size: Position effects are often small; ensure adequate power.
+\end{itemize}
+
+\textbf{For Pagination RDD:}
+\begin{itemize}
+    \item Relevance balance: Check that item quality metrics are smooth through the page boundary.
+    \item Manipulation: Test whether the algorithm strategically places items to avoid the boundary.
+    \item Bandwidth sensitivity: Report estimates at multiple bandwidths.
+\end{itemize}
+
+\textbf{For Click Models:}
+\begin{itemize}
+    \item Model fit: Compare predicted vs. observed click rates by position.
+    \item Separability: Test whether the multiplicative assumption holds (position effect independent of relevance).
+    \item Heterogeneity: Check whether position effects vary by user segment or device type.
+\end{itemize}
+\end{tcolorbox}
+
+\subsection*{Case Study: E-Commerce Search Ranking}
+
+We illustrate position randomisation with a hypothetical e-commerce platform. The numbers are illustrative and do not represent real data.
+
+\paragraph{Setting.} An e-commerce platform displays 20 products per search results page. The ranking algorithm orders products by predicted purchase probability. We estimate the position effect to understand how much of top-position success is due to visibility vs. relevance.
+
+\paragraph{Design.} For 5\% of search sessions, we randomise the order of the top 10 products. The remaining 95\% receive the algorithmic ranking. We compare click-through rates (CTR) by position in the randomised sample.
+
+\paragraph{Data.} 10 million search sessions over 2 weeks; 500,000 in the randomised condition. Outcome is click on product listing.
+
+\paragraph{Results.} Position effects in the randomised sample:
+\begin{center}
+\begin{tabular}{lcc}
+\hline
+Position & CTR (Randomised) & CTR (Algorithmic) \\
+\hline
+1 & 12.3\% & 18.5\% \\
+2 & 9.8\% & 14.2\% \\
+3 & 7.4\% & 11.1\% \\
+5 & 4.2\% & 7.8\% \\
+10 & 1.8\% & 4.1\% \\
+\hline
+\end{tabular}
+\end{center}
+The randomised CTR isolates the position effect; the difference between algorithmic and randomised CTR reflects the relevance sorting.
+
+\paragraph{Decomposition.} At position 1, the algorithmic CTR of 18.5\% decomposes into:
+\begin{itemize}
+    \item Position effect: 12.3\% (what any random item would get at position 1)
+    \item Relevance premium: 6.2\% (additional CTR from placing the best item there)
+\end{itemize}
+Approximately 67\% of clicks at position 1 are due to position; 33\% are due to relevance sorting.
+
+\paragraph{Diagnostics.} Balance check: average product rating and price are similar across positions in the randomised sample (all SMDs $< 0.05$). User experience: bounce rate in the randomised group is 2.1\% higher than control, acceptable for a 5\% holdout. Model fit: the multiplicative click model predicts observed CTR with $R^2 = 0.94$.
+
+\paragraph{Interpretation.} Position effects are substantial: even random items get 12\% CTR at position 1 vs. 1.8\% at position 10. This implies that ranking algorithm improvements have high leverage—moving a good item from position 10 to position 1 increases its CTR by approximately 10 percentage points from position alone. The platform should invest in ranking quality, as the position effect amplifies relevance differences.

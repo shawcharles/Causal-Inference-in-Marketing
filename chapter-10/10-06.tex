@@ -1,0 +1,143 @@
+\section{Inference}
+\label{sec:dynamics-inference}
+
+Inference for dynamic treatment effects must account for serial dependence (outcomes correlated over time within units), potential common shocks (outcomes correlated across units within periods), and multiple testing (testing for effects at many lags simultaneously).
+
+This section presents clustering, HAC adjustments, wild cluster bootstrap, and procedures for multiple testing and LRM uncertainty. For estimation, see Section~\ref{sec:dynamics-estimation}. For comprehensive inference coverage, see Chapter~\ref{ch:inference}.
+
+\subsection*{Overview of Inference Methods}
+
+Table~\ref{tab:dynamics-inference} summarises the main inference approaches.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Comparison of Inference Methods for Dynamic Effects}
+\label{tab:dynamics-inference}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Method} & \textbf{Assumptions} & \textbf{When to Use} & \textbf{Software} \\
+\midrule
+Cluster-robust (unit) & Arbitrary within-unit correlation & Default for panels & \texttt{fixest}, \texttt{plm} \\
+\addlinespace
+Two-way cluster & Within-unit + within-period correlation & Common shocks present & \texttt{fixest}, \texttt{reghdfe} \\
+\addlinespace
+HAC (Newey-West) & Correlation decays with lag & Moderate serial dependence & \texttt{sandwich}, \texttt{plm} \\
+\addlinespace
+Wild cluster bootstrap & Small number of clusters & $N < 30$ clusters & \texttt{fwildclusterboot} \\
+\addlinespace
+Romano-Wolf & Multiple testing correction & Many lags tested & \texttt{rwolf} \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{Clustering by Unit}
+
+Clustering by unit accounts for serial dependence by allowing arbitrary correlation of errors within units over time.
+
+\begin{proposition}[Cluster-Robust Variance Estimator]\label{prop:cluster-var}
+For the event-study estimator with clustering by unit, the variance estimator is:
+\[
+\hat{V}_{\text{cluster}}(\hat{\boldsymbol{\theta}}) = (\mathbf{X}'\mathbf{X})^{-1} \left(\sum_{i=1}^N \mathbf{X}_i' \hat{\mathbf{u}}_i \hat{\mathbf{u}}_i' \mathbf{X}_i\right) (\mathbf{X}'\mathbf{X})^{-1},
+\]
+where $\mathbf{X}_i$ is the design matrix for unit $i$, $\hat{\mathbf{u}}_i$ is the vector of residuals, and the outer product captures within-unit serial correlation. Consistent as $N \to \infty$ for fixed $T$.
+\end{proposition}
+
+\subsection*{Two-Way Clustering}
+
+Two-way clustering accounts for both unit-level clustering (serial dependence) and time-level clustering (common shocks). The estimator sums three components: clustering by unit, clustering by time, and a correction term.
+
+\paragraph{When to use:} Panel has many units and many periods; common shocks are plausible (e.g., macroeconomic shocks, regulatory changes, competitive disruptions).
+
+\paragraph{Cost:} Larger standard errors, reflecting uncertainty from common shocks.
+
+\subsection*{HAC Adjustments}
+
+HAC (heteroskedasticity and autocorrelation consistent) adjustments provide an alternative when serial dependence is moderate and decays with lag.
+
+The Newey-West estimator downweights lags beyond a bandwidth, reflecting the assumption that correlations decline with lag distance.
+
+\paragraph{Bandwidth selection:} Rule of thumb $\text{bandwidth} = \lfloor T^{1/4} \rfloor$, or data-driven using autocorrelation structure.
+
+\paragraph{Trade-off:} HAC standard errors are often smaller than cluster-robust (impose structure) but may understate uncertainty if decay assumption fails.
+
+\subsection*{Wild Cluster Bootstrap}
+
+Wild cluster bootstrap provides finite-sample inference when clusters are few ($N < 30$).
+
+\paragraph{Procedure.} The wild cluster bootstrap resamples cluster-level residuals by multiplying by random signs (Rademacher weights), recomputes the outcome variable, and re-estimates the regression. Repeating this process many times builds a bootstrap distribution of the test statistic, from which p-values and confidence intervals are constructed.
+
+\paragraph{Variants:} Rademacher (random $\pm 1$), Mammen (skewness-corrected), Webb (six-point). See Chapter~\ref{ch:inference} for comparisons.
+
+\subsection*{Multiple Testing}
+
+Event-study designs estimate effects at many lags, inflating the family-wise error rate (FWER).
+
+\begin{remark}[Multiple Testing Corrections]
+When testing $H_{0,k}: \theta_k = 0$ for $k = 0, \ldots, \bar{K}$:
+\begin{enumerate}[(i)]
+    \item \textbf{Bonferroni:} Reject if $p_k < \alpha / (\bar{K} + 1)$. Conservative; ignores correlation.
+    \item \textbf{Holm stepdown:} Order p-values; reject $H_{0,(j)}$ if $p_{(j)} < \alpha / (\bar{K} + 2 - j)$. Less conservative.
+    \item \textbf{Romano-Wolf:} Bootstrap joint distribution; accounts for correlation. Preferred for event studies.
+\end{enumerate}
+\end{remark}
+
+\subsection*{Pre-Trend Testing}
+
+\begin{proposition}[Pre-Trend Test Statistic]\label{prop:pretrend-test}
+The joint null of no pre-trends is $H_0: \theta_{-K} = \cdots = \theta_{-1} = 0$. The Wald test statistic is:
+\[
+W = \hat{\boldsymbol{\theta}}_{\text{pre}}' \hat{\mathbf{V}}_{\text{pre}}^{-1} \hat{\boldsymbol{\theta}}_{\text{pre}},
+\]
+where $\hat{\boldsymbol{\theta}}_{\text{pre}} = (\hat{\theta}_{-K}, \ldots, \hat{\theta}_{-1})'$. Under $H_0$:
+\[
+W \xrightarrow{d} \chi^2_K \quad \text{as } N \to \infty.
+\]
+Rejection indicates anticipation or parallel trends failure.
+\end{proposition}
+
+\subsection*{LRM Uncertainty}
+
+\begin{proposition}[Delta Method for LRM Variance]\label{prop:lrm-var}
+Let $\hat{\boldsymbol{\beta}} = (\hat{\beta}_0, \ldots, \hat{\beta}_{\bar{L}})'$ be the estimated impulse responses with covariance $\hat{\mathbf{V}}_\beta$. For $\widehat{\text{LRM}} = \sum_s \hat{\beta}_s$:
+\[
+\text{Var}(\widehat{\text{LRM}}) = \mathbf{1}' \hat{\mathbf{V}}_\beta \mathbf{1} = \sum_{s=0}^{\bar{L}} \text{Var}(\hat{\beta}_s) + 2 \sum_{s < s'} \text{Cov}(\hat{\beta}_s, \hat{\beta}_{s'}).
+\]
+For event-time effects (which are cumulative), $\widehat{\text{LRM}} = \hat{\theta}_{\bar{K}}$ and $\text{Var}(\widehat{\text{LRM}}) = \text{Var}(\hat{\theta}_{\bar{K}})$.
+
+For geometric ad-stock with $\text{LRM} = \beta_0 + \beta_1 / (1 - \delta)$:
+\[
+\text{Var}(\widehat{\text{LRM}}) \approx \nabla g(\hat{\boldsymbol{\psi}})' \hat{\mathbf{V}}_\psi \nabla g(\hat{\boldsymbol{\psi}}),
+\]
+where $\nabla g = (1, (1-\delta)^{-1}, \beta_1 (1-\delta)^{-2})'$.
+\end{proposition}
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Reporting Checklist: Dynamic Inference]
+\textbf{Standard errors:}
+\begin{itemize}
+\item[$\square$] Report cluster-robust SE clustered by unit (default).
+\item[$\square$] Use two-way clustering if common shocks plausible.
+\item[$\square$] Use wild cluster bootstrap if $N < 30$ clusters.
+\end{itemize}
+
+\textbf{Joint tests:}
+\begin{itemize}
+\item[$\square$] Report joint test for pre-trends ($H_0: \theta_k = 0$ for $k < 0$).
+\item[$\square$] Report joint test for post-treatment effects ($H_0: \theta_k = 0$ for $k \geq 0$).
+\end{itemize}
+
+\textbf{Individual lags:}
+\begin{itemize}
+\item[$\square$] Report unadjusted p-values for each lag.
+\item[$\square$] Note number of tests; interpret significance cautiously.
+\item[$\square$] Consider Romano-Wolf for formal FWER control.
+\end{itemize}
+
+\textbf{Summary statistics:}
+\begin{itemize}
+\item[$\square$] Report CI for LRM (using delta method or bootstrap).
+\item[$\square$] Report CI for half-life if estimated.
+\item[$\square$] Discuss pattern of effects, not just individual significance.
+\end{itemize}
+\end{tcolorbox}

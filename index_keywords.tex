@@ -1,0 +1,387 @@
+% INDEX KEYWORDS FOR CAUSAL PANEL DATA BOOK
+% ==========================================
+% 
+% SETUP (already done in book.tex):
+% - \usepackage{makeidx} is in preamble
+% - \makeindex is called after packages
+% - \printindex is at end of document (after glossary)
+%
+% TO COMPILE:
+% 1. pdflatex book.tex
+% 2. makeindex book.idx
+% 3. pdflatex book.tex
+%
+% IMPLEMENTED INDEX ENTRIES:
+%
+% Chapter 4 (DiD):
+%   difference-in-differences (page range), parallel trends, SUTVA, ATT,
+%   conditional parallel trends, staggered adoption, ATT(g,t), never-treated,
+%   not-yet-treated, no anticipation, two-way fixed effects, negative weights,
+%   heterogeneity-robust estimators, Callaway--Sant'Anna, Sun--Abraham,
+%   Borusyak--Jaravel--Spiess, imputation
+%
+% Chapter 5 (Event Studies):
+%   event study (page range), event time, parallel trends, pre-trend test,
+%   anticipation, carryover, cohort, composition bias, TWFE, leads and lags,
+%   reference bin, binning, window selection, Sun--Abraham, Callaway--Sant'Anna,
+%   group-time effects, clustering, two-way clustering, wild cluster bootstrap,
+%   randomisation inference, heterogeneity-robust estimators, ramp-up, half-life,
+%   advertising, loyalty programme, store
+%
+% Chapter 6 (Synthetic Control):
+%   synthetic control (page range), donor pool, gap plot, factor model,
+%   convex weights, convex hull condition, no anticipation, no interference,
+%   SUTVA, Synthetic Parallel Trends, identified set, permutation test,
+%   in-space placebo, RMSPE, conformal inference, sensitivity analysis,
+%   DMA, platform
+%
+% Chapter 7 (Generalized SC):
+%   augmented synthetic control (page range), regularisation,
+%   synthetic difference-in-differences, doubly robust
+%
+% Chapter 8 (Factor Models):
+%   factor model (page range), matrix completion (page range),
+%   latent factors, factor loadings, interactive fixed effects, nuclear norm
+%
+% Chapter 9 (Advanced Matrix):
+%   tensor completion
+%
+% Chapter 10 (Dynamics):
+%   dynamic treatment effects (page range), carryover, ad-stock,
+%   habit formation, decay, impulse response, long-run multiplier,
+%   distributed lag
+%
+% Chapter 11 (Spillovers):
+%   spillovers (page range), interference, network spillovers,
+%   geographic spillovers, competitive spillovers, word-of-mouth,
+%   geo-experiment, SUTVA
+%
+% Chapter 12 (ML):
+%   double machine learning (page range), CATE (page range),
+%   Neyman orthogonality, cross-fitting, dose-response, causal forest,
+%   policy learning
+%
+% Chapter 13 (High-Dimensional):
+%   high-dimensional controls (page range), lasso, elastic net
+%
+% Chapter 14 (Continuous Treatment):
+%   continuous treatment (page range), pricing, dose-response
+%
+% Chapter 15 (Threats):
+%   threats to validity (page range), seasonality, algorithmic confounding,
+%   measurement error
+%
+% Chapter 16 (Inference):
+%   inference (page range), cluster-robust SE, wild cluster bootstrap,
+%   randomisation inference, conformal inference, multiple testing,
+%   confidence interval
+%
+% Chapter 17 (Diagnostics):
+%   diagnostics (page range), overlap, balance, pre-trends, placebo test,
+%   leave-one-out, specification curve
+%
+% Chapter 18 (Applications):
+%   marketing applications (page range), advertising, pricing,
+%   loyalty programme, platform
+%
+% Chapter 19 (Data):
+%   panel data (page range), privacy, attribution, missing data
+%
+% Chapter 20 (Outlook):
+%   interference, nonstationarity
+%
+% Page ranges mark chapter-level coverage:
+%   \index{difference-in-differences|(} ... |)} in Ch 4
+%   \index{event study|(} ... |)} in Ch 5
+%   \index{synthetic control|(} ... |)} in Ch 6
+%   \index{augmented synthetic control|(} ... |)} in Ch 7
+%   \index{factor model|(} ... |)} in Ch 8
+%   \index{matrix completion|(} ... |)} in Ch 8
+%   \index{dynamic treatment effects|(} ... |)} in Ch 10
+%   \index{spillovers|(} ... |)} in Ch 11
+%   \index{double machine learning|(} ... |)} in Ch 12
+%   \index{CATE|(} ... |)} in Ch 12
+%   \index{high-dimensional controls|(} ... |)} in Ch 13
+%   \index{continuous treatment|(} ... |)} in Ch 14
+%   \index{threats to validity|(} ... |)} in Ch 15
+%   \index{inference|(} ... |)} in Ch 16
+%   \index{diagnostics|(} ... |)} in Ch 17
+%   \index{marketing applications|(} ... |)} in Ch 18
+%   \index{panel data|(} ... |)} in Ch 19
+%
+% FORMAT REFERENCE:
+% - Simple entry: \index{term}term
+% - Subentry: \index{main!sub}term
+% - Cross-reference: \index{abbrev|see{full term}}
+% - Page range start: \index{term|(}
+% - Page range end: \index{term|)}
+%
+% ==========================================
+
+% ==========================================
+% CATEGORY 1: CORE METHODS AND ESTIMATORS
+% ==========================================
+
+% Event Studies (Chapter 5)
+% event study -> \index{event study}event study
+% event-study -> \index{event study}event-study
+% event time -> \index{event time}event time
+% event-time -> \index{event time}event-time
+% leads and lags -> \index{leads and lags}leads and lags
+
+% Difference-in-Differences
+% difference-in-differences -> \index{difference-in-differences}difference-in-differences
+% DiD -> \index{DiD|see{difference-in-differences}}DiD
+
+% Two-Way Fixed Effects
+% two-way fixed effects -> \index{two-way fixed effects}two-way fixed effects
+% TWFE -> \index{TWFE|see{two-way fixed effects}}TWFE
+
+% Heterogeneity-Robust Estimators
+% Sun--Abraham -> \index{estimators!Sun--Abraham}Sun--Abraham
+% Callaway--Sant'Anna -> \index{estimators!Callaway--Sant'Anna}Callaway--Sant'Anna
+% Borusyak--Jaravel--Spiess -> \index{estimators!Borusyak--Jaravel--Spiess}Borusyak--Jaravel--Spiess
+% heterogeneity-robust -> \index{heterogeneity-robust estimators}heterogeneity-robust
+
+% Synthetic Control (Chapter 6)
+% synthetic control -> \index{synthetic control}synthetic control
+% donor pool -> \index{donor pool}donor pool
+% convex weights -> \index{convex weights}convex weights
+% convex hull -> \index{convex hull condition}convex hull
+% gap plot -> \index{gap plot}gap plot
+% penalised synthetic control -> \index{synthetic control!penalised}penalised synthetic control
+% augmented synthetic control -> \index{synthetic control!augmented}augmented synthetic control
+% Synthetic Parallel Trends -> \index{Synthetic Parallel Trends}Synthetic Parallel Trends
+
+% ==========================================
+% CATEGORY 2: KEY ASSUMPTIONS
+% ==========================================
+
+% Parallel Trends
+% parallel trends -> \index{parallel trends}parallel trends
+% conditional parallel trends -> \index{parallel trends!conditional}conditional parallel trends
+
+% SUTVA and Interference
+% SUTVA -> \index{SUTVA}SUTVA
+% stable unit treatment value assumption -> \index{SUTVA}stable unit treatment value assumption
+% no interference -> \index{no interference}no interference
+% spillovers -> \index{spillovers}spillovers
+% interference -> \index{interference|see{spillovers}}interference
+
+% Anticipation
+% no anticipation -> \index{no anticipation}no anticipation
+% anticipation -> \index{anticipation}anticipation
+% anticipation effects -> \index{anticipation}anticipation effects
+
+% Factor Models
+% factor model -> \index{factor model}factor model
+% factor loadings -> \index{factor loadings}factor loadings
+% interactive fixed effects -> \index{interactive fixed effects}interactive fixed effects
+% latent factors -> \index{latent factors}latent factors
+
+% Other Assumptions
+% unconfoundedness -> \index{unconfoundedness}unconfoundedness
+% conditional independence -> \index{conditional independence}conditional independence
+% exchangeability -> \index{exchangeability}exchangeability
+
+% ==========================================
+% CATEGORY 3: ESTIMANDS AND EFFECTS
+% ==========================================
+
+% Treatment Effects
+% ATT -> \index{ATT (average treatment effect on treated)}ATT
+% average treatment effect on the treated -> \index{ATT (average treatment effect on treated)}average treatment effect on the treated
+% treatment effect -> \index{treatment effect}treatment effect
+% causal effect -> \index{causal effect|see{treatment effect}}causal effect
+
+% Event-Time Estimands
+% cohort-specific effects -> \index{cohort-specific effects}cohort-specific effects
+% group-time effects -> \index{group-time effects}group-time effects
+% ATT(g,t) -> \index{ATT(g,t)|see{group-time effects}}ATT(g,t)
+% cumulative effect -> \index{cumulative effect}cumulative effect
+% long-run multiplier -> \index{long-run multiplier}long-run multiplier
+
+% Dynamic Patterns
+% ramp-up -> \index{ramp-up}ramp-up
+% decay -> \index{decay}decay
+% half-life -> \index{half-life}half-life
+% hysteresis -> \index{hysteresis}hysteresis
+% persistence -> \index{persistence}persistence
+
+% ==========================================
+% CATEGORY 4: INFERENCE AND TESTING
+% ==========================================
+
+% Standard Errors and Clustering
+% cluster-robust standard errors -> \index{standard errors!cluster-robust}cluster-robust standard errors
+% clustering -> \index{clustering}clustering
+% two-way clustering -> \index{clustering!two-way}two-way clustering
+
+% Bootstrap Methods
+% wild cluster bootstrap -> \index{wild cluster bootstrap}wild cluster bootstrap
+% bootstrap -> \index{bootstrap}bootstrap
+
+% Permutation and Randomisation
+% permutation test -> \index{permutation test}permutation test
+% randomisation inference -> \index{randomisation inference}randomisation inference
+% in-space placebo -> \index{placebo test!in-space}in-space placebo
+% in-time placebo -> \index{placebo test!in-time}in-time placebo
+% placebo test -> \index{placebo test}placebo test
+
+% Conformal Inference
+% conformal inference -> \index{conformal inference}conformal inference
+
+% Multiple Testing
+% multiple testing -> \index{multiple testing}multiple testing
+% Bonferroni -> \index{Bonferroni correction}Bonferroni
+% false discovery rate -> \index{false discovery rate}false discovery rate
+% FDR -> \index{FDR|see{false discovery rate}}FDR
+% Romano-Wolf -> \index{Romano-Wolf}Romano-Wolf
+% family-wise error rate -> \index{family-wise error rate}family-wise error rate
+% sup-t bands -> \index{sup-t bands}sup-t bands
+
+% Confidence Intervals
+% confidence interval -> \index{confidence interval}confidence interval
+% identified set -> \index{identified set}identified set
+% bounds -> \index{bounds}bounds
+% partial identification -> \index{partial identification}partial identification
+
+% ==========================================
+% CATEGORY 5: DIAGNOSTICS
+% ==========================================
+
+% Pre-Trend Testing
+% pre-trend test -> \index{pre-trend test}pre-trend test
+% pre-trends -> \index{pre-trends}pre-trends
+% joint test -> \index{joint test}joint test
+
+% Fit Metrics
+% RMSPE -> \index{RMSPE}RMSPE
+% root mean squared prediction error -> \index{RMSPE}root mean squared prediction error
+% pre-treatment fit -> \index{pre-treatment fit}pre-treatment fit
+% goodness of fit -> \index{goodness of fit}goodness of fit
+
+% Sensitivity Analysis
+% sensitivity analysis -> \index{sensitivity analysis}sensitivity analysis
+% specification curve -> \index{specification curve}specification curve
+% leave-one-out -> \index{leave-one-out}leave-one-out
+% robustness check -> \index{robustness check}robustness check
+
+% Support and Composition
+% support -> \index{support}support
+% cohort composition -> \index{cohort composition}cohort composition
+% composition bias -> \index{composition bias}composition bias
+
+% ==========================================
+% CATEGORY 6: SPECIFICATION CHOICES
+% ==========================================
+
+% Reference Period
+% reference bin -> \index{reference bin}reference bin
+% omitted category -> \index{omitted category}omitted category
+% normalisation -> \index{normalisation}normalisation
+
+% Binning and Windows
+% binning -> \index{binning}binning
+% endpoint bin -> \index{endpoint bin}endpoint bin
+% event-time window -> \index{event-time window}event-time window
+% window selection -> \index{window selection}window selection
+
+% Weighting
+% aggregation weights -> \index{aggregation weights}aggregation weights
+% cohort weights -> \index{cohort weights}cohort weights
+% sample-size weights -> \index{sample-size weights}sample-size weights
+% uniform weights -> \index{uniform weights}uniform weights
+% negative weights -> \index{negative weights}negative weights
+
+% Control Groups
+% never-treated -> \index{never-treated}never-treated
+% not-yet-treated -> \index{not-yet-treated}not-yet-treated
+% control group -> \index{control group}control group
+
+% ==========================================
+% CATEGORY 7: DATA STRUCTURES
+% ==========================================
+
+% Panel Data
+% panel data -> \index{panel data}panel data
+% balanced panel -> \index{panel data!balanced}balanced panel
+% unbalanced panel -> \index{panel data!unbalanced}unbalanced panel
+
+% Adoption Patterns
+% staggered adoption -> \index{staggered adoption}staggered adoption
+% cohort -> \index{cohort}cohort
+% treatment timing -> \index{treatment timing}treatment timing
+
+% Fixed Effects
+% unit fixed effects -> \index{fixed effects!unit}unit fixed effects
+% time fixed effects -> \index{fixed effects!time}time fixed effects
+% fixed effects -> \index{fixed effects}fixed effects
+
+% ==========================================
+% CATEGORY 8: MARKETING APPLICATIONS
+% ==========================================
+
+% Programmes and Campaigns
+% loyalty programme -> \index{loyalty programme}loyalty programme
+% advertising -> \index{advertising}advertising
+% advertising campaign -> \index{advertising!campaign}advertising campaign
+% promotion -> \index{promotion}promotion
+% pricing -> \index{pricing}pricing
+
+% Markets and Units
+% DMA -> \index{DMA (designated market area)}DMA
+% designated market area -> \index{DMA (designated market area)}designated market area
+% geo-experiment -> \index{geo-experiment}geo-experiment
+% store -> \index{store}store
+% customer -> \index{customer}customer
+
+% Metrics
+% ROI -> \index{ROI}ROI
+% return on investment -> \index{ROI}return on investment
+% CLV -> \index{CLV (customer lifetime value)}CLV
+% customer lifetime value -> \index{CLV (customer lifetime value)}customer lifetime value
+
+% Effects
+% brand building -> \index{brand building}brand building
+% business stealing -> \index{business stealing}business stealing
+% word-of-mouth -> \index{word-of-mouth}word-of-mouth
+% network effects -> \index{network effects}network effects
+
+% ==========================================
+% CATEGORY 9: EXTENSIONS
+% ==========================================
+
+% Continuous Treatment
+% continuous treatment -> \index{continuous treatment}continuous treatment
+% dose-response -> \index{dose-response}dose-response
+% treatment intensity -> \index{treatment intensity}treatment intensity
+
+% Transformations
+% log transformation -> \index{log transformation}log transformation
+% inverse hyperbolic sine -> \index{inverse hyperbolic sine}inverse hyperbolic sine
+% IHS -> \index{IHS|see{inverse hyperbolic sine}}IHS
+
+% Smoothing
+% smoothing -> \index{smoothing}smoothing
+% bias-variance tradeoff -> \index{bias-variance tradeoff}bias-variance tradeoff
+
+% ==========================================
+% CATEGORY 10: SOFTWARE
+% ==========================================
+
+% R Packages
+% did -> \index{software!did (R)}did
+% fixest -> \index{software!fixest (R)}fixest
+% did2s -> \index{software!did2s (R)}did2s
+% scpi -> \index{software!scpi}scpi
+% Synth -> \index{software!Synth (R)}Synth
+
+% Stata Commands
+% csdid -> \index{software!csdid (Stata)}csdid
+% eventstudyinteract -> \index{software!eventstudyinteract (Stata)}eventstudyinteract
+% synth -> \index{software!synth (Stata)}synth
+
+% ==========================================
+% TOTAL: ~100 HIGH-VALUE TERMS
+% ==========================================

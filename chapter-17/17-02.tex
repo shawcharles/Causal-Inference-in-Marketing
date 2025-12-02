@@ -1,0 +1,22 @@
+\section{Control Selection and Donor Curation}
+\label{sec:control-selection}
+
+The credibility of any causal estimate depends on the quality of the comparison group. For difference-in-differences and event studies, control units must be screened on pre-treatment outcomes and covariates to ensure parallel trends (Chapter~\ref{ch:did}) are plausible. Large pre-treatment differences or divergent trends are red flags that may require reconsidering the control group or the design itself.
+
+For synthetic control methods (Chapter~\ref{ch:sc}), this process is called donor curation. Units must be excluded from the donor pool if they are contaminated by spillovers from the treated unit (Chapter~\ref{ch:spillovers}), affected by concurrent policies, or subject to measurement shifts. Documenting these exclusion rules is essential for transparent reporting. Regularisation can help select donors automatically, but visual inspection of weights and leave-one-out checks remain essential.
+
+Factor-space coverage (Chapter~\ref{ch:factor}) requires that donors span the latent structure governing untreated outcomes. If treated and donor units load on different factors, imputation fails. Diagnostics include pre-period fit tests, rank selection criteria, and comparisons of pre-period loadings.
+
+\begin{definition}[Factor Space Coverage]\label{def:factor-coverage}
+Let $\lambda_i \in \mathbb{R}^r$ denote the factor loadings for unit $i$ under the model in Chapter~\ref{ch:factor}. The donor pool $\mathcal{D}$ provides adequate coverage if:
+\[
+\min_{\mathbf{w} \in \Delta^{|\mathcal{D}|}} \left\| \lambda_{\istar} - \sum_{j \in \mathcal{D}} w_j \lambda_j \right\| < \epsilon,
+\]
+for tolerance $\epsilon$. Pre-period fit error bounds the coverage failure: poor pre-period fit implies inadequate factor coverage.
+\end{definition}
+
+\begin{remark}[Systematic Donor Curation]\label{rem:donor-curation}
+Donor exclusions should be documented systematically. First, exclude units within the spillover radius of the treated unit (buffer zones). Second, exclude units experiencing concurrent treatments during the estimation window. Third, exclude units with data quality issues or coverage changes. Fourth, exclude units with fundamentally different factor loadings, as indicated by poor pre-period fit. Report the initial donor universe, exclusion criteria, and remaining donor count. Sensitivity analysis should vary exclusion stringency.
+\end{remark}
+
+When coverage is inadequate, hybrid methods that blend factors with synthetic control weights or augment with high-dimensional controls can improve fit (Chapter~\ref{ch:generalized-sc}).

@@ -1,0 +1,10 @@
+\section{Support, Exposure, and Contamination}
+\label{sec:support-exposure}
+
+We must verify adequate data at each point in the analysis. For event studies (Chapter~\ref{ch:event}), this means tabulating the number of units and cohorts that contribute to each event-time bin. If only a few observations contribute to a particular bin, the estimate for that period will be noisy and potentially biased. The solution is often to bin sparse periods together, trading temporal precision for statistical power.
+
+Exposure mapping (Definition~\ref{def:exposure-mapping} in Chapter~\ref{ch:spillovers}) defines treatment intensity for unit $i$ as a function of own treatment $D_{it}$ and neighbours' treatments $\{D_{jt} : j \in \mathcal{N}_i\}$. Common specifications include distance-based radii (exposure decays with geographic distance), network adjacency (exposure proportional to treated neighbours), and market-overlap matrices (exposure proportional to competitive overlap).
+
+Buffers physically separate treated and control units by excluding units within a threshold distance (Chapter~\ref{ch:spillovers}). Re-estimating with varying buffer radii assesses whether spillovers bias the main estimate. When spillovers are expected but unmeasured, diagnostic tests for partial interference and design adjustments are necessary.
+
+Contamination arises when control units receive indirect treatment through competitive responses, supply-chain linkages, or word-of-mouth. Diagnostic checks include testing for outcome changes in controls coincident with treatment rollout, examining pre-post trends in donor pools for synthetic control and SDID (Chapters~\ref{ch:sc}--\ref{ch:generalized-sc}), and inspecting geographic or network proximity. When contamination is detected, donor redesign, buffer inclusion, or switching to a spillover-aware estimand (Chapter~\ref{ch:spillovers}) mitigates bias.

@@ -1,0 +1,33 @@
+\section{Unified Variance Estimation}
+\label{sec:variance-unified}
+\index{variance estimation|(}
+\index{heteroskedasticity}
+
+Variance estimation in panels with few treated units (e.g., Synthetic Control, geo-experiments) has traditionally been fragmented between regression-based (CRVE) and placebo-based methods. \citet{almeida2025estimating} unify these approaches by reframing them as different ways of averaging squared residuals $\hat{\varepsilon}_{it}^2 = (Y_{it} - \hat{Y}_{it}(0))^2$. This framework clarifies which estimator to use based on the structure of heteroskedasticity. For applications to synthetic control, see Chapter~\ref{ch:sc}; for geo-experiments in marketing, see Section~\ref{sec:geo-experiments}.
+
+\begin{definition}[Unified Variance Estimators]\label{def:unified-variance}
+For a target unit-time $(\istar, \tstar)$ and residuals $\hat{\varepsilon}_{it}$, Table~\ref{tab:variance-estimators} defines four estimators for the variance of the treatment effect $\hat{\tau}$.
+\end{definition}
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Unified variance estimators for panel causal effects}
+\label{tab:variance-estimators}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Estimator} & \textbf{Definition} & \textbf{Valid Under} \\
+\midrule
+Marginal (M) & Average of all squared residuals in control set $\mathcal{C}$ & Homoskedasticity \\
+Unit-Placebo (UP) & Average of squared residuals for control units at treated time $\tstar$ & Time-specific heteroskedasticity \\
+Time-Placebo (TP) & Average of squared residuals for treated unit $\istar$ in control times & Unit-specific heteroskedasticity \\
+Conditional (C) & Weighted average matching local volatility (weights via random forest) & Both dimensions vary \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Practitioner's Guide: Choosing a Variance Estimator]
+The choice of estimator depends on the dominant source of variation. Use the \textbf{Time-Placebo (TP)} estimator when unit heterogeneity dominates, as in geo-experiments where markets vary vastly in size. Use the \textbf{Unit-Placebo (UP)} estimator when time volatility dominates, such as in short-window event studies around volatile holidays. When both dimensions vary---for example, estimating the effect on a large market during a holiday---use the \textbf{Conditional (C)} estimator, which provides the tightest valid intervals in simulations.
+\end{tcolorbox}
+\index{variance estimation|)}

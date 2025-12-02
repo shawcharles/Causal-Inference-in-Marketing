@@ -1,0 +1,35 @@
+@startmindmap
+<style>
+mindmapDiagram {
+    BackgroundColor white
+    .root {
+        BackgroundColor #333333
+        FontColor white
+        FontStyle bold
+        FontSize 14
+    }
+    .first {
+        BackgroundColor #d62728
+        FontColor white
+        FontStyle bold
+    }
+    .second {
+        BackgroundColor white
+        FontColor #333333
+    }
+}
+</style>
+* The Evolution of Panel Data Methods
+** 2020s: ML Integration
+*** Synthetic DiD / Matrix Completion\n//Arkhangelsky et al. (2021); Athey et al. (2021)//\nApps: Platform entry, Sparse panels
+*** Double ML / High-Dim Controls\n//Chernozhukov et al. (2018); Belloni et al. (2017)//\nApps: Rich covariates, Heterogeneous effects
+** 2010s: Modern Methods & Heterogeneity
+*** Interactive Fixed Effects\n//Bai (2009); Pesaran (2006)//\nApps: Common shocks, Factor models
+*** Staggered DiD (Heterogeneity-Robust)\n//Callaway & Sant'Anna (2021); Sun & Abraham (2021)//\nApps: Loyalty programs, Staggered rollouts
+** 2000s: Design-Based Revolution
+*** Synthetic Control\n//Abadie & Gardeazabal (2003); Abadie et al. (2010)//\nApps: Market entry, Policy evaluation
+*** Difference-in-Differences\n//Bertrand et al. (2004); Card & Krueger (1994)//\nApps: Geo experiments, Rollout studies
+** 1980s-1990s: Classical Panel Methods
+*** Two-Way Fixed Effects\n//Mundlak (1978); Hausman & Taylor (1981)//\nApps: Brand effects, Store heterogeneity
+*** Random Effects / Within\n//Baltagi (1995); Wooldridge (2002)//\nApps: Marketing mix, Customer panels
+@endmindmap

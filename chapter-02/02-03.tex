@@ -1,0 +1,99 @@
+\section{Core Estimands for Panel Causality}
+\label{sec:core-estimands}
+
+What exactly do you want to know? ``The effect of the loyalty programme'' is not an answer. The effect for whom --- all stores, or only those that adopted? In which periods --- the quarter of adoption, or cumulative over two years? Aggregated how --- a single number, or a dynamic path? Until you can answer these questions precisely, no method can help you.
+
+This section defines the estimands that make these choices precise. We build on the potential outcomes framework to define average treatment effects, cohort-time effects, event-time effects, and long-run multipliers. Each estimand answers a different question, and the choice among them depends on what you need to learn.
+
+\subsection{Average Treatment Effects}
+
+The average treatment effect (ATE) is the expected difference between potential outcomes under treatment and control, averaged over all units and periods:
+\[
+\text{ATE} = \mathbb{E}\big[Y_{it}(1) - Y_{it}(0)\big].
+\]
+The ATE answers: what would be the average gain if we could treat all units in all periods, compared to treating none? In a randomised experiment where every customer receives an email promotion, the ATE tells us the average lift in purchases across all customers. But in most marketing contexts, the ATE is of limited practical interest. Firms cannot treat all units --- budgets constrain advertising reach, competitive dynamics preclude universal rollout, and regulatory considerations may limit intervention scope.
+
+The average treatment effect on the treated (ATT) focuses on units and periods that actually receive treatment:
+\[
+\text{ATT} = \mathbb{E}\big[Y_{it}(1) - Y_{it}(0) \mid W_{it} = 1\big].
+\]
+The ATT answers a different question: among units that were treated, what was the average causal effect? For the loyalty programme, the ATT tells us: among stores that adopted the programme, how much did sales increase relative to what they would have been without the programme? This ties directly to ROI calculations. If the ATT is £10,000 per store per quarter and the programme costs £3,000 per store per quarter, the programme pays for itself.
+
+\subsection{Cohort-Time Effects in Staggered Adoption}
+
+Modern staggered adoption designs motivate a further refinement. When units adopt treatment at different times $G_i \in \{1, \dots, T\}$, we define potential outcomes indexed by adoption time, $Y_{it}(a)$, denoting the outcome for unit $i$ in period $t$ if it had adopted treatment at time $a$. The realised outcome is $Y_{it} = Y_{it}(G_i)$.
+
+We define the cohort-time average treatment effect on the treated, $\tau(g, t)$, as the effect for cohort $g$ in calendar period $t$:
+\[
+\tau(g, t) = \mathbb{E}\big[Y_{it}(g) - Y_{it}(\infty) \mid G_i = g\big], \quad t \geq g.
+\]
+Here, $Y_{it}(\infty)$ represents the potential outcome had the unit never adopted treatment (or adopted at $t = \infty$). This estimand allows treatment effects to vary both by cohort (early vs late adopters) and by time (calendar shocks).
+
+Aggregating $\tau(g, t)$ produces summary measures:
+\[
+\tau^{\text{ATT}} = \sum_{g} \sum_{t \geq g} w_{gt} \, \tau(g, t),
+\]
+where weights $w_{gt}$ reflect relative sample sizes. Chapter~\ref{ch:did} discusses why traditional two-way fixed effects regressions fail to recover this convex combination when effects are heterogeneous.
+
+\subsection{Event-Time Effects and Dynamics}
+
+Event-time effects trace the dynamic evolution of the treatment response. Define event time $k = t - G_i$. Let $\theta_k$ denote the average effect $k$ periods post-treatment:
+\[
+\theta_k = \mathbb{E}\big[Y_{i, G_i + k}(G_i) - Y_{i, G_i + k}(\infty) \mid G_i < \infty\big].
+\]
+The sequence $\{\theta_k\}$ for $k \ge 0$ captures dynamic treatment effects (e.g., habit formation, wear-out). For $k < 0$, $\theta_k$ serves as a test for pre-trends or anticipation.
+
+\subsection{Assumption: No Dynamic Effects}
+
+The estimands above allow treatment effects to vary by cohort, calendar time, and event time. But they do not require that current outcomes depend on past treatments. When dynamics are not the focus, we invoke the following restriction to simplify the analysis.
+
+\begin{assumption}[No Dynamic Effects]
+The potential outcome depends only on the current treatment status:
+\[
+Y_{it}(\underline{w}^t) = Y_{it}(w_{it}).
+\]
+\end{assumption}
+
+This assumption rules out carryover and feedback. It says that a store's sales today depend only on whether the loyalty programme is active today, not on how long the store has been in the programme. While restrictive, this assumption simplifies identification arguments for designs like difference-in-differences. When dynamics are central --- as they typically are for advertising, where exposures in previous weeks contribute to current purchases --- we relax this assumption and estimate the full impulse response function (Chapter~\ref{ch:dynamics}).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{images/po_indexing.pdf}
+\caption{Potential Outcomes Indexing: Contemporaneous vs Dynamic Path. The figure contrasts contemporaneous notation $Y_{it}(w)$, which assumes treatment effects depend only on current treatment status, with path-dependent notation $Y_{it}(\underline{w}^t)$, which allows outcomes to depend on the entire treatment history. Marketing applications often require the richer path-dependent framework to capture carryover, habit formation, and strategic dynamics.}
+\label{fig:po-indexing}
+\end{figure}
+
+Long-run effects matter in marketing because interventions are often intended to have persistent impacts. A loyalty programme aims to permanently increase customer retention, not just produce a temporary sales bump. Advertising seeks to build brand equity that endures beyond the campaign period. To quantify long-run effects, we aggregate event-time effects over a horizon or estimate the cumulative effect of a treatment path.
+
+One common metric is the half-life: the event time $k^*$ at which $\theta_{k^*} = 0.5 \, \theta_0$, indicating that half of the initial effect has dissipated. A short half-life suggests the effect wears off quickly. A long half-life suggests persistence. Another metric is the long-run multiplier, which compares the cumulative effect over many periods to the immediate effect:
+\[
+\text{LRM} = \frac{\sum_{k=0}^{K} \theta_k}{\theta_0},
+\]
+where $K$ is chosen to be sufficiently long that effects have largely dissipated (often determined by examining when $\theta_k$ becomes statistically indistinguishable from zero).
+
+The LRM is well-defined when the immediate effect $\theta_0$ is non-zero. If $\text{LRM} = 1$, the effect is purely contemporaneous with no carryover. If $\text{LRM} > 1$, there is positive carryover, and the cumulative impact exceeds the immediate impact. For advertising, LRM values of 2 to 4 are common, meaning that the total sales impact over several weeks is two to four times the immediate-week impact. Chapter~\ref{ch:dynamics} develops distributed lag models, vector autoregressions, and structural dynamic panel models that estimate these long-run responses under explicit assumptions about the lag structure and equilibrium behaviour.
+
+These estimands --- ATE, ATT, cohort-time effects, event-time effects, and long-run multipliers --- provide the vocabulary for specifying what we seek to learn. But identification is not automatic. Even with panel data and staggered adoption, we must invoke assumptions that link the observed distribution of $(Y_{it}, W_{it})$ to the potential outcomes distribution. The next section addresses how we might learn these quantities: the assignment mechanisms and identification strategies that connect estimands to data.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Core Estimands and Common Aggregations}
+\label{tab:estimands}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Estimand} & \textbf{Definition} & \textbf{Interpretation} & \textbf{When Most Relevant} \\
+\midrule
+ATE & $\mathbb{E}[Y_{it}(1) - Y_{it}(0)]$ & Average effect if all units treated & Randomised experiments; strong overlap \\
+\addlinespace
+ATT & $\mathbb{E}[Y_{it}(1) - Y_{it}(0) \mid W_{it}=1]$ & Average effect on treated units & Policy evaluation; ROI calculations \\
+\addlinespace
+ATT(g,t) & $\mathbb{E}[Y_{it}(g) - Y_{it}(\infty) \mid G_i=g]$ & Effect for cohort $g$ in period $t$ & Staggered rollouts; heterogeneity \\
+\addlinespace
+$\theta_k$ (Event-time) & $\mathbb{E}[Y_{i,G_i+k}(g) - Y_{i,G_i+k}(\infty) \mid G_i=g]$ & Effect $k$ periods post-adoption & Dynamic effects; pre-trends tests \\
+\addlinespace
+Long-run multiplier & $\frac{\sum_{k=0}^K \theta_k}{\theta_0}$ & Cumulative vs immediate effect & Carryover; habit formation \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}

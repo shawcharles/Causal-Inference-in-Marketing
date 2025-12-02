@@ -1,0 +1,107 @@
+\section{Connections to SC and SDID}
+\label{sec:factor-connections}
+
+Factor models, synthetic control (SC), and synthetic difference-in-differences (SDID) are intimately related. This section maps the connections, clarifying how SC and SDID can be viewed as constrained or approximated factor models. Understanding these relationships illuminates when each approach is appropriate and how to move between them. Algorithmic details are covered in Chapter~\ref{ch:sc} (SC) and Chapter~\ref{ch:generalized-sc} (ASCM/SDID).
+
+\subsection*{Synthetic Control as Constrained Factor Model}
+
+Synthetic control (Chapter~\ref{ch:sc}) estimates unit weights $w_j$ such that the weighted control outcomes match the treated unit's pre-treatment trajectory: $\sum_{j \in \mathcal{J}} w_j Y_{jt} \approx Y_{1t}$ for $t \leq T_0$. The counterfactual for post-treatment periods is then $\hat{Y}_{1t}(0) = \sum_{j \in \mathcal{J}} w_j Y_{jt}$.
+
+If the data follow a factor model $Y_{it} = \lambda_i' f_t + \varepsilon_{it}$, SC's weighting implicitly imposes a constraint on the treated unit's loading. The SC weights satisfy:
+\[
+\sum_{j \in \mathcal{J}} w_j Y_{jt} = \sum_{j \in \mathcal{J}} w_j (\lambda_j' f_t + \varepsilon_{jt}) \approx \left( \sum_{j \in \mathcal{J}} w_j \lambda_j \right)' f_t.
+\]
+For this to approximate the treated unit's outcomes $Y_{1t} = \lambda_1' f_t + \varepsilon_{1t}$, we need:
+\[
+\lambda_1 \approx \sum_{j \in \mathcal{J}} w_j \lambda_j \quad \text{with} \quad w_j \geq 0, \; \sum_j w_j = 1.
+\]
+This means SC assumes the treated unit's loading lies within the \textbf{convex hull} of the donor loadings. Geometrically, SC interpolates among donors rather than extrapolating beyond them.
+
+The key differences between SC and unconstrained factor models are:
+
+\paragraph{Convexity.} SC restricts the treated unit's loading to a convex combination of control loadings. Factor models estimate $\lambda_1 \in \mathbb{R}^R$ freely, allowing extrapolation.
+
+\paragraph{Factor estimation.} SC does not estimate factors explicitly---it works directly with observed outcomes. Factor models estimate both loadings $\Lambda$ and factors $\mathbf{F}$ from the data.
+
+\paragraph{Regularisation.} SC's convexity constraint provides implicit regularisation, reducing variance but potentially introducing bias when the treated unit lies outside the convex hull. Factor models may require explicit regularisation (nuclear norm, ridge) to achieve similar stability.
+
+\subsection*{SDID as Weighted Factor Model}
+
+Synthetic difference-in-differences (SDID, Section~\ref{sec:hybrid-sdid}) extends SC by introducing time weights alongside unit weights. Let $w_j$ denote unit weights and $\omega_t$ denote time weights. The SDID estimator is:
+\[
+\hat{\tau}^{\text{SDID}} = \left( \bar{Y}_{\text{treated, post}} - \sum_j w_j \bar{Y}_{j, \text{post}} \right) - \sum_t \omega_t \left( \bar{Y}_{\text{treated}, t} - \sum_j w_j \bar{Y}_{jt} \right),
+\]
+where $\bar{Y}$ denotes averages over the relevant cells, and the second term uses weighted pre-treatment periods.
+
+The connection to factor models is that SDID handles heterogeneous trends through the time weights $\omega_t$. In a factor model with one factor (rank one) plus unit and time intercepts:
+\[
+Y_{it} = \alpha_i + \gamma_t + \lambda_i f_t + \varepsilon_{it},
+\]
+the difference-in-differences removes $\gamma_t$ (common time shocks), but heterogeneous loadings $\lambda_i$ on the single factor $f_t$ remain. SDID's time weights $\omega_t$ re-weight pre-treatment periods to focus on periods where the single factor is most informative for the post-treatment comparison. In this sense, SDID approximates a rank-one factor model without explicitly estimating the factor.
+
+\subsection*{Matrix Completion in the Spectrum}
+
+Matrix completion (Section~\ref{sec:factor-matrix}) provides another perspective. Viewing the outcome matrix as having missing entries (treated cells), matrix completion imputes these using nuclear-norm regularisation. The relationship to SC and factor models is:
+
+\paragraph{SC.} Equivalent to matrix completion where the imputation for treated cells is constrained to be a convex combination of control rows.
+
+\paragraph{IFE.} Equivalent to matrix completion with a hard rank constraint (keep exactly $R$ singular values).
+
+\paragraph{Nuclear norm.} Soft-thresholds singular values, automatically selecting effective rank. This provides a middle ground between SC's convexity and IFE's fixed rank.
+
+\subsection*{Hybrid Methods as Intermediate Approaches}
+
+The hybrid methods in Chapter~\ref{ch:generalized-sc} blend SC's design-based weighting with factor models' flexibility:
+
+\paragraph{ASCM.} Augmented synthetic control combines SC weights with regression adjustment. The augmentation corrects for residual loadings not captured by the convex-hull constraint, approximating a factor model where the treated unit's loading is near but not within the donor hull (Section~\ref{sec:hybrid-ascm}).
+
+\paragraph{Ridge SC.} Ridge regularisation shrinks SC weights toward uniform, approximating a lower-rank matrix by smoothing across donors (Section~\ref{sec:hybrid-ridge}).
+
+\paragraph{SDID.} Time weights reweight pre-treatment periods, approximating a rank-one factor adjustment (Section~\ref{sec:hybrid-sdid}).
+
+These methods lie on a spectrum from pure weighting (SC) to pure imputation (IFE/MC), with the optimal choice depending on the plausibility of convexity, low-rank structure, and parallel trends.
+
+\subsection*{Comparison Table}
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Comparison of SC, SDID, IFE, and Matrix Completion}
+\label{tab:factor-connections}
+\begin{tabularx}{\textwidth}{Y Y Y Y Y}
+\toprule
+\textbf{Method} & \textbf{Convexity} & \textbf{Rank} & \textbf{Time Weights} & \textbf{Key Tuning} \\
+\midrule
+SC (Ch~\ref{ch:sc}) & Required & Implicit & No & Predictor set \\
+\addlinespace
+SDID (Ch~\ref{ch:generalized-sc}) & Required & Approx.\ rank-1 & Yes ($\omega_t$) & Regularisation \\
+\addlinespace
+IFE (Sec~\ref{sec:factor-ife}) & None & Explicit $R$ & No & Rank $R$ \\
+\addlinespace
+Matrix Completion (Sec~\ref{sec:factor-matrix}) & None & Soft (via $\lambda$) & No & $\lambda$ (nuclear norm) \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{When to Prefer Each Approach}
+
+The choice among these methods depends on the data structure and the plausibility of identifying assumptions:
+
+\paragraph{SC.} Prefer when the treated unit is similar to controls (within the convex hull), good pre-treatment fit is achievable, and you want transparency and robustness over flexibility.
+
+\paragraph{SDID.} Prefer when parallel trends holds after reweighting, the factor structure is weak or uncertain, or you want robustness without specifying rank.
+
+\paragraph{IFE.} Prefer when the factor structure is strong, the rank is well-determined by diagnostics, and you want efficient estimates with interpretable loadings and factors.
+
+\paragraph{Matrix completion.} Prefer when the rank is uncertain, you want automatic rank selection, or the missingness pattern is complex (e.g., staggered adoption with many cohorts).
+
+\paragraph{Hybrids.} Prefer ASCM when the treated unit is near but not within the convex hull; Ridge SC when weight stability is paramount; SDID when differential trends are suspected.
+
+\subsection*{Post-Imputation Aggregation}
+
+After imputing counterfactuals using factor models or matrix completion, treatment effects are aggregated following the procedures in Chapters~\ref{ch:did} and~\ref{ch:event}. Compute the gap (observed minus imputed) for each treated unit-period pair:
+\[
+\hat{\tau}_{it} = Y_{it} - \hat{Y}_{it}(0).
+\]
+For staggered adoption, aggregate gaps into cohort-time effects $\widehat{\text{ATT}}(g, t)$ by averaging within cohorts and periods. Then aggregate into event-time effects $\hat{\tau}_k$ for event time $k = t - g$. This aligns factor-imputed counterfactuals with the modern difference-in-differences literature and enables transparent visualisation of dynamic treatment effects through event-study plots.

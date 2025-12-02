@@ -1,0 +1,91 @@
+\section{Marketing Applications}
+\label{sec:factor-marketing}
+
+Factor models and matrix completion are particularly well-suited to marketing applications where outcomes exhibit strong common patterns (seasonality, macro shocks, category trends) and where units differ in their exposure to these patterns. This section illustrates factor model designs in three common marketing settings, demonstrating how the methods developed in this chapter apply in practice.
+
+\subsection*{Application 1: Retail Category Demand with Shared Seasonality}
+
+Consider a stylised example of a retailer operating 80 stores across eight regions, observing weekly sales of a product category (e.g., beverages) over four years (208 weeks). Sales exhibit strong weekly seasonality (high on weekends, low on weekdays), annual seasonality (high in summer, low in winter), and holiday spikes (Christmas, New Year, Independence Day). The retailer implements a promotional strategy in 20 stores starting in week 105, and the goal is to estimate the effect on category sales.
+
+\paragraph{Estimation.} The factor model is estimated using weeks 1 through 104 (pre-treatment) for all 80 stores. After two-way demeaning (subtracting store means and week means, Section~\ref{sec:factor-ife}), principal components are applied to the residual matrix. The scree plot shows five eigenvalues substantially larger than the rest, suggesting rank $R = 5$. The factors admit natural interpretations:
+\begin{enumerate}
+\item Weekend vs weekday variation
+\item Summer vs winter seasonality
+\item Holiday spikes
+\item Macro trend (category growth)
+\item Regional variation
+\end{enumerate}
+Loadings for treated stores are estimated from their pre-treatment outcomes; factors for post-treatment weeks are estimated from control stores' post-treatment outcomes.
+
+\paragraph{Treatment effects.} The imputed counterfactuals for treated stores in post-treatment weeks are $\hat{Y}_{it}^{\text{IFE}}(0) = \hat{\lambda}_i' \hat{f}_t$, and treatment effects are the observed minus imputed gaps. The analysis reveals that the promotional strategy increases category sales by 8 per cent on average over the 104 post-treatment weeks, with effects ramping up over the first 12 weeks and stabilising thereafter.
+
+\paragraph{Diagnostics.} Following the checklist in Section~\ref{sec:factor-diagnostics}: pre-treatment $R^2 = 0.85$, indicating that factors explain 85 per cent of variation; factor stability correlations above 0.9 (early vs late pre-treatment); residuals exhibit no autocorrelation or seasonality. Sensitivity to rank shows estimates stable for $R \in \{4, 5, 6\}$. Inference uses block bootstrap with 4-week blocks (Section~\ref{sec:factor-inference}).
+
+\paragraph{Why factor models.} The factor model accommodates the complex seasonal structure without requiring 52 week-of-year dummies. It produces counterfactuals that track treated stores' pre-treatment trajectories closely because the loadings capture store-specific seasonality intensities.
+
+\subsection*{Application 2: National Campaign with Heterogeneous Market Response}
+
+Consider a consumer packaged goods brand launching a national television advertising campaign that airs in all 50 DMAs simultaneously, with advertising intensity varying by market (high GRPs in large markets, low GRPs in small markets). The goal is to estimate heterogeneous effects across markets.
+
+\paragraph{Estimation.} The factor model is estimated using 24 pre-campaign months for all 50 markets. Five factors are extracted, capturing seasonality, macro trends, and regional variation. Loadings vary across markets, reflecting differences in demographics, competitive intensity, and baseline sales. The campaign begins in month 25, with 12 months of post-campaign data.
+
+\paragraph{Treatment effects.} Counterfactuals for each market are computed using estimated loadings and post-campaign factors (estimated from the full panel, since all markets are treated). Effects are heterogeneous: large markets exhibit 10-15 per cent sales increases; small markets exhibit 3-5 per cent increases. The heterogeneity aligns with advertising intensity: markets with high GRPs exhibit larger effects. The factor model captures heterogeneous loadings naturally, producing market-specific counterfactuals that reflect each market's baseline sensitivity to common shocks.
+
+\paragraph{Diagnostics.} Compare factor-imputed counterfactuals to synthetic control counterfactuals for a subset of markets (Section~\ref{sec:factor-connections}). The two methods produce similar estimates for markets with good SC matches. For markets without good matches (outliers in the loading space), the factor model produces more credible counterfactuals because it does not impose convexity. Sensitivity to rank shows estimates stable for $R \in \{4, 5, 6\}$.
+
+\paragraph{Why factor models.} When treatment intensity varies continuously (GRPs) and all units are treated, factor models estimate market-specific loadings that capture heterogeneous exposure. Synthetic control cannot be applied because there are no never-treated controls, but factor models can still construct counterfactuals by leveraging the factor structure.
+
+\subsection*{Application 3: Platform Policy Change Without Controls}
+
+Consider a digital platform implementing a policy change (e.g., a fee increase or feature addition) affecting all users starting in month 13. The platform has 100,000 users. No users are exempt, so synthetic control cannot be applied, and there are no never-treated controls to estimate post-treatment factors.
+
+\paragraph{Estimation.} The factor model is estimated using months 1-12 (pre-treatment) for all users. To reduce computational cost, users are aggregated into 100 cohorts based on sign-up date and engagement level. Five factors are extracted: time-of-day patterns, day-of-week patterns, seasonal variation, platform-wide trends, and cohort-specific variation. Loadings vary across cohorts.
+
+\paragraph{Factor extrapolation.} Because there are no controls, post-treatment factors cannot be estimated from control outcomes. Instead, they are \emph{extrapolated} from the pre-treatment factor trajectory:
+\begin{itemize}
+\item Seasonal factors: extrapolate assuming the same monthly cycle
+\item Trend factors: extrapolate linearly or with a fitted growth curve
+\item Cohort factors: assume stable post-treatment
+\end{itemize}
+This extrapolation introduces additional uncertainty and requires the \textbf{strong assumption} that factor dynamics are stable across the treatment date.
+
+\paragraph{Caution.} This design is weaker than the previous two. Without never-treated controls, there is no way to validate post-treatment factor estimates. If the platform-wide trend changes at the policy date (e.g., due to concurrent market shocks), the extrapolated factors are biased, and the treatment effect estimates inherit this bias. Sensitivity analyses should vary extrapolation assumptions (linear trend, flat, seasonal) and report the range of estimates. Placebo-in-time tests are critical: treat month 7 as a pseudo-intervention and check that the model imputes months 8-12 accurately.
+
+\paragraph{Treatment effects.} Counterfactuals are $\hat{Y}_{it}^{\text{IFE}}(0) = \hat{\lambda}_i' \hat{f}_t$ with extrapolated factors. Treatment effects are aggregated across cohorts weighted by cohort size. The analysis reveals that the policy decreases engagement by 5 per cent on average, with heterogeneity: new users decrease more than tenured users.
+
+\paragraph{Why factor models.} When no controls exist, factor models with extrapolation are one of the few options for counterfactual construction. The design requires strong assumptions and extensive sensitivity analysis, but it can provide useful evidence when combined with placebo tests and robustness checks.
+
+\subsection*{Summary and Comparison}
+
+Table~\ref{tab:factor-applications} summarises the three applications.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Factor Model Applications in Marketing}
+\label{tab:factor-applications}
+\begin{tabularx}{\textwidth}{Y Y Y Y Y Y}
+\toprule
+\textbf{Application} & \textbf{N} & \textbf{T} & \textbf{Controls} & \textbf{Rank} & \textbf{Key Finding} \\
+\midrule
+Retail promotion & 80 stores & 208 weeks & 60 never-treated & $R = 5$ & 8\% sales increase \\
+\addlinespace
+National campaign & 50 DMAs & 36 months & None (all treated) & $R = 5$ & 3-15\% heterogeneous \\
+\addlinespace
+Platform policy & 100 cohorts & 24 months & None (extrapolation) & $R = 5$ & 5\% engagement decrease \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{Choosing the Right Design}
+
+The three applications illustrate a hierarchy of designs, ordered by credibility:
+
+\paragraph{1. Never-treated controls available (Application 1).} This is the strongest design. Post-treatment factors are estimated from control outcomes, not extrapolated. The stability assumption can be assessed by examining control post-treatment residuals. Choose this design when some units are not treated and are comparable to treated units.
+
+\paragraph{2. All units treated but factor structure stable (Application 2).} When all units are treated, factors cannot be estimated from never-treated controls. However, if the factor structure is stable and the treatment effect is separable from the factor dynamics, credible counterfactuals can still be constructed. Choose this design when treatment timing is uniform but loadings vary across units.
+
+\paragraph{3. No controls and factor extrapolation required (Application 3).} This is the weakest design. Post-treatment factors are extrapolated, not estimated. The stability assumption is untestable in the post-treatment period. Choose this design only when no other option exists, and combine with extensive sensitivity analysis and placebo tests.
+
+In all cases, the diagnostic workflow (Section~\ref{sec:factor-diagnostics}), tuning choices (Section~\ref{sec:factor-tuning}), and inference procedures (Section~\ref{sec:factor-inference}) apply. Transparent reporting of diagnostics and sensitivity analyses enables readers to assess the credibility of the causal conclusions.

@@ -1,0 +1,80 @@
+\section{Marketing Causal Problems Taxonomy}
+\label{sec:taxonomy}
+
+Marketing questions often masquerade as simple prediction problems, yet they fundamentally demand counterfactual reasoning. To select the correct method, we must first classify the problem along two dimensions: the \emph{identification threat} that prevents naive estimation from recovering causal effects, and the \emph{temporal structure} that determines how effects unfold over time.
+
+\subsection*{Dimension 1: Identification Threats}
+
+The first dimension classifies problems by the primary obstacle to causal identification.
+
+\paragraph{Confounding (Selection).} These problems arise when the treatment is voluntary or targeted. Customer targeting, loyalty programme enrolment, and ad exposure all fall into this category. The core threat is that treated units differ systematically from untreated units in their potential outcomes. High-value customers select into loyalty programmes, and algorithms target ads to users with high conversion probability. The identification strategy must sever the link between potential outcomes and treatment assignment, typically via difference-in-differences, regression discontinuity, or propensity score methods. Applications include loyalty programmes (Section~\ref{sec:loyalty-valuation}), CLV attribution (Section~\ref{sec:clv-acquisition}), and digital attribution (Section~\ref{sec:digital-attribution}).
+
+\paragraph{Endogeneity (Simultaneity).} These problems occur when treatment and outcome are determined jointly in equilibrium. Pricing and budget allocation are the canonical examples. Prices are set based on expected demand, and budgets are allocated based on expected performance. A naive regression of sales on price or spend yields biased estimates because the error term (demand shocks) correlates with the regressor. Identification requires exogenous variation, such as instrumental variables, experimental calibration, or algorithmic discontinuities. Applications include price elasticity (Section~\ref{sec:price-elasticity}), dynamic pricing (Section~\ref{sec:dynamic-pricing}), and media mix modelling (Section~\ref{sec:mmm}).
+
+\paragraph{Interference.} In platform markets, social networks, and dense geographic clusters, the Stable Unit Treatment Value Assumption (SUTVA) fails. Treating one unit affects the outcomes of others. A driver incentive in a ride-share network affects the supply equilibrium for all drivers. A ranking change for one product affects the visibility of its neighbours. Here, the experimental design itself must change to capture spillovers, utilising techniques like switchback experiments or graph cluster randomisation. Applications include platform experiments (Section~\ref{sec:platform-experiments}), ranking algorithms (Section~\ref{sec:ranking-algorithms}), and seller interventions (Section~\ref{sec:seller-interventions}).
+
+\subsection*{Dimension 2: Temporal Structure}
+
+The second dimension distinguishes static from dynamic treatment effects.
+
+\paragraph{Static Effects.} In static settings, the outcome $Y_{it}(w_t)$ depends only on the contemporaneous treatment $w_t$. A one-shot price promotion affects sales in the promotion period; once the promotion ends, its effect ceases. Standard cross-sectional or panel estimators apply directly.
+
+\paragraph{Dynamic Effects.} In dynamic settings, the outcome $Y_{it}(\mathbf{w}^t)$ depends on the entire treatment history $\mathbf{w}^t = (w_1, \ldots, w_t)$. Advertising builds brand equity stocks that decay slowly. Customer acquisition creates a stream of future value (CLV). Habit formation means past purchases raise future purchase probability. The challenge lies in estimating the full impulse response function rather than just the contemporaneous effect. Distributed lag models, adstock transformations, and state-space estimators are essential for this domain.
+
+\begin{remark}[Orthogonality of Identification and Dynamics]\label{rem:orthogonality}
+The identification threats (confounding, endogeneity, interference) and the temporal structure (static, dynamic) are orthogonal dimensions. A media mix model exhibits both endogeneity (budgets respond to anticipated sales) and dynamics (advertising has carryover effects). A loyalty programme study faces confounding (high-value customers self-select) and may involve dynamics (habit formation persists after enrolment). The identification strategy must address the threat; the estimator must accommodate the temporal structure. Conflating these dimensions leads to mismatched methods: using a static DiD when effects carry over, or ignoring endogeneity because the model includes lags.
+\end{remark}
+
+\subsection*{Data Environments}
+
+The choice of estimator depends as much on the data structure as on the causal question. Table~\ref{tab:data-environments} summarises four common marketing data environments, their characteristics, and the methods best suited to each.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Data environments and applicable methods}
+\label{tab:data-environments}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Environment} & \textbf{Characteristics} & \textbf{Primary Methods} \\
+\midrule
+Geo-panels (DMAs, stores, cities) & Stable units, small $N$, moderate $T$ & SC, SDID, geo-experiment DiD \\
+Customer panels & Granular, attrition risk, unobserved heterogeneity & Staggered DiD, PSM, DR \\
+Platform logs & Massive scale, network interactions & Switchback, cluster RCT \\
+Time-series aggregates & No cross-sectional variation, small $T$ & MMM, Bayesian calibration \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{Taxonomy Summary}
+
+Table~\ref{tab:taxonomy-methods} maps the two-dimensional taxonomy to primary methods and chapter sections. Each cell represents a combination of identification threat and temporal structure; note that many applications span multiple cells.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Two-dimensional marketing problem taxonomy}
+\label{tab:taxonomy-methods}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Identification Threat} & \textbf{Definition} & \textbf{Primary Methods} & \textbf{Key Sections} \\
+\midrule
+Confounding & Treated units differ systematically & DiD, SC, RDD, PSM, DR & \ref{sec:loyalty-valuation}, \ref{sec:clv-acquisition}, \ref{sec:digital-attribution} \\
+Endogeneity & Treatment responds to anticipated outcome & IV, Calibration, Algorithmic RDD & \ref{sec:price-elasticity}, \ref{sec:dynamic-pricing}, \ref{sec:mmm} \\
+Interference & SUTVA violation; units affect each other & Switchback, Cluster RCT, GATE & \ref{sec:platform-experiments}, \ref{sec:ranking-algorithms}, \ref{sec:seller-interventions} \\
+\midrule
+\textbf{Temporal Structure} & \textbf{Definition} & \textbf{Modelling Approach} & \textbf{Key Sections} \\
+\midrule
+Static & $Y_{it}(w_t)$: contemporaneous effects & Standard panel estimators & All sections \\
+Dynamic & $Y_{it}(\mathbf{w}^t)$: path-dependent effects & Adstock, distributed lags, state-space & \ref{sec:mmm}, \ref{sec:geo-experiments}, \ref{sec:paywall-effects} \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\begin{remark}[Instrumental Variables in Marketing]\label{rem:iv-scope}
+Instrumental variables appear in Table~\ref{tab:taxonomy-methods} as a method for endogeneity but receive limited treatment in this book. Valid instruments---variables that affect treatment but influence outcomes only through treatment---are rare in marketing. Political advertising pre-emptions, weather shocks affecting outdoor activities, and supply-side cost shifters occasionally serve, but the exclusion restriction is difficult to defend for most marketing interventions. This book emphasises panel methods (DiD, synthetic control, factor models) that exploit longitudinal structure rather than instrumental variation. Readers seeking comprehensive IV coverage should consult \citet{angrist2009mostly} for foundations and \citet{andrews2019weak} for weak instrument diagnostics.\index{instrumental variables}
+\end{remark}
+
+The remainder of this chapter applies this taxonomy to specific marketing domains, providing formal estimands, identification assumptions, and diagnostic protocols for each.

@@ -1,0 +1,22 @@
+\section{Spillovers and SUTVA Violations}
+\label{sec:spillovers-sutva}
+
+Cross-unit effects, or spillovers, violate the stable unit treatment value assumption (SUTVA), leading to spillover bias ($B_{\text{spill}}$).
+
+\begin{definition}[Spillover Bias]\label{def:spillover-bias}
+Under SUTVA, $Y_{it}(W_i, W_{-i}) = Y_{it}(W_i)$ for all treatment vectors $W_{-i}$ of other units. When SUTVA fails, the naive ATT estimator is biased:
+\[
+\hat{\tau}^{\text{naive}} \xrightarrow{p} \underbrace{\tau_{\text{own}}}_{\text{own effect}} + \underbrace{\tau_{\text{spill}}}_{\text{spillover}},
+\]
+where $\tau_{\text{own}} = \mathbb{E}[Y_{it}(1, W_{-i}) - Y_{it}(0, W_{-i}) | W_i = 1]$ is the direct effect and $\tau_{\text{spill}}$ captures spillovers. Without modelling spillovers, $\tau_{\text{own}}$ and $\tau_{\text{spill}}$ are not separately identified.
+\end{definition}
+
+\begin{proposition}[Spillover Bounds]\label{prop:spillover-bounds}
+Suppose spillovers are bounded: $|Y_{it}(w, W_{-i}) - Y_{it}(w, W'_{-i})| \leq \bar{s}$ for all treatment configurations. The own effect satisfies:
+\[
+\hat{\tau}^{\text{naive}} - \bar{s} \leq \tau_{\text{own}} \leq \hat{\tau}^{\text{naive}} + \bar{s}.
+\]
+The bound $\bar{s}$ can be calibrated from spatial decay of effects (e.g., effects decay with distance) or from designs with buffer zones.
+\end{proposition}
+
+The spillover framework in Chapter~\ref{ch:spillovers} provides exposure mappings that model neighbours' treatments and diagnostic checks for partial interference. Clustered designs with buffers or exclusion zones physically separate treated and control units to reduce contamination.

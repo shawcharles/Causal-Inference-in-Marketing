@@ -1,0 +1,70 @@
+\section{Privacy-Preserving Measurement and Data Clean Rooms}
+\label{sec:privacy-measurement}
+
+Privacy regulations have not merely constrained how we analyse data—they have eliminated data that once existed. Apple's App Tracking Transparency reduced cross-app tracking consent to roughly 25\%. Third-party cookies are disappearing from major browsers. GDPR and CCPA impose consent requirements that shrink samples and introduce selection. Chapter~\ref{ch:data-measurement} discussed these constraints from a data-engineering perspective. Here we focus on the open problems they create for causal inference.
+
+\subsection*{The Post-Privacy Measurement Landscape}
+
+For many practitioners, the binding constraint is not how to analyse data across silos; it is that the data no longer exist.
+
+Before ATT, a mobile advertiser could track users across apps, link ad exposure to conversions, and estimate user-level treatment effects. After ATT, this linkage is available only for the minority who opt in. The opted-in population differs systematically from the opted-out population, and estimates from the consented sample may not generalise.
+
+Before cookie deprecation, advertisers could track users across websites, build cross-site conversion paths, and attribute sales to touchpoints. Without cookies, this tracking disappears for users who do not log in. First-party data become the only reliable source, but they capture only part of the customer journey.
+
+The methodological response cannot be to develop fancier estimators for data we do not have. Instead, we must identify what can be learned from the data that remain and be explicit about what cannot.
+
+\subsection*{Data Clean Rooms in Practice}
+
+Data clean rooms have emerged as a primary tool for privacy-preserving measurement. Platforms including Google Ads Data Hub, Amazon Marketing Cloud, and Meta Advanced Analytics allow advertisers to run queries on joined first-party and platform data without exporting user-level records.
+
+Clean rooms enable aggregate queries. An advertiser can ask: "What was the conversion rate among users who saw my ad versus those who did not?" The platform returns aggregate statistics—counts, means, sometimes regression coefficients—without revealing which users converted.
+
+This architecture constrains analysis. User-level diagnostics are impossible. Propensity-score distributions cannot be inspected. Balance tables cannot be constructed at the individual level. The researcher must trust that the platform's aggregation is correct and that the query returns what was requested.
+
+Clean rooms also impose minimum cell sizes. To prevent re-identification, platforms suppress results when cell counts fall below thresholds (often 50 or 100 users). This creates a bias–variance trade-off: finer cuts provide more relevant estimates but risk suppression; coarser cuts survive suppression but average over heterogeneity.
+
+The causal implications are underexplored. Can we run difference-in-differences in a clean room when we cannot inspect pre-trends at the user level? Can we construct synthetic controls when donor weights must be computed inside the platform? Can we assess overlap when propensity scores are not exportable? These questions lack established answers.
+
+\subsection*{What Aggregated Data Can and Cannot Identify}
+
+Aggregation changes what is identified. Some estimands survive aggregation; others do not.
+
+Group-level treatment effects can be estimated from aggregated data if treatment varies at the group level. Geo-experiments, where treatment is assigned to DMAs or cities, require only aggregate outcomes by geography. The unit of analysis matches the unit of aggregation, and no user-level data are needed.
+
+User-level treatment effects cannot be recovered from aggregated data without strong assumptions. If we observe only group means, we cannot distinguish a treatment that helps everyone a little from one that helps a few people a lot. Heterogeneity is hidden.
+
+Selection bias is harder to diagnose. With user-level data, we can compare treated and control units on observables and assess balance. With aggregated data, we see only group-level summaries. Imbalance within groups is invisible.
+
+Attrition and missing data are obscured. Aggregated counts do not reveal whether missingness is random or systematic. The analyst must trust that the platform's data pipeline handles missing values correctly.
+
+The implication is that privacy-preserving measurement pushes us toward designs where treatment varies at aggregate levels—geo-experiments, market-level rollouts, time-based switchbacks—using the tools from Chapters~\ref{ch:applications} and~\ref{ch:design-diagnostics}. User-level quasi-experiments become infeasible when user-level data are unavailable.
+
+\subsection*{Differential Privacy: Accuracy Trade-Offs}
+
+Differential privacy (DP) adds calibrated noise to query outputs, providing formal guarantees that individual records cannot be inferred from released statistics. Platforms increasingly apply DP to clean-room outputs.
+
+The privacy–accuracy trade-off is well understood in theory. Stronger privacy (smaller $\epsilon$) requires more noise, which inflates variance. For a given privacy budget, more queries mean more noise per query. The total information extractable from the data is bounded.
+
+In practice, the implications for causal inference are less clear. DP noise is typically calibrated for simple statistics—counts, means, histograms. Regression coefficients, treatment effects, and standard errors inherit this noise in complex ways. The effective sample size after DP adjustment may be much smaller than the nominal sample size.
+
+Bias can arise when noise interacts with nonlinearities. Ratios, logs, and other transformations of noisy statistics are biased. Confidence intervals constructed from noisy point estimates may have incorrect coverage.
+
+Honest reporting requires acknowledging these effects. When estimates come from DP-protected queries, reported uncertainty should reflect both sampling variance and privacy noise. Current practice rarely does this.
+
+\subsection*{Open Problems}
+
+Several problems remain unresolved. How do we conduct design diagnostics—pre-trend tests, balance checks, overlap assessment—when user-level data are inaccessible? Can we develop aggregate-level diagnostics that provide similar assurance?
+
+How do we construct valid confidence intervals when estimates are subject to both sampling error and differential privacy noise? What is the effective sample size after DP adjustment?
+
+How do we reconcile estimates across platforms when each platform's clean room provides different aggregations and applies different privacy protections? Can we combine estimates from Google, Meta, and Amazon into a coherent picture?
+
+How do we audit clean-room analyses for reproducibility when the underlying data cannot be exported and the platform's code cannot be inspected?
+
+These are not theoretical concerns. They are practical obstacles that practitioners face today. The methods developed in this book generally assume access to unit-level data. Adapting them to the privacy-constrained environment requires new theory and new tools.
+
+\subsection*{Research Directions}
+
+Progress requires engagement with the privacy-preserving computation community. We need causal inference methods designed for aggregated data, not adapted post hoc. We need diagnostics that work at the group level. We need inference procedures that account explicitly for DP noise. We need audit protocols for clean-room analyses.
+
+Until these tools exist, practitioners should favour designs where treatment varies at aggregate levels, acknowledge the limitations of clean-room analyses, and resist the temptation to report user-level estimates when user-level data are unavailable. Honesty about what we can and cannot learn is more valuable than false precision.

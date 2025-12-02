@@ -1,0 +1,125 @@
+\section{Exposure Mappings and Potential Outcomes Under Interference}
+\label{sec:exposure-mappings}
+
+Exposure mappings formalise how treatment of one unit affects outcomes of others. Rather than assuming potential outcomes depend only on own treatment (SUTVA), we allow potential outcomes to depend on the treatment vector via a summary statistic. For the taxonomy of spillover types, see Section~\ref{sec:spillover-types}. For partial interference assumptions, see Section~\ref{sec:partial-interference}.
+
+\subsection*{Exposure Mapping Framework}
+
+\begin{definition}[Exposure Mapping]\label{def:exposure-mapping}
+An exposure mapping is a function $f: \{0,1\}^N \times \mathcal{I} \to \mathcal{E}$ that summarises the treatment vector $\mathbf{w}$ into a lower-dimensional exposure $E_i = f(\mathbf{w}, i)$ for each unit $i$, where $\mathcal{E} \subseteq \mathbb{R}^d$ with $d \ll N$. The exposure mapping induces a partition of treatment vectors: $\mathbf{w} \sim_i \mathbf{w}'$ if and only if $f(\mathbf{w}, i) = f(\mathbf{w}', i)$.
+\end{definition}
+
+\begin{assumption}[Exposure Mapping Sufficiency]\label{ass:exposure-sufficiency}
+The exposure mapping $f$ is sufficient for potential outcomes if:
+\[
+Y_{it}(\mathbf{w}) = Y_{it}(\mathbf{w}') \quad \text{whenever } w_i = w'_i \text{ and } f(\mathbf{w}, i) = f(\mathbf{w}', i).
+\]
+Under this assumption, potential outcomes depend on the treatment vector only through own treatment $w_i$ and exposure $E_i = f(\mathbf{w}, i)$:
+\[
+Y_{it}(\mathbf{w}) = Y_{it}(w_i, E_i).
+\]
+This reduces potential outcomes from $2^N$ to $2 \times |\mathcal{E}|$.
+\end{assumption}
+
+\subsection*{Parametric Exposure Mappings}
+
+Table~\ref{tab:exposure-mappings} summarises common parametric exposure mappings.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Common Exposure Mappings}
+\label{tab:exposure-mappings}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Type} & \textbf{Formula} & \textbf{Interpretation} \\
+\midrule
+Geographic & $E_{it}^{\text{geo}} = \sum_{j \neq i} W_{jt} \cdot h(d_{ij})$ & Distance-weighted treatment of neighbours \\
+\addlinespace
+Network (count) & $E_{it}^{\text{net}} = \sum_{j \in \mathcal{N}_i} W_{jt}$ & Number of treated network neighbours \\
+\addlinespace
+Network (fraction) & $E_{it}^{\text{net}} = \frac{1}{|\mathcal{N}_i|} \sum_{j \in \mathcal{N}_i} W_{jt}$ & Fraction of treated neighbours \\
+\addlinespace
+Competitive & $E_{it}^{\text{comp}} = \sum_{j \neq i} \rho_{ij} W_{jt}$ & Similarity-weighted competitor treatment \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\paragraph{Distance decay functions.} For geographic exposure, common kernels include inverse distance $h(d) = d^{-1}$, inverse squared $h(d) = d^{-2}$, and exponential $h(d) = \exp(-\lambda d)$.
+
+\paragraph{Network normalisation.} Count exposure captures absolute spillovers; fraction exposure captures relative spillovers (normalised by degree).
+
+\paragraph{Competitive weights.} Common choices for competitive weights include market share $s_j$, product similarity $\rho_{ij}$, or geographic proximity.
+
+\subsection*{Regularity Conditions}
+
+\begin{assumption}[Exposure Regularity Conditions]\label{ass:exposure-regularity}
+The exposure mapping $f$ satisfies:
+\begin{enumerate}[(i)]
+    \item \textbf{Boundedness:} $\sup_{\mathbf{w}, i} |f(\mathbf{w}, i)| < \infty$;
+    \item \textbf{Locality:} There exists $\bar{s} < \infty$ such that $|\mathcal{S}_i| \leq \bar{s}$ for all $i$, where $\mathcal{S}_i = \{j : f(\mathbf{w}, i) \neq f(\mathbf{w}', i) \text{ for some } \mathbf{w}, \mathbf{w}' \text{ differing only in } w_j\}$;
+    \item \textbf{Lipschitz:} If exposure depends on covariates $X_i$, then $|f(\mathbf{w}, i) - f(\mathbf{w}, i')| \leq L \|X_i - X_{i'}\|$ for some $L < \infty$.
+\end{enumerate}
+\end{assumption}
+
+\subsection*{Treatment Effects Under Interference}
+
+With exposure mappings, potential outcomes are $Y_{it}(w, e)$, where $w \in \{0, 1\}$ is own treatment and $e$ is exposure. The observed outcome is $Y_{it} = Y_{it}(W_{it}, E_{it})$.
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Treatment Effects Under Interference]
+\textbf{Direct effect} (own treatment, holding exposure constant):
+\[
+\tau^{\text{direct}}(e) = \mathbb{E}[Y_{it}(1, e) - Y_{it}(0, e)].
+\]
+
+\textbf{Spillover effect} (exposure change, holding own treatment constant):
+\[
+\tau^{\text{spillover}}(w, e, e') = \mathbb{E}[Y_{it}(w, e') - Y_{it}(w, e)].
+\]
+
+\textbf{Total effect} (own treatment and exposure change):
+\[
+\tau^{\text{total}}(e, e') = \mathbb{E}[Y_{it}(1, e') - Y_{it}(0, e)].
+\]
+
+\textbf{Decomposition:}
+\[
+\tau^{\text{total}}(e, e') = \underbrace{\tau^{\text{direct}}(e)}_{\text{direct}} + \underbrace{\mathbb{E}[Y_{it}(1, e') - Y_{it}(1, e)]}_{\text{spillover for treated}}.
+\]
+\end{tcolorbox}
+
+\paragraph{Interpretation.} The direct effect may vary with exposure $e$ if there are interactions between own treatment and spillovers. The spillover effect may differ for treated ($w = 1$) and untreated ($w = 0$) units.
+
+\subsection*{Identification Strategies}
+
+Identifying direct and spillover effects requires variation in both own treatment and exposure.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Identification Strategies for Spillover Effects}
+\label{tab:spillover-identification}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Strategy} & \textbf{Mechanism} & \textbf{Identifies} \\
+\midrule
+Individual randomisation & Random $W_i$; limited exposure variation & Direct effect only \\
+\addlinespace
+Cluster randomisation & All units in cluster treated/untreated & Total effect; direct vs spillover with saturation designs \\
+\addlinespace
+Saturation design & Varying treatment intensity across clusters & Direct + spillover effects \\
+\addlinespace
+Observational with exogenous exposure & Control for unit characteristics; exploit exposure variation & Spillover effects (conditional on observables) \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\paragraph{Individual randomisation limitation.} If treatment is i.i.d. across units, exposure $E_{it}$ has limited variation (approximately constant for all units). Direct effects are identified but spillover effects are not.
+
+\paragraph{Cluster randomisation.} Randomise treatment at cluster level. Within treated clusters, all units are treated (high exposure). Within control clusters, no units are treated (zero exposure). Comparison across clusters identifies total effect.
+
+\paragraph{Saturation designs.} Assign varying treatment intensities to different clusters (e.g., 25\%, 50\%, 75\% treated). Variation in exposure across clusters identifies spillover effects. See Section~\ref{sec:partial-interference} for the formal framework.
+
+\paragraph{Observational designs.} Treatment assigned based on unit characteristics; exposure varies due to geographic or network structure. Control for unit characteristics (fixed effects, matching). Residual exposure variation identifies spillover effects under conditional exogeneity.

@@ -1,0 +1,114 @@
+% TikZ Timeline - The Evolution of Panel Data Methods
+% Compile: pdflatex timeline_tikz.tex
+
+\documentclass[tikz,border=15pt]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{positioning,shapes.geometric,arrows.meta,calc,backgrounds}
+
+\begin{document}
+
+\begin{tikzpicture}[
+    % Styles
+    era/.style={
+        rectangle, rounded corners=5pt, 
+        minimum width=12cm, minimum height=1.2cm,
+        font=\bfseries\large, text=white,
+        drop shadow={shadow xshift=1pt, shadow yshift=-1pt}
+    },
+    method/.style={
+        rectangle, rounded corners=3pt,
+        minimum width=5.5cm, minimum height=2.8cm,
+        draw=#1!60, fill=white, line width=1pt,
+        font=\small, align=center, text=black
+    },
+    methodtitle/.style={font=\bfseries\small, text=#1},
+    citation/.style={font=\itshape\scriptsize, text=black!70},
+    apps/.style={font=\scriptsize, text=black!60},
+    timeline/.style={line width=3pt, color=black!30},
+    arrow/.style={-{Stealth[length=8pt]}, line width=1.5pt, color=black!40},
+    transition/.style={font=\itshape\small, text=black!50},
+]
+
+% Timeline spine
+\draw[timeline] (0, 0) -- (0, -28);
+
+% === 1980s-1990s ===
+\node[era, fill={rgb,255:red,214;green,39;blue,40}] (era1) at (0, 0) {1980s--1990s: Classical Panel Methods};
+
+\node[method={rgb,255:red,214;green,39;blue,40}, anchor=north] (twfe) at (-3.5, -1.5) {
+    \textbf{Two-Way Fixed Effects}\\[4pt]
+    \textit{\scriptsize Mundlak (1978); Hausman \& Taylor (1981)}\\[4pt]
+    {\scriptsize\color{black!60} Apps: Brand effects, Store heterogeneity}
+};
+
+\node[method={rgb,255:red,214;green,39;blue,40}, anchor=north] (re) at (3.5, -1.5) {
+    \textbf{Random Effects / Within}\\[4pt]
+    \textit{\scriptsize Baltagi (1995); Wooldridge (2002)}\\[4pt]
+    {\scriptsize\color{black!60} Apps: Marketing mix, Customer panels}
+};
+
+% Transition arrow
+\draw[arrow] (0, -4.8) -- (0, -5.8);
+\node[transition, anchor=west] at (0.3, -5.3) {Design-Based Thinking};
+
+% === 2000s ===
+\node[era, fill={rgb,255:red,31;green,119;blue,180}] (era2) at (0, -6.5) {2000s: Design-Based Revolution};
+
+\node[method={rgb,255:red,31;green,119;blue,180}, anchor=north] (sc) at (-3.5, -8) {
+    \textbf{Synthetic Control}\\[4pt]
+    \textit{\scriptsize Abadie \& Gardeazabal (2003); Abadie et al. (2010)}\\[4pt]
+    {\scriptsize\color{black!60} Apps: Market entry, Policy evaluation}
+};
+
+\node[method={rgb,255:red,31;green,119;blue,180}, anchor=north] (did) at (3.5, -8) {
+    \textbf{Difference-in-Differences}\\[4pt]
+    \textit{\scriptsize Bertrand et al. (2004); Card \& Krueger (1994)}\\[4pt]
+    {\scriptsize\color{black!60} Apps: Geo experiments, Rollout studies}
+};
+
+% Transition arrow
+\draw[arrow] (0, -11.3) -- (0, -12.3);
+\node[transition, anchor=west] at (0.3, -11.8) {Heterogeneity Awareness};
+
+% === 2010s ===
+\node[era, fill={rgb,255:red,148;green,103;blue,189}] (era3) at (0, -13) {2010s: Modern Methods \& Heterogeneity};
+
+\node[method={rgb,255:red,148;green,103;blue,189}, anchor=north] (ife) at (-3.5, -14.5) {
+    \textbf{Interactive Fixed Effects}\\[4pt]
+    \textit{\scriptsize Bai (2009); Pesaran (2006)}\\[4pt]
+    {\scriptsize\color{black!60} Apps: Common shocks, Factor models}
+};
+
+\node[method={rgb,255:red,148;green,103;blue,189}, anchor=north] (sdid) at (3.5, -14.5) {
+    \textbf{Staggered DiD}\\[2pt]
+    {\scriptsize (Heterogeneity-Robust)}\\[4pt]
+    \textit{\scriptsize Callaway \& Sant'Anna (2021); Sun \& Abraham (2021)}\\[4pt]
+    {\scriptsize\color{black!60} Apps: Loyalty programs, Staggered rollouts}
+};
+
+% Transition arrow
+\draw[arrow] (0, -18.3) -- (0, -19.3);
+\node[transition, anchor=west] at (0.3, -18.8) {ML Integration};
+
+% === 2020s ===
+\node[era, fill={rgb,255:red,44;green,160;blue,44}] (era4) at (0, -20) {2020s: ML Integration};
+
+\node[method={rgb,255:red,44;green,160;blue,44}, anchor=north] (mc) at (-3.5, -21.5) {
+    \textbf{Synthetic DiD / Matrix Completion}\\[4pt]
+    \textit{\scriptsize Arkhangelsky et al. (2021); Athey et al. (2021)}\\[4pt]
+    {\scriptsize\color{black!60} Apps: Platform entry, Sparse panels}
+};
+
+\node[method={rgb,255:red,44;green,160;blue,44}, anchor=north] (dml) at (3.5, -21.5) {
+    \textbf{Double ML / High-Dim Controls}\\[4pt]
+    \textit{\scriptsize Chernozhukov et al. (2018); Belloni et al. (2017)}\\[4pt]
+    {\scriptsize\color{black!60} Apps: Rich covariates, Heterogentic effects}
+};
+
+% Title
+\node[font=\bfseries\Huge, anchor=south] at (0, 1.5) {The Evolution of Panel Data Methods};
+\node[font=\large, text=black!60, anchor=north] at (0, 1.3) {From Fixed Effects to Machine Learning};
+
+\end{tikzpicture}
+
+\end{document}

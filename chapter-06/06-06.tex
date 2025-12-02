@@ -1,0 +1,231 @@
+\section{Practical Issues in Marketing Panels}
+\label{sec:sc-practical}
+
+Implementing synthetic control methods in marketing panels requires navigating practical challenges including donor pool curation, covariate selection, missing data, anticipation, carryover, and spillovers. Each challenge relates to the identification assumptions from Section~\ref{sec:sc-identification}:
+
+\begin{itemize}
+\item \textit{Donor pool curation} $\rightarrow$ Convex hull condition (Assumption~\ref{assump:sc-hull})
+\item \textit{Spillovers} $\rightarrow$ No interference (Assumption~\ref{assump:sc-no-interference})
+\item \textit{Anticipation} $\rightarrow$ No anticipation (Assumption~\ref{assump:sc-no-anticipation})
+\item \textit{Covariate selection} $\rightarrow$ Factor model structure (Assumption~\ref{assump:sc-factor})
+\end{itemize}
+
+This section provides practical guidance on each issue, showing how violations affect the bias decomposition $\text{Bias} = \boldsymbol{\lambda}_t' \boldsymbol{\Delta}_\mu$ from Section~\ref{sec:sc-motivation}.
+
+\subsection*{Donor Pool Curation and the Convex Hull}
+
+Donor pool curation determines whether the convex hull condition (Assumption~\ref{assump:sc-hull}) holds. The donor pool must include units that are comparable to the treated unit on dimensions relevant to outcomes. It must exclude units that were treated or contaminated by spillovers.
+
+\textbf{Comparability and Factor Loadings.} Under the factor model (Assumption~\ref{assump:sc-factor}), comparability means that donor factor loadings $\{\boldsymbol{\mu}_j\}$ span a space that includes the treated unit's loadings $\boldsymbol{\mu}_1$. In marketing terms:
+\begin{itemize}
+\item DMAs with similar population, demographics, media markets, and competitive environments
+\item Stores with similar format, size, location characteristics, and customer base
+\item Markets with similar baseline sales trajectories
+\end{itemize}
+
+Excluding incomparable donors improves the convex hull condition and reduces $\|\boldsymbol{\Delta}_\mu\|$.
+
+\textbf{Contamination and Bias.} If potential donors are contaminated by spillovers from the treated unit, the bias decomposition extends:
+\begin{equation}
+\text{Bias}(\hat{\tau}_{1t}) = \boldsymbol{\lambda}_t' \boldsymbol{\Delta}_\mu + \sum_{j \in \mathcal{J}} w_j^* \tau_{jt}^{\text{spillover}},
+\label{eq:contamination-bias}
+\end{equation}
+where $\tau_{jt}^{\text{spillover}}$ is the spillover effect on donor $j$. If spillovers are positive (treatment increases donor outcomes), the second term is positive and the SC estimator is downward-biased for the direct effect.
+
+\textbf{Buffer Zones.} Excluding donors geographically or economically close to the treated unit mitigates contamination but reduces the donor pool. Guidance on buffer sizing:
+\begin{itemize}
+\item Start with institutional knowledge: How far do spillovers plausibly travel?
+\item Use exposure decay models if available: Exclude units where expected spillover exceeds threshold (for example, 10\% of direct effect)
+\item Sensitivity analysis: Vary buffer size (for example, 50km, 100km, 200km) and check estimate stability
+\end{itemize}
+
+\textbf{Market Re-Definitions.} When the natural donor pool is contaminated, consider redefining units:
+\begin{itemize}
+\item Product categories within markets (assuming cross-category spillovers are limited)
+\item Customer segments within markets
+\item Time-shifted comparisons (same market in different periods)
+\end{itemize}
+Such re-definitions require careful justification and sensitivity analyses.
+
+\textbf{Alignment with Business Constraints.} Practical constraints may restrict donors:
+\begin{itemize}
+\item Same region or operating division (operational comparability)
+\item Same competitive set (market structure comparability)
+\item Same retail format (channel comparability)
+\end{itemize}
+These restrictions improve comparability but reduce the donor pool. The analyst must balance comparability, pool size, and fit.
+
+\subsection*{Covariate Selection and Factor Model Identification}
+
+Covariate selection determines which variables enter the predictor set $\mathbf{X}_1$ and affects how well the synthetic control identifies factor loadings.
+
+\textbf{Principle.} Include covariates that are correlated with factor loadings $\boldsymbol{\mu}_i$. Under the factor model, outcomes are driven by factor loadings. Covariates that proxy for factor loadings help the synthetic control match the treated unit's underlying structure.
+
+\textbf{What to Include.}
+\begin{enumerate}
+\item \textit{Pre-treatment outcomes}: All or selected pre-treatment periods. These are the primary proxy for factor loadings.
+\item \textit{Pre-treatment covariates}: Variables correlated with outcomes and plausibly related to factor loadings (for example, market size, baseline characteristics, demographics).
+\item \textit{Summary statistics}: Pre-treatment mean, trend, volatility—these capture different aspects of the pre-treatment trajectory.
+\end{enumerate}
+
+\textbf{What to Exclude.}
+\begin{enumerate}
+\item \textit{Post-treatment covariates}: Including post-treatment variables introduces leakage and invalidates causal interpretation.
+\item \textit{Covariates affected by treatment}: Even if measured pre-treatment, exclude variables that may have been affected by anticipation.
+\item \textit{Irrelevant covariates}: Variables uncorrelated with outcomes add noise without improving identification.
+\end{enumerate}
+
+\textbf{The Covariate Selection Problem Revisited.} Section~\ref{sec:sc-identification} noted that covariate selection is a form of model selection. The analyst should:
+\begin{itemize}
+\item Pre-specify the covariate set based on theory and institutional knowledge
+\item Report sensitivity to alternative covariate sets
+\item Avoid data-mining over covariate combinations to achieve good fit
+\end{itemize}
+
+\subsection*{Time-Varying Covariates}
+
+Time-varying covariates (covariates that change over time) require care.
+
+\textbf{Safe Inclusion.}
+\begin{itemize}
+\item Pre-treatment values of time-varying covariates (for example, demographics in year $T_0 - 1$)
+\item Growth rates or trends computed from pre-treatment data
+\item Time-invariant characteristics
+\end{itemize}
+
+\textbf{Unsafe Inclusion.}
+\begin{itemize}
+\item Post-treatment covariate values: Conditioning on post-treatment data invalidates causal interpretation
+\item Covariates affected by anticipation: Even if measured pre-treatment, these may reflect anticipatory behaviour
+\end{itemize}
+
+\textbf{Example.} Customer demographics shift after treatment due to the campaign. Including post-treatment demographics would condition on a post-treatment variable, biasing the effect estimate toward zero.
+
+\subsection*{Missing Data}
+
+Missing data in panel outcomes or covariates must be handled carefully.
+
+\textbf{Factor-Based Imputation.} Under the factor model (Assumption~\ref{assump:sc-factor}), missing values can be imputed using the estimated factor structure:
+\begin{equation}
+\hat{Y}_{it}^{\text{imputed}} = \hat{\delta}_t + \hat{\boldsymbol{\lambda}}_t' \hat{\boldsymbol{\mu}}_i,
+\label{eq:factor-imputation}
+\end{equation}
+where factors and loadings are estimated from observed data. This approach aligns with the identification logic of synthetic control. See Chapter~\ref{ch:factor} for estimation details.
+
+\textbf{Simple Imputation.} Mean imputation, forward-filling, or interpolation do not preserve the dynamic factor structure and may bias the synthetic control. Use only if factor-based imputation is infeasible.
+
+\textbf{When to Abandon SC.} If missing data are extensive (for example, $>$30\% of pre-treatment observations for the treated unit or key donors), synthetic control may not be feasible. Consider difference-in-differences (Chapter~\ref{ch:did}) or factor models (Chapter~\ref{ch:factor}) as alternatives.
+
+\subsection*{Anticipation}
+
+Anticipation violates the no anticipation assumption (Assumption~\ref{assump:sc-no-anticipation}) and biases the synthetic control if pre-treatment outcomes reflect anticipatory behaviour.
+
+\textbf{Detecting Anticipation.} Diagnostics from Section~\ref{sec:sc-diagnostics}:
+\begin{itemize}
+\item In-time placebos: Does fit deteriorate near the intervention date?
+\item Visual inspection: Do pre-treatment gaps widen as treatment approaches?
+\item Institutional knowledge: Was treatment announced in advance?
+\end{itemize}
+
+\textbf{Addressing Anticipation.}
+\begin{enumerate}
+\item \textit{Use announcement date}: If treatment was announced at $T_A < T_0$, construct the synthetic control using periods $1, \ldots, T_A - 1$ and interpret $\hat{\tau}_{1t}$ for $t \geq T_A$ as the combined effect of anticipation and implementation.
+
+\item \textit{Truncate pre-treatment period}: Exclude periods near the intervention where anticipation may contaminate outcomes.
+
+\item \textit{Redefine estimand}: Acknowledge that the estimated effect includes anticipatory responses and interpret accordingly.
+\end{enumerate}
+
+\subsection*{Carryover and Dynamic Effects}
+
+Carryover (persistent or lagged effects) is naturally accommodated in synthetic control. The treatment effect trajectory $\{\hat{\tau}_{1t}\}_{t > T_0}$ traces the full dynamic path:
+\begin{itemize}
+\item If effects grow over time (ramp-up), $\hat{\tau}_{1t}$ increases
+\item If effects decay (wear-out), $\hat{\tau}_{1t}$ decreases
+\item If effects stabilise, $\hat{\tau}_{1t}$ flattens
+\end{itemize}
+
+\textbf{Cumulative Effects.} The cumulative effect over the post-treatment window is:
+\begin{equation}
+\hat{\tau}_{1}^{\text{cum}} = \sum_{t=T_0+1}^{T} \hat{\tau}_{1t}.
+\label{eq:cumulative-effect}
+\end{equation}
+
+\textbf{Average Effects.} The average treatment effect is:
+\begin{equation}
+\hat{\tau}_{1}^{\text{avg}} = \frac{1}{T - T_0} \sum_{t=T_0+1}^{T} \hat{\tau}_{1t}.
+\label{eq:average-effect}
+\end{equation}
+
+See Chapter~\ref{ch:dynamics} for formal treatment of dynamic effects and carryover.
+
+\subsection*{Spillovers and Interference}
+
+Spillovers violate the no interference assumption (Assumption~\ref{assump:sc-no-interference}) and introduce the contamination bias (Equation~\ref{eq:contamination-bias}).
+
+\textbf{Buffer Zones.} Exclude donors within distance $d$ of the treated unit:
+\begin{equation}
+\mathcal{J}_{\text{buffered}} = \{j \in \mathcal{J} : \text{dist}(j, 1) > d\}.
+\label{eq:buffered-donors}
+\end{equation}
+Trade-off: Larger $d$ reduces contamination bias but shrinks the donor pool and may worsen fit.
+
+\textbf{Cluster Designs.} If treatment is applied to entire clusters and donors are drawn from separate clusters, within-cluster spillovers are eliminated. Requires that clusters are independent.
+
+\textbf{Explicit Exposure Mappings.} If exposure structure is known, model spillovers explicitly:
+\begin{equation}
+Y_{jt}(0, \mathbf{D}) = Y_{jt}(0) + \gamma \cdot \text{Exposure}_{jt},
+\label{eq:exposure-spillover}
+\end{equation}
+where $\text{Exposure}_{jt}$ measures donor $j$'s exposure to the treated unit's treatment. See Chapter~\ref{ch:spillovers} for estimation.
+
+\textbf{Testing for Spillovers.} Placebo tests from Section~\ref{sec:sc-inference}: If donor units show systematic post-treatment gaps, this suggests spillover contamination.
+
+\subsection*{Practical Workflow}
+
+\begin{enumerate}
+\item \textbf{Curate donor pool}: Exclude treated, contaminated, and incomparable units. Document selection criteria.
+
+\item \textbf{Select covariates}: Include pre-treatment outcomes and covariates correlated with factor loadings. Pre-specify before examining post-treatment data.
+
+\item \textbf{Handle missing data}: Use factor-based imputation if feasible; exclude units with extensive missingness otherwise.
+
+\item \textbf{Define intervention time}: Use announcement date if anticipation is plausible.
+
+\item \textbf{Buffer for spillovers}: Exclude nearby donors; conduct sensitivity analysis varying buffer size.
+
+\item \textbf{Construct synthetic control}: Apply estimation procedure from Section~\ref{sec:sc-construction}.
+
+\item \textbf{Conduct diagnostics}: Apply diagnostic checklist from Section~\ref{sec:sc-diagnostics}.
+
+\item \textbf{Conduct inference}: Apply inference procedures from Section~\ref{sec:sc-inference}.
+
+\item \textbf{Report transparently}: Document all choices and provide sensitivity analyses.
+\end{enumerate}
+
+\subsection*{Design Choices and Bias-Variance Trade-Offs}
+
+Table~\ref{tab:sc-design} summarises key design choices and their implications for the bias decomposition $\text{Bias} = \boldsymbol{\lambda}_t' \boldsymbol{\Delta}_\mu$ and variance.
+
+\begin{table}[htbp] \small
+\centering
+\caption{Design Choices: Implications for Bias and Variance}
+\label{tab:sc-design}
+\begin{tabular}{p{3.5cm}p{5.5cm}p{5.5cm}}
+\toprule
+\textbf{Design Choice} & \textbf{Impact on Bias ($\boldsymbol{\lambda}_t' \boldsymbol{\Delta}_\mu$)} & \textbf{Impact on Variance} \\
+\midrule
+Donor pool size & Larger pool $\rightarrow$ better convex hull coverage $\rightarrow$ smaller $\|\boldsymbol{\Delta}_\mu\|$ & Larger pool can increase variance if weights are diffuse \\
+\addlinespace
+Pre-treatment window & Longer window $\rightarrow$ better factor loading estimation $\rightarrow$ smaller $\|\boldsymbol{\Delta}_\mu\|$ & Longer window $\rightarrow$ smaller variance (more data) \\
+\addlinespace
+Covariate set & Covariates correlated with $\boldsymbol{\mu}_i$ improve identification; irrelevant covariates add noise & More covariates $\rightarrow$ higher variance unless regularised \\
+\addlinespace
+Convexity constraint & Prevents extrapolation; may increase $\|\boldsymbol{\Delta}_\mu\|$ if hull condition fails & Restricts weight space; may increase variance \\
+\addlinespace
+Regularisation & Reduces overfitting $\rightarrow$ better out-of-sample $\|\boldsymbol{\Delta}_\mu\|$ & Shrinks weights toward uniform $\rightarrow$ lower variance \\
+\addlinespace
+Buffer zone & Excluding contaminated donors reduces spillover bias & Smaller pool $\rightarrow$ higher variance \\
+\bottomrule
+\end{tabular}
+\end{table}

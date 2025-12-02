@@ -1,0 +1,66 @@
+\section{Workflow Checklist}
+\label{sec:threats-workflow}
+
+The following protocol consolidates threat assessment, diagnostics, and sensitivity into a reportable workflow.
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 15.1: Threats-to-Validity Workflow Checklist]
+\textbf{Map threats.} Identify calendar effects, platform policy dates, algorithmic confounding sources, measurement error sources, spillover channels, and potential breaks for the specific marketing setting.
+
+\textbf{Align estimand and design.} State the estimand (ATT, ATE, ADRF, etc.) and choose a design (DiD, event study, SC/SDID, factor, DML) that credibly identifies it given the threats. Document assumptions.
+
+\textbf{Document platform and calendar changes.} Maintain a timeline of policy updates, algorithm changes, and major calendar events. Flag windows where stability may be compromised.
+
+\textbf{Plan diagnostics ex ante.} Pre-specify pre-trend tests, overlap checks, leave-one-out diagnostics, and changepoint scans. Register these in a design document.
+
+\textbf{Choose robust inference.} Use wild cluster bootstrap or randomisation inference if $G$ is small. Account for serial and spatial dependence via clustering or HAC. Report finite-sample caveats.
+
+\textbf{Run sensitivity analyses.} Vary windows, donor sets, controls, and trimming rules. Report specification curves and bounded-effect analyses alongside main estimates. Assess sensitivity to measurement error and attribution rules.
+
+\textbf{Report transparently.} Present main and sensitivity results with clear statements of assumptions, threats, diagnostics, and limitations. Include timelines and changepoint annotations. Link estimands to platform metrics where relevant.
+\end{tcolorbox}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/fig_changepoint_policy.pdf}
+\caption{Changepoint diagnostics around policy or algorithm updates}
+\label{fig:changepoint-policy}
+\small\textit{Panel A shows time series of outcome (sales) and treatment intensity with vertical red lines marking policy change dates (algorithm update at week 40, measurement rule change at week 70). Red shaded regions indicate transition periods to exclude. Panel B displays rolling pre-trend coefficients showing violations near changepoints (orange shaded regions). Panel C presents gap plots (treated minus control differences) revealing discrete shifts at policy changes. Robustness windows are identified for stable estimation.}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/fig_event_seasonality.pdf}
+\caption{Event-time support and seasonality overlay in pre and post windows}
+\label{fig:event-seasonality}
+\small\textit{Panel A shows pre-period event-time support (sample sizes by relative event time $k$) with calendar events marked by red dashed lines (Black Friday, Holiday Season, New Year, Product Launch). Panel B shows post-period support with aligned calendar events. Orange dotted lines mark minimum sample size thresholds. Purple dashed box highlights the calendar-aligned window ensuring comparable seasonal patterns across treated and control groups. Adequate support at all event times is essential for valid inference.}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/fig_overlap_balance_threats.pdf}
+\caption{Overlap and balance before and after donor curation or GPS weighting}
+\label{fig:overlap-balance-threats}
+\small\textit{Top panels show covariate balance (store size, competition density, income level) before (Panel A) and after (Panel B) adjustment. Standardised mean differences (SMDs) improve substantially after weighting (from 0.68--0.85 to 0.12--0.18). Bottom panels show propensity score distributions before (Panel C) and after (Panel D) adjustment. Overlap statistic increases from 0.45 to 0.82. Red dashed lines mark trimming thresholds at 0.1 and 0.9. Effective sample size after trimming is reported. Improved balance and overlap reduce bias from confounding.}
+\end{figure}
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Threat to assumptions affected, diagnostics, and mitigation strategies}
+\label{tab:threat-mapping}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Threat} & \textbf{Assumptions affected} & \textbf{Diagnostics} & \textbf{Mitigation} \\
+\midrule
+Calendar/seasonality & Parallel trends, stationarity & Pre-trends, balanced windows, placebo tests & Calendar FE, flexible seasonality, event-time alignment \\
+Platform policy change & Measurement invariance, stability & Changepoint scans, rolling diagnostics & Robustness windows, external outcomes, sensitivity \\
+Algorithmic confounding & Independence, overlap & Balance, GPS overlap, negative controls & Clustered randomisation, orthogonalised ML, switchbacks \\
+Measurement error & Measurement invariance & Validation data, external benchmarks & Bounding, instrumented variation, sensitivity \\
+Spillovers/interference & SUTVA & Spatial tests, donor contamination checks & Buffers, clustered design, spillover models \\
+Nonstationarity/breaks & Stationarity, parallel trends & Gap plots, rolling pre-trends, break tests & Shorten windows, time-varying factors, subsample analysis \\
+Small-G/dependence & Asymptotic inference & Cluster counts, residual autocorrelation & Wild bootstrap, randomisation inference, finite-sample caveats \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+\index{threats to validity|)}

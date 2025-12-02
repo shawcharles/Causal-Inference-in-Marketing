@@ -1,0 +1,32 @@
+\section{Bias Decomposition Framework}
+\label{sec:bias-decomposition}
+
+To rigorously diagnose threats, we first decompose the potential bias of an estimator. This decomposition links specific assumption violations to distinct components of error, providing a roadmap for sensitivity analysis.
+
+\begin{definition}[Bias Decomposition]\label{def:bias-decomposition}
+Let $\hat{\tau}$ be an estimator of the causal effect $\tau_0$. The bias decomposes as:
+\[
+\text{Bias}(\hat{\tau}) = \mathbb{E}[\hat{\tau}] - \tau_0 = \underbrace{B_{\text{confound}}}_{\text{confounding}} + \underbrace{B_{\text{PT}}}_{\text{parallel trends}} + \underbrace{B_{\text{meas}}}_{\text{measurement}} + \underbrace{B_{\text{spill}}}_{\text{spillovers}},
+\]
+where each component corresponds to a specific assumption violation:
+\begin{itemize}
+\item $B_{\text{confound}}$ captures bias from unobserved confounding, violating unconfoundedness.
+\item $B_{\text{PT}}$ reflects bias from differential trends, violating parallel trends.
+\item $B_{\text{meas}}$ arises from measurement error in treatment or outcome.
+\item $B_{\text{spill}}$ accounts for bias from interference or spillovers, violating SUTVA.
+\end{itemize}
+\end{definition}
+
+Ideally, research design eliminates these terms. When elimination is impossible, we aim to bound them.
+
+\subsection*{The Estimand-Estimator Gap}
+
+A fundamental source of bias is the mismatch between the theoretical target and the empirically identified quantity.
+
+\begin{definition}[Estimand-Estimator Gap]\label{def:estimand-gap}
+Let $\tau^*$ denote the target estimand (e.g., ATT, ATE) and $\tilde{\tau}$ denote the population quantity identified by the estimation strategy under the maintained assumptions. The estimand-estimator gap is:
+\[
+\Delta = \tau^* - \tilde{\tau}.
+\]
+This gap is zero under correct specification and valid assumptions. Threats to validity create $\Delta \neq 0$ by causing the identified quantity to differ from the causal effect of interest.
+\end{definition}

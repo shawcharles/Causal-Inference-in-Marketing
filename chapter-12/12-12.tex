@@ -1,0 +1,40 @@
+\section{Marketing Applications}
+\label{sec:dml-marketing}
+
+DML methods are particularly valuable in marketing applications where interventions exhibit heterogeneous effects, where confounding is complex and high-dimensional, and where flexible functional forms are required. This section provides methodological blueprints for three common marketing problems. Chapter~\ref{ch:applications} develops these and other applications in greater depth.
+
+\subsection*{Loyalty Programme Heterogeneity}
+
+Consider a retailer launching a loyalty programme across stores with staggered adoption. The analyst has access to pre-treatment covariates (demographics, competitive density, historical sales) and wants to estimate whether programme effects vary across store types.
+
+The estimand is the conditional average treatment effect $\tau(x)$ for stores with characteristics $x$. The nuisance functions are the outcome regression $\mu_0(x) = \mathbb{E}[Y|W=0, X=x]$ (the sales trajectory for control stores) and the propensity score $e(x) = P(W=1|X=x)$ (the probability of adoption given characteristics).
+
+The DML procedure partitions stores into $K$ folds. On each iteration, train outcome regressions and propensity scores on $K-1$ folds using gradient-boosted trees, allowing nonlinear relationships and interactions. Evaluate on the held-out fold to construct doubly robust scores. Build causal forests on the scores to estimate $\hat{\tau}(X_i)$. Aggregate CATE estimates into grouped effects (e.g., urban versus rural, high-income versus low-income).
+
+Key diagnostics include placebo tests in pre-programme quarters (pseudo effects should be near zero), overlap checks (propensity distributions should overlap substantially), and CATE stability across folds. If heterogeneity is detected, the analysis informs rollout strategy: prioritise high-response segments, redesign the programme for low-response segments.
+
+\subsection*{Advertising Dose-Response}
+
+Consider a digital advertiser varying impression intensity across geographic markets and wanting to estimate the dose-response function separately by device type (desktop, mobile, tablet).
+
+The estimand is the marginal treatment effect $\tau(w) = \partial \mu(w) / \partial w$, the incremental conversions per additional impression at intensity $w$. The nuisance functions are the conditional mean outcome $m(w, x) = \mathbb{E}[Y|W=w, X=x]$ and the generalised propensity score $r(w|x) = f(W=w|X=x)$, the conditional density of impressions.
+
+The DML procedure partitions markets into $K$ folds. Train outcome regressions using random forests (allowing nonlinear dose-response curves) and density models using kernel smoothing or normalising flows. Evaluate on held-out folds, construct doubly robust scores (Definition~\ref{def:dr-adrf-dml}), and estimate $\hat{\mu}(w)$ at a grid of impression values. Marginal effects are computed by numerical differentiation.
+
+Key diagnostics include overlap checks (impression densities should overlap across device types), placebo tests in pre-campaign periods, and sensitivity to learner choice. The shape of the dose-response curve—diminishing returns, constant returns, or inverted-U—directly informs budget allocation across channels.
+
+\subsection*{Competition-Conditioned Price Sensitivity}
+
+Consider a retailer hypothesising that price elasticity varies with competitive density. The goal is to estimate how the effect of a price reduction varies with the number of nearby competitors.
+
+The estimand is the CATE $\tau(c)$ where $c$ is competitor count. The nuisance functions are the outcome regression (sales as a function of price and covariates) and the propensity score (probability of a price reduction given covariates and competitive environment).
+
+The DML procedure partitions stores into $K$ folds, trains nuisance functions using elastic net or gradient boosting, evaluates on held-out folds, and builds causal forests to estimate $\hat{\tau}(c)$. Plot $\hat{\tau}(c)$ against competitor count to visualise effect modification.
+
+Key diagnostics include overlap checks (propensity distributions should have substantial common support), placebo tests in periods without price changes, and CATE stability across folds. If price sensitivity increases with competition, the retailer should target promotions to high-competition markets where elasticity is highest.
+
+\subsection*{Summary}
+
+These three blueprints illustrate the versatility of DML in marketing. CATE estimation reveals heterogeneity that informs targeting and rollout. Dose-response estimation quantifies marginal returns and guides budget allocation. Effect modification clarifies mechanisms and identifies segments where interventions are most effective.
+
+The unifying theme is that DML combines the flexibility of ML for nuisance estimation with the credibility of design-based inference. Transparent reporting of estimands, nuisance models, diagnostics, and policy implications builds confidence that conclusions are not driven by modelling artefacts.

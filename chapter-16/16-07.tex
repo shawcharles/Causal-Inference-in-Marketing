@@ -1,0 +1,73 @@
+\section{Aggregated Estimands and Joint Inference}
+\label{sec:joint-inference}
+\index{delta method}
+\index{simultaneous confidence bands|(}
+
+Often we are interested in functions of parameters, such as cumulative effects or dynamic paths. This is essential for event studies (Chapter~\ref{ch:event-studies}) and dynamic treatment effect estimation where we report trajectories rather than single coefficients.
+
+\begin{theorem}[Delta Method for Variance Propagation]\label{thm:delta-method}
+Let $\hat{\theta} \in \mathbb{R}^k$ be an asymptotically normal estimator with $\sqrt{n}(\hat{\theta} - \theta_0) \xrightarrow{d} \mathcal{N}(0, \Sigma)$. For a differentiable function $g: \mathbb{R}^k \to \mathbb{R}^m$:
+\[
+\sqrt{n}(g(\hat{\theta}) - g(\theta_0)) \xrightarrow{d} \mathcal{N}(0, G \Sigma G'),
+\]
+where $G = \nabla g(\theta_0)$ is the $m \times k$ Jacobian matrix (derivatives of outputs with respect to inputs). For event-time aggregation $\theta_k = \sum_g w_g \text{ATT}(g, g+k)$:
+\[
+\text{Var}(\hat{\theta}_k) = \mathbf{w}' \hat{\Sigma}_{\text{ATT}} \mathbf{w},
+\]
+where $\hat{\Sigma}_{\text{ATT}}$ is the estimated covariance matrix of cohort-time effects.
+\end{theorem}
+
+When examining an entire trajectory of effects, pointwise confidence intervals can be misleading. If we test 20 time periods at 95\% confidence, we expect one false rejection by chance. Joint confidence bands solve this.
+
+\begin{definition}[Simultaneous Confidence Band]\label{def:joint-band}
+For vector of estimators $\hat{\theta} = (\hat{\theta}_1, \ldots, \hat{\theta}_K)'$ with covariance $\hat{\Sigma}$, a $(1-\alpha)$ simultaneous confidence band is:
+\[
+\mathcal{C}_{1-\alpha} = \{(\theta_1, \ldots, \theta_K): \max_k |\hat{\theta}_k - \theta_k| / \hat{\text{se}}_k \leq c_{1-\alpha}\},
+\]
+where $c_{1-\alpha}$ is chosen so that $P(\theta_0 \in \mathcal{C}_{1-\alpha}) = 1 - \alpha$ jointly for all $k$. Equivalently, pointwise intervals are $[\hat{\theta}_k \pm c_{1-\alpha} \cdot \hat{\text{se}}_k]$.
+\end{definition}
+
+\begin{proposition}[Constructing Uniform Bands]\label{prop:uniform-bands}
+The critical value $c_{1-\alpha}$ for simultaneous coverage can be obtained by the methods in Table~\ref{tab:uniform-bands}.
+\end{proposition}
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Methods for constructing uniform confidence bands}
+\label{tab:uniform-bands}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Method} & \textbf{Critical Value} & \textbf{Properties} \\
+\midrule
+Bonferroni & $c_{1-\alpha}^{\text{Bonf}} = z_{1-\alpha/(2K)}$ & Conservative but simple; ignores correlation \\
+Scheffé & $c_{1-\alpha}^{\text{Sch}} = \sqrt{K \cdot F_{K,\infty,1-\alpha}}$ & Exact for linear combinations \\
+Bootstrap & $(1-\alpha)$-quantile of $\max_k |t_k^{(b)}|$ & Tightest; accounts for correlation structure \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+Bootstrap-based bands are typically tightest when correlation among $\hat{\theta}_k$ is substantial, which is common in event-study settings where adjacent time periods are correlated.
+
+\subsection*{Inference for Partially Identified Bounds}
+
+\index{partial identification}
+In some designs the target effect is not point identified but belongs to an identified set characterised by linear constraints. Synthetic Parallel Trends is a leading example \citep{liu2025synthetic}. It defines the counterfactual post-treatment trend as a weighted average of control trends for any convex weights that match pre-trends and then treats all such weights as admissible.
+
+The treatment effect is then bounded by the minimum and maximum values attainable over this weight set. Inference must therefore deliver a confidence set that covers the entire identified set with high probability rather than a single point.
+
+Operationally this is achieved by combining the linear programming representation of the identified set with resampling. Moments that summarise pre-trends and post-trends are estimated at the usual $\sqrt{n}$ rate from micro data. The mapping from those moments to the identified set is directionally differentiable but not linear, so asymptotic theory relies on tools for functionals of this type.
+
+In practice we invert tests over candidate values of the treatment effect, using bootstrap critical values for the underlying moment statistics, and collect all values that are not rejected. The resulting interval is often wider than a conventional confidence interval but it remains valid under a much weaker set of assumptions and makes clear how much of the uncertainty comes from disagreement across admissible weighting schemes.
+
+\begin{remark}[Joint Inference in Marketing Event Studies]\label{rem:joint-marketing}
+Joint confidence bands are essential for marketing applications:
+\begin{enumerate}
+\item \textbf{Pre-trend testing}: When assessing parallel trends (Section~\ref{sec:pretrends-placebo}), joint bands control the family-wise error rate across all pre-treatment periods.
+\item \textbf{Dynamic effect visualization}: Event-study plots (Figure~\ref{fig:app-event-bands}) should show uniform bands, not pointwise intervals, to avoid overstating significance.
+\item \textbf{Cumulative effects}: When aggregating effects over time (e.g., total incremental revenue from a campaign), the delta method propagates uncertainty correctly.
+\end{enumerate}
+For marketing applications in Chapter~\ref{ch:applications}, we recommend bootstrap-based uniform bands for all event-study visualizations.
+\end{remark}
+\index{simultaneous confidence bands|}

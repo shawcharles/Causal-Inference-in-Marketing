@@ -1,0 +1,76 @@
+\section{Implementation Details and Tuning}
+\label{sec:implementation-tuning}
+
+The practical implementation of diagnostics requires clear, reproducible rules specified before seeing outcomes. This section provides concrete guidance on trimming, exposure mapping, cross-validation, and documentation.
+
+\subsection*{Propensity Score Trimming}
+
+Trimming units with extreme propensity scores reduces variance from large weights but changes the estimand. The choice of threshold should be principled, not arbitrary.
+
+\begin{definition}[Optimal Trimming Threshold]\label{def:crump-trimming}
+Following \citet{crump2009dealing}, the optimal symmetric trimming threshold for estimating the Average Treatment Effect (ATE) is $\alpha = 0.1$. Retain only units with propensity scores in the interval:
+\[
+\mathcal{A} = \{i : \alpha \leq \hat{e}(X_i) \leq 1 - \alpha\}.
+\]
+This threshold minimises the asymptotic variance of the IPW estimator under mild regularity conditions. The trimmed estimand is the ATE for the subpopulation with overlap, not the full population ATE.
+\end{definition}
+
+\begin{remark}[Asymmetric Trimming for ATT]\label{rem:att-trimming}
+When the target is the Average Treatment Effect on the Treated (ATT), trimming should be asymmetric. The ATT weights are $w_i = D_i + (1-D_i) \cdot \hat{e}(X_i)/(1-\hat{e}(X_i))$, which explode only as $\hat{e}(X_i) \to 1$ for controls. Therefore, trim controls with $\hat{e}(X_i) > 1 - \alpha$ (e.g., $> 0.9$), but do not trim treated units since their weights are bounded at 1. Report the number of trimmed units and the effective sample size (ESS) after trimming. If more than 20\% of controls are trimmed, reconsider the design or report bounds.
+\end{remark}
+
+\subsection*{Exposure Radius Selection}
+
+For spillover-aware designs, the exposure radius determines which neighbours' treatments affect a unit's outcome. Choosing this radius requires balancing domain knowledge with empirical validation.
+
+\begin{definition}[Distance Decay and Radius Selection]\label{def:exposure-radius}
+Let $d_{ij}$ denote the distance between units $i$ and $j$. The exposure of unit $i$ to neighbours' treatments is:
+\[
+E_i(r) = \sum_{j \neq i} W_j \cdot \mathbf{1}(d_{ij} \leq r),
+\]
+for radius $r$, or with distance decay:
+\[
+E_i^{\text{decay}}(\lambda) = \sum_{j \neq i} W_j \cdot \exp(-\lambda \cdot d_{ij}),
+\]
+for decay parameter $\lambda > 0$. The effective radius is approximately $3/\lambda$ (where exposure drops to 5\% of its maximum).
+\end{definition}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Procedure: Data-Driven Radius Selection]
+To select the exposure radius empirically, first specify a grid of candidate radii $\{r_1, \ldots, r_K\}$ based on domain knowledge (e.g., 1km, 5km, 10km for retail). Second, for each $r_k$, compute exposure $E_i(r_k)$ and estimate the spillover effect in the pre-treatment period as a placebo. Third, select the radius where the pre-period placebo effect is closest to zero, indicating that the exposure definition does not spuriously predict outcomes. Fourth, report sensitivity of the main estimate to the radius grid. If spillover effects are detected at all radii, the design may require buffers or a spillover-aware estimand (Chapter~\ref{ch:spillovers}).
+\end{tcolorbox}
+
+\subsection*{Blocked Cross-Validation}
+
+Standard cross-validation assumes observations are exchangeable. In panels, this assumption fails: observations from the same unit or time period are correlated. Naive CV leaks information and produces overoptimistic tuning.
+
+\begin{definition}[Blocked Cross-Validation]\label{def:blocked-cv}
+Blocked CV partitions the data into folds that respect the dependence structure. Leave-one-unit-out (LOUO) excludes all observations from one unit per fold; use when unit-level shocks dominate (e.g., store-level heterogeneity). Leave-one-time-out (LOTO) excludes all observations from one time period per fold; use when time shocks dominate (e.g., macroeconomic conditions). Leave-one-cluster-out (LOCO) excludes all observations from one cluster per fold (e.g., region, cohort); use when clustering is coarser than units. The out-of-fold predictions from blocked CV mimic the dependence structure the model will face at test time.
+\end{definition}
+
+\begin{remark}[Choosing the Blocking Dimension]\label{rem:cv-blocking}
+The blocking dimension should match the level at which treatment is assigned or at which the identifying variation operates. For unit-level treatment (e.g., store receives campaign), use LOUO. For time-level shocks (e.g., policy change), use LOTO. For staggered adoption with cohort-level variation, use leave-one-cohort-out. When both unit and time dependence are strong, use a two-way block structure that excludes both the target unit and adjacent time periods. This is conservative but prevents leakage from either dimension.
+\end{remark}
+
+\subsection*{Design Protocol and Documentation}
+
+Reproducibility requires documenting all design choices before estimation. A design protocol guards against data-driven specification search and enables replication.
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 17.1: Design Protocol Checklist]
+\textbf{Before accessing outcome data}, document:
+
+\textbf{Sample definition.} Unit inclusion/exclusion criteria, time window, and any geographic or policy-based restrictions.
+
+\textbf{Treatment and exposure.} Treatment definition, timing, and exposure mapping (including radius or decay parameters for spillovers).
+
+\textbf{Donor curation.} Donor pool definition, contamination exclusions, and buffer specifications.
+
+\textbf{Trimming rules.} Propensity score thresholds, weight truncation, and the resulting estimand.
+
+\textbf{Tuning parameters.} Regularisation penalties, cross-validation blocking structure, and hyperparameter grids.
+
+\textbf{Primary specification.} The pre-registered estimator and inference method. Distinguish from robustness checks.
+
+\textbf{Version control.} Maintain versioned logs of donor lists, exclusion decisions, and parameter choices. Store code and data snapshots to enable exact replication.
+\end{tcolorbox}
+
+Deviations from the protocol should be documented and justified. Exploratory analyses conducted after seeing outcomes should be clearly labelled as such and subjected to appropriate multiplicity adjustments.

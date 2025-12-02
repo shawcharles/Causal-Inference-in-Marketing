@@ -1,0 +1,47 @@
+
+\section{Motivation and Setup}
+\label{sec:dml-motivation}
+
+Modern marketing panels confront practitioners with high-dimensional covariates, complex nonlinear relationships, and heterogeneous treatment effects that vary across units and over time. A retailer analysing a promotional campaign observes hundreds of store characteristics and dozens of time-varying market conditions. Traditional parametric methods restrict the functional form severely, potentially misspecifying the relationship between controls and outcomes. Machine learning offers a compelling alternative: data-driven algorithms that adapt to high-dimensional covariate spaces without imposing restrictive functional forms.
+
+\subsection*{The Challenge: ML and Causal Inference}
+
+The challenge is preserving valid causal inference when using ML methods. Causal identification in panels relies on strong assumptions (parallel trends, conditional independence, overlap, no interference) articulated in Chapter~\ref{ch:frameworks}. ML methods, optimised for prediction accuracy rather than causal identification, do not automatically respect these assumptions.
+
+If an analyst naïvely regresses outcomes on treatment and high-dimensional covariates using a black-box ML algorithm, the resulting estimate may be biased due to overfitting, regularisation bias, or failure to account for confounding.
+
+\subsection*{The DML Solution}
+
+Double/debiased machine learning (DML) resolves this tension by combining flexible ML estimation of nuisance functions with principled causal inference procedures. The key insights are orthogonalisation and sample splitting.
+
+Orthogonalisation constructs score functions that are first-order insensitive to small errors in nuisance estimates, ensuring that regularisation bias does not contaminate the treatment effect estimate. Sample splitting (cross-fitting) trains nuisance models on one subset of the data and evaluates them on a disjoint subset, preventing overfitting and enabling standard asymptotic theory.
+
+Together, orthogonalisation and cross-fitting enable analysts to enjoy the flexibility of ML for nuisance estimation while retaining the credibility of design-based causal inference.
+
+\subsection*{Connection to Identification}
+
+The potential outcomes framework, articulated in Chapter~\ref{ch:frameworks}, posits that each unit has potential outcomes under each treatment level. Causal effects are contrasts between potential outcomes. Identification requires assumptions (unconfoundedness, overlap, SUTVA) that ensure treatment assignment is as good as random conditional on observables.
+
+DML does not relax these identification assumptions. Instead, it provides a principled way to estimate nuisance functions flexibly using ML while ensuring that treatment effect estimates remain unbiased and inference remains valid. The identification assumptions remain paramount; DML simply enables richer conditioning sets and more flexible functional forms.
+
+\subsection*{Design-Based Perspective}
+
+The design-based perspective emphasised by \citet{angrist2010credibility} prioritises transparency, robustness to misspecification, and alignment with the intervention design. DML extends the design-based toolkit by enabling analysts to incorporate high-dimensional controls and estimate heterogeneous effects without abandoning design-based logic.
+
+For example, DML can estimate ATT in difference-in-differences designs with hundreds of covariates, or CATEs that vary across subgroups, all while respecting the parallel trends assumption that provides identification.
+
+\subsection*{Relation to Factor and Hybrid Methods}
+
+Factor models (Chapter~\ref{ch:factor}) estimate low-rank structures that capture time-varying common shocks, enabling identification when parallel trends fails. DML complements factor models by using ML to estimate factor loadings or residual outcome models after removing factor structure.
+
+Hybrid methods such as augmented synthetic control and synthetic difference-in-differences combine weighting with regression adjustment. DML extends these by using ML for the regression component, enabling richer covariate spaces and more flexible outcome models.
+
+\subsection*{Marketing Motivation}
+
+Consider a retailer launching a loyalty programme in 200 stores over six quarters (staggered adoption), with 50 pre-treatment covariates per store. The goal is to estimate the ATT at each lag and assess whether effects vary across store types.
+
+A naïve two-way fixed effects regression provides limited flexibility. Synthetic control methods struggle when treated units are numerous and adoption is staggered. DML provides a middle ground: it estimates nuisance functions using ML, constructs orthogonal scores that are insensitive to nuisance estimation error, and aggregates cohort-time effects into event-time profiles. The result is an estimator that is flexible, robust, and transparent.
+
+\subsection*{Chapter Roadmap}
+
+This chapter develops DML methods for panel causal inference. Section~\ref{sec:dml-orthogonal} formalises Neyman-orthogonal scores. Section~\ref{sec:dml-crossfit} presents cross-fitting under panel dependence. Section~\ref{sec:dml-estimators} develops DML estimators for average effects, staggered designs, and dose-response functions. Section~\ref{sec:dml-hte} extends to heterogeneous treatment effects. Section~\ref{sec:dml-policy} covers policy learning. Section~\ref{sec:dml-assumptions} articulates identification assumptions. Section~\ref{sec:dml-tuning} provides tuning and implementation guidance. Section~\ref{sec:dml-dose-response} develops dose-response extensions. Section~\ref{sec:dml-diagnostics} outlines diagnostics. Section~\ref{sec:dml-inference} covers inference. Section~\ref{sec:dml-marketing} illustrates marketing applications. Section~\ref{sec:dml-workflow} provides a workflow checklist.

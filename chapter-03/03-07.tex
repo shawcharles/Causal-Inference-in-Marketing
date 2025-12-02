@@ -1,0 +1,49 @@
+\section{Power, Minimum Detectable Effects, and Serial Dependence}
+\label{sec:power-mde}
+
+Statistical power---the probability of detecting a true effect of a given magnitude---is a central consideration in designing experiments and quasi-experiments. An underpowered study may fail to detect effects that are substantively important, leading to false negatives and wasted resources. A very large study may detect effects that are statistically significant but substantively trivial. The solution is not to reduce sample size, but to focus on effect sizes and confidence intervals rather than p-values alone. Large samples provide precise estimates, which is valuable regardless of statistical significance. We provide practical guidance on power calculations for panel data, accounting for clustering, serial correlation, and heterogeneity. In the geo-experiments, switchbacks, and phased rollouts introduced earlier in this chapter, power depends on concrete design choices such as the number of clusters, the length of pre-treatment and treatment windows, and the number and size of adoption cohorts.
+
+\subsection{Minimum Detectable Effects Under Clustering}
+
+The minimum detectable effect (MDE) is the smallest true effect that the design can detect with specified power (typically $1-\beta = 0.8$) and significance level (typically $\alpha = 0.05$). For a two-group comparison with independent observations, the MDE depends on the sample size and outcome variance. Panel data complicate this because outcomes are clustered within units over time.
+
+Clustering reduces the effective sample size. Consider a design with $N$ units observed for $T$ periods, assigned to treatment at the unit level. Let the error structure be $\varepsilon_{it} = \nu_i + \eta_{it}$, with unit-specific component variance $\sigma^2_{\nu}$ and idiosyncratic variance $\sigma^2_{\eta}$. The intra-cluster correlation (ICC) is $\rho = \sigma^2_{\nu} / (\sigma^2_{\nu} + \sigma^2_{\eta})$.
+High $\rho$ means that adding more periods within a unit provides diminishing returns.
+
+For geo-experiments with $2G$ clusters ($G$ treated, $G$ control), $T$ periods, and intra-cluster correlation $\rho$, the variance of the difference in means is inflated by the design effect $1 + (T-1)\rho$. The approximation for the MDE is
+\[
+\text{MDE} \approx (t_{1-\alpha/2} + t_{1-\beta}) \times \sqrt{\frac{2\sigma^2}{G T} \, [1 + (T-1) \rho]},
+\]
+where $\sigma^2$ is the total variance of the outcome. This formula assumes equal allocation (a 50/50 treatment--control split) and equal cluster sizes; unequal allocation or unequal cluster sizes require adjusted formulas. With $\alpha=0.05$ (two-sided) and power $0.8$, the critical value factor is approximately $1.96 + 0.84 = 2.8$. Unequal allocation increases the MDE by a factor of
+\[
+\sqrt{\frac{1/p + 1/(1-p)}{4}}
+\]
+relative to 50/50, where $p$ is the treatment proportion. For example, a 60/40 allocation increases the MDE by about two per cent relative to 50/50. This formula highlights the key trade-off: doubling the number of clusters $G$ reduces the variance by half, while doubling $T$ has a negligible effect when $\rho$ is high (since $1 + (T-1)\rho \approx T\rho$, which cancels the $T$ in the denominator).
+
+The ICC formulation captures correlation arising from unit-level effects. More general forms of serial dependence further reduce the effective information in the panel.
+
+\subsection{Serial Dependence and Effective Sample Size}
+
+Serial dependence---correlation of outcomes within a unit over time---is pervasive in marketing panels. Sales are autocorrelated because demand is persistent, seasonality repeats, and customer bases are stable. Advertising effects exhibit carryover, creating dynamic correlation. Competitive interactions produce feedback loops. Ignoring serial dependence leads to overly optimistic power calculations and overstated precision in inference.
+
+Effective sample size corrections account for serial dependence by down-weighting the contribution of additional periods. If outcomes follow an AR(1) process with autocorrelation $\phi$, then the effective number of independent observations per unit is approximately $T \times (1-\phi)/(1+\phi)$ for large $T$. With $\phi = 0.5$, for example, 12 periods contribute the equivalent of only $12 \times (0.5)/(1.5) = 4$ independent observations. High autocorrelation ($\phi$ near one) means that each additional period contributes little new information. You can estimate $\phi$ from historical data using the autocorrelation function (ACF) or assume a conservative value (for example, $\phi = 0.7$) if historical data are unavailable. Incorporating these corrections into power calculations ensures that sample size and duration are set realistically.
+
+When analytical formulas are insufficient, simulation provides a flexible alternative.
+
+\subsection{Simulation-Based Power Using Historical Panels}
+
+Analytical power formulas rely on simplifying assumptions---normality, constant variance, known correlation structure---that may not hold in practice. Simulation-based power calculations relax these assumptions by using historical data to estimate the distribution of outcomes under null and alternative hypotheses, generating synthetic treatment assignments, computing test statistics, and tallying the proportion of simulations in which the null is rejected.
+
+The procedure is as follows. First, fit a model to historical panel data to estimate the mean, variance, and correlation structure of outcomes. Second, generate synthetic datasets by drawing outcomes from the fitted model under the null hypothesis (no treatment effect) and under alternative hypotheses (treatment effects of various magnitudes). Third, randomly assign treatment according to the proposed design (for example, randomising 50 DMAs to treatment and 50 to control). Compute the test statistic (for example, the difference-in-differences estimate divided by its standard error) and record whether the null is rejected. Fourth, repeat for thousands of simulations to estimate power as the proportion of simulations in which the null is rejected. Typically, 1,000 to 10,000 simulations are sufficient to estimate power with acceptable precision; use more simulations when power is close to critical thresholds (for example, 0.8). This approach accommodates realistic features of the data---skewness, heteroskedasticity, complex correlation structures---that analytical formulas cannot capture.
+
+\textbf{Model misspecification risk.} Simulation-based power is only as good as the model fitted to historical data. If the model misspecifies the correlation structure, variance, or treatment effect heterogeneity, the power calculations will be wrong. Sensitivity analysis across different model specifications (for example, varying the assumed ICC or autocorrelation) helps assess robustness. Simulation is particularly valuable for the complex designs described earlier in this chapter---stratified and re-randomised geo-experiments, switchbacks with carryover, and phased rollouts with heterogeneous adoption timing---where analytical approximations are least reliable.
+
+Regardless of the approach, power calculations must align with the planned analysis.
+
+\subsection{Inferential Choices to Be Planned}
+
+Power calculations should align with the planned inferential procedure. If inference will use cluster-robust standard errors, power should be computed assuming those standard errors. If inference will use randomisation inference or the wild cluster bootstrap, power should be computed by simulating those procedures. If the plan is to conduct multiple comparisons---testing effects for multiple cohorts, subgroups, or outcomes---power should account for the multiplicity adjustment (for example, Bonferroni correction or false discovery rate control; see Chapter~\ref{ch:inference}). Specifying in advance the inferential procedure and conducting power calculations consistent with that procedure ensure that the design is appropriately powered for the actual analysis.
+
+Power calculations are essential for designing credible panel studies. By accounting for clustering, serial dependence, and the planned inferential procedure, researchers can ensure that their designs are appropriately powered to detect substantively important effects. Simulation-based approaches provide flexibility when analytical formulas are insufficient. The key is to conduct power calculations \textit{ex ante}, using realistic assumptions about correlation structures and effect sizes, and to adjust the design if power is inadequate.
+
+\textbf{Power calculations are often optimistic.} Power calculations assume the effect size is known, but in practice we are uncertain about the true effect. If the true effect is smaller than assumed, actual power will be lower than calculated. Conservative practice is to power for an effect size at the lower end of the plausible range, or to report power across a range of effect sizes rather than a single point estimate.

@@ -1,0 +1,97 @@
+\section{Identification and Assumptions}
+\label{sec:hybrid-identification}
+
+Causal identification in hybrid methods requires assumptions about how treated and control units would have evolved in the absence of treatment. It requires understanding how weights and regression adjustments approximate untreated potential outcomes. It requires knowing when the hybrid estimators provide valid counterfactuals. This section articulates these assumptions formally, distinguishes between inherited and method-specific requirements, and connects hybrids to factor models developed in Chapter~\ref{ch:factor}.
+
+The core identification logic for hybrid methods extends that for synthetic control (Chapter~\ref{ch:sc}). Suppose untreated potential outcomes for the treated unit can be represented as a weighted combination of donor outcomes plus a model-based adjustment. If this representation holds in both pre-treatment and post-treatment periods, then the hybrid synthetic control estimates the counterfactual. Formally, identification requires that there exist weights $w_j^*$, regression coefficients $\beta^*$, and time weights $\lambda_t^*$ such that
+\[
+Y_{1t}(0) = \sum_{j \in \mathcal{J}} w_j^* Y_{jt}(0) + X_{1t}' \beta^* + \varepsilon_{1t}
+\]
+for augmented synthetic control, or
+\[
+Y_{1t}(0) = \sum_{j \in \mathcal{J}} w_j^* Y_{jt}(0) + \alpha_1 + \gamma_t + \varepsilon_{1t}
+\]
+for SDID, where $\alpha_1$ is a unit fixed effect, $\gamma_t$ are time fixed effects (or weighted combinations thereof), and $\varepsilon_{1t}$ are idiosyncratic errors. In the pre-treatment period, we estimate the weights and adjustments using observed data. In the post-treatment period, we extrapolate the estimated relationship to construct the counterfactual.
+
+\subsection*{Generic Assumptions}
+
+We state the identification assumptions that all hybrid methods inherit.
+
+\begin{assumption}[No Anticipation in Pre-Treatment Periods]
+\label{assump:hybrid-no-anticipation}
+The treated unit's potential outcomes in the pre-treatment period are unaffected by anticipation of future treatment:
+\[
+Y_{1t} = Y_{1t}(0) \quad \text{for all } t \leq T_0.
+\]
+\end{assumption}
+
+No anticipation, introduced in Chapter~\ref{ch:frameworks} and formalised in the treatment timing literature \citet{abbring2003nonparametric,malani2015interpreting}, ensures that pre-treatment outcomes reflect only the baseline untreated trajectory. If anticipation is present, the pre-treatment fit captures both the baseline trajectory and the anticipatory response. The hybrid estimator does not identify the effect of treatment itself but rather the combined effect of anticipation and implementation.
+
+Anticipation can be tested using very early pre-treatment periods or by inspecting whether the synthetic control or augmentation model fits better in early periods than in late periods. If anticipation is detected, the analyst should redefine the intervention time to include the anticipation period. Alternatively, use only pre-anticipation periods to estimate weights and adjustments.
+
+\begin{assumption}[Limited Interference or Explicit Exposure Modelling]
+\label{assump:hybrid-interference}
+The treatment applied to the treated unit does not affect the outcomes of donor units, or interference is explicitly modelled through exposure mappings:
+\[
+Y_{jt} = Y_{jt}(0) \quad \text{for all } j \in \mathcal{J}, \, t > T_0,
+\]
+or $Y_{jt}$ depends on treatment assignments of neighbouring units through known exposure functions.
+\end{assumption}
+
+Limited interference, a component of the stable unit treatment value assumption (SUTVA) articulated in Chapter~\ref{ch:frameworks}, ensures that donor units provide valid counterfactuals. If the treated unit spills over to donors, the hybrid synthetic control is biased. Design-based solutions include defining buffer zones around treated units, curating donors to exclude units likely to be affected, or explicitly modelling spillovers using exposure mappings developed in Chapter~\ref{ch:spillovers}. Hybrid methods inherit the same spillover challenges as synthetic control. The augmentation or time weighting does not resolve interference violations.
+
+\begin{assumption}[Pre/Post Stability of Predictor-Outcome Relationship]
+\label{assump:hybrid-stability}
+The relationship between weights, adjustments, and untreated potential outcomes that holds in the pre-treatment period continues to hold in the post-treatment period:
+\[
+Y_{1t}(0) = \sum_{j \in \mathcal{J}} w_j^* Y_{jt}(0) + f(X_{1t}, t; \theta^*) + \varepsilon_{1t} \quad \text{for all } t,
+\]
+where $f(\cdot)$ is the augmentation model with parameters $\theta^*$ (for example, linear regression coefficients or time fixed effects), and the error term $\varepsilon_{1t}$ has the same distribution pre- and post-treatment.
+\end{assumption}
+
+Stability ensures that the hybrid model extrapolates correctly from the pre-treatment to the post-treatment period. If the factor structure, the regression relationship, or the time trends shift at the intervention time, the hybrid estimator is biased. Stability cannot be tested directly in the post-treatment period (because the counterfactual is unobserved). However, indirect evidence includes placebo-in-time tests using pre-treatment data only, cross-validation checks that the model generalises to held-out pre-treatment periods, and inspection of donor outcomes for unusual shocks or breaks in the post-treatment period.
+
+\begin{assumption}[Overlap and Feasibility]
+\label{assump:hybrid-overlap}
+There exist unit weights $w_j^*$, augmentation parameters $\beta^*$, and (for SDID) time weights $\lambda_t^*$ that achieve approximate balance between the treated unit and the weighted donors in the pre-treatment period:
+\[
+\text{RMSPE} = \sqrt{\frac{1}{T_0} \sum_{t=1}^{T_0} \left( Y_{1t} - \sum_{j \in \mathcal{J}} w_j^* Y_{jt} - f(X_{1t}, t; \theta^*) \right)^2} \leq \varepsilon,
+\]
+where $\varepsilon$ is small relative to the outcome's standard deviation (typically RMSPE $\leq 0.05 \cdot \text{SD}(Y)$), and the weights are stable (not extreme or highly variable across specifications).
+\end{assumption}
+
+Overlap ensures that the optimisation problem has a solution that achieves good fit. Feasibility ensures that the solution is stable and interpretable. If the treated unit is far outside the donor convex hull and cannot be approximated even with augmentation or time weighting, the hybrid estimator extrapolates and is unreliable. Diagnostics for overlap include inspecting the pre-treatment fit (RMSPE relative to outcome variability), checking weight dispersion (are weights concentrated on a few donors or diffuse across many?), and conducting leave-one-donor-out sensitivity analyses to assess stability.
+
+\subsection*{Method-Specific Assumptions}
+
+The four assumptions above are inherited by all hybrid methods, but each hybrid adds specific requirements that specialise the generic stability and overlap conditions.
+
+\paragraph{ASCM.} Augmented synthetic control requires that either the weights achieve balance (so that the augmentation correction is negligible) or the outcome model is correctly specified (so that the regression adjustment removes the remaining bias). This is the traditional double robustness condition from \citet{ben2018augmented}. If both components are misspecified, ASCM is biased even if the generic assumptions hold.
+
+\paragraph{Ridge and Balancing SC.} Regularised synthetic control methods require that the penalisation parameter is chosen appropriately. Under-penalisation produces unstable weights; over-penalisation ignores donor heterogeneity and approaches uniform weighting. Cross-validation provides data-driven selection, but the stability assumption must hold for the cross-validated weights, not just for any feasible weights.
+
+\paragraph{SDID.} Synthetic difference-in-differences requires weighted parallel trends: after applying the estimated unit and time weights, treated and control units must follow parallel trajectories in the absence of treatment. This is weaker than unconditional parallel trends but stronger than assuming parallel trends holds exactly. If the weights cannot balance the relevant confounders, SDID is biased.
+
+\paragraph{TROP.} Triply robust panel estimation requires a factor model structure (Assumption~\ref{ass:trop-factor} in Section~\ref{sec:hybrid-trop}). Untreated potential outcomes must decompose into unit fixed effects, time fixed effects, and a low-rank interactive component. If this structure fails---because unit-specific trends are idiosyncratic rather than driven by common factors---the factor model error is large, and triple robustness does not eliminate bias.
+
+\subsection*{Connection to Factor and Imputation Models}
+
+The relationship between hybrid methods and factor models clarifies what each method gains and sacrifices relative to pure weighting or pure imputation. This connection is developed fully in Chapter~\ref{ch:factor}; here we summarise the key insights.
+
+Consider the factor model perspective. Untreated potential outcomes can be written as $Y_{it}(0) = \lambda_i' f_t + \varepsilon_{it}$, where $\lambda_i$ are unit-specific loadings and $f_t$ are time-specific factors. Synthetic control implicitly constrains the treated unit's loadings to be a convex combination of donor loadings: $\lambda_1 = \sum_j w_j \lambda_j$ with $w_j \geq 0$ and $\sum_j w_j = 1$. This convexity constraint ensures interpretability but may prevent exact matching when the treated unit lies outside the donor convex hull.
+
+Factor models (matrix completion, interactive fixed effects) estimate loadings freely without convexity constraints. They can fit any treated unit exactly in the pre-treatment period by choosing $\lambda_1$ appropriately. However, this flexibility introduces overfitting risk and requires stronger regularisation (nuclear norm penalties, rank constraints) to extrapolate credibly to the post-treatment period.
+
+Hybrid methods occupy the middle ground. ASCM relaxes convexity by adding a regression adjustment that captures the residual between the treated unit and the best convex approximation. Ridge SC relaxes convexity by regularising rather than constraining weights. SDID relaxes the synthetic control structure by allowing time-varying adjustments (time weights and intercept shifts). TROP combines all three adjustments---unit weights, time weights, and factor structure---learning their relative importance via cross-validation.
+
+The \citet{arkhangelsky2024causal} framework formalises this hierarchy. Synthetic control is a constrained imputation method (convex weights, no outcome model). Difference-in-differences is an unconstrained imputation method (uniform weights, additive fixed effects). Hybrid methods interpolate between these extremes, trading off interpretability (transparent weights) against flexibility (better fit). The optimal trade-off depends on the data: when the treated unit is well within the donor hull, synthetic control suffices; when it is far outside, factor models or TROP may be necessary; when it is near the boundary, ASCM or SDID may achieve the best balance.
+
+\subsection*{Practical Guidance}
+
+The identification assumptions for hybrid methods are strong and must be justified by institutional knowledge, assessed through diagnostics, and subjected to sensitivity analyses. The goal is to build a cumulative case that the hybrid estimator provides a credible counterfactual, that conclusions are robust to specification choices, and that the hybrid offers advantages over simpler alternatives.
+
+Hybrids are preferable to synthetic control when the treated unit cannot be matched closely by any convex combination of donors, when the donor pool is large and heterogeneous, or when pre-treatment periods are short. In these settings, augmentation or time weighting improves fit and reduces bias.
+
+Hybrids are preferable to difference-in-differences when treated units differ systematically from control units on pre-treatment trends or levels, when common time shocks affect units differentially, or when the number of treated units is small. In these settings, reweighting units and periods produces a more balanced comparison than uniform weights.
+
+Hybrids are most valuable when both synthetic control and difference-in-differences face challenges: the treated unit is near but not within the donor convex hull, or parallel trends holds after reweighting but not unconditionally. Transparency about assumptions, diagnostics, and sensitivity builds confidence and enables readers to assess the strength of the evidence.

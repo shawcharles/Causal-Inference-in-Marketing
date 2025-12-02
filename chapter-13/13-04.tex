@@ -1,0 +1,76 @@
+\section{Variable Selection for Causal Targets}
+\label{sec:hd-selection}
+
+Variable selection for causal inference differs from selection for prediction. The goal is not to minimise forecast error but to reduce omitted-variable bias. This section presents two key approaches: double selection and orthogonalised machine learning, which formalises the same principle.
+
+Double selection solves a critical problem. A naïve lasso regression of an outcome on a treatment and controls may omit important confounders. This happens if a confounder strongly predicts treatment but only weakly predicts the outcome. By excluding such a variable, the model introduces omitted-variable bias.
+
+Double selection corrects this bias by selecting controls from both the outcome model and the treatment model, then including the union of selected controls in the final regression.
+
+\begin{definition}[Double Selection]\label{def:double-selection}
+The double selection procedure for estimating $\tau$ proceeds in three steps. First, we select controls for the outcome by running a lasso of $\tilde{Y}_{it}$ on $\tilde{X}_{it}$ (excluding treatment), solving
+\[
+\hat{\beta}^Y = \arg\min_\beta \left\{ \frac{1}{NT}\sum_{i,t}(\tilde{Y}_{it} - \tilde{X}_{it}'\beta)^2 + \lambda^Y \|\beta\|_1 \right\}.
+\]
+Let $S^Y = \{j : \hat{\beta}^Y_j \neq 0\}$ be the selected controls. Second, we select controls for the treatment by running a lasso of $\tilde{W}_{it}$ on $\tilde{X}_{it}$, solving
+\[
+\hat{\gamma}^W = \arg\min_\gamma \left\{ \frac{1}{NT}\sum_{i,t}(\tilde{W}_{it} - \tilde{X}_{it}'\gamma)^2 + \lambda^W \|\gamma\|_1 \right\}.
+\]
+Let $S^W = \{j : \hat{\gamma}^W_j \neq 0\}$ be the selected controls. Finally, we run OLS of $\tilde{Y}_{it}$ on $\tilde{W}_{it}$ and the union of selected controls $\tilde{X}_{S,it}$, where $S = S^Y \cup S^W$:
+\[
+(\hat{\tau}^{\text{DS}}, \hat{\beta}_S^{\text{DS}}) = \arg\min_{\tau, \beta_S} \sum_{i,t}(\tilde{Y}_{it} - \tau \tilde{W}_{it} - \tilde{X}_{S,it}'\beta_S)^2.
+\]
+\end{definition}
+
+The rationale is that this union of selected controls, $S^Y \cup S^W$, captures all variables needed for valid inference. It includes variables that predict the outcome (improving precision), variables that predict the treatment (reducing confounding bias), and variables that predict both. This ensures that all important confounders are included, even those that a naïve outcome model might miss.
+
+The theoretical justification for double selection is that under approximate sparsity, the procedure enables valid inference.
+
+\begin{theorem}[Double Selection Asymptotic Normality]\label{thm:double-selection}
+Let $S_0^Y = \text{supp}(\beta_0^Y)$ and $S_0^W = \text{supp}(\gamma_0^W)$ denote the true supports for outcome and treatment models. Assume:
+\begin{enumerate}[(i)]
+    \item Assumptions~\ref{ass:restricted-eigenvalue}–\ref{ass:sparsity-rate} apply to both models;
+    \item Penalties satisfy $\lambda^Y, \lambda^W \asymp \sqrt{\log p / G}$ (where $G$ is the number of clusters);
+    \item True supports are recovered: $S^Y \supseteq S_0^Y$ and $S^W \supseteq S_0^W$ with high probability;
+    \item Overlap holds: $0 < \underline{e} \leq P(W_{it} = 1 | X_{S,it}) \leq \bar{e} < 1$.
+\end{enumerate}
+Under these conditions, the post-double-selection estimator is asymptotically normal:
+\[
+\sqrt{G}(\hat{\tau}^{\text{DS}} - \tau_0) \xrightarrow{d} \mathcal{N}(0, V^{\text{DS}}),
+\]
+where $V^{\text{DS}}$ is the asymptotic variance accounting for clustering. The key insight is that the union $S^Y \cup S^W$ includes all confounders (variables affecting both $Y$ and $W$), enabling unbiased estimation.
+\end{theorem}
+
+The key assumption is that the penalties for the outcome and treatment lasso are chosen appropriately (for example, via blocked cross-validation or theoretical formulas), ensuring that the lasso excludes irrelevant controls while retaining true confounders. Under dependence (clustering), the effective sample size for penalty choice is the number of clusters, and penalties must be adjusted accordingly.
+
+\subsection*{Orthogonalised Machine Learning}
+
+Orthogonalised machine learning provides a formal framework for this logic, as detailed in Chapter~\ref{ch:ml-nuisance}. It uses regularisation to estimate the nuisance functions—the outcome regression and the propensity score—and then combines them to form a Neyman-orthogonal score. This score is, by construction, robust to small errors in the nuisance models, which is what makes it suitable for use with machine learning estimators.
+
+Using lasso or elastic net to select controls for the nuisance models makes the procedure computationally feasible and stable in high dimensions.
+
+The orthogonalised lasso+DML procedure proceeds as follows. Partition the data into $K$ folds (using unit-level or time-level blocking to respect dependence). For each fold $k$, train outcome and propensity score lasso models on the $K-1$ folds excluding fold $k$, using blocked cross-validation to select penalties.
+
+Evaluate the trained models on fold $k$ to produce predictions $\hat{\mu}_{it}^{(-k)}(0, X_{it})$ (predicted outcome under control) and $\hat{e}_{it}^{(-k)}(X_{it})$ (predicted propensity score), where the superscript $(-k)$ indicates that the model is trained on data excluding fold $k$. Construct the doubly robust score for fold $k$:
+\[
+\psi^{\text{ATT}}_{it,k} = W_{it} \left( Y_{it} - \hat{\mu}_{it}^{(-k)}(0, X_{it}) - \tau \right) - \frac{W_{it} - \hat{e}_{it}^{(-k)}(X_{it})}{1 - \hat{e}_{it}^{(-k)}(X_{it})} \left( Y_{it} - \hat{\mu}_{it}^{(-k)}(0, X_{it}) \right).
+\]
+Aggregate scores across folds and solve $\sum_{i,t,k} \psi^{\text{ATT}}_{it,k} = 0$ for the ATT estimate. Compute influence-function-based standard errors clustered by unit (or two-way clustered) to account for dependence.
+
+This procedure combines the robustness of DML (orthogonality protects against nuisance estimation error) with the parsimony of regularisation (lasso selects a small set of controls for each nuisance model, improving stability and interpretability).
+
+\subsection*{Integration with Staggered DiD}
+
+Integration with staggered DiD (Chapter~\ref{ch:did}) requires aligning the selection procedure with the cohort-time structure. For cohort $g$ and period $t \geq g$, estimate outcome and treatment lasso models using only pre-treatment periods ($s < g$) for cohort $g$ units and using not-yet-treated or never-treated units as comparisons in period $t$.
+
+Select controls for cohort $g$ and period $t$ based on their predictive power in pre-treatment data, ensuring that post-treatment information does not leak into the nuisance models. Construct the doubly robust score for $\text{ATT}(g, t)$ using the selected controls, and aggregate across cohorts to obtain event-time effects $\theta_k$. This aligns regularisation with the design-based identification of staggered DiD, preserving the parallel trends logic while enabling flexible covariate adjustment.
+
+\subsection*{Balancing Weights and Riesz Regression}
+
+Balancing weights such as entropy balancing and stable balancing weights were introduced in this chapter as tools for constructing comparison groups that match treated units on observed covariates. Recent work in the debiased machine learning literature shows that these procedures are closely related to Riesz regression \citet{kato2025riesz,kato2025unified}.
+
+In average treatment effect estimation the Riesz representer can be written as a density-ratio between covariate distributions for treated and control units, and squared-loss Riesz regression coincides with least-squares density-ratio estimators. Kullback--Leibler type losses lead, via duality, to the entropy-balancing and covariate-balancing propensity score problems studied by \citet{hainmueller2012entropybalancing,zubizarreta2015stableweights,zhao2019covariatebalancing}.
+
+For you as an applied reader the message is that there is no sharp divide between weighting based on balancing constraints and weighting based on regression or machine learning objectives. When you fit Riesz regressions inside DML you are implicitly choosing a balancing scheme through the loss and basis functions used for the weight model.
+
+Conversely, when you solve an entropy-balancing problem you can view the resulting weights as a particular Riesz regression estimate that targets an orthogonal score. This perspective makes it easier to compare results across methods and to design diagnostics that focus on the properties of the estimated weights, such as their dispersion and the quality of covariate balance, rather than on labels like lasso or entropy balancing.

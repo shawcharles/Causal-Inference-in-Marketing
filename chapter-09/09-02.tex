@@ -1,0 +1,177 @@
+\section{Tensor Completion for Multi-Way Panels}
+\label{sec:tensor-completion}
+
+\subsection*{Motivation: Three-Way and Higher-Order Data}
+
+Marketing panels often have natural multi-way structure. A retailer observes sales for products indexed by $i = 1, \ldots, N_p$, stores indexed by $j = 1, \ldots, N_s$, and time periods indexed by $t = 1, \ldots, T$. The outcome is a three-way tensor $\mathcal{Y} \in \mathbb{R}^{N_p \times N_s \times T}$, where $\mathcal{Y}_{ijt}$ is the sales of product $i$ in store $j$ at time $t$.
+
+Standard matrix completion flattens this structure. We might create a matrix $Y \in \mathbb{R}^{(N_p \times N_s) \times T}$ by stacking product-store combinations as rows and time as columns. This approach has two limitations. First, it ignores the natural grouping of products and stores. Products in the same category co-move. Stores in the same region co-move. Flattening discards this structure. Second, it creates a very large matrix (if $N_p = 1000$ and $N_s = 200$, we have 200,000 rows), making computation expensive.
+
+Tensor completion preserves the multi-way structure. It models the tensor as a sum of low-rank components that capture product effects, store effects, and time effects, along with their interactions. This approach is more parsimonious (fewer parameters) and more interpretable (factors align with natural dimensions).
+
+\paragraph{Additional examples.} E-commerce platforms observe user engagement as a three-way tensor: users $\times$ items $\times$ contexts (device, time of day, location). Advertising data form a four-way tensor: campaigns $\times$ creatives $\times$ platforms $\times$ time. Tensor completion provides a natural framework for imputing counterfactuals in these settings.
+
+\subsection*{Tensor Decomposition Models}
+
+We adopt standard CP and Tucker decompositions to model multi-way structure.
+
+\begin{definition}[Mode-$k$ Product]
+For a tensor $\mathcal{X} \in \mathbb{R}^{N_1 \times N_2 \times N_3}$ and a matrix $\mathbf{U} \in \mathbb{R}^{J \times N_k}$, the mode-$k$ product $\mathcal{X} \times_k \mathbf{U}$ is a tensor of size $N_1 \times \cdots \times N_{k-1} \times J \times N_{k+1} \times \cdots \times N_3$ with entries:
+\[
+(\mathcal{X} \times_k \mathbf{U})_{i_1, \ldots, i_{k-1}, j, i_{k+1}, \ldots, i_3} = \sum_{i_k=1}^{N_k} \mathcal{X}_{i_1, \ldots, i_k, \ldots, i_3} \cdot U_{j, i_k}.
+\]
+The mode-$k$ product multiplies each mode-$k$ fibre by the matrix $\mathbf{U}$.
+\end{definition}
+
+\begin{definition}[CP Decomposition]
+A tensor $\mathcal{Y} \in \mathbb{R}^{N_1 \times N_2 \times N_3}$ admits a CP decomposition of rank $R$ if there exist factor matrices $\mathbf{A} \in \mathbb{R}^{N_1 \times R}$, $\mathbf{B} \in \mathbb{R}^{N_2 \times R}$, $\mathbf{C} \in \mathbb{R}^{N_3 \times R}$ such that
+\[
+\mathcal{Y}_{ijk} = \sum_{r=1}^R A_{ir} B_{jr} C_{kr} = \sum_{r=1}^R \mathbf{a}_r \otimes \mathbf{b}_r \otimes \mathbf{c}_r,
+\]
+where $\otimes$ denotes the outer product and $\mathbf{a}_r$, $\mathbf{b}_r$, $\mathbf{c}_r$ are the $r$-th columns of $\mathbf{A}$, $\mathbf{B}$, $\mathbf{C}$ respectively.
+\end{definition}
+
+\begin{definition}[Tucker Decomposition]
+A tensor $\mathcal{Y} \in \mathbb{R}^{N_1 \times N_2 \times N_3}$ admits a Tucker decomposition with multilinear rank $(R_1, R_2, R_3)$ if there exist a core tensor $\mathcal{G} \in \mathbb{R}^{R_1 \times R_2 \times R_3}$ and factor matrices $\mathbf{U}^{(1)} \in \mathbb{R}^{N_1 \times R_1}$, $\mathbf{U}^{(2)} \in \mathbb{R}^{N_2 \times R_2}$, $\mathbf{U}^{(3)} \in \mathbb{R}^{N_3 \times R_3}$ such that
+\[
+\mathcal{Y} = \mathcal{G} \times_1 \mathbf{U}^{(1)} \times_2 \mathbf{U}^{(2)} \times_3 \mathbf{U}^{(3)}.
+\]
+Tucker allows different ranks for each mode, offering more flexibility than CP at the cost of a denser core tensor.
+\end{definition}
+
+\begin{tcolorbox}[colback=gray!10!white,colframe=gray!50!black,title=Technical Note: CP vs Tucker]
+\textbf{CP decomposition} approximates the tensor as a sum of $R$ rank-one tensors. Element-wise: $\mathcal{Y}_{ijk} \approx \sum_{r=1}^{R} A_{ir} B_{jr} C_{kr}$. CP is simpler and more interpretable but requires all modes to share the same rank.
+
+\textbf{Tucker decomposition} generalises CP by allowing distinct ranks $(R_1, R_2, R_3)$ for each mode. The core tensor $\mathcal{G} \in \mathbb{R}^{R_1 \times R_2 \times R_3}$ captures interactions. Tucker is more flexible but has more parameters: $R_1 R_2 R_3 + N_1 R_1 + N_2 R_2 + N_3 R_3$.
+
+For causal inference, CP is often preferred for interpretability. Tucker is preferred when modes have very different intrinsic dimensions.
+\end{tcolorbox}
+
+For causal inference, we assume that untreated potential outcomes admit a low-rank tensor decomposition.
+
+\begin{assumption}[Tensor Low-Rank Structure]\label{ass:tensor-low-rank}
+The untreated potential outcomes admit a low-rank tensor decomposition:
+\[
+\mathcal{Y}_{ijt}(0) = \sum_{r=1}^R \alpha_{ir} \beta_{jr} \gamma_{tr} + \varepsilon_{ijt},
+\]
+where:
+\begin{enumerate}[(i)]
+    \item The rank $R$ satisfies $R \ll \min(N_p, N_s, T)$;
+    \item The factor matrices $\mathbf{A} = (\alpha_{ir})$, $\mathbf{B} = (\beta_{jr})$, $\mathbf{C} = (\gamma_{tr})$ have bounded entries: $\max_{i,r}|\alpha_{ir}| \leq \bar{\alpha}$, and similarly for $\mathbf{B}$ and $\mathbf{C}$;
+    \item The idiosyncratic errors $\varepsilon_{ijt}$ are independent across $(i,j,t)$ with $\mathbb{E}[\varepsilon_{ijt}] = 0$ and $\mathbb{E}[\varepsilon_{ijt}^2] = \sigma^2$.
+\end{enumerate}
+\end{assumption}
+
+
+\subsection*{Causal Inference with Tensors}
+
+Treatment creates missing entries in the tensor. Suppose a promotion is applied to a subset of products $\mathcal{P}$ in a subset of stores $\mathcal{S}$ during periods $\mathcal{T}$. The treated cells are $\{(i, j, t) : i \in \mathcal{P}, j \in \mathcal{S}, t \in \mathcal{T}\}$. We observe treated outcomes $\mathcal{Y}_{ijt}(1)$ for these cells and untreated outcomes $\mathcal{Y}_{ijt}(0)$ for all other cells.
+
+The causal estimand is the average treatment effect on the treated:
+\[
+\tau_{\text{ATT}} = \frac{1}{|\mathcal{P}| |\mathcal{S}| |\mathcal{T}|} \sum_{i \in \mathcal{P}} \sum_{j \in \mathcal{S}} \sum_{t \in \mathcal{T}} \left( \mathcal{Y}_{ijt}(1) - \mathcal{Y}_{ijt}(0) \right).
+\]
+Tensor completion imputes $\mathcal{Y}_{ijt}(0)$ for treated cells by estimating the low-rank structure from untreated cells.
+
+\begin{assumption}[Tensor Factor Stability]\label{ass:tensor-stability}
+The factor structure is stable across treated and untreated cells:
+\[
+\mathbb{E}[\mathcal{Y}_{ijt}(0) | (i,j,t) \in \mathcal{T}] = \mathbb{E}[\mathcal{Y}_{ijt}(0) | (i,j,t) \in \Omega],
+\]
+where $\mathcal{T}$ denotes treated cells and $\Omega$ denotes untreated cells.
+\end{assumption}
+
+\begin{definition}[Tensor Nuclear Norm]
+For computational tractability, we use the sum of nuclear norms of matricisations:
+\[
+\|\mathcal{M}\|_{*,\text{sum}} = \sum_{k=1}^3 \|\mathbf{M}_{(k)}\|_*,
+\]
+where $\mathbf{M}_{(k)}$ denotes the mode-$k$ unfolding of $\mathcal{M}$ and $\|\cdot\|_*$ is the matrix nuclear norm.
+\end{definition}
+
+The estimator solves the regularised problem:
+\[
+\min_{\mathcal{M}} \sum_{(i,j,t) \in \Omega} (\mathcal{Y}_{ijt} - \mathcal{M}_{ijt})^2 + \lambda \|\mathcal{M}\|_{*,\text{sum}},
+\]
+where $\lambda > 0$ is the regularisation parameter (selected by cross-validation as in Section~\ref{sec:factor-tuning}).
+
+\begin{theorem}[Identification of ATT under Tensor Completion]\label{thm:tensor-identification}
+Under Assumptions~\ref{ass:tensor-low-rank} and~\ref{ass:tensor-stability}, and assuming $|\Omega| \geq C \cdot R \cdot (N_p + N_s + T) \log^2(\max(N_p, N_s, T))$ for a universal constant $C > 0$, the ATT is identified and consistently estimated by
+\[
+\hat{\tau}_{\text{ATT}} = \frac{1}{|\mathcal{T}|} \sum_{(i,j,t) \in \mathcal{T}} \left( \mathcal{Y}_{ijt} - \hat{\mathcal{M}}_{ijt} \right),
+\]
+where $\hat{\mathcal{M}}$ is the tensor completion estimator.
+\end{theorem}
+
+\begin{proposition}[Estimation Error Bound]\label{prop:tensor-rate}
+Under Assumptions~\ref{ass:tensor-low-rank}--\ref{ass:tensor-stability}, the nuclear-norm regularised estimator satisfies
+\[
+\frac{1}{N_p N_s T} \|\hat{\mathcal{M}} - \mathcal{M}^*\|_F^2 = O_P\left( \sigma^2 R \cdot \frac{N_p + N_s + T}{|\Omega|} \right),
+\]
+where $\mathcal{M}^*$ is the true low-rank component. See \citet{yuan2016tensor} for proof details.
+\end{proposition}
+
+\subsection*{Algorithm: Alternating Least Squares}
+
+Alternating least squares (ALS) provides a simple and effective algorithm for CP decomposition.
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!50!black,title=Algorithm: ALS for Tensor Completion]
+\textbf{Input:} Observed tensor entries $\{(i,j,t,\mathcal{Y}_{ijt}) : (i,j,t) \in \Omega\}$, rank $R$, convergence threshold $\epsilon$.
+
+\textbf{Initialise:} Factor matrices $\mathbf{A}^{(0)} \in \mathbb{R}^{N_p \times R}$, $\mathbf{B}^{(0)} \in \mathbb{R}^{N_s \times R}$, $\mathbf{C}^{(0)} \in \mathbb{R}^{T \times R}$ (random or SVD-based).
+
+\textbf{Iterate} for $k = 1, 2, \ldots$ until convergence:
+\begin{enumerate}
+\item \textbf{Update $\mathbf{A}$:} Fix $\mathbf{B}^{(k-1)}$ and $\mathbf{C}^{(k-1)}$. For each row $i$, solve the least squares problem:
+\[
+\mathbf{a}_i^{(k)} = \arg\min_{\mathbf{a}} \sum_{(j,t): (i,j,t) \in \Omega} \left( \mathcal{Y}_{ijt} - \sum_{r=1}^R a_r B_{jr}^{(k-1)} C_{tr}^{(k-1)} \right)^2.
+\]
+\item \textbf{Update $\mathbf{B}$:} Fix $\mathbf{A}^{(k)}$ and $\mathbf{C}^{(k-1)}$. For each row $j$, solve analogously.
+\item \textbf{Update $\mathbf{C}$:} Fix $\mathbf{A}^{(k)}$ and $\mathbf{B}^{(k)}$. For each row $t$, solve analogously.
+\item \textbf{Check convergence:} If $\|\mathbf{A}^{(k)} - \mathbf{A}^{(k-1)}\|_F / \|\mathbf{A}^{(k)}\|_F < \epsilon$ (and similarly for $\mathbf{B}$, $\mathbf{C}$), stop.
+\end{enumerate}
+
+\textbf{Output:} Factor matrices $\hat{\mathbf{A}}$, $\hat{\mathbf{B}}$, $\hat{\mathbf{C}}$. Imputed tensor: $\hat{\mathcal{M}}_{ijt} = \sum_{r=1}^R \hat{A}_{ir} \hat{B}_{jr} \hat{C}_{tr}$.
+\end{tcolorbox}
+
+Convergence is typically fast (10--50 iterations). Each step is a standard least squares problem that can be solved efficiently using linear algebra libraries.
+
+\subsection*{Software Implementation}
+
+Several packages implement tensor completion:
+
+\paragraph{Python.}
+\begin{itemize}
+\item \texttt{tensorly}: General tensor decomposition library. Supports CP, Tucker, and tensor completion with various backends (NumPy, PyTorch, TensorFlow).
+\item \texttt{sktensor}: Tensor factorisation for sparse tensors. Useful for large panels with many missing entries.
+\end{itemize}
+
+\paragraph{R.}
+\begin{itemize}
+\item \texttt{rTensor}: CP and Tucker decompositions. Basic tensor operations and unfoldings.
+\item \texttt{tensorBF}: Bayesian tensor factorisation for uncertainty quantification.
+\end{itemize}
+
+\paragraph{MATLAB.}
+\begin{itemize}
+\item Tensor Toolbox (\texttt{tensor\_toolbox}): Comprehensive library for tensor computations, including CP and Tucker with missing data.
+\end{itemize}
+
+\subsection*{Application: Multi-Market Product Launches}
+
+Consider a consumer packaged goods company launching 50 new products across 20 geographic markets over 52 weeks. Products are launched in different markets at different times (staggered rollout). The outcome is weekly sales, forming a tensor $\mathcal{Y} \in \mathbb{R}^{50 \times 20 \times 52}$.
+
+\paragraph{Challenge.} Traditional difference-in-differences is difficult because products are launched at different times in different markets. Synthetic control is challenging because each product-market combination is unique.
+
+\paragraph{Tensor completion solution.} Treat post-launch sales for each product-market pair as missing. Estimate a CP decomposition with rank $R = 5$ using ALS on untreated cells. The five factors capture:
+\begin{enumerate}
+\item Seasonality (high in summer, low in winter)
+\item Product category trends (health products growing, indulgence declining)
+\item Market size (large markets have high loadings)
+\item Regional preferences (coastal vs inland)
+\item Launch timing effects
+\end{enumerate}
+
+\paragraph{Results.} The imputed counterfactuals $\hat{\mathcal{M}}_{ijt}$ represent what sales would have been without the launch. The average treatment effect is 15 per cent increase in sales, with heterogeneity across products (5--30 per cent) and markets (10--25 per cent).
+
+\paragraph{Diagnostics.} Pre-treatment reconstruction $R^2 = 0.85$, indicating the rank-5 model captures most variation. Placebo tests on held-out pre-launch cells show pseudo-effects near zero (mean 0.02, SD 0.5). Inference for confidence intervals is covered in Section~\ref{sec:bayesian-matrix}.

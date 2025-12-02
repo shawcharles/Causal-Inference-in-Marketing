@@ -1,0 +1,79 @@
+\section{Panel Data Sources in Marketing}
+\label{sec:data-sources}
+
+Marketing causal inference relies on diverse data sources, each with distinct strengths and limitations. The choice of data source shapes the feasible estimands, identification strategies, and inference procedures. This section surveys the major data types and their implications for causal analysis.
+
+\subsection*{Retail Scanner Data}
+
+Retail scanner data, provided by syndicated data vendors (Nielsen, IRI, Circana) or directly by retailers, record sales, prices, and promotions at a granular level—typically store-week-UPC. These data support price elasticity estimation (Section~\ref{sec:price-elasticity}), promotion analysis, and category management studies.
+
+\paragraph{Strengths.} Scanner data offer precise measurement of transactions, consistent unit definitions, and long time series. Store-level panels enable difference-in-differences and synthetic control designs.
+
+\paragraph{Limitations.} Coverage can be incomplete: not all retailers participate, and online sales are often excluded. Panel churn—stores entering and exiting the sample—creates unbalanced panels. The way we aggregate the data—from daily to weekly, or from SKU to brand—involves trade-offs between noise, bias, and the clarity of the estimand.
+
+\paragraph{Causal considerations.} Price endogeneity is pervasive: retailers set prices based on expected demand. Instrumental variables (Section~\ref{sec:price-elasticity}) or natural experiments are required for causal elasticity estimates.
+
+\subsection*{Platform Event Logs}
+
+Digital platforms generate massive event logs recording impressions, clicks, conversions, and user journeys. These data support digital attribution (Section~\ref{sec:digital-attribution}), ranking experiments (Section~\ref{sec:ranking-algorithms}), and platform experiments (Section~\ref{sec:platform-experiments}).
+
+\paragraph{Strengths.} Event logs offer granular, real-time data at massive scale. User-level tracking enables individual-level causal inference when combined with randomisation.
+
+\paragraph{Limitations.} What is observed versus what is inferred is critical. An impression may be logged but never seen (viewability). A click may not reflect genuine interest (bot traffic, accidental clicks). A conversion is an attributed outcome, not a direct consequence, and the rules of attribution are constantly changing.
+
+\paragraph{Privacy constraints.} Privacy-enhancing technologies—Apple's App Tracking Transparency (ATT), cookie deprecation, differential privacy—degrade our ability to link user activity across devices and time. Cross-device identity resolution becomes probabilistic rather than deterministic, introducing measurement error in treatment assignment and outcomes.
+
+\paragraph{Causal considerations.} Selection into ad exposure is algorithmic and endogenous. Naive exposed-vs-unexposed comparisons are badly biased (Section~\ref{sec:digital-attribution}). Randomisation or quasi-experimental designs are essential.
+
+\subsection*{Geo and Mobility Data}
+
+Geo data define markets—designated market areas (DMAs), postcodes, census tracts, custom polygons—for geo-experiments (Section~\ref{sec:geo-experiments}) and spillover analysis. Mobility data from mobile devices or transportation records delineate catchment areas and cross-shopping patterns.
+
+\paragraph{Strengths.} Geographic units are stable over time and enable market-level experiments that avoid individual-level interference. Mobility data reveal actual consumer behaviour rather than administrative boundaries.
+
+\paragraph{Limitations.} Definitions are often administratively convenient (DMA boundaries) rather than economically motivated (commuting zones, trade areas). Misalignment between treatment units and economic catchments introduces measurement error in exposure and spillovers, requiring buffer zones or explicit exposure mappings (Chapter~\ref{ch:spillovers}).
+
+\paragraph{Causal considerations.} With few geographic units, inference requires randomisation inference or cluster-robust methods (Chapter~\ref{ch:inference}). Spillovers across geographic boundaries must be modelled or excluded.
+
+\subsection*{CRM and Transaction Data}
+
+Customer relationship management (CRM) systems and transaction databases record individual purchase histories, loyalty programme activity, and customer service interactions. These data support CLV analysis (Section~\ref{sec:clv-acquisition}), loyalty programme evaluation (Section~\ref{sec:loyalty-valuation}), and customer-level experiments.
+
+\paragraph{Strengths.} CRM data provide longitudinal customer histories with precise transaction timing. Loyalty programmes create natural variation in treatment exposure.
+
+\paragraph{Limitations.} CRM data cover only existing customers, missing prospects and churned customers. Selection into loyalty programmes is endogenous. Data quality depends on identity resolution across channels.
+
+\paragraph{Causal considerations.} Survivorship bias is a major concern: analysing only active customers ignores those who churned. Intention-to-treat analysis or explicit attrition modelling is required.
+
+\subsection*{Survey and Tracking Data}
+
+Brand tracking surveys measure awareness, consideration, and preference at regular intervals. Customer satisfaction surveys (NPS, CSAT) capture attitudinal outcomes. These data support brand equity analysis and long-run advertising effects (Section~\ref{sec:mmm}).
+
+\paragraph{Strengths.} Surveys measure constructs (brand perception, satisfaction) that transaction data cannot capture. Tracking studies provide consistent time series for trend analysis.
+
+\paragraph{Limitations.} Surveys suffer from response bias, social desirability, and low response rates. Sample sizes are typically small, limiting statistical power. Linking survey responses to individual transactions is often infeasible.
+
+\paragraph{Causal considerations.} Survey outcomes are noisy and may not reflect actual behaviour. Use surveys as supplementary evidence, not primary outcomes, for causal claims.
+
+\subsection*{Data Source Summary}
+
+Table~\ref{tab:data-sources} summarises the major data sources, their typical applications, and key causal considerations.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Marketing data sources and causal considerations}
+\label{tab:data-sources}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Data Source} & \textbf{Typical Unit} & \textbf{Primary Applications} & \textbf{Key Causal Issue} \\
+\midrule
+Scanner data & Store-week-UPC & Price elasticity, promotions & Price endogeneity \\
+Platform logs & User-session & Attribution, ranking, A/B tests & Algorithmic selection \\
+Geo/mobility & DMA, postcode & Geo-experiments, spillovers & Few clusters, boundary effects \\
+CRM/transaction & Customer-time & CLV, loyalty, retention & Survivorship bias \\
+Survey/tracking & Respondent-wave & Brand equity, satisfaction & Response bias, low power \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}

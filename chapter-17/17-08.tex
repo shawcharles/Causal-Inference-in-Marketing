@@ -1,0 +1,30 @@
+\section{Sensitivity Analyses}
+\label{sec:sensitivity-analyses}
+
+Sensitivity analyses quantify how robust our conclusions are to violations of our key assumptions. For parallel trends, we can estimate how much the trend would need to deviate to overturn our result.
+
+\begin{definition}[Bounded Pre-Trend Deviation]\label{def:pretrend-sensitivity}
+Let $\delta$ denote the maximum allowable deviation from parallel trends per period---specifically, a bound on the difference in trend slopes between treated and control groups (see Definition~\ref{def:bounded-pt-violation} in Chapter~\ref{ch:threats}). Following \citet{rambachan2023more}, the sensitivity function maps $\delta$ to the identified set for the treatment effect:
+\[
+\mathcal{T}(\delta) = [\hat{\tau} - M \cdot \delta, \hat{\tau} + M \cdot \delta],
+\]
+where $M$ depends on the number of post-treatment periods and the assumed persistence of the violation. For a single post-period with linear extrapolation, $M = 1$.
+
+The breakdown value $\delta^*$ is the smallest deviation that would overturn the sign of the effect:
+\[
+\delta^* = |\hat{\tau}| / M.
+\]
+This number is meaningful only when compared to calibrated benchmarks. Report $\delta^*$ alongside the magnitude of observed pre-trend coefficients. If the largest pre-trend coefficient is $0.02$ and $\delta^* = 0.05$, the effect survives violations 2.5 times larger than anything observed pre-treatment.
+\end{definition}
+
+\begin{definition}[Effective Sample Size]\label{def:ess-trimming}
+After trimming units with extreme propensity scores or applying weights, the effective sample size (Kish's formula) is:
+\[
+\text{ESS} = \frac{(\sum_i \hat{w}_i)^2}{\sum_i \hat{w}_i^2} = \frac{N}{1 + \text{CV}^2(\hat{w})},
+\]
+where $\hat{w}_i$ are the final analysis weights normalised to sum to $N$, and $\text{CV}(\hat{w})$ is their coefficient of variation. When weights are uniform, $\text{ESS} = N$; when one unit dominates, $\text{ESS} \to 1$. Report $\text{ESS} / N$ as the effective utilisation of the sample. Low ratios (e.g., $< 0.5$) signal that a small number of units drive the estimate. Note that ESS measures sample utilisation, distinct from the effective number of donors $N_{\text{eff}}^{\text{donors}}$ in Definition~\ref{def:weight-concentration}.
+\end{definition}
+
+For unobserved confounding, we can calculate how strong an unobserved confounder would need to be to explain away our estimated effect. We can also assess the impact of measurement and attribution shifts by restricting our analysis to pre-policy windows, comparing external outcomes, and reporting estimates before and after the policy date.
+
+Synthetic Parallel Trends (Section~\ref{sec:joint-inference}) offers a complementary robustness layer for designs that rely on reweighting. Rather than taking a single set of weights from DiD, SC, SDID, or their hybrids as the truth, it considers all convex weights that reproduce the treated unit's pre-trends and treats them as admissible \citep{liu2025synthetic}. The resulting identified set for the treatment effect is an interval that remains valid as long as the treated trend can be written as a convex combination of donor trends. When different methods disagree sharply, reporting these bounds alongside point estimates makes the dependence on weighting assumptions explicit and prevents overconfident claims based on a single specification.

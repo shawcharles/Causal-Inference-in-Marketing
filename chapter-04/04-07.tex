@@ -1,0 +1,75 @@
+\section{Inference}
+\label{sec:did-inference}
+
+Valid inference in DiD settings requires accounting for the correlation structure of the errors, the finite-sample properties of the estimators, and the multiplicity of hypotheses tested. We outline the major inferential procedures for DiD, with forward references to the comprehensive treatment in Chapter~\ref{ch:inference}.
+
+\subsection*{Clustering}
+
+Clustering is the standard approach to accounting for within-unit correlation over time. Outcomes for the same unit in different periods are correlated because of persistent unobservables, autocorrelated shocks, or dynamic feedback. Ignoring this correlation leads to standard errors that are too small and hypothesis tests that reject too often. Clustering standard errors by unit allows for arbitrary correlation within units while maintaining independence across units. The cluster-robust variance estimator computes standard errors that are valid asymptotically as the number of clusters (units) grows, provided that errors are uncorrelated across clusters.
+
+The independence assumption across clusters is often violated in marketing settings. Stores in the same region may be correlated through regional shocks; brands in the same category may be correlated through category-level demand; all units may be affected by macroeconomic conditions. Two-way clustering (discussed below) addresses some of these concerns, but if cross-cluster correlation is severe and persistent, even two-way clustering may be insufficient. In such cases, consider clustering at a higher level (for example, region rather than store) or using methods that explicitly model the correlation structure.
+
+Two-way clustering, by both unit and time, accounts for correlation within units over time and across units within periods. If all stores in a region are affected by a regional shock, errors are correlated across stores within a period. If macroeconomic conditions or industry-wide trends affect all units in a given period, errors are correlated across units. Two-way clustering captures both sources of correlation, producing standard errors that are valid under weak assumptions. The cost is larger standard errors (because more correlation is acknowledged) and greater computational complexity, though modern software implements two-way clustering efficiently.
+
+\textbf{Common Mistake: Wrong Clustering Level.} A frequent error is clustering at the wrong level. The clustering level must match the level at which treatment varies. If treatment is assigned at the store level (each store is treated or not), cluster by store. If treatment is assigned at the DMA level (all stores in a DMA share treatment status), cluster by DMA, not by store. Clustering at a finer level than treatment assignment (for example, store when treatment varies at DMA) produces standard errors that are too small because it ignores the correlation induced by shared treatment. Clustering at a coarser level than necessary is conservative but sacrifices power. When uncertain, cluster at the treatment assignment level or one level coarser.
+
+\textbf{Worked Example: Impact of Clustering on Inference.} Consider a loyalty programme evaluation with 500 stores over 12 quarters. Without clustering, the estimated effect is $\hat{\tau} = 8.2$ with SE $= 2.1$, yielding a 95\% CI of $[4.1, 12.3]$ and $p < 0.001$. With unit (store) clustering, SE increases to $4.8$, the CI widens to $[-1.2, 17.6]$, and $p = 0.09$---no longer significant at the 5\% level. The unclustered analysis dramatically overstates precision by ignoring serial correlation within stores. This example illustrates why clustering is not optional: ignoring it leads to false confidence in effects that may not be statistically distinguishable from zero.
+
+\subsection*{Small-Sample Corrections}
+
+Small-$G$ corrections address the problem that cluster-robust standard errors rely on large-cluster asymptotics, which may not provide accurate inference when the number of clusters is small. As a rough guideline: with fewer than 20 clusters, asymptotic cluster-robust SEs are often unreliable, and wild cluster bootstrap or randomisation inference is preferred; with 20--50 clusters, asymptotic SEs may be adequate but should be checked against bootstrap results, and small-sample corrections (for example, HC2 or HC3 variants) should be applied; with 50 or more clusters, asymptotic cluster-robust SEs are generally reliable.
+
+These thresholds are guidelines, not hard rules. The reliability of asymptotic SEs depends not just on $G$ but also on the balance of cluster sizes (unequal clusters degrade performance), the degree of within-cluster correlation (higher correlation requires more clusters), and the leverage of treated clusters (a few high-leverage clusters can distort inference). When in doubt, compare asymptotic SEs to bootstrap results.
+
+In marketing panels, the number of treated cohorts or the number of DMAs in a geo-experiment may be modest, making asymptotic approximations unreliable. The wild cluster bootstrap provides finite-sample inference by resampling entire clusters, imposing random signs on cluster-level residuals, and computing the bootstrap distribution of the test statistic. It respects the clustering structure and accommodates heteroskedasticity and serial correlation. This provides more accurate p-values than asymptotic methods when clusters are few.
+
+A technical note: the wild cluster bootstrap imposes the null hypothesis when constructing the bootstrap distribution, which is appropriate for hypothesis testing. Bootstrap confidence intervals constructed by inverting the test may differ slightly from intervals constructed by percentile methods. For most applications, the difference is minor, but when precision matters, report both the bootstrap p-value and the asymptotic confidence interval, noting any discrepancies.
+
+\subsection*{Randomisation Inference}
+
+Randomisation inference and permutation tests offer design-based alternatives that do not rely on parametric assumptions about error distributions. Under the sharp null hypothesis of no effect for any unit in any period, the observed treatment assignment is just one of many possible assignments that could have been drawn from the randomisation protocol. By recomputing the test statistic for all possible assignments (or a large random sample of them), we generate the exact null distribution of the test statistic. We then compare the observed statistic to this distribution to compute an exact p-value.
+
+Randomisation inference is particularly compelling in experimental settings where the randomisation protocol is known and where the goal is to conduct inference that respects the design. In observational staggered adoption, the "randomisation protocol" is unknown. Randomisation inference can still be applied by assuming a particular assignment mechanism---for example, that treatment timing is random conditional on covariates---but this is an assumption about the data-generating process, not a design feature. The validity of the inference depends on the plausibility of the assumed assignment mechanism.
+
+\subsection*{Multiple Testing}
+
+Multiple testing arises when estimating many coefficients across cohorts, periods, or subgroups. The probability of at least one false rejection (type I error) exceeds the nominal level unless we adjust for multiplicity. Bonferroni controls family-wise error rate by dividing the significance level by the number of tests but can be conservative when tests are correlated. False discovery rate (FDR) control offers a less conservative alternative, controlling the expected proportion of false rejections. Romano--Wolf stepdown procedures exploit correlation to improve power while controlling family-wise error.
+
+When to use each: use Bonferroni or Romano--Wolf when any false positive is costly---for example, in regulatory submissions or when decisions are irreversible. Use FDR control when some false positives are acceptable and power is a concern---for example, in exploratory subgroup analysis or when the goal is to generate hypotheses for further testing. Event-time specific multiplicity is treated in Chapter~\ref{ch:event}, Section~\ref{sec:event-inference}.
+
+\subsection*{Practical Guidance}
+
+Practical guidance for marketing applications: cluster by unit as a default. Use two-way clustering when cross-unit correlation is plausible (for example, in geo-experiments or when regional shocks are present). Apply wild cluster bootstrap when the number of clusters is small. Use multiplicity adjustments when testing many coefficients or subgroup effects. When uncertain about the clustering level, report results under alternative clustering choices as a robustness check. If conclusions change substantially across clustering specifications, acknowledge the sensitivity.
+
+Pre-specifying the primary estimand and distinguishing primary from exploratory analyses reduces the multiplicity burden. If the primary estimand is the overall ATT, control type I error for that test and treat ancillary analyses as exploratory.
+
+Modern estimators like Callaway--Sant'Anna and Sun--Abraham provide standard errors for aggregated estimands (overall ATT, event-time effects) that account for the estimation of cohort-time effects. These standard errors rely on different asymptotic arguments than those for individual coefficients; consult the estimator documentation for details on the variance estimation approach.
+
+For event-time inference guidance, see Chapter~\ref{ch:event}, Section~\ref{sec:event-inference}. Transparency about inferential choices and robustness checks using alternative methods build confidence in conclusions.
+
+\begin{table}[htbp]\small
+\centering
+\caption{Inference Method Decision Guide}
+\label{tab:inference-decision}
+\begin{tabular}{p{5cm}p{4cm}p{5.5cm}}
+\toprule
+\textbf{Situation} & \textbf{Recommended Method} & \textbf{Notes} \\
+\midrule
+Standard panel, $G \geq 50$ clusters & Cluster-robust SEs by unit & Default choice \\
+\addlinespace
+Cross-unit correlation (geo-experiments, regional shocks) & Two-way clustering (unit $\times$ time) & Accounts for both serial and cross-sectional correlation \\
+\addlinespace
+Few clusters ($G < 20$) & Wild cluster bootstrap & Provides finite-sample valid inference \\
+\addlinespace
+Experimental design with known randomisation & Randomisation inference & Exact p-values under sharp null \\
+\addlinespace
+Many event-time coefficients or subgroups & FDR control or Romano--Wolf & Adjust for multiplicity \\
+\addlinespace
+Primary estimand + exploratory analyses & Adjust primary only & Label exploratory as such \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Software.} Wild cluster bootstrap: \texttt{boottest} in Stata, \texttt{fwildclusterboot} in R. Two-way clustering: \texttt{reghdfe} in Stata, \texttt{fixest} in R. Romano--Wolf: \texttt{rwolf} in Stata, \texttt{wildrwolf} in R. FDR control: \texttt{p.adjust(method="BH")} in R.
+
+These inference procedures ensure that uncertainty is quantified appropriately and that hypothesis tests have correct size. The next section develops diagnostic workflows for assessing the plausibility of identifying assumptions and the robustness of conclusions.

@@ -1,0 +1,123 @@
+\section{Inference}
+\label{sec:hybrid-inference}
+
+Inference for hybrid methods quantifies uncertainty in treatment effect estimates and assesses whether observed effects are unusually large relative to what would be expected by chance. Different hybrid methods require different inference procedures because they have different sources of uncertainty. This section presents inference procedures adapted to each hybrid method, including variance estimators, in-space and in-time placebos, bootstrap methods, conformal inference, and randomisation approaches. Forward references to Chapter~\ref{ch:inference} provide comprehensive coverage of panel inference.
+
+\subsection*{Method-Specific Variance Estimation}
+
+Each hybrid method has a different variance structure reflecting its estimation procedure.
+
+\paragraph{SDID.} \citet{arkhangelsky2021synthetic} derive a variance estimator for SDID that accounts for uncertainty in both unit weights and time weights. The variance estimator is:
+\[
+\widehat{\text{Var}}(\hat{\tau}^{\text{SDID}}) = \frac{1}{N_1 N_0} \sum_{i: D_i = 0} \hat{w}_i^2 \left( \sum_{t: W_t = 1} \hat{\lambda}_t (Y_{it} - \bar{Y}_{\text{co},t}) - \sum_{t: W_t = 0} \hat{\lambda}_t (Y_{it} - \bar{Y}_{\text{co},t}) \right)^2,
+\]
+where $\bar{Y}_{\text{co},t}$ is the weighted control mean at time $t$. This variance estimator is consistent under the assumption that the number of control units is large relative to the number of treated units. For small samples (fewer than 30 control units), bootstrap procedures are recommended.
+
+\paragraph{ASCM.} For augmented synthetic control, the variance has two components: uncertainty from the weighting model and uncertainty from the augmentation model. When the ridge penalty is small, the augmentation model contributes more to the variance. When the ridge penalty is large, the weighting model dominates. \citet{ben2021augmented} recommend bootstrap inference for ASCM because the closed-form variance depends on unknown nuisance parameters. The pairs bootstrap (resampling units with replacement) is appropriate when units are independent. The wild bootstrap is appropriate when units may be correlated within clusters.
+
+\paragraph{Ridge SC.} Ridge synthetic control produces unit weights that depend on the penalty parameter $\eta$. The variance of the treatment effect estimate decreases with $\eta$ (more regularisation produces more stable estimates) but bias may increase. No closed-form variance estimator is available; bootstrap inference is standard.
+
+\paragraph{TROP.} For triply robust panel estimation, \citet{athey2025triply} recommend cross-validation-based inference. The treatment effect is estimated on a training sample and evaluated on a held-out validation sample. The variance is estimated from the dispersion of effects across cross-validation folds. This procedure accounts for the tuning parameter selection and provides valid inference without assuming a specific data-generating process.
+
+\subsection*{In-Space Placebos}
+
+In-space placebos, introduced in Chapter~\ref{ch:sc} for synthetic control, extend to hybrid methods with modifications. For each donor unit $j \in \mathcal{J}$, apply the hybrid method treating donor $j$ as if it received treatment at the intervention time. Use the remaining donors as controls. Compute the post-treatment gap for donor $j$ as the difference between its observed outcomes and its hybrid synthetic control's outcomes.
+
+For ASCM, each placebo requires re-estimating the augmentation model using covariates from the placebo unit and the remaining donors. For SDID, each placebo requires recomputing both unit weights (excluding the placebo unit from the donor pool) and time weights. For ridge SC, the placebo procedure is analogous to standard SC but uses the ridge penalty.
+
+The RMSPE ratio provides a test statistic for in-space placebos. For each unit $i$ (treated and placebos), compute the ratio of post-treatment RMSPE to pre-treatment RMSPE:
+\[
+\text{RMSPE ratio}_i = \frac{\sqrt{\frac{1}{T_1} \sum_{t > T_0} (Y_{it} - \hat{Y}_{it}^{\text{syn}})^2}}{\sqrt{\frac{1}{T_0} \sum_{t \leq T_0} (Y_{it} - \hat{Y}_{it}^{\text{syn}})^2}}.
+\]
+A large RMSPE ratio indicates that the gap between the unit and its synthetic control is larger post-treatment than pre-treatment, consistent with a treatment effect.
+
+Rank the treated unit's RMSPE ratio among all units (treated plus placebos). Let $r$ denote the rank, where $r = 1$ corresponds to the largest ratio. The one-sided p-value is:
+\[
+p = \frac{r}{N + 1},
+\]
+where $N$ is the total number of units. If the treated unit has the largest RMSPE ratio ($r = 1$), the p-value is $1/(N+1)$. With 20 donors, the minimum achievable p-value is $1/21 \approx 0.048$.
+
+Graphical presentation of placebo gaps overlaying the treated unit's gap makes the inference transparent. If the treated unit's gap is visually distinct from the placebo gaps, this provides evidence of a treatment effect.
+
+\subsection*{In-Time Permutations}
+
+In-time permutations apply the hybrid method using pseudo-intervention dates in the pre-treatment period. Rather than conducting a single placebo test at one pseudo date, in-time permutations apply the method at multiple pseudo dates spanning the pre-treatment period. This produces a distribution of pseudo treatment effects.
+
+Select a range of pseudo-intervention dates (for example, every quarter from quarter 3 to quarter $T_0 - 2$, leaving sufficient pre and post periods for each pseudo-treatment). For each pseudo date, apply the hybrid method and compute the pseudo treatment effect. The distribution of pseudo effects provides a reference for the observed post-treatment effect.
+
+If the observed effect is large relative to the distribution of pseudo effects (for example, outside the 90th percentile of absolute pseudo effects), this provides evidence that the effect is not due to chance or model instability. In-time permutations are particularly valuable for hybrid methods because they test both the weighting model and the augmentation model. If pseudo effects are large (comparable in magnitude to the observed effect), the hybrid model does not extrapolate well within the pre-treatment period, casting doubt on its validity for the post-treatment period.
+
+\subsection*{Bootstrap Methods}
+
+Block and wild bootstrap provide inference for aggregated estimands when multiple treated units are pooled or when cohort-time effects are aggregated into event-time effects.
+
+\paragraph{Block bootstrap.} The block bootstrap resamples entire units (or cohorts) with replacement, preserving the within-unit correlation structure. For each bootstrap sample $b = 1, \ldots, B$:
+\begin{enumerate}
+\item Resample $N$ units with replacement from the original sample.
+\item Re-estimate the hybrid method on the bootstrap sample.
+\item Compute the treatment effect estimate $\hat{\tau}^{(b)}$.
+\end{enumerate}
+The bootstrap standard error is the standard deviation of $\hat{\tau}^{(b)}$ across bootstrap samples. The bootstrap confidence interval uses percentiles of the bootstrap distribution (for example, the 2.5th and 97.5th percentiles for a 95 per cent interval). The block bootstrap is appropriate when units are independent but observations within units are correlated.
+
+\paragraph{Wild bootstrap.} The wild bootstrap imposes random signs on unit-level or cohort-level residuals. For each bootstrap sample:
+\begin{enumerate}
+\item Compute residuals from the hybrid method: $\hat{e}_{it} = Y_{it} - \hat{Y}_{it}^{\text{syn}}$ for control units.
+\item For each cluster (unit or cohort), draw a random weight $v_c$ that equals $+1$ or $-1$ with equal probability.
+\item Construct pseudo-outcomes: $Y_{it}^{*} = \hat{Y}_{it}^{\text{syn}} + v_c \hat{e}_{it}$.
+\item Re-estimate the hybrid method on pseudo-outcomes under the null hypothesis of no treatment effect.
+\end{enumerate}
+The distribution of pseudo treatment effects provides a null distribution. The p-value is the fraction of pseudo effects larger in absolute value than the observed effect. Wild bootstrap is particularly effective in small samples (fewer than 50 clusters) where asymptotic approximations are unreliable. It produces inference that is robust to heteroscedasticity and within-cluster correlation.
+
+\subsection*{Conformal Inference}
+
+Conformal inference provides finite-sample inference by constructing prediction intervals for the treated unit's counterfactual outcomes. The procedure exploits the exchangeability of residuals under the null hypothesis of no treatment effect.
+
+For each post-treatment period $t > T_0$:
+\begin{enumerate}
+\item Compute the pre-treatment residuals $\hat{e}_s = Y_{1s} - \hat{Y}_{1s}^{\text{syn}}$ for $s = 1, \ldots, T_0$.
+\item Construct a prediction interval for $Y_{1t}(0)$ as $\hat{Y}_{1t}^{\text{syn}} \pm q_{\alpha}$, where $q_{\alpha}$ is the $(1-\alpha)$-quantile of the absolute pre-treatment residuals.
+\item If the observed outcome $Y_{1t}$ falls outside the prediction interval, reject the null hypothesis of no effect in period $t$.
+\end{enumerate}
+
+Conformal inference is exact (achieves the nominal coverage rate) under the exchangeability assumption: the post-treatment residuals $Y_{1t} - Y_{1t}(0)$ are exchangeable with the pre-treatment residuals $\hat{e}_s$ under the null. This assumption is plausible when the pre-treatment residuals are approximately i.i.d. It is less plausible when residuals exhibit autocorrelation, seasonality, or trends. When exchangeability is doubtful, conformal intervals should be interpreted as approximate rather than exact.
+
+Extensions include one-sided intervals (testing for positive or negative effects only), joint intervals across multiple post-treatment periods, and conformal inference with time-varying quantiles (to account for heteroscedasticity).
+
+\subsection*{Randomisation Inference}
+
+Randomisation inference, grounded in the potential outcomes framework, compares the observed treatment effect to the distribution of effects under permuted treatment assignments. The procedure tests the sharp null hypothesis that treatment had no effect on any unit at any time.
+
+For each permutation $\pi = 1, \ldots, P$:
+\begin{enumerate}
+\item Randomly reassign treatment status among units (for a single treated unit) or among units and times (for staggered adoption).
+\item Apply the hybrid method using the permuted treatment assignment.
+\item Compute the permuted treatment effect $\hat{\tau}^{(\pi)}$.
+\end{enumerate}
+The p-value is the fraction of permuted effects with absolute value at least as large as the observed effect:
+\[
+p = \frac{1}{P} \sum_{\pi=1}^{P} \mathbf{1}(|\hat{\tau}^{(\pi)}| \geq |\hat{\tau}^{\text{obs}}|).
+\]
+
+Randomisation inference is particularly compelling in experimental settings where treatment was assigned randomly, because the permutation distribution corresponds to the true randomisation distribution. In observational settings, randomisation inference serves as a sensitivity analysis under the assumption of random assignment conditional on observables. If the p-value is small, either the treatment had an effect or the sharp null is violated for reasons unrelated to treatment (for example, selection bias). Interpreting randomisation inference in observational settings requires caution.
+
+\subsection*{Multiplicity Considerations}
+
+Multiplicity considerations arise when testing treatment effects for many post-treatment periods, many cohorts, or many outcomes. Testing each period, cohort, or outcome separately at the 5 per cent significance level inflates the family-wise error rate (the probability of at least one false rejection).
+
+Several approaches control multiplicity. Bonferroni correction divides the significance level by the number of tests (for example, use $\alpha = 0.05/T_1$ for $T_1$ post-treatment periods). This controls the family-wise error rate but at the cost of reduced power. False discovery rate (FDR) control, using the Benjamini-Hochberg procedure, controls the expected proportion of false discoveries among all rejections. FDR control is less conservative than Bonferroni and is appropriate when some false positives are acceptable. Romano-Wolf stepdown procedures exploit the correlation structure of test statistics (estimated via bootstrap) to improve power while controlling family-wise error rate.
+
+Joint tests provide an alternative to period-by-period testing. An F-test that treatment has no effect in any post-treatment period tests the joint null hypothesis. If the joint null is rejected, the analyst has evidence of an effect somewhere in the post-treatment period, even if individual period tests do not reject after multiplicity correction.
+
+In practice, many researchers report unadjusted p-values for each test alongside joint tests. They rely on the consistency of effects across periods (for example, uniformly positive effects) to build a cumulative case, rather than relying on binary significance at adjusted levels. This approach is transparent but requires careful interpretation.
+
+\subsection*{Practical Considerations for Small Samples}
+
+Marketing applications often involve small samples: few treated units, modest donor pools, and short pre-treatment periods. These features affect inference in specific ways.
+
+When the donor pool is small (fewer than 20 donors), the resolution of rank-based p-values is coarse. With 10 donors, the minimum achievable p-value from in-space placebos is $1/11 \approx 0.09$, which does not reach conventional significance levels. Researchers should report the rank and the number of placebos rather than relying on binary significance.
+
+When the pre-treatment period is short (fewer than six periods), placebo-in-time tests have low power because few pseudo-intervention dates are available. Conformal inference is also limited because the prediction interval is based on few residuals. The analyst should acknowledge these limitations and interpret results cautiously.
+
+When treated units are few (fewer than five), aggregated estimates have large standard errors. Bootstrap confidence intervals may be wide, and hypothesis tests may have low power. The focus should shift from binary significance to the magnitude and sign of effects. An effect that is consistently positive across specifications and cohorts provides evidence even if individual tests do not reach significance.
+
+Transparent reporting of sample sizes, diagnostic results, and inference procedures enables readers to assess the strength of the evidence. Good practice reports the number of treated units, the number of donors, the length of pre and post periods, the inference method used, and any multiplicity adjustments applied. This enables readers to calibrate their confidence in conclusions.

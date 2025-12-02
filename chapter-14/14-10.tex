@@ -1,0 +1,12 @@
+\section{Diagnostics and Design Considerations}
+\label{sec:continuous-diagnostics}
+
+Diagnostics for continuous treatments mirror those in Chapter~\ref{ch:design-diagnostics}, but they are adapted for a dose-response setting.
+
+\subsection*{Overlap and Balance}
+
+Plot dose distributions by treatment group and report overlap statistics such as the proportion of observations with GPS values above a minimum threshold. Show covariate balance after any adjustments, using standardised mean differences across dose quantiles.
+
+\subsection*{Sensitivity and Robustness}
+
+Run placebo tests using pre-treatment outcomes or pseudo-treatments. Check the sensitivity of your results to different modelling choices: alternative basis functions, bandwidth selection, and trimming thresholds. Report how estimates change across these specifications to demonstrate robustness.

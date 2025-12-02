@@ -1,0 +1,62 @@
+\section{Augmented Synthetic Control (ASCM)}
+\label{sec:hybrid-ascm}
+
+\subsection*{The Problem That Motivates Augmentation}
+
+Return to the five flagship stores piloting a loyalty programme. Standard synthetic control searches for weights that make a convex combination of control stores match the flagships' pre-treatment revenue trajectory. But the optimisation fails. The flagships anchor high-traffic urban centres with customer profiles that no suburban or regional store replicates. The best synthetic control undershoots the flagships' baseline revenue by eight per cent. That gap carries forward into the post-treatment period, contaminating the treatment effect estimate with residual bias.
+
+Augmented synthetic control attacks this problem directly. It pairs the weighting estimator with a regression adjustment that corrects the gap. If the synthetic control undershoots by eight per cent, the regression model estimates that systematic difference and subtracts it from the treatment effect. The cost is model dependence: the estimator now relies on the regression specification being correct. If the model is wrong, the augmentation may introduce bias rather than correct it.
+
+\subsection*{The Estimator}
+
+Let $\hat{w}$ denote the weights from standard synthetic control optimisation, and let $\hat{m}_{it}$ be an auxiliary model's prediction of the untreated potential outcome $Y_{it}(0)$---typically ridge regression of outcomes on covariates. The augmented counterfactual for the treated unit in post-treatment period $t > T_0$ is:
+\[
+\hat{Y}_{1t}^{\text{ASCM}}(0) = \sum_{j \in \mathcal{J}} \hat{w}_j Y_{jt} + \left( \hat{m}_{1t} - \sum_{j \in \mathcal{J}} \hat{w}_j \hat{m}_{jt} \right).
+\]
+The first term is the standard synthetic control estimate. The second term corrects for the residual imbalance: if the synthetic control's predicted outcome differs from the treated unit's prediction according to the auxiliary model, that difference is added back. When the synthetic control perfectly matches the treated unit in the auxiliary model's eyes, the correction vanishes.
+
+The treatment effect follows immediately:
+\[
+\hat{\tau}_{1t}^{\text{ASCM}} = Y_{1t} - \hat{Y}_{1t}^{\text{ASCM}}(0) = \left( Y_{1t} - \hat{m}_{1t} \right) - \sum_{j \in \mathcal{J}} \hat{w}_j \left( Y_{jt} - \hat{m}_{jt} \right).
+\]
+Read this as reweighting the residuals from the outcome model. The treated unit's residual minus the weighted average of donor residuals gives the treatment effect. This formulation clarifies what ASCM is doing: it removes the component of outcomes explained by the auxiliary model, then applies synthetic control to what remains.
+
+\subsection*{Why Augmentation Helps---and When It Hurts}
+
+Augmentation provides insurance. If the synthetic control weights correctly capture the relationship between treated and donor units, the augmentation term shrinks toward zero, and ASCM reduces to standard synthetic control. If the weights are imperfect but the regression model correctly captures how covariates predict outcomes, the augmentation corrects the bias. This is the doubly robust property: consistency requires only one of the two models to be correct, not both.
+
+But doubly robust is not doubly correct. In finite samples---and marketing panels with short pre-periods are always finite in the relevant dimension---both models contribute error. The weights are estimated, not known. The regression coefficients are estimated, not known. Each estimation step introduces variance and potential bias. The doubly robust property offers asymptotic insurance, but your sample is not asymptotic. When both models are somewhat wrong, as they inevitably are in practice, ASCM may outperform or underperform standard synthetic control depending on which misspecification dominates.
+
+The deeper issue is extrapolation. Standard synthetic control constrains the treated unit's counterfactual to lie within the convex hull of donor outcomes. This is conservative: if the treated unit is an outlier, synthetic control admits it cannot construct a credible counterfactual. ASCM relaxes this constraint. The regression adjustment allows the estimator to extrapolate beyond the hull, projecting what the treated unit would have looked like based on covariate relationships estimated from donors. Extrapolation is powerful when the model is right and dangerous when the model is wrong. You trade the transparency of convex combination for the flexibility of regression prediction.
+
+\subsection*{Identification Assumptions}
+
+ASCM targets the same estimand as standard synthetic control: the treatment effect on the treated unit in post-treatment periods, assuming the augmented counterfactual is valid. Identification requires that untreated potential outcomes satisfy:
+\[
+Y_{1t}(0) = \sum_{j \in \mathcal{J}} w_j^* Y_{jt}(0) + X_{1t}' \beta^* + \varepsilon_{1t}
+\]
+for true weights $w_j^*$ and regression coefficients $\beta^*$, with $\varepsilon_{1t}$ a mean-zero idiosyncratic error. The pre-treatment period identifies $\hat{w}$ and $\hat{\beta}$ by minimising discrepancies between the treated unit and its augmented synthetic control. The post-treatment period extrapolates that relationship to construct the counterfactual.
+
+This connects to the factor model perspective. Suppose untreated potential outcomes decompose into unit-specific loadings on time-varying factors. Synthetic control works when the treated unit's loadings lie in the convex hull of donor loadings. ASCM works when the treated unit's loadings lie near the hull, with the regression adjustment capturing the residual. The flagship stores may load slightly higher on an urban-consumer factor than any donor. The regression, if correctly specified, estimates that loading difference and adjusts accordingly.
+
+Three assumptions underpin identification. No anticipation requires that pre-treatment outcomes reflect the untreated trajectory only: $Y_{1t} = Y_{1t}(0)$ for $t \leq T_0$. This is standard in synthetic control applications. Limited interference requires that donor outcomes remain unaffected by the treated unit's treatment: $Y_{jt} = Y_{jt}(0)$ for donors in post-treatment periods. If treatment spills over to donors---a competitor responding to the loyalty programme, for instance---donor outcomes are contaminated. Pre/post stability of the predictor-outcome relationship is unique to ASCM. The regression coefficients $\beta^*$ estimated from pre-treatment data must continue to hold after treatment. If structural changes occur---a competitor entry, a platform algorithm shift, a macroeconomic shock---the regression extrapolates incorrectly.
+
+Pre/post stability is the assumption you cannot directly test. You observe treated outcomes after treatment, not untreated counterfactuals. Placebo-in-time tests check stability within the pre-period, splitting it into training and validation sets. If the augmentation improves fit on the validation set, the regression generalises within pre-treatment. But generalisation across the treatment boundary is fundamentally unobservable. This is the leap of faith ASCM requires.
+
+\subsection*{Implementation}
+
+Implementing ASCM requires choosing predictors for weighting, covariates for augmentation, and a regression specification. The predictor set for synthetic control typically includes pre-treatment outcomes and key time-invariant characteristics. The covariate set for regression may overlap or extend this set with transformations, trends, or interactions. Ridge regression is standard because it handles collinearity and shrinks toward stability when pre-treatment periods are short.
+
+Consider the flagship stores again. The weighting step uses monthly revenue for twenty-four pre-treatment months plus store characteristics: square footage, foot traffic, product mix index. The regression step uses the same covariates, predicting each store's revenue from its characteristics. Ridge penalty $\lambda$ is chosen by cross-validation within the pre-treatment period. The augmented counterfactual combines the synthetic control prediction with the regression correction.
+
+When pre-treatment periods are short, the regression model has few observations and risks overfitting. Regularisation is essential: ridge shrinks coefficients toward zero, elastic net combines shrinkage with sparsity. When the donor pool is large, synthetic control weights may be diffuse, spreading small positive weights across many donors. The augmentation then does heavy lifting, correcting for a synthetic control that resembles an average rather than a tailored match. When the treated unit is an outlier---characteristics far from donor means---the regression extrapolates aggressively. Treat estimates with appropriate scepticism.
+
+Validation splits the pre-treatment period into training and holdout sets. Estimate weights and regression on the training set, predict the holdout, and check whether augmentation improves root mean squared prediction error. If augmentation worsens holdout fit, the regression is overfitting or misspecified, and ASCM may perform worse than standard synthetic control. Placebo-in-time tests apply ASCM with pseudo-intervention dates in the pre-treatment period and verify that pseudo treatment effects center on zero.
+
+\subsection*{Comparing ASCM to Alternatives}
+
+The advantage of ASCM over standard synthetic control is improved fit when the treated unit lies outside or near the boundary of the donor convex hull. The flagship stores that no convex combination matches get a regression-corrected counterfactual. The disadvantage is model dependence. If the regression is misspecified, the correction introduces rather than removes bias.
+
+Good practice runs ASCM alongside standard synthetic control and, where applicable, difference-in-differences. If all three estimators agree, conclusions are robust to method choice. If they diverge, diagnose the source. Does synthetic control show poor pre-treatment fit? Does DiD show parallel trends violations? Does ASCM's regression adjustment appear implausibly large? Divergence signals that assumptions are questionable, and reporting should convey that uncertainty rather than arbitrarily selecting one estimate.
+
+The next section examines an alternative approach to the fit problem. Rather than augmenting with regression, regularised synthetic control modifies the weight construction itself, shrinking toward simplicity or enforcing explicit balance constraints.

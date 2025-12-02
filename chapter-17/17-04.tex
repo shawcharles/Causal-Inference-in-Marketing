@@ -1,0 +1,44 @@
+\section{Pre-Trends and Placebo Designs}
+\label{sec:pretrends-placebo}
+
+Pre-trend tests are the primary tool for assessing parallel trends (Chapter~\ref{ch:did}). In an event study (Chapter~\ref{ch:event}), the coefficients on pre-treatment leads should be close to zero, which we can test formally with a joint F-test.
+
+\begin{definition}[Joint Pre-Trend Test]\label{def:pretrend-test}
+For event-study coefficients $\hat{\theta}_k$ at relative event times $k < 0$ (pre-treatment), the joint Wald test statistic is:
+\[
+W = \hat{\boldsymbol{\theta}}_{\text{pre}}' \hat{\Sigma}_{\text{pre}}^{-1} \hat{\boldsymbol{\theta}}_{\text{pre}},
+\]
+where $\hat{\boldsymbol{\theta}}_{\text{pre}} = (\hat{\theta}_{-K}, \ldots, \hat{\theta}_{-1})'$ is the vector of pre-treatment coefficients and $\hat{\Sigma}_{\text{pre}}$ is their estimated covariance matrix. Under $H_0$: parallel trends (all $\theta_k = 0$ for $k < 0$):
+\[
+W \xrightarrow{d} \chi^2(K),
+\]
+where $K$ is the number of pre-treatment periods tested. The F-version is $F = W/K$.
+\end{definition}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Procedure: TOST Pre-Trend Equivalence]
+Rather than failing to reject the null of no pre-trends, equivalence testing assesses whether pre-trends are practically negligible. First, specify an equivalence bound $\delta$ (e.g., $\delta = 0.1\sigma_Y$). Second, test $H_{01}: \theta_k \leq -\delta$ versus $H_{A1}: \theta_k > -\delta$. Third, test $H_{02}: \theta_k \geq \delta$ versus $H_{A2}: \theta_k < \delta$. Conclude equivalence if both nulls are rejected at level $\alpha$. This provides positive evidence for parallel trends rather than merely failing to find evidence against.
+\end{tcolorbox}
+
+For synthetic control methods (Chapter~\ref{ch:sc}), we use placebo tests. An \emph{in-space} placebo applies the method to each donor unit in turn, generating a distribution of placebo effects to which we compare the main estimate. An \emph{in-time} placebo uses a pseudo-treatment date in the pre-treatment period to check whether the method produces spurious effects.
+
+\begin{definition}[Root Mean Squared Prediction Error]\label{def:rmspe}
+For synthetic control with treated unit $1$ and pre-treatment periods $t = 1, \ldots, T_0$:
+\[
+\text{RMSPE}_{\text{pre}} = \sqrt{\frac{1}{T_0} \sum_{t=1}^{T_0} (Y_{1t} - \hat{Y}_{1t}^{\text{SC}})^2},
+\]
+where $\hat{Y}_{1t}^{\text{SC}} = \sum_{j=2}^{J+1} \hat{w}_j Y_{jt}$ is the synthetic control prediction. For post-treatment periods $t = T_0+1, \ldots, T$:
+\[
+\text{RMSPE}_{\text{post}} = \sqrt{\frac{1}{T - T_0} \sum_{t=T_0+1}^{T} (Y_{1t} - \hat{Y}_{1t}^{\text{SC}})^2}.
+\]
+The RMSPE ratio $\text{RMSPE}_{\text{post}} / \text{RMSPE}_{\text{pre}}$ measures the magnitude of post-treatment deviation relative to pre-treatment fit.
+\end{definition}
+
+\begin{definition}[Placebo Inference]\label{def:placebo-pvalue}
+For in-space placebos, apply synthetic control to each donor unit $j = 2, \ldots, J+1$ as if it were treated. The placebo p-value is:
+\[
+p_{\text{placebo}} = \frac{1}{J} \sum_{j=2}^{J+1} \mathbf{1}\left\{ \frac{\text{RMSPE}_{\text{post},j}}{\text{RMSPE}_{\text{pre},j}} \geq \frac{\text{RMSPE}_{\text{post},1}}{\text{RMSPE}_{\text{pre},1}} \right\},
+\]
+the fraction of placebo units with RMSPE ratios at least as large as the treated unit. If pre-treatment fit is poor (large $\text{RMSPE}_{\text{pre},j}$), exclude unit $j$ from the placebo distribution or report sensitivity to inclusion threshold.
+\end{definition}
+
+Negative controls use outcomes or covariates that should not respond to treatment under the maintained hypothesis. If negative controls show spurious effects, unobserved confounding or measurement error is likely. Negative controls are especially useful in marketing for detecting platform algorithm changes or data quality shifts that might otherwise masquerade as treatment effects.

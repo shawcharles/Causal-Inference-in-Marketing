@@ -1,0 +1,71 @@
+\section{Workflow Checklist}
+\label{sec:diagnostics-workflow}
+
+The following protocol consolidates design and diagnostic practice into a reportable workflow.
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 17.3: Design-and-Diagnostics Workflow Checklist]
+\textbf{1. Define candidate controls or donors:} Screen on pre-period comparability, document geographic or policy exclusions, ensure factor-space coverage when using latent-factor methods.
+
+\textbf{2. Document curation and buffers:} Maintain lists of excluded units with rationales, specify buffer radii or exclusion zones for spillover mitigation, version control for reproducibility.
+
+\textbf{3. Assess overlap and balance:} Plot propensity or exposure distributions, compute covariate balance before and after weighting, trim if needed and report sensitivity.
+
+\textbf{4. Run pre-trends and placebos:} Test event-time leads jointly, conduct placebo-in-time and placebo-in-space, report RMSPE ranks for synthetic control and SDID (Chapters~\ref{ch:sc}--\ref{ch:generalized-sc}), use negative controls where applicable.
+
+\textbf{5. Tabulate support:} Produce support-by-$k$ tables for event studies, check dose support for continuous treatments, bin or exclude sparse regions with transparency.
+
+\textbf{6. Conduct influence and weight diagnostics:} Leave-one-out by unit, time, or cohort, inspect weight concentration for synthetic control and SDID, plot leverage and flag extremes.
+
+\textbf{7. Build specification curves:} Vary windows, donors, controls, penalties, and exposure radii within defensible bounds, separate primary from robustness families, adjust for multiplicity.
+
+\textbf{8. Run sensitivity analyses:} Bounded deviations from parallel trends, unobserved confounding benchmarks, measurement and attribution shift scenarios, report ranges alongside point estimates.
+
+\textbf{9. Finalise inference:} Choose variance estimator aligned with dependence, use bootstrap or randomisation as appropriate, control multiplicity for diagnostic tests, reconcile discrepancies (Chapter~\ref{ch:inference}).
+
+\textbf{10. Report with timelines and assumptions:} Provide treatment rollout and platform policy timelines, state assumptions explicitly, document all curation and tuning rules, share code and data dictionaries where feasible.
+\end{tcolorbox}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/fig_overlap_diagnostics.pdf}
+\caption{Overlap diagnostics and common support with trimming thresholds}
+\label{fig:overlap-diagnostics}
+\small\textit{Panel A shows propensity score distributions before adjustment with poor overlap (overlap statistic = 0.45). Red dashed lines mark trimming thresholds at 0.1 and 0.9. Red shaded regions indicate trimmed tails. Panel B shows distributions after reweighting with improved overlap (overlap statistic = 0.82). Green shaded region highlights common support. Effective sample size after trimming is reported. Panel C shows covariate balance before adjustment with large standardised mean differences (SMDs 0.65--0.95). Panel D shows balance after weighting with substantially improved SMDs (0.08--0.15). Good overlap and balance reduce confounding bias.}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{images/fig_event_leads_support.pdf}
+\caption{Event-time leads with joint bands and support-by-k overlay}
+\label{fig:event-leads-support}
+\small\textit{Top panel shows event-time coefficients for $k \in [-8, 2]$ with pre-treatment leads (blue circles) and post-treatment effects (green squares). Light blue shading shows pointwise 95\% confidence intervals. Darker blue shading shows joint 95\% uniform bands controlling familywise error. Yellow shaded region marks the pre-trend test region. Joint $F$-test for all leads yields $p=0.42$, failing to reject parallel trends. Red dashed line marks treatment start. Bottom panel shows sample size (number of units) contributing to each event-time bin. Red dotted line marks minimum sample threshold (n=30). Warning symbols flag sparse regions. Adequate support across all bins is essential for valid aggregation.}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/fig_weights_influence.pdf}
+\caption{Weight dispersion and leverage in SC/SDID and leave-one-out influence profiles}
+\label{fig:weights-influence}
+\small\textit{Panel A shows donor weights in synthetic control sorted by magnitude. Top 3 donors (coral bars) receive disproportionate weight. Green dashed line marks equal-weight benchmark (0.050). Herfindahl index (0.145) and entropy (2.31) quantify concentration. High concentration indicates fragility to specific donors' idiosyncrasies. Regularisation or donor redesign can spread weights more evenly. Panel B shows leave-one-out influence profile. Each point represents the treatment effect estimate when one unit is excluded. Green dashed line shows full-sample estimate (10.0). Green band shows ±1 unit tolerance. Red circles mark influential units where exclusion changes estimate by >2 units. Unit 6 is most influential ($\Delta$ = 3.5). Large influence flags potential fragility and invites closer inspection of data quality or comparability.}
+\end{figure}
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Map from design threat to diagnostic, mitigation, and inference choice}
+\label{tab:threat-diagnostic-mapping}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Threat} & \textbf{Diagnostic} & \textbf{Mitigation} & \textbf{Inference choice} \\
+\midrule
+Poor overlap & Propensity/exposure plots, balance tables & Trimming, reweighting, donor redesign & Cluster-robust SE, sensitivity to trimming \\
+Pre-trend violation & Event-time leads, placebos & Flexible trends, shorter windows, switch design & Joint test, uniform bands \\
+Spillovers/contamination & Exposure maps, buffer sensitivity & Buffers, donor exclusion, spillover model & Spatial HAC, randomisation with buffers \\
+Influential units & Leave-one-out, weight concentration & Regularisation, donor redesign, report influence & Bootstrap, permutation \\
+Measurement drift & Negative controls, policy timelines & External outcomes, restrict windows, sensitivity & Document changes, report before/after \\
+Specification sensitivity & Specification curves, perturbation & Triangulation, register primary family, multiplicity control & Report range, prefer robust estimates \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+\index{diagnostics|)}

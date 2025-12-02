@@ -1,0 +1,68 @@
+\section{Tuning, Implementation, and Donor Curation}
+\label{sec:hybrid-tuning}
+
+Implementing hybrid methods in marketing panels requires choosing predictors, penalties, and donor pools. These choices interact with the estimation method and affect both pre-treatment fit and post-treatment counterfactual accuracy. The fundamental tension is between prediction accuracy (minimising pre-treatment error) and causal identification (constructing credible counterfactuals that extrapolate correctly). Optimising one does not guarantee the other. This section provides method-specific guidance on navigating this trade-off.
+
+\subsection*{Predictor Selection}
+
+Selecting predictors for weighting and augmentation is a design choice that varies by method.
+
+For synthetic control and ridge SC, the predictor set determines the convex hull in which the treated unit must lie. Including more pre-treatment outcome periods expands the dimensionality of the matching problem. A rule of thumb is to include at least as many pre-treatment periods as the suspected number of latent factors (typically three to five for marketing panels). If the panel is long and outcomes are highly autocorrelated, using every second or third period reduces dimensionality without losing essential information. Cross-validation on a held-out pre-treatment period (for example, reserving the final two pre-treatment periods for validation) can guide this choice.
+
+For ASCM, the augmentation model uses covariates to correct residual imbalances. The covariate set should include variables that predict outcomes and may differ between treated and control units: store size, location demographics, competitive intensity, distribution channels. Including irrelevant covariates increases noise without improving fit. Omitting relevant covariates leaves confounding uncorrected. Pre-specifying the covariate set based on institutional knowledge is essential. Sensitivity analyses that add or remove covariates assess robustness.
+
+For SDID, predictor selection is less critical because the unit and time weights are computed directly from outcome data rather than from a separate covariate matrix. The SDID algorithm solves for weights that balance pre-treatment outcomes, so the analyst need not specify a predictor set manually. However, the analyst should ensure that the pre-treatment period is long enough to identify the weight structure (at least four to six periods, as discussed in Section~\ref{sec:hybrid-multiple}).
+
+For TROP, predictors enter through the unit distance metric used to construct exponential decay weights. The distance is computed from pre-treatment outcomes, so the same considerations as synthetic control apply. Additionally, the factor model component of TROP requires sufficient pre-treatment periods to identify the low-rank structure (at least 10 to 15 periods for reliable rank estimation).
+
+\subsection*{Penalty Parameter Tuning}
+
+Choosing penalty parameters requires balancing fit and stability. The appropriate procedure and the relevant parameters differ by method.
+
+\paragraph{Ridge SC.} The ridge penalty $\eta$ controls the bias-variance trade-off for unit weights. Small $\eta$ (e.g., 0.001 to 0.01) prioritises fit, producing weights concentrated on a few similar donors. Large $\eta$ (e.g., 1 to 10) prioritises stability, producing diffuse weights that approach uniform weighting. Cross-validation provides a data-driven choice. Split the pre-treatment period into training (first 60 to 80 per cent of periods) and validation (final 20 to 40 per cent). Estimate ridge SC on the training set for a logarithmically spaced grid of $\eta$ values (e.g., $\eta \in \{0.001, 0.01, 0.1, 1, 10, 100\}$). Select the $\eta$ that minimises root mean squared prediction error on the validation set. Report the cross-validation curve to show the fit-stability trade-off. If the curve is flat, the choice of $\eta$ matters little. If the curve is steep, the choice is consequential and should be discussed.
+
+\paragraph{ASCM.} The augmentation model may include its own regularisation (ridge, lasso, or elastic net on the regression coefficients). The same cross-validation procedure applies. A conservative choice (larger penalty) is preferable when the pre-treatment period is short (fewer than six periods) or the donor pool is small (fewer than 20 donors). The double robustness property of ASCM provides insurance: if either the weights or the augmentation model is correct, the estimator is consistent. However, if both are misspecified and over-regularised, the estimator may be biased.
+
+\paragraph{SDID.} SDID does not require manual penalty tuning. The unit and time weights are computed by solving convex optimisation problems with built-in regularisation (the intercept shift). The analyst should verify that the optimisation converged and that the resulting weights are interpretable (not concentrated on a single donor or time period).
+
+\paragraph{TROP.} TROP requires tuning three parameters: $\lambda_{\text{unit}}$ (decay rate for unit weights), $\lambda_{\text{time}}$ (decay rate for time weights), and $\lambda_{nn}$ (nuclear norm penalty for the factor structure). \citet{athey2025triply} recommend staged cross-validation. First, fix $\lambda_{\text{unit}} = 0$ and $\lambda_{nn} = \infty$ and search over $\lambda_{\text{time}}$. Second, fix $\lambda_{\text{time}}$ at the selected value and search over $\lambda_{\text{unit}}$. Third, fix both and search over $\lambda_{nn}$. This reduces computational cost by a factor of 100 relative to full grid search. The cross-validation objective is the sum of squared pseudo treatment effects for control units treated as if they were treated. A grid of 10 values per parameter suffices for most applications.
+
+\subsection*{Connection Between Tuning and Diagnostics}
+
+Tuning choices directly affect diagnostic indicators, and the analyst should interpret diagnostics in light of the tuning decisions.
+
+Pre-treatment RMSPE depends on regularisation. Over-penalisation (large $\eta$) produces diffuse weights and may yield loose pre-treatment fit (higher RMSPE). This is not necessarily bad: loose fit may reflect appropriate regularisation rather than poor matching. Under-penalisation (small $\eta$) produces concentrated weights and tight pre-treatment fit (lower RMSPE). This may reflect overfitting rather than good matching. Comparing RMSPE across a range of $\eta$ values reveals whether tight fit is achieved only through extreme tuning.
+
+Weight dispersion depends on penalisation. The effective number of donors (inverse Herfindahl index) increases with $\eta$. If the cross-validated $\eta$ produces weights concentrated on one or two donors (effective number $< 3$), the estimator may be overfitting to idiosyncratic donor patterns. If the cross-validated $\eta$ produces nearly uniform weights (effective number $\approx N_0$), the estimator may be ignoring relevant heterogeneity. Neither extreme is ideal. An effective number between 5 and 15 is typical for well-tuned hybrid methods.
+
+Sensitivity to tuning choices is itself a diagnostic. If the treatment effect estimate varies substantially across the $\eta$ grid (e.g., by more than 50 per cent of the baseline estimate), the conclusions are fragile. Report the range of estimates across tuning choices and discuss which value is most credible given institutional knowledge.
+
+\subsection*{Donor Pool Curation}
+
+Donor pool curation is the most consequential design choice in hybrid methods, as in synthetic control (Chapter~\ref{ch:sc}). Donors must satisfy three requirements: comparability to treated units, absence of treatment, and absence of contamination from spillovers.
+
+Comparability requires institutional knowledge and typically involves restricting donors to units in the same industry, region, size category, or operational division. Screening for contamination involves excluding donors that are geographically, economically, or network-close to treated units. Buffered designs, where donors within a certain distance of treated units are excluded, reduce contamination but shrink the donor pool and may worsen fit.
+
+The curation criteria interact with the estimation method. For SC, donors must span the convex hull containing the treated unit. Excluding too many donors may push the treated unit outside the hull, producing extrapolation. For ASCM, the augmentation model can correct small amounts of extrapolation, so the donor pool can be more restrictive. For SDID, donors must provide a valid comparison group under weighted parallel trends. For TROP, donors must share the factor structure with treated units. In each case, the analyst should verify that the curated donor pool satisfies the method-specific requirements.
+
+When interference is plausible (Chapter~\ref{ch:spillovers}), donor curation must account for exposure pathways. If treated and control units share supply chains, customer bases, or competitive interactions, contamination is likely. Hybrid methods do not inherently address interference. Design-based solutions include redefining the unit of analysis, creating buffer zones, or explicitly modelling spillovers through exposure mappings.
+
+\subsection*{Prediction vs Identification: A Conceptual Distinction}
+
+The tension between prediction and identification arises because optimising pre-treatment fit (prediction accuracy) may not produce the best estimate of the counterfactual (causal identification). This distinction echoes broader debates in statistics and causal inference about the goals of modelling.
+
+Overfitting the pre-treatment data by including too many predictors, using flexible models, or choosing small penalties produces tight pre-treatment fit. However, it may extrapolate poorly to the post-treatment period if the factor structure or covariate relationships shift at the intervention time. Underfitting the pre-treatment data by excluding relevant predictors or using large penalties produces loose fit. However, it may be more stable and generalisable if the pre-treatment period is not fully representative of post-treatment dynamics.
+
+The optimal trade-off depends on the sample size, the pre-treatment period length, and the stability of the underlying data-generating process. Good practice uses cross-validation or placebo-in-time tests to assess out-of-sample fit. Report multiple specifications with different tuning choices. Interpret results in light of the fit-stability trade-off. If estimates are stable across tuning choices, conclusions are credible. If estimates vary substantially, the instability should be acknowledged and investigated.
+
+\subsection*{Practical Workflow}
+
+Implementing hybrid methods in practice proceeds through several interrelated stages. The analyst begins by pre-specifying the predictor set based on institutional knowledge, selecting pre-treatment outcome periods and covariates that are plausibly related to both treatment assignment and outcomes. Sensitivity analyses that vary the predictor set should be planned in advance, not conducted post hoc in search of favourable results.
+
+With the predictor set established, the analyst curates the donor pool by excluding treated units, contaminated units, and units that are not comparable to the treated group. The curation criteria should be documented explicitly. If the resulting donor pool is small (fewer than 20 units), the analyst should consider whether regularisation is necessary to prevent overfitting and whether augmentation (ASCM) can help correct residual imbalances.
+
+Penalty parameters are then chosen via cross-validation on the pre-treatment period. For ridge SC and ASCM, a logarithmically spaced grid from 0.001 to 100 typically suffices. For TROP, the staged cross-validation procedure reduces computational burden. The analyst should inspect the cross-validation curve and verify that the selected penalty is not at an extreme of the grid (which would suggest the grid is too narrow).
+
+Finally, the analyst computes estimates and diagnostics. Pre-treatment RMSPE, weight dispersion, and sensitivity to tuning choices should all be reported. If the hybrid method achieves substantially better pre-treatment fit than standard SC (for example, RMSPE reduction of 20 per cent or more), the additional complexity is likely justified. If fit improvements are marginal, the simpler method is preferable for transparency.
+
+Consider a retailer evaluating a store redesign in five pilot locations. The donor pool contains 30 comparable stores, and pre-treatment data span eight quarters. The analyst estimates ASCM with ridge regularisation, using cross-validation to select $\eta$. The cross-validation curve shows that $\eta = 0.1$ minimises validation error, producing an effective number of donors of 8. Pre-treatment RMSPE for ASCM is 3.2 per cent of outcome SD, compared to 4.8 per cent for standard SC. The 33 per cent reduction in RMSPE suggests that augmentation adds value. The analyst reports both estimates alongside the diagnostics, allowing readers to assess whether the improvement justifies the additional complexity.

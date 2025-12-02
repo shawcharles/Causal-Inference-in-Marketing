@@ -1,0 +1,65 @@
+\section{Notation and Assumptions Reference}
+\label{sec:notation-reference}
+
+This section collects the core notation and assumptions for quick reference. Return here when encountering unfamiliar symbols or when checking which assumptions underpin a particular method.
+
+\subsection*{Notation}
+
+We index units (stores, customers, markets, products) by $i = 1, \ldots, N$ and periods (quarters, weeks, months, years) by $t = 1, \ldots, T$. The observed outcome for unit $i$ in period $t$ is denoted $Y_{it}$, while potential outcomes under treatment level $w$ or treatment path $\underline{w}^t = (w_1, \ldots, w_t)$ are written as $Y_{it}(w)$ or $Y_{it}(\underline{w}^t)$. The observed treatment is $W_{it}$, which is binary ($W_{it} \in \{0, 1\}$) in most chapters but continuous ($W_{it} \in \mathbb{R}$) in Chapter~\ref{ch:continuous}.
+
+For staggered adoption designs, $G_i$ denotes the adoption cohort --- the first period in which unit $i$ is treated. Units never treated have $G_i = \infty$ by convention. Event time $k = t - G_i$ measures periods since adoption, where $k = 0$ is the first treated period, $k < 0$ are pre-treatment periods, and $k > 0$ are post-treatment periods.
+
+Unit fixed effects $\alpha_i$ capture time-invariant unit heterogeneity, while time fixed effects $\beta_t$ capture common shocks or trends. The idiosyncratic error is denoted $\varepsilon_{it}$.
+
+The core estimands are the average treatment effect $\text{ATE} = \mathbb{E}[Y_{it}(1) - Y_{it}(0)]$ and the average treatment effect on the treated $\text{ATT} = \mathbb{E}[Y_{it}(1) - Y_{it}(0) \mid W_{it}=1]$. For staggered adoption designs, we also define the cohort-time effect $\text{ATT}(g,t) = \mathbb{E}[Y_{it}(g) - Y_{it}(\infty) \mid G_i = g, t \geq g]$ and the event-time effect $\theta_k = \mathbb{E}[Y_{i,G_i+k}(g) - Y_{i,G_i+k}(\infty) \mid G_i < \infty]$, which measures the effect $k$ periods post-adoption.
+
+\subsection*{Core Assumptions}
+
+The assumptions introduced earlier in this chapter are restated here in standard form for easy reference.
+
+\begin{assumption}[No Anticipation]
+This assumption rules out forward-looking behaviour where units respond to expected future treatments. Formally, potential outcomes in period $t$ do not depend on treatments assigned in periods $s > t$: $Y_{it}(\underline{w}^t, \tilde{w}^{T}) = Y_{it}(\underline{w}^t)$ for any future path $\tilde{w}^{T} = (w_{t+1}, \ldots, w_T)$.
+\end{assumption}
+
+\begin{assumption}[SUTVA for Panels]
+This assumption requires that spillovers and interference between units are absent. Formally, potential outcomes for unit $i$ depend only on unit $i$'s own treatment path: $Y_{it}(\underline{w}^t_1, \ldots, \underline{w}^t_N) = Y_{it}(\underline{w}^t_i)$. There is a single, well-defined version of treatment.
+\end{assumption}
+
+\begin{assumption}[Parallel Trends (Unconditional)]
+\label{assump:parallel-trends}
+This assumption asserts that treated and control units would have evolved similarly in the absence of treatment. Formally, expected changes in untreated potential outcomes are the same for treated and control units:
+\[
+\mathbb{E}[Y_{it}(0) - Y_{i,t-1}(0) \mid W_{it}=1] = \mathbb{E}[Y_{it}(0) - Y_{i,t-1}(0) \mid W_{it}=0].
+\]
+More generally, for cohorts $g$ and $g'$,
+\[
+\mathbb{E}[Y_{it}(0) - Y_{i,t-1}(0) \mid G_i = g] = \mathbb{E}[Y_{it}(0) - Y_{i,t-1}(0) \mid G_i = g'].
+\]
+\end{assumption}
+
+\begin{assumption}[Conditional Independence]
+\label{assump:conditional-independence}
+This assumption, also known as unconfoundedness or selection on observables, asserts that all confounders are observed and controlled. Formally, conditional on covariates $X_{it}$ and fixed effects, treatment is independent of potential outcomes:
+\[
+W_{it} \perp (Y_{it}(0), Y_{it}(1)) \mid X_{it}, \alpha_i, \beta_t.
+\]
+\end{assumption}
+
+\begin{assumption}[Factor Structure]
+\label{assump:factor-structure}
+This assumption posits that unobserved heterogeneity can be captured by a small number of latent factors. Formally, untreated potential outcomes can be represented as a low-rank matrix:
+\[
+Y_{it}(0) = \sum_{r=1}^R \lambda_{ir} f_{tr} + \varepsilon_{it},
+\]
+where $f_{tr}$ are latent factors, $\lambda_{ir}$ are unit-specific loadings, $R$ is small relative to $\min(N, T)$, and $\varepsilon_{it}$ is idiosyncratic error.
+\end{assumption}
+
+These assumptions are invoked selectively depending on the method and context. Parallel trends underpin difference-in-differences and event studies. Factor structure justifies interactive fixed effects and matrix completion methods. Conditional independence is central to unconfoundedness-based approaches with high-dimensional controls. SUTVA is often violated in marketing and requires spillover modelling. No anticipation is testable in event studies through pre-treatment leads.
+
+\subsection*{Forward References}
+
+The notation and assumptions formalised here recur throughout the book. The parallel trends assumption and staggered adoption structure underpin the difference-in-differences and event-study methods developed in Chapters~\ref{ch:did} and \ref{ch:event}. Synthetic control methods (Chapters~\ref{ch:sc} and \ref{ch:generalized-sc}) relax parallel trends in favour of pre-treatment matching or factor structures.
+
+Factor structure assumptions are operationalised in Chapters~\ref{ch:factor} and \ref{ch:advanced-matrix} through principal components, EM algorithms, and nuclear norm regularisation. Dynamic extensions appear in Chapter~\ref{ch:dynamics}, while Chapter~\ref{ch:spillovers} relaxes SUTVA to accommodate interference. Machine learning methods (Chapters~\ref{ch:ml-nuisance} and \ref{ch:high-dim}) leverage conditional independence with flexible estimators. Finally, Chapter~\ref{ch:inference} provides tools for uncertainty quantification, and Chapter~\ref{ch:design-diagnostics} develops diagnostics to assess assumption plausibility and sensitivity to violations.
+
+This chapter establishes that vocabulary. The subsequent chapters show what you can do with it.

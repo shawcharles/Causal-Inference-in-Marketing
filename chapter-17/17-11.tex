@@ -1,0 +1,69 @@
+\section{Marketing Applications}
+\label{sec:diagnostics-applications}
+
+This section presents four hypothetical worked examples showing how the diagnostic framework applies to common marketing designs. The numbers in these examples are illustrative and do not represent real data or actual study results. Each example demonstrates what can go wrong when diagnostics are skipped and how proper diagnostic practice leads to more credible conclusions.
+
+\subsection*{Geo-Experiment with Buffer Design}
+
+A national retailer randomised 20 Designated Market Areas (DMAs) to test a television campaign, with 10 DMAs receiving the campaign and 10 serving as controls. The outcome was weekly store sales over 8 pre-treatment weeks and 4 post-treatment weeks.
+
+\paragraph{Initial diagnostics.} The joint pre-trend test on the 8 pre-treatment weeks yielded $F = 1.42$ with $p = 0.24$ (wild cluster bootstrap with 10 clusters), suggesting no detectable pre-trend violation. Covariate balance showed standardised mean differences below 0.1 for population and baseline sales. So far, so good.
+
+\paragraph{The problem.} Leave-one-DMA-out analysis revealed that excluding the Chicago DMA shifted the treatment effect from \$2.1M to \$0.8M---a 62\% reduction. Chicago, the largest treated DMA, was driving the result. Moreover, the Detroit control DMA bordered Chicago, raising concerns about spillovers from cross-DMA shopping.
+
+\paragraph{Buffer analysis.} The team mapped exposure using 50km and 100km buffers around treated DMAs. Three control DMAs (Detroit, Milwaukee, Indianapolis) fell within 100km of treated markets. Re-estimating with these DMAs excluded reduced the effect to \$1.4M (SE = \$0.5M). The 100km-buffer estimate was 33\% smaller than the naive estimate.
+
+\paragraph{Resolution.} The final analysis reported both estimates: the naive estimate of \$2.1M and the buffer-adjusted estimate of \$1.4M. Randomisation inference over the ${20 \choose 10} = 184,756$ possible assignments yielded $p = 0.04$ for the buffer-adjusted estimate. The team concluded that the campaign was effective but that the naive estimate overstated the effect due to spillovers and Chicago's outsized influence.
+
+\subsection*{Synthetic Control with Donor Contamination}
+
+A streaming platform launched a pricing experiment in California, using the remaining 49 states as potential donors for synthetic control. The outcome was monthly subscriber growth over 24 pre-treatment months and 12 post-treatment months.
+
+\paragraph{Initial fit.} The naive synthetic control achieved $\text{RMSPE}_{\text{pre}} = 0.8\%$ (monthly growth units) with weights concentrated on New York (0.42), Texas (0.31), and Florida (0.18). The estimated treatment effect was $-1.2$ percentage points per month---a substantial negative impact.
+
+\paragraph{The problem.} During the post-treatment period, New York implemented its own pricing change (unrelated to the experiment). This contaminated the synthetic control: New York's post-treatment trajectory no longer represented the counterfactual for California. The in-time placebo at month 18 (6 months before treatment) showed a spurious "effect" of $-0.6$ pp, suggesting the synthetic control was already drifting.
+
+\paragraph{Donor curation.} The team excluded New York and four other states with concurrent policy changes, leaving 44 donors. The revised synthetic control achieved $\text{RMSPE}_{\text{pre}} = 1.1\%$ (slightly worse fit) with weights on Texas (0.38), Illinois (0.29), and Pennsylvania (0.22). The Herfindahl index dropped from 0.31 to 0.26, indicating less concentration. The revised treatment effect was $-0.4$ pp (SE = 0.3 pp via placebo inference).
+
+\paragraph{Resolution.} The in-space placebo p-value was $p = 0.12$ (rank 5 of 44), no longer significant at conventional levels. The team concluded that the initial estimate was biased by donor contamination. The true effect, if any, was much smaller than initially estimated. The analysis was reported with both estimates and a clear explanation of why donor curation changed the conclusion.
+
+\subsection*{Staggered Adoption with Pre-Trend Failure}
+
+A loyalty programme rolled out across 500 stores in 30 monthly cohorts. The outcome was average transaction value, measured monthly from 12 months before to 12 months after each store's adoption.
+
+\paragraph{Initial diagnostics.} The event-study plot showed pre-treatment coefficients $\hat{\theta}_{-6} = 0.8\%$, $\hat{\theta}_{-3} = 1.2\%$, and $\hat{\theta}_{-1} = 1.8\%$---a clear upward pre-trend. The joint pre-trend test rejected the null ($F = 3.2$, $p = 0.008$). Parallel trends was violated.
+
+\paragraph{Diagnosis.} Leave-one-cohort-out analysis showed that the first three cohorts (early adopters) drove the pre-trend. These cohorts were high-performing stores selected precisely because they were already growing. Selection into early adoption was correlated with the outcome trajectory.
+
+\paragraph{Attempted fixes.} The team tried three approaches. First, excluding early cohorts: dropping the first 5 cohorts reduced the pre-trend ($\hat{\theta}_{-1} = 0.6\%$, joint $p = 0.14$) but also reduced the post-treatment effect from 4.2\% to 2.1\%. Second, covariate adjustment: adding store-level controls (size, region, baseline sales) reduced the pre-trend to $\hat{\theta}_{-1} = 0.4\%$ ($p = 0.22$) with a post-treatment effect of 2.8\%. Third, sensitivity analysis: using the Rambachan-Roth framework (Section~\ref{sec:sensitivity-analyses}) with $\delta = 0.5\%$ per period (the observed pre-trend slope), the identified set was $[1.2\%, 4.4\%]$.
+
+\paragraph{Resolution.} The team reported the sensitivity bounds rather than a point estimate. The conclusion was that the loyalty programme increased transaction value by 1--4\%, with the range reflecting uncertainty about the pre-trend extrapolation. The pre-trend failure was documented transparently, and the early-cohort selection mechanism was flagged as a limitation.
+
+\subsection*{Retail Spillovers with Exposure Mapping}
+
+A coffee chain tested a mobile app promotion at 200 stores, with 100 treated and 100 control stores. The outcome was weekly foot traffic measured via mobile location data.
+
+\paragraph{Initial estimate.} The naive DiD estimate was a 12\% increase in foot traffic (SE = 3\%, $p < 0.01$). Pre-trends were flat, and covariate balance was good.
+
+\paragraph{The problem.} Many control stores were located near treated stores. In dense urban areas, a customer might see the app promotion at a treated store and then visit a nearby control store. This would bias the control group upward, attenuating the treatment effect.
+
+\paragraph{Exposure mapping.} The team computed exposure $E_i(r) = \sum_{j \neq i} W_j \cdot \mathbf{1}(d_{ij} \leq r)$ for radii $r \in \{1, 3, 5, 10\}$ miles. At $r = 3$ miles, 45 control stores had at least one treated neighbour. The correlation between control-store outcomes and exposure was $\rho = 0.18$ ($p = 0.07$)---suggestive of spillovers.
+
+\paragraph{Buffer analysis.} Excluding control stores within 5 miles of any treated store left 62 "pure" controls. The revised estimate was 18\% (SE = 5\%), 50\% larger than the naive estimate. The effective sample size dropped, but the estimate was less biased.
+
+\paragraph{Sensitivity.} The team reported estimates across the radius grid:
+\begin{center}
+\begin{tabular}{lcc}
+\hline
+Buffer radius & Control stores & Effect estimate \\
+\hline
+None (naive) & 100 & 12\% (SE 3\%) \\
+3 miles & 78 & 15\% (SE 4\%) \\
+5 miles & 62 & 18\% (SE 5\%) \\
+10 miles & 31 & 21\% (SE 8\%) \\
+\hline
+\end{tabular}
+\end{center}
+The monotonic increase with buffer size confirmed that spillovers were attenuating the naive estimate.
+
+\paragraph{Resolution.} The team reported the 5-mile buffer estimate as the primary result, with the sensitivity table showing robustness to buffer choice. The conclusion was that the app promotion increased foot traffic by 15--20\%, with the naive estimate of 12\% biased downward by spillovers to nearby control stores.

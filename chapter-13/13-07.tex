@@ -1,0 +1,63 @@
+\section{Assumptions}
+\label{sec:hd-assumptions}
+
+Causal identification using regularisation rests on assumptions about sparsity, overlap, sampling, and stability. This section articulates these assumptions, discusses their implications, and connects them to the broader panel data frameworks discussed in this book.
+
+\begin{assumption}[Approximate Sparsity After Partialling Fixed Effects or Factors]
+\label{ass:hd-sparsity}
+The regression of within-transformed outcomes on within-transformed controls (after removing unit and time fixed effects or latent factors) is approximately sparse: there exist $s$ covariates with nonzero coefficients, where $s$ is small relative to the effective sample size (the number of clusters or the number of observations).
+\end{assumption}
+
+Approximate sparsity is the key requirement. It ensures that regularisation can select a parsimonious model that controls for confounding without overfitting. If the true model is dense (many covariates have non-zero coefficients), lasso will produce biased estimates. If the model is sparse (only a few covariates matter), lasso can identify the correct controls with high probability.
+
+Diagnostics for this assumption include examining the lasso path and checking the stability of the selected covariate set across cross-validation folds.
+
+\begin{assumption}[Overlap and Support for Treatment Given Controls]
+\label{ass:hd-overlap}
+The propensity score (the conditional probability of treatment given selected controls, unit fixed effects, and time fixed effects) is bounded away from zero and one:
+\[
+0 < \underline{e} \leq P(W_{it} = 1 \mid X_{S,it}, \alpha_i, \gamma_t) \leq \bar{e} < 1,
+\]
+where $S$ is the set of selected controls.
+\end{assumption}
+
+Overlap ensures that treated and control units are comparable after conditioning on the selected controls, enabling valid counterfactual comparisons. If propensities are near zero or one, inverse propensity weighting produces extreme weights that inflate variance and introduce bias.
+
+Violations occur when treatment assignment is nearly deterministic given the selected controls (for example, all units with $X_j > c$ are treated, all units with $X_j \leq c$ are untreated), or when the selected controls do not adequately balance treated and control groups. Diagnostics include plotting propensity score distributions for treated and control units after selection, computing overlap statistics, and assessing covariate balance (standardised mean differences before and after adjustment).
+
+If overlap is weak, trimming (excluding units with extreme propensities) or alternative control selection (using double selection to include controls that balance treatment assignment) improves credibility.
+
+\begin{assumption}[Dependence-Aware Sampling and Penalty Choice]
+\label{ass:hd-dependence}
+Cross-validation and penalty choice respect the panel dependence structure (clustering by unit, time, or both), ensuring that folds partition units or periods (not observations) and that penalties are scaled appropriately for the effective sample size (the number of clusters).
+\end{assumption}
+
+Dependence-aware sampling ensures that cross-validation provides unbiased estimates of out-of-sample prediction error and that penalties avoid under-penalising (selecting too many controls) or over-penalising (omitting important confounders).
+
+Violations occur when cross-validation randomly partitions observations (ignoring within-unit or within-period dependence), or when penalties are chosen based on the nominal sample size (the number of observations) rather than the effective sample size (the number of clusters). Diagnostics include verifying that cross-validation folds partition units or periods, assessing whether selected controls vary across folds (instability suggests under-penalisation), and comparing penalties chosen via blocked cross-validation to theoretical penalties adjusted for clustering.
+
+If dependence is ignored, selected models overfit and treatment effect estimates are biased.
+
+\begin{assumption}[Stability and No Leakage from Post-Treatment Information]
+\label{ass:hd-stability}
+The relationship between outcomes and controls is stable across training and validation folds and across pre-treatment and post-treatment periods for counterfactual segments. Control selection uses only pre-treatment data for treated units and out-of-fold data for all units, avoiding leakage from post-treatment outcomes into the selected set.
+\end{assumption}
+
+Stability ensures that controls selected on training data generalise to validation data and that controls selected on pre-treatment data provide valid counterfactuals for post-treatment periods. No leakage ensures that selected controls are not affected by treatment (avoiding post-treatment bias) and that selection does not capitalise on spurious patterns in treated units' post-treatment outcomes.
+
+Violations occur when the outcome-control relationship shifts over time (for example, due to regime changes, seasonality, or composition effects), or when controls are selected using post-treatment data for treated units (inducing collider or mediator bias). Diagnostics include comparing selected controls across subperiods (early versus late pre-treatment periods), assessing whether treatment effect estimates are stable when varying the cutoff for pre-treatment data, and running placebo tests (applying the selection procedure to pseudo-intervention dates and checking that pseudo effects are near zero).
+
+\begin{assumption}[Correct Design Alignment When Combined with DiD/Event-Study or Factor Residualisation]
+\label{ass:hd-design}
+When regularisation is combined with difference-in-differences, event studies, or factor models, the selection procedure respects the design structure (cohort-time identification, within-transformation, factor partialling) and does not select controls that conflict with identification (post-treatment controls, colliders, mediators).
+\end{assumption}
+
+Correct design alignment ensures that regularisation serves the identification strategy. For DiD, controls must be time-varying, pre-treatment, and plausibly exogenous. For event studies, controls should be selected separately for each cohort-period, using only valid comparison groups. For factor models, regularisation should be applied after residualising with respect to the factors. Violating these principles—for example, by including post-treatment variables or colliders—undermines the causal interpretation of the estimates.
+
+\subsection*{Regularisation and Fundamental Assumptions}
+
+It is crucial to understand that regularisation does not relax the fundamental assumptions of causal inference, such as unconfoundedness and SUTVA, as formalised by \citet{pearl2009causality}. It is a tool for selecting the set of covariates on which we condition, but the validity of that conditioning strategy still rests on the core principles of design-based inference.
+
+Situating within modern panel frameworks by \citet{arkhangelsky2024causal} connects regularisation to recent advances in panel causal inference. The Arkhangelsky-Imbens survey emphasises the importance of heterogeneity-robust identification (avoiding biased aggregation across cohorts), design-based transparency (reporting estimands, assumptions, and diagnostics), and credible inference (accounting for clustering, small samples, and dependence).
+
+Regularisation complements these themes by enabling flexible covariate adjustment (accommodating high-dimensional controls) while preserving design-based logic (respecting cohort-time structure, avoiding colliders) and providing valid inference (cluster-robust standard errors, debiased lasso). The unifying principle is that causal identification in panels requires strong assumptions grounded in design and domain knowledge, and that regularisation provides tools for implementing these assumptions credibly in high-dimensional settings.

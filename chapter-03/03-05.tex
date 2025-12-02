@@ -1,0 +1,42 @@
+\section{Phased Rollouts and Staggered Adoption}
+\label{sec:phased-rollouts}
+
+Phased rollouts, introduced in Section~\ref{sec:assignment-estimands} as staggered adoption designs, assign treatment to batches of units over time. A retailer launches a loyalty programme in 100 stores in quarter one, another 200 stores in quarter three, another 150 stores in quarter five, and leaves 50 stores untreated as perpetual controls. A platform enters 30 cities over two years, with entry timing driven by operational capacity and market readiness. Phased rollouts are attractive because they spread implementation costs over time, allow mid-course corrections based on early results, and generate rich variation in treatment timing that enables credible causal inference.
+
+\textbf{Caveat on mid-course corrections.} If the rollout schedule is adjusted based on early results---for example, accelerating rollout because early cohorts show positive effects, or delaying rollout to underperforming markets---the assignment mechanism becomes endogenous. Units assigned to later cohorts are then selected based on outcomes observed in earlier cohorts, violating the parallel trends assumption across cohorts. To preserve identification, the rollout schedule should be fixed in advance or adjusted only based on operational constraints unrelated to outcomes. This section focuses on practical design considerations for implementing phased rollouts effectively, while Chapter~\ref{ch:did} provides the estimation details for modern heterogeneity-robust difference-in-differences methods.
+
+\subsection{Cohort Mapping and Not-Yet-Treated Controls}
+
+The defining feature of phased rollouts is the cohort structure discussed in Section~\ref{sec:assignment-estimands}: units are grouped by their adoption time $G_i$, and cohorts are compared to one another and to never-treated controls. The key identifying variation comes from comparing units that have adopted to units that have not yet adopted. For example, units adopting in quarter three (cohort $g = 3$) can be compared to units adopting later (cohorts $g = 5$ or $g = 7$) or to never-treated units (cohort $g = \infty$). These comparisons use quarters one and two as pre-treatment periods for cohort 3, and quarters three and four as post-treatment for cohort 3 but pre-treatment for later cohorts.
+
+Identification relies on a parallel trends assumption across cohorts: absent treatment, units adopting at different times would have followed similar outcome trajectories, possibly after conditioning on covariates, as discussed in Section~\ref{sec:assignment-estimands}.
+
+Modern heterogeneity-robust difference-in-differences estimators (Chapter~\ref{ch:did}) formalise this logic by estimating $\text{ATT}(g, t)$ for each cohort-time pair and aggregating them into summary measures. The Callaway--Sant'Anna estimator, for instance, compares outcomes for cohort $g$ in period $t$ to outcomes for not-yet-treated or never-treated units in the same period, yielding a clean estimate of the effect for that cohort at that time. Aggregating across cohorts and time produces the overall ATT, cohort-specific effects, or event-time effects $\theta_k$ that trace the dynamic response relative to adoption.
+
+A key design choice in phased rollouts is how to aggregate effects across cohorts and time.
+
+\subsection{Calendar Time Versus Event Time Aggregation}
+
+Phased rollouts enable two types of aggregation: calendar time and event time. Calendar-time aggregation pools all units observed in the same period, estimating the average effect in each period $t$ across all treated units. Event-time aggregation pools all units observed at the same time since adoption. We define event time as $k = t - G_i$, representing the number of periods elapsed since adoption.
+
+The event-study parameter $\theta_k$ aggregates the cohort-specific effects $\text{ATT}(g, t)$ across all cohorts $g$ observed at event time $k$:
+\[ \theta_k = \sum_{g: g+k \leq T} \omega_{g,k} \, \text{ATT}(g, g+k), \]
+where the non-negative weights $\omega_{g,k}$ sum to one over cohorts for which event time $k$ is observed (that is, $g + k \leq T$). This estimates the average effect $k$ periods post-adoption.
+
+The choice depends on the substantive question. Calendar time aggregation is natural when the goal is to estimate the contemporaneous impact of the programme in a given period, accounting for macroeconomic conditions or seasonal effects specific to that period. Event time aggregation is natural when the goal is to trace how the effect evolves as a function of time since adoption. Calendar-time aggregation yields a sequence of period-specific average treatment effects $\{\text{ATT}_t\}$, while event-time aggregation yields the dynamic profile $\{\theta_k\}$ that links directly to the event-study estimands in Chapter~\ref{ch:event}.
+
+Event-study specifications (Chapter~\ref{ch:event}) facilitate event-time aggregation by estimating separate coefficients for each period relative to adoption. The coefficients $\theta_k$ estimate the treatment effect at each event time $k$ relative to a baseline (typically $k = -1$, the period immediately before adoption). Plotting $\theta_k$ against $k$ produces an event-study graph that visualises pre-trends (coefficients for $k < 0$ should be near zero if the parallel trends assumption holds) and dynamic effects (coefficients for $k \geq 0$ trace the treatment effect trajectory).
+
+Plan these aggregation choices in advance to ensure the design supports the intended analysis.
+
+\subsection{Planning for Heterogeneity-Robust Estimators}
+
+When designing a phased rollout, anticipate that treatment effects may be heterogeneous across cohorts or over time. Early adopters may differ from late adopters in ways that affect the treatment response. Effects may grow over time as users adapt to a new programme or as network effects accumulate. These sources of heterogeneity mean that traditional two-way fixed effects regressions, which impose a constant treatment effect, can produce misleading estimates (Chapter~\ref{ch:did}). Plan to use heterogeneity-robust estimators that allow $\text{ATT}(g, t)$ to vary and that aggregate these effects with transparent, non-negative weights.
+
+Design choices that facilitate heterogeneity-robust estimation include ensuring that never-treated or not-yet-treated control units are observed in all periods, balancing cohort sizes so that no cohort dominates the aggregation, and collecting rich covariate data that can be used to explore sources of heterogeneity.
+
+\textbf{Trade-off on never-treated controls.} Having never-treated controls strengthens identification by providing a comparison group unaffected by treatment at any point. However, maintaining never-treated controls may be operationally difficult or ethically problematic if the treatment is beneficial. If withholding treatment permanently is unacceptable, the design can rely solely on not-yet-treated controls, which requires that some cohorts adopt late enough to serve as controls for early adopters. This trade-off should be resolved at the design stage based on operational constraints and the credibility of the parallel trends assumption across cohorts.
+
+Specifying in advance which aggregations will be reported---overall ATT, cohort-specific effects, event-time effects, effects by subgroup (for example, high-income versus low-income markets)---disciplines the analysis and guards against cherry-picking results \textit{ex post}.
+
+Phased rollouts combine operational flexibility with analytical rigour. By spreading implementation over time, they reduce operational risk and allow learning from early cohorts. By creating variation in treatment timing, they enable credible causal inference through modern heterogeneity-robust methods. When designed carefully with attention to cohort balance, control availability, and pre-specified aggregations, phased rollouts provide a powerful approach to measuring treatment effects in realistic marketing settings.

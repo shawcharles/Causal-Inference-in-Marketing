@@ -1,0 +1,137 @@
+\section{Diagnostics}
+\label{sec:dynamics-diagnostics}
+
+Credible dynamic treatment effect analysis requires rigorous diagnostics that assess pre-trends, support per event time, sensitivity to window selection and binning, and robustness to lag length and functional form.
+
+This section outlines the core diagnostic workflow. For identification assumptions, see Section~\ref{sec:dynamics-identification}. For estimation, see Section~\ref{sec:dynamics-estimation}. For comprehensive design diagnostics, see Chapter~\ref{ch:design-diagnostics}.
+
+\subsection*{Overview of Diagnostics}
+
+Table~\ref{tab:dynamics-diagnostics} summarises the key diagnostics for dynamic effects.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Summary of Diagnostics for Dynamic Effects}
+\label{tab:dynamics-diagnostics}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Diagnostic} & \textbf{What It Tests} & \textbf{If Fails} \\
+\midrule
+Support per event time & Adequate treated/control observations at each lag & Bin sparse lags; restrict window \\
+\addlinespace
+Pre-trend test & Parallel trends in pre-treatment & Anticipation or differential trends \\
+\addlinespace
+Placebo test & No spurious effects for never-treated & Design captures spurious variation \\
+\addlinespace
+Binning sensitivity & Stability across bin thresholds & Threshold choice matters \\
+\addlinespace
+Window sensitivity & Stability across event-time windows & Distant lags driven by sparse support \\
+\addlinespace
+Lag length sensitivity & LRM stability as $\bar{L}$ increases & Effects persist beyond window \\
+\addlinespace
+Functional form & Agreement across specifications & Functional form matters \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{Support per Event Time}
+
+Support quantifies the number of treated and control observations at each lag.
+
+\begin{definition}[Event-Time Support]\label{def:support}
+For each event time $k$, define:
+\begin{enumerate}[(i)]
+    \item \textbf{Treated support:} $N_k^{\text{tr}} = \sum_{g \in \mathcal{G}_k} N_g$, treated observations at event time $k$;
+    \item \textbf{Control support:} $N_k^{\text{co}} = |\{(i, t) : i \in \mathcal{C}_{g(i),k}, t = g(i) + k\}|$, control observations;
+    \item \textbf{Effective support:} $N_k^{\text{eff}} = (N_k^{\text{tr}} \cdot N_k^{\text{co}}) / (N_k^{\text{tr}} + N_k^{\text{co}})$, harmonic mean.
+\end{enumerate}
+Event times with $N_k^{\text{eff}} < N_{\min}$ (e.g., $N_{\min} = 10$) should be binned or excluded.
+\end{definition}
+
+\paragraph{Visualisation.} Plot the number of treated and control units at each event time $k$, separately for leads ($k < 0$) and lags ($k > 0$). Flag lags where support drops below threshold.
+
+\subsection*{Binning Choices}
+
+Binning pools multiple lags into a single estimate, improving stability at the cost of coarser resolution.
+
+\paragraph{Common practice.} Distant leads (e.g., $k \leq -5$) are typically binned into a single pre-period category, and distant lags (e.g., $k \geq 10$) into a single post-period category.
+
+\paragraph{Sensitivity analysis.} Compare results across bin thresholds (e.g., $k \geq 8$ vs $k \geq 10$ vs $k \geq 12$). If estimates are stable, conclusions are robust. If estimates vary widely, report multiple thresholds.
+
+\subsection*{Window Sensitivity}
+
+Assess how estimates change when the event-time window is restricted.
+
+\paragraph{Procedure.} Estimate with the full window (e.g., $k \in [-10, 15]$), then re-estimate with a restricted window (e.g., $k \in [-5, 10]$). If estimates are similar, the full window is credible; if they differ substantially, the restricted window with better support is more reliable.
+
+\subsection*{Pre-Trend Tests}
+
+Pre-trend tests assess whether event-study leads are zero.
+
+\paragraph{Individual tests.} For each lead $k < 0$, test $H_0: \theta_k = 0$. Plot lead coefficients with confidence intervals centred around zero.
+
+\paragraph{Joint test.} F-test that all leads are jointly zero (see Proposition~\ref{prop:pretrend-test}). If rejected, diagnose source: differential trends, anticipation, or confounders.
+
+\subsection*{Placebo Tests}
+
+Placebo tests assess whether the design captures spurious variation.
+
+\begin{proposition}[Placebo Test on Never-Treated]\label{prop:placebo}
+Assign a pseudo-treatment date $\tilde{g}$ to never-treated units and estimate pseudo event-time effects $\tilde{\theta}_k$. Under correct specification:
+\[
+\mathbb{E}[\tilde{\theta}_k] = 0 \quad \text{for all } k.
+\]
+Large pseudo effects indicate that the design captures spurious variation (e.g., seasonality, common trends) unrelated to treatment.
+\end{proposition}
+
+\paragraph{If placebo fails:} Design is picking up spurious variation; conclusions are unreliable.
+
+\subsection*{Functional Form Robustness}
+
+Assess whether conclusions depend on modelling choices.
+
+\paragraph{Lag length sensitivity.} Estimate for multiple lag lengths $\bar{L}$ (e.g., 4, 6, 8, 10) and plot LRM against $\bar{L}$. If LRM stabilises, the chosen $\bar{L}$ is adequate. If LRM increases without bound, effects persist beyond the window and the LRM is an underestimate.
+
+\paragraph{Functional form comparison.} Compare geometric decay, Almon polynomial, and flexible lag specifications by plotting impulse response profiles for each. If profiles agree, conclusions are robust to functional form. If profiles disagree, report results for multiple specifications and discuss the economic reasoning for each.
+
+\paragraph{Model selection.} Use AIC/BIC or cross-validation for data-driven guidance.
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Diagnostic Workflow Checklist]
+\textbf{Step 1: Support}
+\begin{itemize}
+\item[$\square$] Plot support per event time.
+\item[$\square$] Flag sparse lags ($N_k^{\text{eff}} < 10$).
+\item[$\square$] Bin or exclude sparse lags.
+\end{itemize}
+
+\textbf{Step 2: Binning and Window}
+\begin{itemize}
+\item[$\square$] Report binning choices.
+\item[$\square$] Test sensitivity to bin thresholds.
+\item[$\square$] Test sensitivity to window restriction.
+\end{itemize}
+
+\textbf{Step 3: Pre-Trends}
+\begin{itemize}
+\item[$\square$] Plot lead coefficients with CIs.
+\item[$\square$] Report joint F-test on leads.
+\item[$\square$] If fails, diagnose source.
+\end{itemize}
+
+\textbf{Step 4: Placebo}
+\begin{itemize}
+\item[$\square$] Run placebo test on never-treated.
+\item[$\square$] Assess magnitude of pseudo effects.
+\end{itemize}
+
+\textbf{Step 5: Robustness}
+\begin{itemize}
+\item[$\square$] Vary lag length; plot LRM vs $\bar{L}$.
+\item[$\square$] Compare functional forms.
+\item[$\square$] Report results for multiple specifications.
+\end{itemize}
+
+\textbf{Transparent reporting builds credibility.}
+\end{tcolorbox}

@@ -1,0 +1,123 @@
+\section{Motivation and Setup}
+\label{sec:dynamics-motivation}
+
+Marketing interventions rarely act instantaneously. A television advertising campaign builds awareness over weeks and generates incremental sales over months. Effects decay gradually as memory fades and competitive messages crowd the consumer's mind. A promotional discount accelerates buying in the promotion period, creating stockpiling and purchase acceleration, followed by post-promotion dips as consumers draw down inventories. A loyalty programme enrolls customers gradually, generates habit formation and switching costs over quarters or years, and exhibits persistence long after the programme ends.
+
+These dynamic patterns are central to marketing decision-making. Managers must forecast the cumulative impact of campaigns, understand the time profile of returns, and decide whether to sustain, refresh, or terminate investments based on the speed of ramp-up and decay.
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!50!black,title=Key Concepts: Dynamic Treatment Effects]
+\textbf{\index{impulse response}Impulse response:} The effect of a treatment shock on outcomes at each lag $s = 0, 1, 2, \ldots$ after treatment. Formally, $\beta_s = \mathbb{E}[Y_{i,t+s}(1) - Y_{i,t+s}(0) \mid W_{it} = 1]$.
+
+\textbf{\index{long-run multiplier}Long-run multiplier:} The cumulative effect across all lags, $\text{LRM} = \sum_{s=0}^\infty \beta_s$. Measures the total impact of a treatment shock.
+
+\textbf{Half-life:} The time required for effects to decay to half their initial magnitude. If $\beta_s = \beta_0 \delta^s$, the half-life is $h^* = \log 2 / (-\log \delta)$.
+
+\textbf{Event time:} Periods relative to treatment adoption (negative for pre-treatment, zero for treatment, positive for post-treatment).
+
+\textbf{Carryover:} The influence of past treatments on current outcomes.
+
+\textbf{Anticipation:} The influence of future expected treatments on current outcomes.
+
+See Section~\ref{sec:dynamics-estimands} for formal definitions.
+\end{tcolorbox}
+
+Dynamic treatment effects formalise the time dimension of causal inference in panels. Rather than estimating a single average treatment effect that averages over all post-treatment periods, dynamic methods trace out the full trajectory of effects over event time. We estimate impulse responses that quantify how outcomes respond to treatment shocks over lags. We summarise dynamics through the long-run multiplier and half-life.
+
+These estimands connect directly to substantive questions in marketing. How long does advertising continue to generate incremental sales? When does a promotion's stockpiling effect dissipate? How persistent are loyalty programme effects?
+
+\subsection*{Design-Based Perspective}
+
+The design-based perspective emphasised by \citet{angrist2010credibility} provides a natural framework for dynamics. Event-study designs (Chapter~\ref{ch:event}) visualise treatment effects over leads and lags, testing for pre-trends and tracing post-treatment dynamics transparently. Staggered difference-in-differences designs (Chapter~\ref{ch:did}) aggregate cohort-time effects into event-time profiles, averaging effects across cohorts at each lag while avoiding contamination from already-treated controls.
+
+Synthetic control methods (Chapters~\ref{ch:sc} and~\ref{ch:generalized-sc}) impute counterfactuals that evolve dynamically, enabling estimation of time-varying treatment effects for single treated units. We use these design-based methods because they require minimal functional form assumptions and produce robust estimates, provided that parallel trends holds and sufficient pre-treatment data are available.
+
+For event-study specification, plotting, and inference see Chapter~\ref{ch:event}. For staggered DiD estimands see Chapter~\ref{ch:did}. For design diagnostics and inference under serial dependence, see Chapters~\ref{ch:design-diagnostics} and~\ref{ch:inference}.
+
+\subsection*{Model-Based Ad-Stock Tradition}
+
+The model-based ad-stock tradition, prevalent in marketing science since \citet{clarke1976econometric}, complements the design-based approach by providing economic structure for dynamic relationships. For measure-theoretic foundations, see Appendix~\ref{app:time-series}.
+
+\textbf{Ad-stock models} posit that advertising effects accumulate through a stock variable that depreciates geometrically, generating carryover that decays exponentially. \textbf{\index{distributed lag}Distributed-lag models} generalise ad-stock by allowing flexible lag structures (polynomial, unrestricted finite lags) that accommodate non-monotonic dynamics such as wear-in or delayed effects. \textbf{Habit formation models} embed dynamics in utility functions, generating state dependence where past choices influence current preferences.
+
+These structural models provide interpretable parameters (depreciation rates, habit coefficients) and enable counterfactual simulations. However, they impose strong functional form assumptions that may not hold in the data.
+
+\subsection*{Synthesis: Design-Based and Model-Based}
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=When to Use Design-Based vs Model-Based Methods]
+\textbf{Use design-based methods (event studies, DiD, SC) when:}
+\begin{itemize}
+\item Goal is to document the presence and shape of dynamics transparently.
+\item Functional form assumptions are uncertain or unverifiable.
+\item Pre-treatment data are available to test parallel trends.
+\item Credibility of identification is paramount.
+\end{itemize}
+
+\textbf{Use model-based methods (ad-stock, distributed-lag, habit formation) when:}
+\begin{itemize}
+\item Goal is to forecast effects under untried policies.
+\item Structural parameters (depreciation rates, habit coefficients) are of interest.
+\item Economic theory provides credible restrictions.
+\item Data are insufficient for flexible design-based estimation.
+\end{itemize}
+
+\textbf{Synthesis approach:}
+\begin{enumerate}
+\item Estimate design-based event study to document dynamics transparently.
+\item Fit model-based specification to impose structure and sharpen estimates.
+\item Compare estimates; assess sensitivity to functional form.
+\item Report both as robustness; prefer design-based if they disagree.
+\end{enumerate}
+\end{tcolorbox}
+
+Design-based methods provide transparent, assumption-lean estimates. Model-based methods provide structure that sharpens estimation, enables extrapolation, and facilitates interpretation. The appropriate choice depends on the substantive question, data richness, and credibility of structural assumptions.
+
+\subsection*{Connection to Causal Frameworks}
+
+The connection to potential outcomes and causal frameworks (Chapter~\ref{ch:frameworks}) clarifies the estimands. Path-dependent potential outcomes \citet{pearl2009causality} allow outcomes at time $t$ to depend on the full history of treatment assignments up to $t$, capturing carryover from past treatments and anticipation of future treatments. The observed outcome is a function of the entire treatment path, and the treatment effect at time $t$ is the contrast between outcomes under the observed path and an alternative path (e.g., no treatment). Estimating such effects requires comparing units with different treatment paths while holding constant other determinants—motivating panel data where multiple paths are observed.
+
+\begin{tcolorbox}[colback=orange!5!white,colframe=orange!50!black,title=Example: Promotional Calendar Dynamics]
+\textbf{Setting:} A retailer implements discounts every four weeks over a year.
+
+\textbf{Pattern:} Sales spike in promotion weeks, dip in weeks immediately following (stockpiling drawdown), and return to baseline before the next promotion.
+
+\textbf{Problem:} A single ATT that pools all periods obscures this rich dynamic structure and provides little guidance for optimising the promotion calendar.
+
+\textbf{Solution:} An event-study design traces sales over leads and lags relative to promotion week. The design reveals the spike (immediate effect), the dip (post-promotion stockpiling effect), and the return to baseline (effect duration). It quantifies the net cumulative effect accounting for both spike and dip, informing the decision of whether to increase or decrease promotion frequency.
+
+See Section~\ref{sec:dynamics-marketing} for full analysis.
+\end{tcolorbox}
+
+\subsection*{Chapter Roadmap}
+
+This chapter develops dynamic treatment effect methods with a focus on practical implementation. Table~\ref{tab:dynamics-roadmap} provides the chapter structure.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Chapter 10 Roadmap}
+\label{tab:dynamics-roadmap}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Section} & \textbf{Topic} & \textbf{Key Content} \\
+\midrule
+\ref{sec:dynamics-estimands} & Estimands & Path-dependent potential outcomes; event-time effects; impulse responses; long-run multipliers \\
+\addlinespace
+\ref{sec:dynamics-identification} & Identification & Parallel trends; no-anticipation; control group choices \\
+\addlinespace
+\ref{sec:dynamics-estimation} & Estimation & Heterogeneity-robust event studies; distributed-lag models; dynamic DiD \\
+\addlinespace
+\ref{sec:dynamics-anticipation} & Anticipation \& Carryover & Modelling anticipation; separating carryover; mediation \\
+\addlinespace
+\ref{sec:dynamics-inference} & Inference & Serial dependence; multiple testing; uniform confidence bands \\
+\addlinespace
+\ref{sec:dynamics-diagnostics} & Diagnostics & Pre-trend tests; lag selection; stability checks \\
+\addlinespace
+\ref{sec:dynamics-marketing} & Marketing Applications & Advertising dynamics; promotional calendars; loyalty programmes \\
+\addlinespace
+\ref{sec:dynamics-workflow} & Workflow & Checklist for practitioners \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+Together, these sections equip practitioners to estimate, diagnose, and report dynamic treatment effects in ways that generate credible causal evidence and inform strategic decisions.

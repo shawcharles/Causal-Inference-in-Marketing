@@ -1,0 +1,160 @@
+\section{Workflow Checklist}
+\label{sec:factor-workflow}
+
+This section provides a compact, reproducible protocol for conducting factor model and matrix completion analyses in marketing panels. The workflow integrates design, estimation, diagnostics, inference, and reporting, ensuring that conclusions are credible and transparent.
+
+\subsection*{Step 1: Define the Estimand and Treated Cells}
+
+Clarify the substantive question and define the target estimand. Is the goal to estimate the average treatment effect across all treated units and periods (overall ATT), unit-specific effects, or period-specific effects? Define the treated cells (unit-period pairs where treatment is applied) and the untreated cells (pre-treatment periods for treated units, and all periods for control units). Document the treatment timing and the structure of the panel. See Section~\ref{sec:factor-ife} for the formal setup.
+
+\subsection*{Step 2: Choose IFE or Matrix Completion}
+
+Select the estimation method based on the data structure and the analyst's priorities:
+\begin{itemize}
+\item \textbf{Interactive fixed effects (IFE):} Use when the rank is known or can be selected using information criteria or economic reasoning, and when interpretation of factors and loadings is desired. See Section~\ref{sec:factor-ife}.
+\item \textbf{Matrix completion:} Use when the rank is unclear, when regularisation is needed to stabilise estimates, or when the focus is on imputation accuracy rather than interpretation. See Section~\ref{sec:factor-matrix}.
+\end{itemize}
+Justify the choice based on the data structure and diagnostic results.
+
+\subsection*{Step 3: Select the Rank or Penalty}
+
+Choose the number of factors $R$ (for IFE) or the regularisation parameter $\lambda$ (for matrix completion) using:
+\begin{enumerate}
+\item Information criteria (IC1, IC2 from Section~\ref{sec:factor-tuning})
+\item Eigenvalue gaps (scree plot)
+\item Cross-validation (split pre-treatment period; assess out-of-sample fit)
+\end{enumerate}
+Plot the validation curve (prediction error vs rank or penalty), and select at the minimum or elbow. Pre-specify the selection procedure to discipline the analysis and guard against specification searches. See Section~\ref{sec:factor-tuning} for detailed guidance.
+
+\subsection*{Step 4: Fit on Untreated or Pre-Treatment Data}
+
+Estimate the factor model using only untreated cells: pre-treatment periods for treated units, and all periods for never-treated control units.
+\begin{itemize}
+\item For IFE: Apply principal components or iterated least squares to the demeaned outcome matrix. Obtain loadings $\hat{\lambda}_i$ and factors $\hat{f}_t$.
+\item For matrix completion: Solve the nuclear-norm minimisation problem on observed cells. Obtain the imputed matrix $\hat{M}$.
+\end{itemize}
+Apply appropriate pre-processing (two-way demeaning, detrending) as described in Section~\ref{sec:factor-tuning}.
+
+\subsection*{Step 5: Impute Counterfactuals}
+
+Compute counterfactuals for treated cells using the estimated loadings and factors. For each treated unit-period pair $(i, t)$:
+\begin{itemize}
+\item IFE: $\hat{Y}_{it}^{\text{IFE}}(0) = \hat{\lambda}_i' \hat{f}_t$
+\item Matrix completion: $\hat{Y}_{it}^{\text{MC}}(0) = \hat{M}_{it}$
+\end{itemize}
+Compute treatment effects as the difference between observed outcomes and imputed counterfactuals:
+\[
+\hat{\tau}_{it} = Y_{it} - \hat{Y}_{it}(0).
+\]
+
+\subsection*{Step 6: Aggregate and Plot Treatment Effects}
+
+Aggregate treatment effects across treated units or periods to obtain summaries:
+\begin{itemize}
+\item Overall ATT: $\widehat{\text{ATT}} = \frac{1}{|\mathcal{T}|} \sum_{(i,t) \in \mathcal{T}} \hat{\tau}_{it}$
+\item Event-time effects: $\hat{\tau}_k = \frac{1}{|\mathcal{T}_k|} \sum_{(i,t) \in \mathcal{T}_k} \hat{\tau}_{it}$ for event-time $k$
+\item Unit-specific effects or cohort-time effects $\text{ATT}(g, t)$ for staggered adoption
+\end{itemize}
+Plot event-time profiles to visualise dynamics. Conduct pre-trend tests using event-time leads; leads should be near zero under the stability assumption. Follow plotting conventions in Chapter~\ref{ch:event}.
+
+\subsection*{Step 7: Conduct Diagnostics}
+
+Follow the diagnostic checklist from Section~\ref{sec:factor-diagnostics}:
+\begin{enumerate}
+\item Compute pre-treatment reconstruction error (MSE and $R^2$).
+\item Assess factor stability by re-estimating on subsets (early vs late pre-treatment).
+\item Plot residuals over time and across units; check for autocorrelation, heteroskedasticity, and unexplained seasonality.
+\item Vary the rank ($R \in \{3, 5, 7, 10\}$) and report sensitivity of treatment effect estimates.
+\item Conduct leave-one-unit-out and leave-one-period-out analyses.
+\item Compare factor-imputed counterfactuals to SC and SDID estimates.
+\end{enumerate}
+
+\subsection*{Step 8: Compute Uncertainty}
+
+Choose inference procedures based on sample size and design (Section~\ref{sec:factor-inference}):
+\begin{itemize}
+\item \textbf{Block bootstrap:} Use when outcomes exhibit serial dependence. Resample blocks of consecutive time periods.
+\item \textbf{Wild bootstrap:} Use when the number of units is small or heteroskedasticity is present.
+\item \textbf{Placebo-in-time tests:} Treat pseudo-intervention dates in the pre-treatment period; pseudo-effects should be near zero.
+\item \textbf{Conformal intervals:} Construct prediction intervals for counterfactuals using residual quantiles.
+\end{itemize}
+Report 95 per cent confidence intervals for treatment effects. Interpret in light of magnitude and persistence.
+
+\subsection*{Step 9: Report Sensitivity and Cross-Method Comparisons}
+
+Compare factor model estimates to synthetic control (Chapter~\ref{ch:sc}) and SDID (Chapter~\ref{ch:generalized-sc}):
+\begin{itemize}
+\item If estimates agree, conclusions are robust to modelling assumptions.
+\item If estimates disagree, investigate: Are factor-imputed counterfactuals similar to SC-weighted counterfactuals? Is the low-rank structure supported?
+\end{itemize}
+Report results for multiple ranks or penalties. Discuss which specification is most plausible based on diagnostics and economic reasoning. Provide replication materials (data, code, documentation) to enable verification.
+
+\subsection*{Concluding the Analysis}
+
+By following this nine-step workflow, practitioners can conduct factor model and matrix completion analyses that are transparent, rigorous, and aligned with modern best practices. The workflow integrates design-based reasoning, careful rank selection, factor estimation, imputation, diagnostics, inference, and sensitivity analysis.
+
+Chapter~\ref{ch:advanced-matrix} extends these methods to dynamic factor models, tensor decompositions, and non-linear extensions for more complex panel structures.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/fig_factor_schematic.pdf}
+\caption{Factor Model Schematic with Loadings and Common Shocks}
+\label{fig:factor-schematic}
+\small
+\textit{Note}: Panel (a) displays the factor model decomposition equation $Y = \Lambda F' + \varepsilon$, showing how the outcome matrix is decomposed into loadings (unit sensitivities), factors (common shocks), and idiosyncratic errors. Panel (b) shows the loading matrix as a heatmap, where each row represents a unit and each column represents a factor. High values indicate that a unit is sensitive to that factor. Panel (c) plots the three common factors over time, showing seasonal patterns (Factor 1), upward trends (Factor 2), and high-frequency variation (Factor 3). Panel (d) displays the observed outcome matrix, which combines the factor structure with idiosyncratic noise. The factor model provides a parsimonious representation by capturing co-movement through $R$ factors rather than $N \times T$ independent parameters.
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/fig_factor_validation.pdf}
+\caption{Pre-Period Reconstruction Error vs Rank/Penalty (Validation Curve)}
+\label{fig:factor-validation-workflow}
+\small
+\textit{Note}: Panel (a) shows rank selection for interactive fixed effects via cross-validation. Training error (blue) decreases monotonically with rank, but validation error (red) exhibits a U-shape. The optimal rank (green vertical line, $R = 5$) minimises validation error, balancing fit and complexity. Ranks below optimal underfit (orange region), while ranks above optimal overfit (red region). Panel (b) shows penalty selection for matrix completion with nuclear-norm regularisation. Low penalties allow very flexible fits that risk overfitting idiosyncratic noise, while high penalties enforce smoother low-rank structure that can underfit genuine signal. The optimal penalty $\lambda$ (green line) balances these extremes.
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/fig_factor_matrix.pdf}
+\caption{Matrix Completion Illustration with Treated/Missing Cells}
+\label{fig:factor-matrix-workflow}
+\small
+\textit{Note}: Panel (a) shows the observation pattern for matrix completion in a causal inference setting. Green cells are observed for treated units in the pre-treatment period. Blue cells are observed for control units in all periods. White cells are missing (treated units in the post-treatment period). The red dashed line separates pre-treatment from post-treatment. Panel (b) shows the matrix completion result. All cells are filled using the low-rank structure estimated from observed cells. Red-bordered cells are imputed counterfactuals for treated units in the post-treatment period. Treatment effects are computed as the difference between observed outcomes and these imputed counterfactuals.
+\end{figure}
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{When to Prefer SC, SDID, IFE, or Matrix Completion Given Data Features}
+\label{tab:factor-methods}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Method} & \textbf{Data Features} & \textbf{Key Assumptions} & \textbf{Advantages / Disadvantages} \\
+\midrule
+SC (Chapter~\ref{ch:sc}) & Few treated units; good donor matches; long pre-period & Treated unit in convex hull of donors; no anticipation; no interference & Transparent weights; no extrapolation. May fail if treated unit is outlier. \\
+\addlinespace
+SDID (Chapter~\ref{ch:generalized-sc}) & Staggered adoption; parallel trends after reweighting; moderate pre-period & Parallel trends in weighted sample; overlap & Combines weighting and differencing; robust to modest misspecification. More complex than SC. \\
+\addlinespace
+IFE (this chapter) & Strong co-movement; long pre-period; diverse controls; rank well-defined & Low-rank structure; no anticipation; stability of factors & Flexible; accommodates heterogeneous exposure; interpretable factors. Requires rank selection. \\
+\addlinespace
+Matrix Completion (this chapter) & Missing cells; unclear rank; need regularisation; short pre-period & Low-rank structure; stability; no anticipation & Robust to rank uncertainty via regularisation. Less interpretable than IFE. \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\begin{tcolorbox}[title={Box 8.1: Factor Model Workflow Summary}, colback=gray!5, colframe=gray!75, fonttitle=\bfseries]
+\textbf{Design.} Specify the target estimand (ATT, unit-specific, or period-specific). Define treated and untreated cells. Choose IFE if rank is known and interpretation is desired; choose matrix completion if rank is unclear.
+
+\textbf{Estimation.} Select rank $R$ or penalty $\lambda$ using information criteria, scree plots, or cross-validation. Pre-specify the selection procedure. Estimate loadings and factors on untreated cells using principal components, iterated least squares, or nuclear-norm minimisation.
+
+\textbf{Imputation and Aggregation.} Impute counterfactuals for treated cells. Compute treatment effects as observed minus imputed. Aggregate into ATT or event-time effects. Plot event-study profiles.
+
+\textbf{Diagnostics.} Compute pre-treatment $R^2$. Assess factor stability (early vs late). Check residuals for autocorrelation and seasonality. Vary rank and assess sensitivity. Conduct leave-one-out analyses.
+
+\textbf{Inference.} Use block or wild bootstrap. Conduct placebo-in-time tests. Construct conformal intervals. Report 95\% confidence intervals.
+
+\textbf{Robustness.} Compare to SC and SDID. Document assumptions. Provide replication materials.
+\end{tcolorbox}
+\index{factor model|)}
+\index{matrix completion|)}

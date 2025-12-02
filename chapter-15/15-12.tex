@@ -1,0 +1,22 @@
+\section{Marketing-Specific Checklists}
+\label{sec:marketing-checklists}
+
+Marketing contexts introduce distinct threat profiles.
+
+\subsection*{Platform and Privacy Policy Shifts}
+
+Platform and privacy policy shifts such as Apple's App Tracking Transparency (ATT) and cookie deprecation fundamentally alter measurement and targeting. Teams should anticipate these shifts, document dates in a timeline, and favour aggregated or externally verifiable outcomes less susceptible to platform-specific drift.
+
+When measurement changes are unavoidable, sensitivity analyses around the transition date and transparent reporting of estimand changes preserve credibility.
+
+\subsection*{Fraud and Quality Issues}
+
+Fraud and quality issues include bot traffic, invalid clicks, and non-viewable impressions. Vendors supply quality flags, but their rules evolve and may themselves be endogenous to platform optimisation.
+
+Negative controls using outcomes that should not respond to treatment can detect unmeasured quality drift. Sensitivity to inclusion or exclusion of flagged observations bounds the influence of quality screens on substantive conclusions.
+
+\subsection*{Creative Fatigue and Saturation}
+
+Creative fatigue and saturation arise when repeated exposures reduce marginal responsiveness. Separating creative effects from spend effects requires event-time designs (Chapter~\ref{ch:event}) to track decay after creative refreshes, and dose-response analyses (Chapter~\ref{ch:continuous}) to estimate diminishing returns by frequency.
+
+Ignoring saturation conflates level and dynamic effects and can bias budget allocation decisions.

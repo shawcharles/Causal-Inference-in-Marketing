@@ -1,0 +1,105 @@
+
+\section{Marketing Applications}
+\label{sec:spillovers-applications}
+
+We illustrate the methods developed in this chapter through three hypothetical marketing applications: geographic spillovers in retail promotions, network spillovers in social media, and competitive spillovers in advertising. The numerical examples are illustrative and demonstrate how spillover analysis would proceed in practice. Table~\ref{tab:applications-summary} summarises the three applications.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Summary of Marketing Applications}
+\label{tab:applications-summary}
+\begin{tabularx}{\textwidth}{Y Y Y Y Y}
+\toprule
+\textbf{Application} & \textbf{Spillover Type} & \textbf{Exposure Mapping} & \textbf{Sign} & \textbf{Effect on Total} \\
+\midrule
+Retail promotions & Geographic & Inverse distance & Negative & Reduces total effect \\
+\addlinespace
+Social media feature & Network & Treated friends count & Positive & Amplifies \\
+\addlinespace
+Advertising & Competitive & Competitor actions & Negative & Reduces total effect \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{Application 1: Geographic Spillovers in Retail Promotions}
+
+Suppose a grocery retailer operates 150 stores across 30 metropolitan areas. The retailer launches a promotional campaign for a new product in 50 stores, randomly selected within each metro area. The outcome is weekly sales of the new product. The goal is to estimate the direct effect of the promotion and the spillover effect on nearby untreated stores.
+
+We compute geographic exposure using inverse distance weighting. For each store $i$, exposure is:
+\[
+E_{it} = \sum_{j \neq i} \frac{W_{jt}}{d_{ij}},
+\]
+where $d_{ij}$ is the distance in kilometres between stores $i$ and $j$. We estimate a regression with store and week fixed effects:
+\[
+Y_{it} = \alpha_i + \gamma_t + \tau W_{it} + \delta E_{it} + \varepsilon_{it}.
+\]
+Suppose the direct effect estimate is $\hat{\tau} = 120$ units, indicating that treated stores sell 120 more units per week. The spillover effect estimate is $\hat{\delta} = -8$ units per unit of exposure, indicating negative spillovers.
+
+Untreated stores near treated stores experience sales declines as customers travel to treated stores to take advantage of the promotion.
+
+The total effect accounts for both direct and spillover effects. Suppose the average exposure for treated stores is $\bar{E}_{\text{treat}} = 0.8$ and for untreated stores is $\bar{E}_{\text{untreat}} = 0.4$. The total effect would be:
+\[
+\hat{\tau}^{\text{total}} = \hat{\tau} + \hat{\delta} (\bar{E}_{\text{treat}} - \bar{E}_{\text{untreat}}) = 120 + (-8)(0.8 - 0.4) = 116.8.
+\]
+In this hypothetical example, the spillover effect reduces the total effect by about 3 units, a modest but non-negligible adjustment.
+
+\subsection*{Application 2: Network Spillovers in Social Media}
+
+Suppose a social media platform launches a new feature (video stories) for 10,000 users, randomly selected from a network of 100,000 users. The outcome is weekly engagement (time spent on the platform). The goal is to estimate the direct effect of the feature and the spillover effect on friends of treated users.
+
+We compute network exposure as the number of treated friends. For each user $i$, exposure is:
+\[
+E_{it} = \sum_{j \in \mathcal{N}_i} W_{jt},
+\]
+where $\mathcal{N}_i$ is the set of user $i$'s friends. We estimate a regression with user and week fixed effects:
+\[
+Y_{it} = \alpha_i + \gamma_t + \tau W_{it} + \delta E_{it} + \varepsilon_{it}.
+\]
+Suppose the direct effect estimate is $\hat{\tau} = 15$ minutes per week, indicating that treated users spend 15 more minutes on the platform. The spillover effect estimate is $\hat{\delta} = 2$ minutes per treated friend, indicating positive spillovers.
+
+Untreated users with treated friends spend more time on the platform, likely due to increased content (video stories from friends) and social influence.
+
+The spillover effect may be non-linear. Estimating a specification with exposure bins (0, 1, 2--3, 4+ treated friends) might reveal that the spillover effect is largest for users with one treated friend and declines for users with more treated friends, suggesting saturation in spillover effects.
+
+\subsection*{Application 3: Competitive Spillovers in Advertising}
+
+Suppose a market has 5 firms competing in the same product category. Firm 1 increases advertising expenditure by 50 per cent for 12 weeks. The outcome is weekly market share. The goal is to estimate the direct effect on Firm 1 and the spillover effect on competitors.
+
+We estimate a panel VAR to capture competitive reactions. Each firm's advertising depends on lagged advertising of all firms:
+\[
+W_{it} = \sum_{j=1}^5 \rho_{ij} W_{j,t-1} + \alpha_i + \gamma_t + \varepsilon_{it}.
+\]
+Suppose the estimated reaction coefficients indicate that competitors increase advertising in response to Firm 1's increase. If the average competitive reaction is around 0.2, competitors increase advertising by about 20 per cent of Firm 1's increase.
+
+We estimate the effect of advertising on market share using a regression with firm and week fixed effects:
+\[
+Y_{it} = \alpha_i + \gamma_t + \tau W_{it} + \delta \sum_{j \neq i} W_{jt} + \varepsilon_{it}.
+\]
+Suppose the direct effect estimate is positive (own advertising increases market share) and the spillover effect estimate is negative (competitors' advertising reduces own market share).
+
+The total effect of Firm 1's advertising increase, accounting for competitive reactions, combines the direct effect and the spillover effect weighted by competitors' responses. If competitive reactions are substantial, they can reduce the total effect by a meaningful fraction---potentially 20--40 per cent of the direct effect.
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Key Takeaways from Applications]
+\textbf{Spillover sign varies by context:}
+\begin{itemize}
+\item[$\bullet$] Geographic spillovers from promotions: \textbf{negative} (customers travel to treated stores).
+\item[$\bullet$] Network spillovers from features: \textbf{positive} (content and social influence).
+\item[$\bullet$] Competitive spillovers from advertising: \textbf{negative} (rivals respond).
+\end{itemize}
+
+\textbf{Magnitude matters for decisions:}
+\begin{itemize}
+\item[$\bullet$] Small spillover adjustments may not change recommendations.
+\item[$\bullet$] Large adjustments can substantially affect ROI calculations.
+\item[$\bullet$] Non-linear effects (saturation) should inform optimal treatment intensity.
+\end{itemize}
+
+\textbf{Estimation requires appropriate methods:}
+\begin{itemize}
+\item[$\bullet$] Geographic: Regression with exposure controls (Section~\ref{sec:estimating-spillovers}).
+\item[$\bullet$] Network: Exposure bins for non-linearity (Section~\ref{sec:exposure-mappings}).
+\item[$\bullet$] Competitive: Panel VAR for dynamic reactions (Section~\ref{sec:competition-saturation}).
+\end{itemize}
+\end{tcolorbox}

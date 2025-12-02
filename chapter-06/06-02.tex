@@ -1,0 +1,211 @@
+\section{Constructing the Synthetic Control}
+\label{sec:sc-construction}
+
+Constructing a synthetic control involves selecting predictors, optimising weights to minimise pre-treatment discrepancy, and evaluating the quality of the fit. This section explains each step with attention to the theoretical foundations established in Section~\ref{sec:sc-motivation} and the pitfalls that can undermine credibility.
+
+\subsection*{Predictor Selection}
+
+The predictor set consists of variables used to match the treated unit to the donor pool. Let $\mathbf{X}_1 \in \mathbb{R}^k$ denote the predictor vector for the treated unit, and let $\mathbf{X}_0 \in \mathbb{R}^{k \times N}$ denote the predictor matrix for the donor pool (columns correspond to donors). Predictors typically include:
+
+\begin{enumerate}
+\item \textit{Pre-treatment outcomes}: $\mathbf{Y}_1^{\text{pre}} = (Y_{11}, Y_{12}, \ldots, Y_{1 T_0})'$ captures the dynamic trajectory before treatment, encoding trends, seasonality, and the unit's position in the outcome distribution.
+
+\item \textit{Pre-treatment covariates}: $\mathbf{Z}_1 = (Z_{11}, Z_{12}, \ldots, Z_{1m})'$ captures characteristics that predict outcomes but may not be fully reflected in the outcome trajectory (for example, market size, demographics, baseline characteristics).
+\end{enumerate}
+
+The predictor vector is typically constructed as $\mathbf{X}_1 = (\mathbf{Y}_1^{\text{pre}\prime}, \mathbf{Z}_1')'$, stacking outcomes and covariates.
+
+\textbf{Why Pre-Treatment Outcomes Matter.} The factor model foundation (Section~\ref{sec:sc-motivation}) reveals why matching pre-treatment outcomes is central to identification. Under the model $Y_{it}(0) = \delta_t + \boldsymbol{\lambda}_t' \boldsymbol{\mu}_i + \varepsilon_{it}$, pre-treatment outcomes are driven by the factor loadings $\boldsymbol{\mu}_i$. If weights $\mathbf{w}^*$ match pre-treatment outcomes well, this provides indirect evidence that:
+\begin{equation}
+\sum_{j \in \mathcal{J}} w_j^* \boldsymbol{\mu}_j \approx \boldsymbol{\mu}_1.
+\label{eq:factor-matching-proxy}
+\end{equation}
+Pre-treatment outcome matching is thus a \textit{proxy} for factor loading matching. However, this proxy is imperfect when:
+\begin{itemize}
+\item $T_0$ is small relative to the number of factors $r$
+\item Idiosyncratic shocks $\varepsilon_{it}$ are large relative to factor-driven variation
+\item The optimisation over $V$ (discussed below) emphasises periods dominated by noise
+\end{itemize}
+
+\textbf{Role of Covariates.} Covariates can improve identification when pre-treatment outcomes alone are insufficient. If covariates are correlated with factor loadings, matching on covariates helps anchor the synthetic control to units with similar structural characteristics. This is particularly valuable when:
+\begin{itemize}
+\item The pre-treatment period is short
+\item Outcomes are noisy or volatile
+\item The donor pool is heterogeneous in ways that covariates capture
+\end{itemize}
+
+\textbf{Pre-Treatment Period Length.} Longer pre-treatment periods improve identification by providing more information to distinguish factor-driven variation from idiosyncratic noise. The theoretical rate condition \citet{abadie2010synthetic, ferman2021synthetic} requires $T_0 \to \infty$ at an appropriate rate for consistency. In finite samples, practitioners often use the heuristic that $T_0$ should exceed the number of factors $r$ (typically unknown) and should be at least as long as the post-treatment period. This heuristic is not formally justified but reflects the intuition that more pre-treatment data permits better factor loading estimation.
+
+\subsection*{The Weight Optimisation Problem}
+
+The synthetic control weights $\mathbf{w}^* = (w_2^*, \ldots, w_{N+1}^*)'$ are chosen to minimise the discrepancy between the treated unit and the synthetic control in predictors, subject to convexity constraints.
+
+\textbf{Standard Formulation.} Given a positive semi-definite matrix $V \in \mathbb{R}^{k \times k}$ that determines predictor importance, the inner optimisation is:
+\begin{equation}
+\mathbf{w}^*(V) = \arg\min_{\mathbf{w}} \left( \mathbf{X}_1 - \mathbf{X}_0 \mathbf{w} \right)' V \left( \mathbf{X}_1 - \mathbf{X}_0 \mathbf{w} \right) \quad \text{s.t.} \quad w_j \geq 0, \; \sum_j w_j = 1.
+\label{eq:sc-inner-opt}
+\end{equation}
+This is a quadratic programme with linear constraints, solvable by standard algorithms.
+
+\textbf{The Nested Optimisation (Abadie-Diamond-Hainmueller).} The original formulation does not fix $V$ but selects it to minimise pre-treatment prediction error:
+\begin{equation}
+V^* = \arg\min_V \sum_{t=1}^{T_0} \left( Y_{1t} - \sum_{j \in \mathcal{J}} w_j^*(V) Y_{jt} \right)^2.
+\label{eq:sc-outer-opt}
+\end{equation}
+This creates a \textbf{nested optimisation}: the outer problem (\ref{eq:sc-outer-opt}) selects $V$, and for each candidate $V$, the inner problem (\ref{eq:sc-inner-opt}) computes $\mathbf{w}^*(V)$.
+
+\textbf{The Model Selection Problem.} The nested optimisation is computationally expensive and, more importantly, creates the specification search opportunity discussed in Section~\ref{sec:sc-motivation}. Different choices of $V$ yield:
+\begin{itemize}
+\item Different weights $\mathbf{w}^*(V)$
+\item Different pre-treatment fit (RMSPE$_{\text{pre}}$)
+\item Potentially different post-treatment estimates $\hat{\tau}_{1t}$
+\end{itemize}
+The outer optimisation (\ref{eq:sc-outer-opt}) automates the search over $V$, but this is \textit{in-sample optimisation} on pre-treatment data. There is no guarantee that the selected $V^*$ yields weights that minimise post-treatment bias. This is where data mining enters the synthetic control method, even when the analyst does not explicitly search over specifications.
+
+\begin{quote}
+\textbf{Remark (Cross-Validation Is Not a Solution).} Some implementations suggest selecting $V$ via cross-validation on pre-treatment periods. This reduces overfitting to specific pre-treatment periods but does not resolve the fundamental problem: pre-treatment fit is a proxy for factor loading matching, and optimising this proxy does not guarantee post-treatment validity. Cross-validation on pre-treatment data remains in-sample from the perspective of post-treatment inference.
+\end{quote}
+
+\subsection*{Connection to Factor Model Identification}
+
+The weight optimisation problem is intimately connected to the identification condition from Section~\ref{sec:sc-motivation}. We now make this connection explicit.
+
+\textbf{Proposition (Pre-Treatment Matching and Factor Loading Match).} Suppose outcomes follow the factor model (\ref{eq:sc-factor-model}) with $r$ factors and $\mathbb{E}[\varepsilon_{it}] = 0$. If the convex hull condition (\ref{eq:convex-hull}) holds and $T_0 \geq r$, then weights $\mathbf{w}^*$ that exactly match pre-treatment outcomes,
+\[
+\sum_{j \in \mathcal{J}} w_j^* Y_{jt} = Y_{1t} \quad \forall t \leq T_0,
+\]
+imply (in expectation, as $T_0 \to \infty$) that the identification condition is satisfied:
+\[
+\sum_{j \in \mathcal{J}} w_j^* \boldsymbol{\mu}_j = \boldsymbol{\mu}_1.
+\]
+
+\textit{Sketch of argument.} Pre-treatment outcomes are linear combinations of factor loadings: $Y_{it} = \delta_t + \boldsymbol{\lambda}_t' \boldsymbol{\mu}_i + \varepsilon_{it}$. Matching $T_0$ periods of outcomes imposes $T_0$ linear constraints on the factor loading match. When $T_0 > r$ and the factor structure is identified, these constraints (in expectation, as idiosyncratic errors average out) imply that the weighted average of donor loadings equals the treated unit's loadings.
+
+\textbf{Implication.} Perfect pre-treatment fit is sufficient for identification \textit{in expectation} under the factor model. However:
+\begin{enumerate}
+\item Finite-sample idiosyncratic errors mean pre-treatment fit may be achieved by matching noise rather than factor loadings
+\item Imperfect pre-treatment fit (RMSPE$_{\text{pre}} > 0$) implies a factor loading mismatch $\boldsymbol{\Delta}_\mu \neq 0$ and hence post-treatment bias
+\item The bias magnitude depends on both $\boldsymbol{\Delta}_\mu$ and the post-treatment factor evolution $\boldsymbol{\lambda}_t$
+\end{enumerate}
+
+\subsection*{Convex Weights and the Interpolation Property}
+
+The convexity constraint ($w_j \geq 0$, $\sum_j w_j = 1$) restricts the synthetic control to a convex combination of donors. This ensures \textit{interpolation} within the convex hull of the donor pool rather than \textit{extrapolation} beyond it.
+
+\textbf{Interpolation Example.} Consider two donors with factor loadings $\mu_A = 10$ and $\mu_B = 2$. If the treated unit has $\mu_1 = 7$, the convex combination $w_A = 0.625$, $w_B = 0.375$ produces $\mu_1^{\text{sc}} = 0.625 \times 10 + 0.375 \times 2 = 7 = \mu_1$. The synthetic control interpolates.
+
+\textbf{Extrapolation Failure.} If the treated unit has $\mu_1 = 12 > \max\{\mu_A, \mu_B\}$, no convex combination can achieve $\mu_1^{\text{sc}} = 12$. The best convex approximation is $w_A = 1$, $w_B = 0$, yielding $\mu_1^{\text{sc}} = 10$ and bias $\Delta_\mu = 2$.
+
+\textbf{The Convex Hull Condition Revisited.} The treated unit can be perfectly matched only if:
+\[
+\boldsymbol{\mu}_1 \in \text{conv}\{\boldsymbol{\mu}_j : j \in \mathcal{J}\}.
+\]
+In marketing applications, this condition often fails. A flagship market may be larger, more competitive, or earlier-adopting than any control market, placing it outside the convex hull. The synthetic control will then be biased toward the boundary of the hull.
+
+\subsection*{Non-Uniqueness and Penalised Synthetic Control}
+
+When the number of donors $N$ exceeds the number of predictors $k$ (or the number of pre-treatment periods $T_0$), the weight optimisation problem is underdetermined. Multiple weight vectors may achieve:
+\begin{itemize}
+\item The same pre-treatment RMSPE
+\item Different implicit factor loading matches
+\item Different post-treatment counterfactuals
+\end{itemize}
+
+\textbf{Penalised (Regularised) Synthetic Control.} To address non-uniqueness and reduce overfitting, penalised variants add a regularisation term:
+\begin{equation}
+\mathbf{w}^* = \arg\min_{\mathbf{w}} \left[ \left( \mathbf{X}_1 - \mathbf{X}_0 \mathbf{w} \right)' V \left( \mathbf{X}_1 - \mathbf{X}_0 \mathbf{w} \right) + \lambda \, \Omega(\mathbf{w}) \right] \quad \text{s.t.} \quad w_j \geq 0, \; \sum_j w_j = 1,
+\label{eq:sc-penalised}
+\end{equation}
+where $\Omega(\mathbf{w})$ is a penalty function and $\lambda \geq 0$ is the regularisation strength.
+
+Common choices:
+\begin{itemize}
+\item \textit{Ridge penalty}: $\Omega(\mathbf{w}) = \sum_j w_j^2$. Shrinks weights toward uniform $w_j = 1/N$.
+\item \textit{Entropy penalty}: $\Omega(\mathbf{w}) = \sum_j w_j \log w_j$. Encourages weight dispersion.
+\item \textit{Elastic net}: Combines ridge and sparsity-inducing penalties.
+\end{itemize}
+
+The hyperparameter $\lambda$ is typically selected via cross-validation on pre-treatment periods. Penalised SC reduces sensitivity to specification choices and addresses non-uniqueness, at the cost of potentially worse pre-treatment fit.
+
+\subsection*{Pre-Treatment Fit: Necessary but Not Sufficient}
+
+The standard diagnostic for synthetic control construction is the root mean squared prediction error in the pre-treatment period:
+\begin{equation}
+\text{RMSPE}_{\text{pre}} = \sqrt{\frac{1}{T_0} \sum_{t=1}^{T_0} \left( Y_{1t} - \sum_{j \in \mathcal{J}} w_j^* Y_{jt} \right)^2}.
+\label{eq:rmspe-pre}
+\end{equation}
+
+\textbf{What Good Pre-Treatment Fit Indicates.} A small RMSPE$_{\text{pre}}$ indicates that the synthetic control tracks the treated unit's pre-treatment trajectory. Under the factor model, this provides evidence (but not proof) that the synthetic control's implicit factor loadings approximate the treated unit's loadings.
+
+\textbf{What Good Pre-Treatment Fit Does NOT Guarantee.} Recall the bias decomposition from Section~\ref{sec:sc-motivation}:
+\[
+\text{Bias}(\hat{\tau}_{1t}) = \boldsymbol{\lambda}_t' \boldsymbol{\Delta}_\mu.
+\]
+Good pre-treatment fit does not guarantee:
+\begin{enumerate}
+\item That $\boldsymbol{\Delta}_\mu = 0$ (the fit may be achieved by matching noise)
+\item That post-treatment bias is small (depends on $\boldsymbol{\lambda}_t$ post-treatment)
+\item That bias does not grow over time (if $\boldsymbol{\lambda}_t$ trends away from pre-treatment patterns)
+\end{enumerate}
+
+\textbf{Implication.} Pre-treatment fit is necessary for credibility but not sufficient for validity. Analysts should report RMSPE$_{\text{pre}}$, visualise the pre-treatment fit, and conduct sensitivity analyses—but should not treat good pre-treatment fit as proof that the synthetic control is a valid counterfactual.
+
+\subsection*{Donor Pool Curation}
+
+The donor pool $\mathcal{J}$ must be curated before weight optimisation. This is a consequential design choice that affects results.
+
+\textbf{Exclusion Criteria.}
+\begin{itemize}
+\item \textit{Treated units}: Exclude units that received the same or similar treatment
+\item \textit{Spillover-affected units}: Exclude units whose outcomes may be affected by the treated unit's treatment (geographic neighbours, competitors)
+\item \textit{Fundamentally incomparable units}: Exclude units that differ from the treated unit in ways that violate the factor model assumption (different industry, different country, etc.)
+\end{itemize}
+
+\textbf{Inclusion Criteria.} The remaining challenge is determining which units are ``comparable.'' Options include:
+\begin{itemize}
+\item Same industry or sector
+\item Similar size or scale (within a factor of 2--3)
+\item Similar pre-treatment trends (visual inspection)
+\item Geographic or market similarity
+\end{itemize}
+
+\textbf{Researcher Degrees of Freedom.} Donor pool curation is a model selection choice. Different pools yield different weights and potentially different estimates. Practitioners should:
+\begin{itemize}
+\item Pre-specify the donor pool before examining post-treatment outcomes
+\item Report sensitivity of results to donor pool variations (Section~\ref{sec:sc-diagnostics})
+\item Acknowledge that donor pool choice is a consequential assumption
+\end{itemize}
+
+\subsection*{Practical Workflow}
+
+\begin{enumerate}
+\item \textbf{Assemble data}: Gather outcomes $Y_{it}$ and covariates $Z_i$ for treated and donor units over the full sample period.
+
+\item \textbf{Define intervention timing}: Set $T_0$ as the last pre-treatment period.
+
+\item \textbf{Curate donor pool}: Exclude treated, spillover-affected, and incomparable units. Document exclusion criteria.
+
+\item \textbf{Select predictors}: Choose pre-treatment outcomes and covariates. Consider whether to use all pre-treatment periods or selected periods.
+
+\item \textbf{Choose estimation approach}: 
+\begin{itemize}
+\item Standard SC: Nested optimisation over $V$ (Abadie-Diamond-Hainmueller)
+\item Fixed $V$: Set $V = I$ (identity) or $V$ diagonal with pre-specified weights
+\item Penalised SC: Add regularisation to address overfitting/non-uniqueness
+\end{itemize}
+
+\item \textbf{Solve optimisation}: Compute weights $\mathbf{w}^*$ using quadratic programming.
+
+\item \textbf{Evaluate pre-treatment fit}: Compute RMSPE$_{\text{pre}}$, plot treated vs synthetic trajectories, check predictor balance.
+
+\item \textbf{If fit is poor}: Consider whether the treated unit lies outside the convex hull. Options include:
+\begin{itemize}
+\item Expanding the donor pool
+\item Relaxing the convexity constraint (augmented SC, Section~\ref{sec:sc-extensions})
+\item Acknowledging that SC may not be appropriate for this application
+\end{itemize}
+
+\item \textbf{Report weights}: Document which donors contribute and with what weights. Interpret weight sparsity.
+\end{enumerate}
+
+The synthetic control's transparency is a key advantage: weights are reported explicitly, enabling readers to assess whether the comparison group is plausible. However, transparency in weights does not imply transparency in the specification search that produced them. Analysts should document and justify all choices (predictor set, donor pool, $V$ selection, regularisation) to maintain credibility.

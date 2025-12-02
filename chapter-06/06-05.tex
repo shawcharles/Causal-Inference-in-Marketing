@@ -1,0 +1,252 @@
+\section{Diagnostics and Goodness of Fit}
+\label{sec:sc-diagnostics}
+
+Credible synthetic control analysis requires rigorous diagnostics that assess the quality of the pre-treatment fit, the sensitivity of conclusions to specification choices, and the plausibility of identification assumptions. This section connects diagnostics to the identification theory from Sections~\ref{sec:sc-motivation}--\ref{sec:sc-identification} and provides practical guidance.
+
+\subsection*{Connection to Identification Theory}
+
+Diagnostics in synthetic control are not merely descriptive—they provide evidence on whether the identification assumptions hold. Recall the bias decomposition from Section~\ref{sec:sc-motivation}:
+\begin{equation}
+\text{Bias}(\hat{\tau}_{1t}) = \boldsymbol{\lambda}_t' \boldsymbol{\Delta}_\mu,
+\label{eq:bias-diagnostic}
+\end{equation}
+where $\boldsymbol{\Delta}_\mu = \boldsymbol{\mu}_1 - \sum_j w_j^* \boldsymbol{\mu}_j$ is the factor loading mismatch.
+
+The fundamental diagnostic question is: \textit{How large is $\boldsymbol{\Delta}_\mu$?} Since factor loadings are unobserved, we cannot compute $\boldsymbol{\Delta}_\mu$ directly. Pre-treatment fit metrics serve as proxies.
+
+\textbf{RMSPE as Proxy for Factor Loading Mismatch.} Under the factor model (Assumption~\ref{assump:sc-factor}), pre-treatment outcomes satisfy:
+\[
+Y_{1t} - \sum_j w_j^* Y_{jt} = \boldsymbol{\lambda}_t' \boldsymbol{\Delta}_\mu + \left( \varepsilon_{1t} - \sum_j w_j^* \varepsilon_{jt} \right).
+\]
+The pre-treatment RMSPE aggregates this discrepancy:
+\[
+\text{RMSPE}_{\text{pre}}^2 = \frac{1}{T_0} \sum_{t=1}^{T_0} \left( \boldsymbol{\lambda}_t' \boldsymbol{\Delta}_\mu + \text{noise}_t \right)^2.
+\]
+A small RMSPE$_{\text{pre}}$ indicates that either (a) $\boldsymbol{\Delta}_\mu$ is small, or (b) $\boldsymbol{\Delta}_\mu$ is non-zero but orthogonal to the pre-treatment factor evolution, or (c) noise happens to offset the factor loading mismatch.
+
+\textbf{Implication.} Small RMSPE$_{\text{pre}}$ is \textit{necessary} for small bias but not \textit{sufficient}. Diagnostics should assess both RMSPE$_{\text{pre}}$ and the stability of the fit over time and across specifications.
+
+\subsection*{Pre-Treatment Fit Metrics}
+
+\textbf{RMSPE$_{\text{pre}}$.} The root mean squared prediction error in the pre-treatment period is defined in Section~\ref{sec:sc-construction}, Equation~\eqref{eq:rmspe-pre}. To interpret RMSPE$_{\text{pre}}$, scale it relative to outcome variability:
+\begin{equation}
+\text{Relative RMSPE} = \frac{\text{RMSPE}_{\text{pre}}}{\text{SD}(Y_{1,\text{pre}})},
+\label{eq:relative-rmspe}
+\end{equation}
+where SD$(Y_{1,\text{pre}})$ is the standard deviation of the treated unit's pre-treatment outcomes.
+
+\textbf{Interpretation Guidelines.}
+\begin{itemize}
+\item Relative RMSPE $< 0.1$ (10\%): Excellent fit
+\item Relative RMSPE $\in [0.1, 0.25]$: Acceptable fit
+\item Relative RMSPE $> 0.25$: Poor fit; consider alternative methods
+\end{itemize}
+
+These thresholds are heuristics, not formal cutoffs. Context matters: in volatile markets, a relative RMSPE of 0.2 may be excellent, while in stable markets, 0.2 may be poor.
+
+\subsection*{Convex Hull Diagnostic}
+
+Identification requires the convex hull condition (Assumption~\ref{assump:sc-hull}): $\boldsymbol{\mu}_1 \in \text{conv}\{\boldsymbol{\mu}_j\}$. Since factor loadings are unobserved, we diagnose this indirectly.
+
+\textbf{Signals of Convex Hull Violation.}
+\begin{enumerate}
+\item \textit{Large RMSPE$_{\text{pre}}$ despite optimisation}: If the weight optimisation achieves poor fit even after searching over the full constraint set, the treated unit may lie outside the convex hull.
+
+\item \textit{Boundary weights}: If the optimal weights assign mass 1 to a single donor (or corner solution), the treated unit lies on the boundary of the hull or outside it.
+
+\item \textit{Predictor extremity}: If the treated unit's predictors lie outside the range of donor predictors (for example, largest market, highest baseline), extrapolation is required.
+\end{enumerate}
+
+\textbf{PCA Diagnostic.} Project the predictor matrix onto its first two principal components. Plot the treated unit and all donors in this space. If the treated unit lies inside the cloud of donors, the convex hull condition is plausibly satisfied. If the treated unit is an outlier, the condition may fail.
+
+\textbf{When the Hull Condition Fails.} Options include:
+\begin{itemize}
+\item Expand the donor pool to include more extreme units
+\item Use augmented synthetic control (Section~\ref{sec:sc-extensions}), which allows extrapolation with bias correction
+\item Acknowledge that SC may not be appropriate for this application
+\end{itemize}
+
+\subsection*{Bounds Width as Diagnostic}
+
+Section~\ref{sec:sc-identification} introduced the identified set $\mathcal{I}_t = [\underline{\tau}_t, \overline{\tau}_t]$ under Synthetic Parallel Trends. The \textit{width} of the bounds provides a diagnostic for identification strength.
+
+\textbf{Bounds Width.}
+\begin{equation}
+\text{Width}_t = \overline{\tau}_t - \underline{\tau}_t.
+\label{eq:bounds-width}
+\end{equation}
+
+\textbf{Interpretation.}
+\begin{itemize}
+\item Narrow bounds: Pre-treatment data strongly constrain the counterfactual. Different weighting schemes (DiD, SC, SDID) should agree.
+\item Wide bounds: Many weighting schemes are consistent with the data. Identification is weak; conclusions depend on which weights one privileges.
+\end{itemize}
+
+\textbf{Diagnostic Use.} If bounds width is large relative to the point estimate, identification uncertainty dominates estimation uncertainty. Report bounds rather than point estimates, and discuss which weighting scheme is most credible.
+
+\subsection*{Visual Diagnostics}
+
+\textbf{Trajectory Plot.} Plot the treated unit's outcomes and the synthetic control's outcomes over the full sample period. The vertical line marks the intervention. If trajectories align pre-treatment and diverge post-treatment, this provides visual evidence of both good fit and a treatment effect.
+
+\textbf{Gap Plot.} Plot $\hat{\tau}_{1t} = Y_{1t} - \hat{Y}_{1t}^{\text{syn}}$ over time. The pre-treatment gap should fluctuate around zero. Post-treatment, the gap should be large and persistent if treatment had an effect.
+
+\textbf{Placebo Gap Plot.} Overlay the treated unit's gap and all placebo gaps (from in-space placebos, Section~\ref{sec:sc-inference}). If the treated unit's post-treatment gap is an outlier relative to placebo gaps, this provides visual evidence of effect.
+
+\subsection*{Weight Diagnostics}
+
+\textbf{Weight Sparsity.} Report the synthetic control weights $w_j^*$ explicitly. Compute the effective number of donors:
+\begin{equation}
+N_{\text{eff}} = \frac{1}{\sum_j (w_j^*)^2}.
+\label{eq:effective-donors}
+\end{equation}
+This is the reciprocal of the Herfindahl index of weights.
+
+\textbf{Interpretation.}
+\begin{itemize}
+\item $N_{\text{eff}}$ close to $N$: Weights are diffuse; synthetic control averages broadly
+\item $N_{\text{eff}}$ close to 1: Weights are concentrated; synthetic control is essentially a single-donor comparison
+\end{itemize}
+
+Sparse weights (small $N_{\text{eff}}$) may be appropriate if a few donors closely match the treated unit, but they increase sensitivity to individual donors.
+
+\textbf{Predictor Balance.} Compare the treated unit's predictors to the synthetic control's predictors (weighted average of donor predictors):
+\begin{equation}
+\text{Balance}_k = X_{1k} - \sum_j w_j^* X_{jk}
+\label{eq:predictor-balance}
+\end{equation}
+for each predictor $k$. Good balance (small discrepancy) indicates the synthetic control matches the treated unit on observed characteristics.
+
+\subsection*{Sensitivity Analyses}
+
+\textbf{Leave-One-Donor-Out.} For each donor $j \in \mathcal{J}$, re-estimate the synthetic control excluding $j$ and compute the treatment effect estimate $\hat{\tau}_{1t}^{(-j)}$. The influence of donor $j$ is:
+\begin{equation}
+\text{Influence}_j = \left| \hat{\tau}_{1t} - \hat{\tau}_{1t}^{(-j)} \right|.
+\label{eq:donor-influence}
+\end{equation}
+
+If any donor has large influence, conclusions are sensitive to that donor's inclusion. Report:
+\begin{itemize}
+\item The range of $\hat{\tau}_{1t}^{(-j)}$ across all leave-one-out specifications
+\item Which donors have largest influence
+\item Whether high-influence donors are credible comparisons
+\end{itemize}
+
+\textbf{Sensitivity to Predictor Sets.} Re-estimate the synthetic control using alternative predictor sets:
+\begin{itemize}
+\item All pre-treatment periods vs selected periods
+\item Include vs exclude covariates
+\item Levels vs logs vs detrended outcomes
+\end{itemize}
+Report results across specifications. Stability across specifications supports robustness.
+
+\textbf{Sensitivity to Donor Pool.} Vary the donor pool:
+\begin{itemize}
+\item Exclude geographic neighbours (potential spillovers)
+\item Restrict to same industry/sector
+\item Expand to include borderline-comparable units
+\end{itemize}
+Report how estimates change. Sensitivity to donor pool is a form of model dependence.
+
+\subsection*{In-Time Placebos and Stability}
+
+In-time placebos assess whether the synthetic control provides a stable counterfactual over extended pre-treatment periods.
+
+\textbf{Procedure.} Choose pseudo-intervention dates $T_0^* < T_0$:
+\begin{enumerate}
+\item Fit synthetic control using periods $1, \ldots, T_0^*$
+\item Compute pseudo-gaps for periods $T_0^* + 1, \ldots, T_0$
+\item Assess whether pseudo-gaps are near zero
+\end{enumerate}
+
+\textbf{Interpretation.} Near-zero pseudo-gaps support the stability assumption: the synthetic control continues to track the treated unit outside the fitting window. Large pseudo-gaps suggest overfitting or an unstable factor structure.
+
+\subsection*{Overfitting Diagnostics}
+
+\textbf{Cross-Validation.} Split the pre-treatment period into training and validation sets:
+\begin{enumerate}
+\item Use periods $1, \ldots, T_{\text{train}}$ to estimate weights
+\item Compute RMSPE on validation periods $T_{\text{train}} + 1, \ldots, T_0$
+\end{enumerate}
+
+If validation RMSPE is much larger than training RMSPE, the weights are overfitted.
+
+\textbf{Degrees of Freedom.} Overfitting risk increases when:
+\begin{itemize}
+\item $N > T_0$: More donors than pre-treatment periods
+\item The predictor set is large relative to $T_0$
+\item The nested optimisation over $V$ is unrestricted
+\end{itemize}
+
+Penalised synthetic control (Section~\ref{sec:sc-construction}) addresses overfitting by regularising the weights.
+
+\subsection*{Diagnostic Summary Table}
+
+\begin{table}[htbp]
+\centering
+\caption{Synthetic Control Diagnostic Checklist}
+\label{tab:sc-diagnostics}
+\small
+\begin{tabular}{lll}
+\hline
+\textbf{Diagnostic} & \textbf{What It Assesses} & \textbf{Warning Signal} \\
+\hline
+RMSPE$_{\text{pre}}$ & Pre-treatment fit & $> 0.25 \times$ SD \\
+Relative RMSPE & Fit relative to variability & $> 25\%$ \\
+Bounds width & Identification strength & Width $>$ point estimate \\
+$N_{\text{eff}}$ & Weight concentration & $< 2$ \\
+Predictor balance & Covariate matching & Large discrepancies \\
+Leave-one-out range & Donor sensitivity & Wide range \\
+In-time placebo gaps & Stability & Large pseudo-gaps \\
+CV validation RMSPE & Overfitting & $\gg$ training RMSPE \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection*{Practical Workflow}
+
+\begin{enumerate}
+\item \textbf{Assess pre-treatment fit}: Compute RMSPE$_{\text{pre}}$ and relative RMSPE. If poor, consider expanding donor pool or using augmented SC.
+
+\item \textbf{Check convex hull}: Plot treated unit vs donors in predictor space. Check for boundary weights.
+
+\item \textbf{Compute bounds}: If using Synthetic Parallel Trends, compute bounds and assess width.
+
+\item \textbf{Visualise}: Plot trajectories, gaps, and placebo gaps.
+
+\item \textbf{Examine weights}: Report $N_{\text{eff}}$ and identify high-weight donors.
+
+\item \textbf{Sensitivity analyses}: Conduct leave-one-out, vary predictors, vary donor pool.
+
+\item \textbf{In-time placebos}: Assess stability with pseudo-intervention dates.
+
+\item \textbf{Cross-validate}: Check for overfitting if $N > T_0$ or predictor set is large.
+\end{enumerate}
+
+Diagnostics build a cumulative case for credibility. No single diagnostic is definitive. Report all diagnostics transparently and discuss implications for the validity of conclusions.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/fig_sc_gap.pdf}
+\caption{Pre-Treatment Fit and Post-Treatment Gap Plot}
+\label{fig:sc-gap}
+\small
+\textit{Note}: Panel A shows the treated unit (solid line) and synthetic control (dashed line) outcomes over the full sample period. The vertical line marks the intervention time. Pre-treatment trajectories are closely aligned, indicating good fit. Post-treatment divergence shows the treatment effect. Panel B displays the gap ($\hat{\tau}_{1t} = Y_{1t} - \hat{Y}_{1t}^{\text{syn}}$) over time. The pre-treatment gap fluctuates near zero, while the post-treatment gap is large and persistent.
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/fig_sc_weights.pdf}
+\caption{Donor Weight Distribution and Predictor Balance}
+\label{fig:sc-weights}
+\small
+\textit{Note}: Panel A shows the distribution of synthetic control weights across donor units, sorted by weight magnitude. The effective number of donors is $N_{\text{eff}} = 4.2$, indicating moderate concentration. Panel B presents predictor balance, comparing the treated unit, synthetic control (weighted average), and top individual donors. Close alignment demonstrates successful replication of the treated unit's pre-treatment characteristics.
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/fig_sc_placebo.pdf}
+\caption{Placebo Gap Distribution and RMSPE Ratio}
+\label{fig:sc-placebo}
+\small
+\textit{Note}: Panel A displays post-treatment gaps for the treated unit (bold red line) and all placebo units (thin grey lines). The treated unit's gap is an outlier in the post-treatment period. Panel B shows the distribution of RMSPE ratios. The treated unit's ratio (red line) is in the extreme right tail, yielding a p-value of 0.05 under the permutation distribution.
+\end{figure}

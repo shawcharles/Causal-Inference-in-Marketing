@@ -1,0 +1,86 @@
+\section{Identity, Linking, and Keys}
+\label{sec:identity-linking}
+
+Data integration is foundational to marketing causal inference. We rarely analyse a single data source in isolation; instead, we join treatment data, outcome data, and covariates from multiple systems. The quality of these joins—and the assumptions they embed—directly affect the validity of causal estimates.
+
+\subsection*{Keys and Record Linkage}
+
+We rely on primary and foreign keys to link records across tables and systems. A customer ID links transactions to CRM records; a cookie links impressions to conversions; a store code links scanner data to geographic covariates.
+
+\paragraph{Key stability.} Keys can be unstable. Customer IDs change when accounts are merged or migrated. Cookies expire or are cleared. Device IDs reset. Late-arriving data and platform schema changes require careful versioning to ensure reproducibility.
+
+\paragraph{Probabilistic matching.} When exact keys are not available, we turn to probabilistic matching—linking records based on name, address, or behavioural similarity. This introduces measurement error: false positives (linking distinct individuals) and false negatives (failing to link the same individual). Both bias causal estimates.
+
+\paragraph{Causal implications.} Linkage errors create measurement error in treatment assignment. If we cannot reliably identify who was treated, the estimated treatment effect is attenuated toward zero. Sensitivity analysis should assess how estimates change under plausible linkage error rates.
+
+\subsection*{Cross-Device and Cross-Platform Linking}
+
+Modern consumers interact with brands across mobile, desktop, tablet, and in-store environments. Cross-device linking attempts to stitch together this fragmented activity into a unified user journey.
+
+\paragraph{Deterministic linking.} Relies on login events, hashed emails, or authenticated sessions. Offers high precision (low false positive rate) but limited coverage (only logged-in users).
+
+\paragraph{Probabilistic linking.} Expands coverage by using behavioural signals—device fingerprints, IP addresses, browsing patterns—to infer identity. Precision is lower, and the linkage is inherently noisy.
+
+\paragraph{Identity graphs.} Third-party identity providers (LiveRamp, Experian, Oracle) maintain identity graphs that map devices to individuals. These graphs vary in coverage and accuracy; their quality should be validated before use in causal analysis.
+
+\paragraph{Privacy constraints.} Privacy regimes have degraded cross-device linkage:
+\begin{itemize}
+    \item \textbf{GDPR/CCPA:} Require explicit consent for tracking, reducing opt-in rates.
+    \item \textbf{Apple ATT:} App Tracking Transparency requires per-app consent; opt-in rates are often below 30\%.
+    \item \textbf{Cookie deprecation:} Third-party cookies are being phased out, eliminating a primary linkage mechanism.
+    \item \textbf{Differential privacy:} Platforms increasingly add noise to user-level data, degrading linkage precision.
+\end{itemize}
+
+\paragraph{Causal implications.} When linkage fails, we lose sight of treated users' post-treatment activity. If treatment is assigned on one device but outcomes occur on another, we observe only partial outcomes. This creates attrition bias and underestimates treatment effects. Sensitivity analyses should simulate linkage failures under worst-case scenarios.
+
+\subsection*{Leakage Prevention}
+
+Leakage occurs when information from the future contaminates the past, biasing estimates and invalidating inference.
+
+\paragraph{Temporal leakage.} A join that merges treatment assignment at time $t$ with outcomes at $t-1$ leaks future information into the past. This can occur subtly: if a covariate is updated after treatment but the join uses the updated value, post-treatment information contaminates the pre-treatment record.
+
+\paragraph{Cross-validation leakage.} Fold structures in cross-validation must respect temporal order. Training on future data to predict past outcomes yields optimistic performance estimates that do not generalise. Block on time to avoid this, as emphasised in Chapter~\ref{ch:ml-nuisance} and Chapter~\ref{ch:high-dim}.
+
+\paragraph{Feature leakage.} Features that are consequences of treatment (mediators) should not be used as controls. Including post-treatment variables as covariates blocks causal pathways and biases estimates (Chapter~\ref{ch:frameworks}).
+
+\subsection*{Handling Missing Identifiers}
+
+In practice, identifiers are often missing or incomplete. A fraction of transactions lack customer IDs; some impressions have no cookie; some survey respondents cannot be linked to CRM records.
+
+\paragraph{Missing completely at random (MCAR).} If missingness is unrelated to treatment or outcomes, complete-case analysis is unbiased but loses power.
+
+\paragraph{Missing at random (MAR).} If missingness depends on observed covariates, inverse probability weighting or imputation can recover unbiased estimates.
+
+\paragraph{Missing not at random (MNAR).} If missingness depends on unobserved factors (e.g., privacy-conscious users who block tracking are also less likely to convert), bias is unavoidable without strong assumptions. Sensitivity analysis is essential.
+
+\subsection*{Identity and Linkage Checklist}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 19.1: Identity and Linkage Checklist]
+\textbf{Before joining data:}
+\begin{itemize}
+    \item Are keys stable over the analysis period? Document any migrations or resets.
+    \item What is the linkage rate? Report the fraction of records successfully linked.
+    \item What is the false positive/negative rate for probabilistic matches?
+\end{itemize}
+
+\textbf{For cross-device analysis:}
+\begin{itemize}
+    \item What is the opt-in rate for tracking consent?
+    \item How does the identity graph handle unlinked devices?
+    \item What fraction of treatment-to-outcome paths are observable?
+\end{itemize}
+
+\textbf{For leakage prevention:}
+\begin{itemize}
+    \item Are all covariates measured before treatment assignment?
+    \item Does cross-validation respect temporal order?
+    \item Are any features post-treatment mediators?
+\end{itemize}
+
+\textbf{For missing identifiers:}
+\begin{itemize}
+    \item What is the missing rate for key identifiers?
+    \item Is missingness plausibly MCAR, MAR, or MNAR?
+    \item Have you conducted sensitivity analysis for missing data?
+\end{itemize}
+\end{tcolorbox}

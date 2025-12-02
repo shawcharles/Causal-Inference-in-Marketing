@@ -1,0 +1,30 @@
+\section{Reporting Standards and Pre-Analysis Plans}
+\label{sec:reporting-standards}
+
+Transparent reporting and pre-registration of designs enhance the credibility of causal inference by reducing researcher degrees of freedom and allowing readers to judge the robustness of conclusions. These practices complement the threat mitigation strategies discussed above by making design choices explicit and verifiable. We outline reporting standards for panel designs and provide guidance for pre-analysis plans that practitioners can adapt to their settings. These components feed directly into the diagnostic workflows of Chapter~\ref{ch:design-diagnostics} and the inference procedures of Chapter~\ref{ch:inference}.
+
+\subsection{Design Registries and Timelines}
+
+A design registry is a public record of the key features of a study, filed before data are collected or analysed. The registry includes the research question, the assignment mechanism, the treatment window, the primary outcome and estimand, the planned estimator, and the inferential procedure. Registering the design disciplines the analysis by committing the researcher to a pre-specified approach and guards against data-driven specification searches that inflate false positive rates.
+
+Timelines document when key events occurred: when treatment was assigned, when outcomes were measured, when the analysis plan was finalised, when the analysis was conducted. Timestamped records---emails, meeting notes, version-controlled analysis scripts---provide evidence that the design and analysis plan preceded data access. This reduces concerns about \textit{ex post} rationalisation or p-hacking.
+
+\textbf{When pre-registration is infeasible.} In observational studies using existing data, pre-registration before data access is not feasible. Alternatives include timestamping analysis scripts before running them (ideally using version control such as Git, which records all attempted specifications), using holdout samples (analysing a random subset first, then confirming on the remainder), or clearly distinguishing pre-specified from exploratory analyses in the final report. These practices do not provide the same protection as true pre-registration but reduce researcher degrees of freedom.
+
+\subsection{Assignment Matrices and Exposure Maps}
+
+An assignment matrix is a table showing which units received treatment in which periods. For a phased rollout with cohorts, the matrix has rows for units and columns for periods, with entries indicating treatment status. For a geo-experiment, the matrix lists treated and control clusters with their stratification variables. For a switchback, the matrix shows the treatment schedule over time. The assignment matrix makes the design transparent and enables replication. It should be included in supplementary materials or deposited in a public repository (for example, Open Science Framework or GitHub) to facilitate verification and replication.
+
+Exposure maps document the spillover structure: which units' treatments affect which units' outcomes. For a geographic spillover model, the map shows distances or adjacencies between units. For a network spillover model, the map shows network connections. Exposure maps clarify the assumptions required for identification and guide sensitivity analyses (Chapter~\ref{ch:spillovers}).
+
+\subsection{Outcome Definitions Aligned to Estimands}
+
+Specifying outcome definitions in advance ensures that the measured outcomes correspond to the conceptual estimand. If the estimand is the effect on incremental sales, the outcome should measure sales attributable to the treated units, not total sales (which may include non-incremental purchases). If the estimand is the effect on customer lifetime value, the outcome should measure long-run profitability, not short-run revenue. Aligning outcomes to estimands requires careful thought about data sources, measurement windows, and adjustment for confounders.
+
+Primary and secondary outcomes should be distinguished. The primary outcome is the main target of the study, the outcome for which the design is powered and for which hypothesis tests are conducted. Secondary outcomes are exploratory, intended to generate hypotheses for future studies rather than to provide definitive answers. Declaring primary and secondary outcomes \textit{ex ante} prevents cherry-picking: the analyst cannot elevate a secondary outcome to primary status \textit{ex post} simply because it shows a large effect.
+
+\subsection{Inference and Multiplicity Plans}
+
+The pre-analysis plan should specify how standard errors will be computed (clustered by unit, by time, two-way), whether randomisation inference or bootstrap will be used, and how multiple comparisons will be handled. If the plan is to test effects for multiple cohorts, subgroups, or outcomes, the plan should specify the multiplicity adjustment. Bonferroni correction is conservative but appropriate when testing a small number of pre-specified hypotheses. False discovery rate control (Benjamini--Hochberg) is more powerful for exploratory analyses with many tests. Holm--Bonferroni provides a middle ground, controlling family-wise error rate while being less conservative than Bonferroni. Alternatively, report results without adjustment but clearly label secondary outcomes as exploratory.
+
+Declaring these inferential choices \textit{ex ante} protects against selective reporting and ensures that readers understand the evidential standard applied. If the plan was to cluster by unit and the analysis clusters by unit, the inference is pre-specified and credible. If the plan was to cluster by unit but the analysis clusters two-way because unit-level clustering produced large standard errors, the analyst should report the deviation, explain why it was necessary, and assess how it might affect conclusions. Ideally, both the pre-specified analysis and the revised analysis should be reported, allowing readers to compare results.

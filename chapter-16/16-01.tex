@@ -1,0 +1,8 @@
+\section{Motivation and Scope}
+\label{sec:inference-motivation}
+
+Point estimates tell only half the story. In marketing applications, where decisions involve significant capital allocation, quantifying uncertainty is as critical as estimating the effect size itself. A campaign lift of 5\% is actionable if the confidence interval is [4\%, 6\%], but useless if it is [-2\%, 12\%].
+
+Standard inference methods, such as OLS standard errors, rely on the assumption that error terms are independent and identically distributed (i.i.d.). This assumption collapses in panel data. Observations are repeatedly sampled from the same units (consumers, stores, markets) over time, creating serial correlation. Furthermore, units may be spatially correlated or exposed to common shocks. Ignoring this dependence leads to standard errors that are biased downward, often by a factor of three or more \citet{Bertrand2004did}, resulting in spurious significance and false discoveries.
+
+This chapter builds a hierarchy of inference tools. We start with asymptotic approximations for large samples, move to resampling methods for finite samples, and conclude with exact methods for small samples. We also address the specific challenges of high-dimensional selection and adaptive experimentation.

@@ -1,0 +1,101 @@
+\section{Method Selection Summary}
+\label{sec:method-selection}
+
+This section synthesises the application-specific guidance from the preceding sections into a unified framework for method selection. The choice of causal method depends on three factors: the source of identifying variation, the data structure, and the plausibility of required assumptions. No single method dominates; credibility comes from matching the method to the context.
+
+\begin{remark}[Method Selection and the Two-Dimensional Taxonomy]\label{rem:method-selection-taxonomy}
+The taxonomy in Section~\ref{sec:taxonomy} organises marketing problems along two dimensions: the \emph{identification threat} (confounding, endogeneity, interference) and the \emph{temporal structure} (static or dynamic effects). Method selection requires addressing both:
+\begin{enumerate}
+\item \textbf{Identification strategy.} The threat determines the identification approach: confounding requires selection-on-observables or parallel trends; endogeneity requires instruments or experimental calibration; interference requires cluster or switchback designs.
+\item \textbf{Estimation approach.} The temporal structure determines the estimator: static effects permit standard panel methods; dynamic effects require distributed lags, adstock models, or impulse response estimation.
+\end{enumerate}
+The table below maps each application to both dimensions, linking conceptual classification to operational method choice.
+\end{remark}
+
+\subsection*{The Decision Process}
+
+Method selection proceeds in three steps:
+
+\begin{enumerate}
+    \item \textbf{Define the estimand.} What causal quantity do you need? ATT, ATE, GATE, elasticity, or dose-response? The estimand determines which methods are applicable (Section~\ref{sec:application-protocol}).
+    
+    \item \textbf{Identify the source of variation.} Is treatment randomised, quasi-randomly assigned, or observational? Randomisation permits simple comparisons; quasi-experiments require design-based methods; observational data require strong assumptions.
+    
+    \item \textbf{Assess assumption plausibility.} Every method requires assumptions. Parallel trends, exclusion restrictions, no carryover, limited spillovers—these must be defended in context, not assumed by default.
+\end{enumerate}
+
+Figure~\ref{fig:method-decision-tree} provides a visual guide to this process.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/fig_method_decision_tree.pdf}
+\caption{Method selection decision tree}
+\label{fig:method-decision-tree}
+\small\textit{The flowchart guides the practitioner from key problem characteristics—such as the presence of randomisation, interference, or time-series data—to the most appropriate causal estimator. Start at the top and follow branches based on your data and design.}
+\end{figure}
+
+\subsection*{Problem-Method Mapping}
+
+Table~\ref{tab:marketing-method-selection} maps the marketing problems covered in this chapter to recommended methods. Each row links to the relevant section for detailed guidance.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Marketing problems and recommended causal methods}
+\label{tab:marketing-method-selection}
+\begin{tabularx}{\textwidth}{Y Y Y Y Y Y}
+\toprule
+\textbf{Problem} & \textbf{Taxonomy} & \textbf{Data} & \textbf{Primary Method} & \textbf{Alternative} & \textbf{Key Assumption} \\
+\midrule
+Ad incrementality & Confound.~+ Dyn. & Geo-panel & SC/SDID & DiD & Parallel trends \\
+Digital attribution & Confound.~+ Static & User-session & Natural expt & IV & Exogenous variation \\
+Media mix & Endog.~+ Dyn. & Time-series & Bayesian MMM & Calibration & Expt calibration \\
+Loyalty programme & Confound.~+ Dyn. & Customer panel & Staggered DiD & RDD & No anticipation \\
+Price elasticity & Endog.~+ Static & Store-week & IV-FE & DiD & Exclusion restriction \\
+CLV attribution & Confound.~+ Dyn. & Customer cohort & PSM/DR & DiD & Selection on obs. \\
+Dynamic pricing & Endog.~+ Static & Route-day & IV-FE & RDD & Instrument validity \\
+Subscription & Confound.~+ Dyn. & User-session & RDD & A/B test & Local randomisation \\
+Platform expt & Interf.~+ Static & User-time & Switchback & Cluster RCT & Limited carryover \\
+Ranking effects & Interf.~+ Endog. & Session & Position RCT & IV & Random assignment \\
+Seller intervention & Interf.~+ Static & Market-level & Cluster RCT & DiD & Limited spillover \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{When Assumptions Fail}
+
+Every method in Table~\ref{tab:marketing-method-selection} requires assumptions that may be violated. The following guidance addresses common failure modes:
+
+\paragraph{Parallel trends rejected.} If pre-trend tests reject parallel trends, do not proceed with naive DiD. Options: (1) switch to synthetic control or factor models that do not require exact parallel trends; (2) use sensitivity analysis to bound effects under plausible trend deviations (Section~\ref{sec:sensitivity-analyses}); (3) report that the design is not credible.
+
+\paragraph{Weak instruments.} If the first-stage F-statistic is below 10, IV estimates are unreliable. Options: (1) find stronger instruments; (2) use weak-instrument-robust inference such as the Anderson-Rubin test \citep{londschien2025statistician}; (3) report reduced-form effects only. See Remark~\ref{rem:iv-scope} for the scope of IV coverage in this book.
+
+\paragraph{Carryover effects detected.} If switchback experiments show persistent effects across windows, the no-carryover assumption fails. Options: (1) lengthen time windows; (2) extend buffer periods; (3) model carryover explicitly with lagged treatment indicators.
+
+\paragraph{Cross-cluster spillovers.} If cluster randomisation shows effects in control clusters adjacent to treated clusters, the limited-spillover assumption fails. Options: (1) use larger clusters; (2) exclude boundary observations; (3) model spillovers using exposure measures.
+
+\paragraph{Selection on unobservables.} If propensity score methods show sensitivity to unobserved confounding (low Rosenbaum bounds), the unconfoundedness assumption is suspect. Options: (1) find an instrument or natural experiment; (2) use bounds under partial identification; (3) report that the causal interpretation is tentative.
+
+\paragraph{Manipulation at thresholds.} If RDD shows bunching at the threshold (McCrary test rejects), the local randomisation assumption fails. Options: (1) use a "donut" RDD excluding observations at the threshold; (2) switch to a different identification strategy; (3) report that the design is compromised.
+
+\subsection*{Triangulation and Robustness}
+
+When multiple methods are applicable, triangulation strengthens conclusions. If geo-experiments, MMM, and digital attribution all point to similar advertising effects, confidence increases. If they disagree, investigate why: different estimands, different time horizons, or assumption violations.
+
+Report results from multiple methods when feasible. A specification curve (Section~\ref{sec:specification-curves}) across methods, not just within a method, provides the most honest assessment of what the data support.
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.17: Method Selection Checklist]
+Before committing to a method, verify:
+\begin{itemize}
+    \item \textbf{Estimand clarity:} Is the causal quantity precisely defined in potential outcomes notation?
+    \item \textbf{Identification source:} What is the source of exogenous variation? Can you defend it?
+    \item \textbf{Assumption plausibility:} Are the required assumptions credible in this context?
+    \item \textbf{Diagnostic plan:} What diagnostics will you run? What would cause you to abandon the method?
+    \item \textbf{Sensitivity analysis:} How will you assess robustness to assumption violations?
+    \item \textbf{Alternative methods:} What other methods could address the same question? Do they agree?
+\end{itemize}
+If you cannot answer these questions, return to the application protocol (Section~\ref{sec:application-protocol}) before proceeding.
+\end{tcolorbox}
+
+The taxonomy in Section~\ref{sec:taxonomy} provides the conceptual foundation for classifying marketing problems; this section provides the operational guidance for selecting and validating methods. Together, they form the practitioner's handbook for credible causal inference in marketing.

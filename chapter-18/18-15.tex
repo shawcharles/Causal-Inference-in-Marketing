@@ -1,0 +1,162 @@
+\section{Synthesis and Reporting}
+\label{sec:synthesis-reporting}
+
+Rigorous causal analysis is wasted if findings are not communicated effectively. This section provides guidance on reporting standards, stakeholder communication, and common pitfalls. The goal is to translate statistical estimates into actionable business insights while maintaining intellectual honesty about uncertainty and assumptions.
+
+This synthesis section completes the workflow established in this chapter: the taxonomy (Section~\ref{sec:taxonomy}) classifies the problem, the application protocol (Section~\ref{sec:application-protocol}) structures the analysis, the method selection summary (Section~\ref{sec:method-selection}) guides design choices, and this section ensures findings are communicated credibly.
+
+\subsection*{Reporting Standards}
+
+Every causal analysis should document the estimand, identification strategy, diagnostics, and sensitivity analysis. Pre-registration—documenting the design before seeing results—prevents post-hoc specification searching.
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.18: Reporting Standards Checklist]
+\textbf{1. Pre-registration:} Document the estimand, design, and primary specification before analysis. Register with a timestamp (internal wiki, OSF, or email to stakeholders).
+
+\textbf{2. Estimand clarity:} State the causal quantity (ATT, ATE, GATE) and its business interpretation. Avoid vague language like "the effect of X on Y."
+
+\textbf{3. Assumption disclosure:} List the identification assumptions and discuss their plausibility in context. Do not bury assumptions in footnotes.
+
+\textbf{4. Diagnostic reporting:} Include pre-trend tests, balance tables, fit statistics, and placebo results (Chapter~\ref{ch:design-diagnostics}). Report p-values and effect sizes, not just pass/fail.
+
+\textbf{5. Sensitivity analysis:} Report specification curves or robustness to alternative designs (Section~\ref{sec:sensitivity-analyses}). Show what would change the conclusion.
+
+\textbf{6. Confidence intervals:} Report uncertainty using appropriate inference (cluster-robust, bootstrap, permutation). Never report point estimates without uncertainty.
+
+\textbf{7. Business translation:} Convert the ATT to actionable metrics (iROAS, incremental CLV, elasticity). Include confidence intervals on business metrics.
+\end{tcolorbox}
+
+\subsection*{Visualising Causal Evidence}
+
+Two visualisations are essential for communicating causal findings: specification curves and event-study plots with joint confidence bands.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/fig_app_spec_curve.pdf}
+\caption{Specification curve analysis}
+\label{fig:app-spec-curve}
+\small\textit{Top panel: Point estimate and 95\% confidence interval for each specification, sorted by effect size. Bottom panel: Analytical choices (covariates, bandwidths, estimators) corresponding to each estimate. The curve reveals stability: if most specifications yield similar estimates, the finding is robust; if estimates vary widely, the conclusion depends on arbitrary choices.}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\textwidth]{images/fig_app_event_bands.pdf}
+\caption{Event-study estimates with joint confidence bands}
+\label{fig:app-event-bands}
+\small\textit{Dynamic treatment effects relative to event time ($t=0$). The shaded region is the uniform (joint) confidence band, which controls the family-wise error rate across the entire trajectory. Pre-treatment coefficients near zero support parallel trends; post-treatment coefficients show the effect dynamics.}
+\end{figure}
+
+\subsection*{Communicating to Stakeholders}
+
+Technical audiences (data scientists, economists) and business audiences (executives, marketers) require different communication strategies.
+
+\paragraph{For technical audiences:}
+\begin{itemize}
+    \item Lead with the identification strategy: What is the source of exogenous variation?
+    \item Report diagnostics in detail: pre-trends, balance, placebos, sensitivity.
+    \item Discuss limitations honestly: What assumptions are most vulnerable?
+    \item Provide code and data access for replication. Use reproducible workflows (R Markdown, Jupyter notebooks, or Quarto) with version control to ensure computational reproducibility.
+\end{itemize}
+
+\paragraph{For business audiences:}
+\begin{itemize}
+    \item Lead with the business question and answer: "The campaign generated \$2.4M incremental revenue."
+    \item Translate to familiar metrics: iROAS, lift percentage, payback period.
+    \item Communicate uncertainty in business terms: "We are 95\% confident the true lift is between 3\% and 13\%."
+    \item Use decision framing: "If the true effect is at the lower bound, the campaign still breaks even."
+    \item Avoid jargon: Say "comparison group" not "counterfactual"; say "similar trends before the campaign" not "parallel trends assumption."
+\end{itemize}
+
+\paragraph{The one-page executive summary:}
+\begin{enumerate}
+    \item \textbf{Question:} What business question did we answer?
+    \item \textbf{Answer:} What is the causal effect in business terms?
+    \item \textbf{Confidence:} How certain are we? What is the range of plausible effects?
+    \item \textbf{Caveats:} What assumptions did we make? What could change the conclusion?
+    \item \textbf{Recommendation:} What action should the business take?
+\end{enumerate}
+
+\subsection*{Common Reporting Pitfalls}
+
+Practitioners frequently make errors that undermine the credibility of causal claims.
+
+\paragraph{1. Reporting only significant results.} If you ran multiple analyses and report only the one that "worked," you are p-hacking. Report all pre-registered analyses, including nulls.
+
+\paragraph{2. Ignoring uncertainty.} A point estimate of 8\% lift with a 95\% CI of [-2\%, 18\%] is not "an 8\% effect"—it is "an effect that could plausibly be zero or as high as 18\%." Communicate the full range.
+
+\paragraph{3. Conflating statistical and practical significance.} A statistically significant effect of 0.1\% lift is not actionable. Report effect sizes in business terms and assess whether they matter.
+
+\paragraph{4. Hiding failed diagnostics.} If pre-trends are rejected, do not proceed as if they passed. Report the failure and either switch methods or acknowledge the limitation.
+
+\paragraph{5. Overstating external validity.} A geo-experiment in 5 DMAs does not generalise to all markets. Be explicit about the population to which results apply.
+
+\paragraph{6. Confusing correlation with causation in language.} Avoid phrases like "X is associated with Y" when you mean "X causes Y." If your design supports causation, say so; if not, do not imply it.
+
+\paragraph{7. Presenting sensitivity analysis as robustness.} If the specification curve shows sign changes, the result is not robust—it is fragile. Do not claim robustness when the evidence does not support it.
+
+\subsection*{Example Report Structure}
+
+A complete causal analysis report should include the following sections:
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.19: Causal Analysis Report Template]
+\textbf{1. Executive Summary} (1 page)
+\begin{itemize}
+    \item Business question and answer
+    \item Key finding with confidence interval
+    \item Recommendation
+\end{itemize}
+
+\textbf{2. Background and Motivation} (1–2 pages)
+\begin{itemize}
+    \item Business context and decision at stake
+    \item Prior evidence and expectations
+\end{itemize}
+
+\textbf{3. Data and Design} (2–3 pages)
+\begin{itemize}
+    \item Data sources, sample, and time period
+    \item Treatment definition and timing
+    \item Identification strategy and key assumptions
+\end{itemize}
+
+\textbf{4. Results} (2–3 pages)
+\begin{itemize}
+    \item Main estimate with confidence interval
+    \item Event-study or dynamic effects plot
+    \item Heterogeneity analysis (if applicable)
+\end{itemize}
+
+\textbf{5. Diagnostics} (2–3 pages)
+\begin{itemize}
+    \item Pre-trend tests and balance tables
+    \item Placebo tests and fit statistics
+    \item Specification curve or robustness checks
+\end{itemize}
+
+\textbf{6. Sensitivity Analysis} (1–2 pages)
+\begin{itemize}
+    \item What would change the conclusion?
+    \item Bounds under alternative assumptions
+\end{itemize}
+
+\textbf{7. Limitations and Caveats} (1 page)
+\begin{itemize}
+    \item Assumptions that may be violated
+    \item External validity concerns
+    \item What we cannot conclude
+\end{itemize}
+
+\textbf{8. Business Implications} (1 page)
+\begin{itemize}
+    \item Translation to business metrics
+    \item Decision recommendation
+    \item Next steps and follow-up analyses
+\end{itemize}
+
+\textbf{Appendix:} Technical details, reproducible code (with package versions), data dictionary, and pre-registration documentation
+\end{tcolorbox}
+
+\subsection*{The Honest Conclusion}
+
+The goal of causal inference in marketing is not to produce impressive-looking results but to inform better decisions. An honest null result—"we could not detect an effect, and the confidence interval rules out effects larger than X"—is more valuable than a spurious positive. A finding that depends on fragile assumptions should be reported as tentative, not definitive.
+
+The credibility of marketing analytics depends on the integrity of its practitioners. Report what the data support, acknowledge what they do not, and resist pressure to overstate findings. The methods in this book provide the tools for rigorous causal inference; the responsibility for honest reporting lies with the analyst.

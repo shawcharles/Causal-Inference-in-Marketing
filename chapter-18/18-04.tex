@@ -1,0 +1,124 @@
+\section{Digital Attribution and Multi-Touch}
+\label{sec:digital-attribution}
+
+While geo-experiments measure the total lift, digital attribution attempts to assign credit to individual touchpoints. The industry standard of "last-click" attribution is purely descriptive and ignores the causal reality that many customers would have converted without the final click.
+
+\subsection*{Estimand: Marginal Channel Contribution}
+
+The causal question is the marginal contribution of a specific channel. Let $D_{ic} \in \{0,1\}$ indicate whether user $i$ was exposed to channel $c$, and let $D_{i,-c}$ denote the vector of exposures to all other channels.
+
+\begin{definition}[Marginal Channel Effect]\label{def:marginal-channel}
+For channel $c$, the marginal effect is:
+\[
+\tau_c = \mathbb{E}[Y_i(D_{i,-c}, D_{ic} = 1) - Y_i(D_{i,-c}, D_{ic} = 0)],
+\]
+representing the effect of adding channel $c$ exposure, holding other channels fixed at their observed values.
+\end{definition}
+
+This estimand differs from last-click attribution, which assigns full credit to the final touchpoint regardless of the causal contribution of earlier exposures.
+
+\begin{assumption}[No Cross-Channel Interference]\label{assump:no-channel-interference}
+Exposure to channel $c$ does not affect exposure to other channels:
+\[
+D_{i,-c}(D_{ic} = 1) = D_{i,-c}(D_{ic} = 0).
+\]
+This assumption fails when channels interact causally---for example, if a display ad increases the probability that a user searches and thus sees a search ad. In such cases, the marginal effect $\tau_c$ conflates the direct effect of channel $c$ with its indirect effect via other channels.
+\end{assumption}
+
+\begin{remark}[Static vs.\ Path-Dependent Attribution]\label{rem:path-attribution}
+The binary indicator $D_{ic} \in \{0,1\}$ treats channel exposure as static: either the user saw the channel or not. In practice, user journeys are \emph{sequences}: display $\to$ email $\to$ search $\to$ conversion. Two users with identical exposure sets $\{\text{display}, \text{search}\}$ may convert at different rates depending on the order of exposures. The path-dependent framework $Y_i(\mathbf{d}^t)$ from Section~\ref{sec:taxonomy} applies here, where $\mathbf{d}^t$ is the sequence of channel exposures up to time $t$. Full attribution requires modelling the entire path, not just the exposure set. Shapley-value methods attempt this decomposition but impose strong additivity assumptions; see the discussion of dynamic treatments in Chapter~\ref{ch:dynamics}.
+\end{remark}
+
+\subsection*{Identification Strategy}
+
+Identifying $\tau_c$ requires variation in channel $c$ exposure that is independent of potential outcomes. In observational data, this assumption is implausible: users who see more ads differ systematically from those who see fewer. Algorithms target high-value users; engaged users seek out brand content; intent drives both ad exposure and conversion.
+
+\begin{assumption}[Conditional Unconfoundedness for Channel $c$]\label{assump:channel-unconf}
+Conditional on other channel exposures $D_{i,-c}$ and covariates $X_i$, exposure to channel $c$ is independent of potential outcomes:
+\[
+Y_i(D_{i,-c}, d_c) \perp\!\!\!\perp D_{ic} \mid D_{i,-c}, X_i, \quad \text{for } d_c \in \{0,1\}.
+\]
+This assumption is rarely credible in observational digital data. Instead, credible identification requires quasi-experimental or experimental designs that generate exogenous variation in exposure.
+\end{assumption}
+
+Table~\ref{tab:digital-identification} summarises quasi-experimental strategies that exploit features of digital ad delivery to approximate exogenous variation.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Quasi-experimental identification strategies for digital attribution}
+\label{tab:digital-identification}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Strategy} & \textbf{Source of Variation} & \textbf{Design} \\
+\midrule
+Budget exhaustion & Daily caps cause ads to go dark for late-in-day users & RDD at cap threshold \\
+Platform outages & Unplanned outages create exogenous exposure gaps & DiD or event study \\
+Auction bid variation & Randomness in real-time bidding & IV or natural experiment \\
+Geo-randomisation & Randomised ad delivery at geo level & Cluster RCT, geo-experiment \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{Estimation}
+
+Given a valid identification strategy, estimation proceeds according to the design. For budget exhaustion, a regression discontinuity design compares users just above and below the daily cap threshold (see Chapter~\ref{ch:inference} for RDD foundations). For geo-randomisation, difference-in-differences or synthetic control applies at the geo level, with user-level outcomes aggregated (Section~\ref{sec:geo-experiments}).
+
+The key challenge is that digital data are high-dimensional: many channels, many touchpoints, and complex user journeys. Double machine learning (Chapter~\ref{ch:ml-nuisance}) can flexibly control for the high-dimensional nuisance while preserving valid inference on $\tau_c$.
+
+\subsection*{Measurement Under Privacy and Platform Constraints}
+
+The methods above assume access to user-level exposure and outcome data. This assumption is increasingly unrealistic.
+
+\begin{remark}[The Privacy and Platform Opacity Problem]\label{rem:privacy-opacity}
+Three forces are fragmenting digital measurement:
+\begin{enumerate}
+\item \textbf{Privacy regulation and platform restrictions.} iOS App Tracking Transparency, GDPR, and third-party cookie deprecation limit cross-site and cross-device tracking. Advertisers increasingly receive aggregate-only reports rather than user-level logs.
+\item \textbf{Modelled conversions.} Platforms impute conversions using machine learning when deterministic tracking fails. These modelled conversions are themselves estimates, introducing measurement error of unknown magnitude.
+\item \textbf{Platform algorithm opacity.} Audience-finding algorithms, CPC-optimising bidders, and other proprietary systems introduce latent selection into who sees which ads. The advertiser observes outcomes but not the algorithm's internal targeting logic. This creates a suspected but unquantifiable source of confounding: the platform's black-box optimisation means that ``treated'' users were selected by an unobserved process correlated with conversion propensity.
+\end{enumerate}
+These constraints do not eliminate the need for causal measurement---they elevate it. When platform metrics are unreliable, geo-experiments and MMM calibration (Section~\ref{sec:mmm}) become essential anchors. The methods in this chapter should be viewed as a hierarchy: use experiments where possible; use quasi-experiments where data permit; and use calibrated models where neither is feasible, acknowledging the uncertainty that platform opacity introduces.
+\end{remark}
+
+\subsection*{The Digital Measurement Paradoxes}
+
+Digital advertising presents unique measurement challenges that arise from the tension between granular data and causal identification.
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.3: The Digital Ad Paradox]
+\textbf{Setting.} Digital advertising promises precise, real-time measurement: impressions, clicks, viewability, conversions, and path data. Yet attribution remains fragile. Last-click rules ignore the contribution of earlier touchpoints. Viewability and fraud issues mean many recorded impressions are never seen by humans. Retargeting may chase consumers who would have converted anyway.
+
+From a causal perspective, the key estimands are marginal effects $\tau_c$ for channels and dose--response functions $m(a)$ for intensity, not raw platform metrics. The \emph{digital ad paradox} is that as measurement becomes more granular, naive interpretation becomes more misleading: finely measured but confounded metrics can distort budgets more than coarse but causally anchored measures.
+
+\textbf{Measurement implications.} Reconciling rich digital data with credible causal inference requires combining three elements: (i) experiments and quasi-experiments to identify causal effects for key channels and formats; (ii) structural or MMM-style models that aggregate these effects across time and touchpoints; and (iii) disciplined attribution rules that inherit constraints from (i) and (ii). Rather than optimising on last-click ROAS or click-through rates, firms should calibrate attribution models to experimental lift and report uncertainty around channel contributions.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.4: The Attention Paradox in Digital Advertising]
+\textbf{Setting.} A display campaign runs on a social platform. For each user $i$, let $A_i$ denote attention intensity over the campaign window (for example, total viewable impressions or total seconds in view) and let $Y_i$ be an outcome such as conversions or incremental CLV. Ideal causal dose--response curves compare $Y_i(a)$ across different levels of attention $a$.
+
+\textbf{Dose--response pattern.} Using an identification strategy (for example, budget caps that randomly shut off impressions at different times), we estimate the causal response function $m(a) = \mathbb{E}[Y_i(a)]$. A common empirical pattern is:
+\begin{itemize}
+\item For low to moderate attention $a \in [0, a^*)$, $m(a)$ is increasing and concave: extra impressions raise conversions.
+\item Around the optimum $a^*$, marginal gains flatten: $\partial m(a) / \partial a \approx 0$.
+\item Beyond $a^*$, heavy retargeting or repeated exposures trigger annoyance or ad avoidance, so $m(a)$ is flat or even decreasing: $\partial m(a) / \partial a \le 0$.
+\end{itemize}
+The \emph{attention paradox} arises because platform metrics (impressions, view time) keep rising with $a$, but the incremental causal effect $m(a+\Delta a) - m(a)$ becomes zero or negative.
+
+\textbf{Measurement implication.} Treating attention as a causal dose rather than as a simple KPI forces analysts to estimate $m(a)$ non-parametrically or with flexible splines, report the range where marginal returns are positive, and avoid optimising on raw attention metrics. Integrating this dose--response perspective with geo-experiments and MMM (Chapter~\ref{ch:applications}) aligns attention optimisation with true incremental outcomes rather than engagement for its own sake.
+\end{tcolorbox}
+
+\subsection*{Evidence from Large-Scale Studies}
+
+Several landmark studies have used experiments and rigorous quasi-experiments to benchmark advertising effectiveness.
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.5: What Do Large Studies Say About Advertising ROI?]
+\textbf{Television.} \citet{shapiro2021tv} analyse TV advertising for hundreds of brands across many categories. Using observational panel data with a transparent product-selection protocol and extensive robustness checks, they find shorter-run TV elasticities that are substantially smaller than those in much of the earlier MMM literature and a sizeable share of statistically insignificant or even negative estimates. Many brands appear better off with their observed TV spend than with no advertising at all, but the evidence points to considerable over-investment at the margin.
+
+\textbf{Search.} \citet{blake2015consumer} run large-scale field experiments at eBay that randomly shut off paid search in parts of the business. They show that naive observational estimates vastly overstate returns because search and purchase are jointly driven by underlying intent. Brand-keyword ads show no measurable short-run benefit, while non-brand keywords influence new and infrequent users but not frequent buyers. Since frequent buyers account for most of the advertising expense, average marginal ROI is often negative.
+
+\textbf{Social and display.} \citet{gordon2019comparison} use large Facebook experiments to benchmark observational methods. Simple exposed-versus-unexposed comparisons, and even some sophisticated models, can be badly biased relative to experimental lift. The results underscore that online ad data are highly confounded: without randomisation or strong design structure, log-level ROAS and platform metrics are unreliable guides to causal impact.
+
+\textbf{Measurement economics and market valuation.} \citet{lewis2015unfavorable} document that the economics of measuring ad returns are often unfavourable: true effects may be modest and noisy, requiring very large samples to detect reliably. \citet{erickson1992gaining} take a complementary perspective, relating discretionary spending on advertising and R\&D to stock-market returns. They find that, on average, markets value advertising as a long-run intangible asset that contributes to firm value, even if marginal per-campaign lift is hard to pin down.
+
+Taken together, these studies suggest that marginal short-run advertising effects are typically smaller and more heterogeneous than naive metrics imply, that observational methods can seriously mis-measure ROI, and that long-run brand and firm value can still be sensitive to advertising investments. The framework in this chapter---combining experiments, quasi-experiments, and dynamic MMM or brand-stock models---is designed to reconcile these facts.
+\end{tcolorbox}

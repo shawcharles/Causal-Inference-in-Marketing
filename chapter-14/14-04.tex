@@ -1,0 +1,80 @@
+\section{Estimation Strategies for Continuous Treatments}
+\label{sec:continuous-estimation}
+
+\subsection*{GPS and Outcome Regression}
+A practical approach combines a model for the dose density, $r(d\mid X)$, with a model for the outcome, $m(d,X)$.
+
+\begin{definition}[Outcome Regression for ADRF]\label{def:outcome-regression}
+The outcome regression estimator models the conditional expectation:
+\[
+m(d, X) = \mathbb{E}[Y_{it} \mid D_{it} = d, X_{it} = X],
+\]
+and estimates the ADRF by averaging over the covariate distribution:
+\[
+\hat{\mu}^{\text{OR}}(d) = \frac{1}{NT} \sum_{i,t} \hat{m}(d, X_{it}),
+\]
+where $\hat{m}(d, X)$ is estimated using splines, series, or machine learning methods in $d$ and $X$.
+\end{definition}
+
+\begin{definition}[GPS-Weighted Estimator]\label{def:gps-weighted}
+The GPS-weighted (inverse probability weighted) estimator for $\mu(d)$ is:
+\[
+\hat{\mu}^{\text{IPW}}(d) = \frac{\sum_{i,t} Y_{it} \cdot K_h(D_{it} - d) / \hat{r}(D_{it} \mid X_{it})}{\sum_{i,t} K_h(D_{it} - d) / \hat{r}(D_{it} \mid X_{it})},
+\]
+where $K_h(\cdot)$ is a kernel function with bandwidth $h$, and $\hat{r}(d \mid X)$ is the estimated GPS. Stabilised weights use $\hat{r}(d \mid X) / \hat{f}(d)$ where $\hat{f}(d)$ is the marginal dose density.
+\end{definition}
+
+\begin{definition}[Doubly Robust ADRF Estimator]\label{def:dr-adrf}
+The doubly robust estimator for $\mu(d)$ combines outcome regression and GPS weighting:
+\[
+\hat{\mu}^{\text{DR}}(d) = \frac{1}{NT} \sum_{i,t} \left[ \hat{m}(d, X_{it}) + \frac{K_h(D_{it} - d)}{\hat{r}(D_{it} \mid X_{it})} \left( Y_{it} - \hat{m}(D_{it}, X_{it}) \right) \right].
+\]
+The estimator is consistent if either the outcome model $\hat{m}(d, X)$ or the GPS $\hat{r}(d \mid X)$ is correctly specified, but not necessarily both.
+\end{definition}
+
+\begin{theorem}[Double Robustness]\label{thm:double-robustness-continuous}
+The estimator $\hat{\mu}^{\text{DR}}(d)$ satisfies three key properties:
+\begin{enumerate}
+\item If the outcome model $\hat{m}(d, X)$ converges in probability to the true conditional mean $m_0(d, X)$, then $\hat{\mu}^{\text{DR}}(d)$ converges to $\mu(d)$ regardless of whether the GPS is correctly specified.
+\item If the GPS estimator $\hat{r}(d \mid X)$ converges to the true density $r_0(d \mid X)$, then $\hat{\mu}^{\text{DR}}(d)$ converges to $\mu(d)$ regardless of the outcome model specification.
+\item If both models are correctly specified, $\hat{\mu}^{\text{DR}}(d)$ achieves the semiparametric efficiency bound.
+\end{enumerate}
+\end{theorem}
+
+\subsection*{Double or Debiased ML for Continuous Doses}
+
+Double machine learning (DML), introduced in Chapter~\ref{ch:ml-nuisance}, extends naturally to continuous treatments. The key insight is that cross-fitting eliminates overfitting bias, while the doubly robust score ensures valid inference even when nuisance functions are estimated with flexible machine learning methods.
+
+\begin{definition}[DML Estimator for ADRF]\label{def:dml-continuous}
+The DML estimator for the ADRF uses cross-fitting with $K$ folds. For each fold $k$, we first estimate the nuisance functions $\hat{m}^{(-k)}(d, X)$ and $\hat{r}^{(-k)}(d \mid X)$ using out-of-fold data.
+
+Next, we construct the doubly robust score for observations in fold $k$:
+\[
+\psi_{it}(d) = \hat{m}^{(-k)}(d, X_{it}) + \frac{K_h(D_{it} - d)}{\hat{r}^{(-k)}(D_{it} \mid X_{it})} \left( Y_{it} - \hat{m}^{(-k)}(D_{it}, X_{it}) \right).
+\]
+Finally, we aggregate the scores across all folds to obtain the estimator $\hat{\mu}^{\text{DML}}(d) = \frac{1}{NT} \sum_{k=1}^K \sum_{(i,t) \in \mathcal{I}_k} \psi_{it}(d)$.
+\end{definition}
+
+\begin{assumption}[Nuisance Rate Conditions]\label{ass:continuous-dml-rates}
+The nuisance estimators must satisfy specific convergence rates to ensure valid inference. The outcome model must satisfy $\|\hat{m}(d, \cdot) - m_0(d, \cdot)\|_{L^2} = o_P(N^{-1/4})$ uniformly in $d$. The GPS estimator must satisfy $\|\hat{r}(\cdot \mid X) - r_0(\cdot \mid X)\|_{L^2} = o_P(N^{-1/4})$.
+
+These conditions imply a product rate: $\|\hat{m} - m_0\| \cdot \|\hat{r} - r_0\| = o_P(N^{-1/2})$, ensuring that the bias from nuisance estimation is negligible relative to the $\sqrt{N}$ rate.
+\end{assumption}
+
+\begin{theorem}[ADRF Inference]\label{thm:adrf-inference}
+Under Assumptions~\ref{assump:cont-unconf}–\ref{assump:cont-overlap} and~\ref{ass:continuous-dml-rates}, the DML estimator satisfies:
+\[
+\sqrt{N}(\hat{\mu}^{\text{DML}}(d) - \mu(d)) \xrightarrow{d} \mathcal{N}(0, V(d)),
+\]
+where $V(d) = \mathbb{E}[\psi_{it}(d)^2]$ is the influence function variance. Under clustering by unit:
+\[
+\sqrt{G}(\hat{\mu}^{\text{DML}}(d) - \mu(d)) \xrightarrow{d} \mathcal{N}(0, V_{\text{cluster}}(d)),
+\]
+with $V_{\text{cluster}}(d) = \mathbb{E}[(\sum_t \psi_{it}(d))^2]$. Uniform inference over $d \in \mathcal{D}$ requires bootstrap or multiplier methods.
+\end{theorem}
+
+\subsection*{Local and Global Marginal Effects}
+
+Series or spline representations of $\mu(d)$ supply smooth marginal effects. Partial effects at the mean can be misleading when dose distributions are skewed, so we emphasise average partial effects and banded uncertainty across a grid of doses.
+
+This raises the prediction--identification tension \citet{breiman2001statistical}: learners that forecast well need not respect identification unless constrained by design and cross-fitting. Flexible estimators must be paired with appropriate cross-fitting and orthogonalisation to yield valid causal estimates.

@@ -1,0 +1,34 @@
+\section{Inference}
+\label{sec:hd-inference}
+
+Inference for regularised panel estimators must account for clustering induced by panel dependence, for the additional uncertainty introduced by selection, and for multiplicity when testing many outcomes or moderators. This section presents cluster-robust standard errors, wild cluster bootstrap for small samples, and multiplicity adjustments, with forward references to Chapter~\ref{ch:inference}.
+
+\subsection*{Cluster-Robust Standard Errors}
+
+Cluster-robust standard errors for double selection and debiased lasso account for within-cluster correlation by aggregating residuals at the cluster level. For double selection (OLS on the union of selected controls), the cluster-robust variance of $\hat{\tau}$ is computed using the standard sandwich formula, aggregating within-unit (or within-period) residuals.
+
+For debiased lasso, the cluster-robust variance of $\hat{\tau}^{\text{debiased}}$ is computed by plugging the cluster-robust covariance matrix of residuals into the asymptotic variance formula. Cluster-robust standard errors are consistent as the number of clusters $G$ grows, even when errors are arbitrarily correlated within clusters.
+
+\subsection*{Small-Sample Inference}
+
+Small-$G$ cautions apply when the number of clusters is small (fewer than 30). Cluster-robust standard errors rely on asymptotic approximations that may fail when $G$ is small, underestimating uncertainty and producing confidence intervals that are too narrow.
+
+The solution is wild cluster bootstrap, which resamples cluster-level residuals by multiplying them by random signs (Rademacher weights), recomputes outcomes, re-runs the selection and estimation procedure (lasso or double selection or debiased lasso), and repeats many times (for example, 1,000 replications) to build a bootstrap distribution of $\hat{\tau}$.
+
+The bootstrap confidence interval is constructed from the quantiles of the distribution (for example, the 2.5th and 97.5th percentiles for a 95 per cent interval). Wild cluster bootstrap is valid under weak assumptions and provides finite-sample inference when $G$ is small. Chapter~\ref{ch:inference} provides detailed coverage of wild bootstrap variants and guidance on when to use them.
+
+\subsection*{Multiple-Testing Considerations}
+
+Multiple-testing considerations arise when estimating effects for many outcomes, subgroups, or moderators. For example, if an analyst estimates treatment effects for 20 outcomes (sales, profit, customer satisfaction, churn, etc.) and tests each at the 5 per cent significance level, the expected number of false rejections is $20 \times 0.05 = 1$, even if all effects are zero.
+
+Bonferroni correction divides the significance level by the number of tests ($0.05 / 20 = 0.0025$), controlling the family-wise error rate at the cost of reduced power. False discovery rate (FDR) control (using the Benjamini-Hochberg procedure) offers a less conservative alternative, controlling the expected proportion of false discoveries among all rejections. Romano-Wolf stepdown procedures exploit the correlation structure of test statistics to improve power while controlling the family-wise error rate.
+
+Practical guidance includes reporting unadjusted p-values for each test alongside a joint test (F-test) that all effects are zero, and using the joint test as the primary evidence for effects. If the joint test rejects, interpret individual tests as exploratory.
+
+\subsection*{Situating within Modern Panel Frameworks}
+
+Situating within modern panel frameworks by \citet{arkhangelsky2024causal} clarifies the role of regularisation in panel causal inference. The Arkhangelsky-Imbens survey emphasises the importance of credible inference (accounting for clustering, small samples, and dependence), transparent reporting of uncertainty (confidence intervals, sensitivity analyses), and alignment with design-based identification (avoiding biased aggregation, respecting cohort-time structure).
+
+Regularisation complements these themes by enabling flexible covariate adjustment while preserving valid inference (cluster-robust standard errors, debiased lasso), by providing transparent diagnostics (balance, overlap, stability), and by aligning with design-based methods (sparse augmentation of DiD, event-time with rich covariates).
+
+The unifying principle is that causal inference in panels requires rigorous identification and transparent uncertainty quantification, and that regularisation provides tools for implementing these principles credibly in high-dimensional settings.

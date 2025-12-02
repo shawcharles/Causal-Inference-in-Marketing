@@ -1,0 +1,187 @@
+\section{Time-Varying Rank and Non-Stationary Panels}
+\label{sec:time-varying-rank}
+
+\subsection*{When Rank Changes Over Time}
+
+The low-rank assumption in Chapter~\ref{ch:factor} requires that the factor structure is stable over time. The rank $R$ (the number of factors) and the loadings $\lambda_i$ (unit sensitivities) are constant. This assumption is violated when structural breaks occur:
+\begin{itemize}
+\item A recession introduces new factors (unemployment, credit constraints).
+\item A platform algorithm change alters user behaviour (new engagement patterns).
+\item The COVID-19 pandemic created a structural break in demand (remote work, supply chain disruptions, consumption shifts).
+\end{itemize}
+
+When the rank changes over time, standard matrix completion produces biased counterfactuals. The pre-treatment factor structure does not extrapolate to the post-treatment period. Time-varying rank models adapt to non-stationary environments by allowing the rank and factor structure to change over time.
+
+\begin{definition}[Time-Varying Factor Model]
+The untreated potential outcomes follow a time-varying factor structure:
+\[
+Y_{it}(0) = \lambda_i(t)^\top f_t + \varepsilon_{it},
+\]
+where:
+\begin{enumerate}[(i)]
+    \item $\lambda_i(t) \in \mathbb{R}^{R_t}$ are time-varying factor loadings for unit $i$;
+    \item $f_t \in \mathbb{R}^{R_t}$ are factors at time $t$;
+    \item The rank $R_t$ may vary over time: $R_t \in \{R_{\min}, \ldots, R_{\max}\}$.
+\end{enumerate}
+See \citet{su2017time} for theoretical properties of time-varying factor models.
+\end{definition}
+
+\subsection*{Identification Under Non-Stationarity}
+
+Identification under non-stationarity requires that the factor structure evolves smoothly between structural breaks.
+
+\begin{assumption}[Smooth Factor Evolution]\label{ass:smooth-evolution}
+The factor structure evolves smoothly:
+\begin{enumerate}[(i)]
+    \item \textbf{Loading stability:} For $R_{t-1} = R_t$, loadings satisfy $\|\lambda_i(t) - \lambda_i(t-1)\| \leq \delta_\lambda$ for all $i$;
+    \item \textbf{Factor stability:} Factors satisfy $\|f_t - f_{t-1}\| \leq \delta_f$;
+    \item \textbf{Rank changes:} Rank changes occur at isolated points $t \in \mathcal{B} = \{t_1, \ldots, t_K\}$ with $|\mathcal{B}| \ll T$.
+\end{enumerate}
+The smoothness parameters $\delta_\lambda$ and $\delta_f$ control the rate of factor drift.
+\end{assumption}
+
+\subsection*{Subspace Tracking Methods}
+
+Online matrix completion provides a framework for time-varying rank models.
+
+\begin{definition}[Online Matrix Completion Objective]
+At time $t$, the online estimator solves:
+\[
+\hat{\mathbf{L}}_t = \arg\min_{\mathbf{L}} \sum_{s=1}^t \sum_{i=1}^N (1 - W_{is})(Y_{is} - L_{is})^2 + \lambda_t \|\mathbf{L}\|_* + \alpha \|\mathbf{L} - \hat{\mathbf{L}}_{t-1}\|_F^2,
+\]
+where:
+\begin{enumerate}[(i)]
+    \item $\lambda_t > 0$ is a time-varying regularisation parameter (selected as in Section~\ref{sec:factor-tuning});
+    \item $\alpha > 0$ is the temporal smoothing parameter;
+    \item $\hat{\mathbf{L}}_{t-1}$ is the previous estimate (with appropriate padding for dimension changes).
+\end{enumerate}
+\end{definition}
+
+\paragraph{Tuning $\alpha$.} Large $\alpha$ enforces smooth evolution but may fail to adapt to structural breaks. Small $\alpha$ allows rapid adaptation but may overfit to noise. Cross-validation on rolling windows guides the choice.
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!50!black,title=Algorithm: Online Matrix Completion with Subspace Tracking]
+\textbf{Input:} Panel data $\{Y_{it}\}$, treatment indicators $\{W_{it}\}$, initial rank $R_0$, regularisation $\lambda$, smoothing $\alpha$.
+
+\textbf{Initialise:} Estimate $\hat{\mathbf{L}}_1$ from first $T_0$ periods using standard MC. Set rank $R_1 = R_0$.
+
+\textbf{For each time $t = T_0 + 1, \ldots, T$:}
+\begin{enumerate}
+\item \textbf{Update estimate:} Solve the online MC objective via proximal gradient descent:
+\[
+\hat{\mathbf{L}}_t \leftarrow \text{prox}_{\lambda_t \|\cdot\|_*}\left( \hat{\mathbf{L}}_{t-1} - \eta \nabla \ell_t(\hat{\mathbf{L}}_{t-1}) \right),
+\]
+where $\ell_t$ is the squared loss on untreated cells at time $t$, and $\eta$ is the step size.
+
+\item \textbf{Change-point detection:} Compute reconstruction error statistic:
+\[
+\Delta_t = \|\mathbf{Y}_t - \hat{\mathbf{L}}_{t-1,t}\|_F^2 - \|\mathbf{Y}_{t-1} - \hat{\mathbf{L}}_{t-1}\|_F^2.
+\]
+If $\Delta_t > \tau$ (threshold), flag $t$ as a potential change point.
+
+\item \textbf{Adaptive rank selection:} If change point detected, re-estimate rank $R_t$ using cross-validation or information criteria.
+
+\item \textbf{Impute counterfactuals:} For treated cells $(i, t)$, impute $\hat{Y}_{it}(0) = \hat{L}_{it}$.
+\end{enumerate}
+
+\textbf{Output:} Time-varying estimates $\{\hat{\mathbf{L}}_t\}$, change points $\hat{\mathcal{B}}$, counterfactuals.
+\end{tcolorbox}
+
+\begin{proposition}[Change-Point Detection Consistency]\label{prop:changepoint}
+Suppose Assumption~\ref{ass:smooth-evolution} holds with true change points $\mathcal{B} = \{t_1^*, \ldots, t_K^*\}$. Let $\hat{\mathcal{B}} = \{\hat{t}_1, \ldots, \hat{t}_{\hat{K}}\}$ be the estimated change points. Under regularity conditions, as $N \to \infty$:
+\[
+\mathbb{P}(\hat{K} = K \text{ and } \max_k |\hat{t}_k - t_k^*| \leq \tau_N) \to 1,
+\]
+where $\tau_N = O(\log N)$ is the localisation error.
+\end{proposition}
+
+\subsection*{Comparison: Standard vs Time-Varying Matrix Completion}
+
+Table~\ref{tab:timevarying-comparison} compares standard and time-varying approaches.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Standard vs Time-Varying Matrix Completion}
+\label{tab:timevarying-comparison}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Aspect} & \textbf{Standard MC} & \textbf{Time-Varying MC} \\
+\midrule
+Factor structure & Fixed $R$, $\lambda_i$, $f_t$ & $R_t$, $\lambda_i(t)$, $f_t$ vary \\
+\addlinespace
+Structural breaks & Not handled (bias) & Detected and adapted \\
+\addlinespace
+Assumptions & Stable factors & Smooth evolution + isolated breaks \\
+\addlinespace
+When to use & Stable environments & Recessions, pandemics, policy changes \\
+\addlinespace
+Computation & Single estimation & Online/sequential updates \\
+\addlinespace
+Parameters & $\lambda$ (rank) & $\lambda_t$, $\alpha$ (smoothing) \\
+\addlinespace
+Risk & Bias after breaks & Overfitting if $\alpha$ too small \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{Software Implementation}
+
+Several packages support time-varying factor models and change-point detection:
+
+\paragraph{Python.}
+\begin{itemize}
+\item \texttt{ruptures}: Change-point detection library. Supports multiple algorithms (PELT, binary segmentation).
+\item \texttt{dynfact}: Dynamic factor models with time-varying loadings.
+\item Custom implementations using \texttt{scipy.optimize} for the online MC objective.
+\end{itemize}
+
+\paragraph{R.}
+\begin{itemize}
+\item \texttt{changepoint}: Change-point detection for time series. PELT and binary segmentation.
+\item \texttt{bfast}: Breaks for additive seasonal and trend detection.
+\item \texttt{tseries}: Time series analysis including structural break tests.
+\item \texttt{dfms}: Dynamic factor models with state-space representation.
+\end{itemize}
+
+\paragraph{MATLAB.}
+\begin{itemize}
+\item GRASTA (Grassmannian Rank-One Update Subspace Tracking): Online subspace tracking.
+\item Custom implementations using the Optimization Toolbox.
+\end{itemize}
+
+\subsection*{Application: COVID-19 Structural Break}
+
+Consider an e-commerce platform observing daily user engagement (clicks, purchases) for 1,000 users over 365 days. The COVID-19 pandemic created a structural break in mid-March 2020.
+
+\paragraph{Pre-COVID factor structure ($R = 3$).}
+\begin{enumerate}
+\item Day-of-week patterns
+\item Seasonality
+\item User preferences
+\end{enumerate}
+
+\paragraph{Post-COVID factor structure ($R = 5$).} Two new factors emerged:
+\begin{enumerate}
+\setcounter{enumi}{3}
+\item Remote work (increased daytime engagement)
+\item Supply chain disruptions (decreased availability)
+\end{enumerate}
+
+\paragraph{Treatment.} A new feature (personalised recommendations) is launched in April 2020 for a subset of users. The goal is to estimate the causal effect on engagement.
+
+\paragraph{Results.}
+\begin{itemize}
+\item \textbf{Time-varying MC ATT:} 12\% increase in engagement (95\% CI: [8\%, 16\%]).
+\item \textbf{Standard MC ATT:} 8\% increase (95\% CI: [4\%, 12\%]).
+\item The standard MC estimate is biased downward because it uses the pre-COVID structure ($R = 3$) for imputation, failing to capture the new factors.
+\end{itemize}
+
+\paragraph{Diagnostics.}
+\begin{itemize}
+\item Change-point detection identifies mid-March 2020 as a structural break (reconstruction error spike).
+\item Pre-break $R^2 = 0.80$; post-break $R^2 = 0.85$ (improved fit with $R = 5$).
+\item Sensitivity to $\alpha$: ATT stable for $\alpha \in [0.1, 1.0]$.
+\end{itemize}
+
+\paragraph{Inference.} Confidence intervals constructed using block bootstrap with 7-day blocks (Section~\ref{sec:bayesian-matrix}).

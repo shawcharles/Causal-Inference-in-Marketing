@@ -1,0 +1,24 @@
+\section{Specification Curves and the Multiverse}
+\label{sec:specification-curves}
+
+Specification curves offer a powerful way to assess robustness. By systematically varying defensible design choices---control group, time windows, covariate sets---and plotting the distribution of resulting estimates, we assess whether results are artefacts of a single specification. Tightly clustered estimates support robustness.
+
+\begin{definition}[Specification Family and Curve]\label{def:specification-curve}
+A specification family $\mathcal{S}$ is a set of defensible estimation specifications, each defined by choices of control group or donor pool, covariate adjustment set, time window, functional form and regularisation, and trimming or weighting scheme. The specification curve plots estimates $\{\hat{\tau}_s : s \in \mathcal{S}\}$ sorted by magnitude, along with indicators of which choices each specification embodies.
+\end{definition}
+
+\begin{definition}[Curve Summary Statistics]\label{def:curve-summary}
+For specification family $\mathcal{S}$ with $|\mathcal{S}| = S$ specifications, the median estimate is $\hat{\tau}_{\text{med}} = \text{median}_{s \in \mathcal{S}} \hat{\tau}_s$, the interquartile range is $\text{IQR} = \hat{\tau}_{0.75} - \hat{\tau}_{0.25}$, and sign consistency is $p_+ = S^{-1} \sum_s \mathbf{1}(\hat{\tau}_s > 0)$. High sign consistency ($p_+ > 0.9$ or $p_+ < 0.1$) supports robustness. Report these alongside the primary pre-registered estimate.
+\end{definition}
+
+\begin{remark}[Specification Correlation]\label{rem:spec-correlation}
+These summary statistics treat specifications as independent, but in practice specifications share most of the same data and differ only in minor choices. Estimates across specifications are therefore highly correlated, and a tight IQR may reflect this correlation rather than genuine robustness. The effective number of independent specifications is typically far smaller than $S$. Interpret curve summaries as descriptive, not inferential, and complement them with simulation-based inference (Remark~\ref{rem:spec-curve-inference}).
+\end{remark}
+
+\begin{remark}[Adjusted Inference for Specification Curves]\label{rem:spec-curve-inference}
+To account for researcher degrees of freedom in specification curve analysis, three approaches are available. First, apply Bonferroni or FDR control (Section~\ref{sec:multiple-testing}) across specifications when testing joint significance. Second, under $H_0$ (no effect), simulate specification curves by permuting treatment assignment and compare the observed curve to this null distribution. Third, pre-register the selection criterion (e.g., lowest pre-period RMSPE, best covariate balance) before seeing results and report this dominant specification rather than the most favourable estimate. Distinguish pre-registered primary specifications from exploratory robustness checks.
+\end{remark}
+
+Defining the specification family requires care. Include only specifications that are defensible under the identification strategy, and exclude arbitrary or ad hoc combinations. Separate primary specifications pre-registered or motivated by theory from robustness checks. Adjusting for researcher degrees of freedom via multiplicity control prevents overstating confidence when many specifications are explored.
+
+The prediction--identification tension described by \citet{breiman2001statistical} arises when machine-learning-aided diagnostics optimise fit at the expense of identification. Overfitting in propensity score or outcome regression models can induce bias, and cross-validation must respect design structure by blocking on units or time to avoid leakage. Specification curves that include ML-tuned alternatives alongside transparent fixed-specification benchmarks help readers assess this trade-off.

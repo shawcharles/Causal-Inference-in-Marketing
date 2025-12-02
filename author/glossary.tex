@@ -1,0 +1,196 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Glossary of Terms
+% Causal Inference for Marketing: Design-Based Methods for Panel Data
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\Extrachap{Glossary}
+
+This glossary provides definitions for key terms used throughout this book. Terms are organised alphabetically within thematic categories.
+
+\section*{Causal Framework}
+
+\runinhead{Average Treatment Effect (ATE)} The population-average difference between potential outcomes under treatment and control: $\text{ATE} = \mathbb{E}[Y_i(1) - Y_i(0)]$. Represents the effect of treating a randomly selected unit.
+
+\runinhead{Average Treatment Effect on the Treated (ATT)} The average treatment effect among units that actually received treatment: $\text{ATT} = \mathbb{E}[Y_i(1) - Y_i(0) \mid W_i = 1]$. The primary estimand in most observational panel designs.
+
+\runinhead{Average Treatment Effect on the Untreated (ATU)} The average treatment effect among units that did not receive treatment: $\text{ATU} = \mathbb{E}[Y_i(1) - Y_i(0) \mid W_i = 0]$. Relevant for policy extrapolation.
+
+\runinhead{Conditional Average Treatment Effect (CATE)} The treatment effect conditional on observable characteristics: $\tau(x) = \mathbb{E}[Y_i(1) - Y_i(0) \mid X_i = x]$. Captures treatment effect heterogeneity.
+
+\runinhead{Counterfactual} The outcome that would have been observed for a unit under an alternative treatment assignment. Fundamentally unobservable; causal inference methods aim to construct credible estimates.
+
+\runinhead{Local Average Treatment Effect (LATE)} The average treatment effect for compliers in an instrumental variables design---units whose treatment status is affected by the instrument.
+
+\runinhead{Potential Outcomes} The set of outcomes a unit would exhibit under each possible treatment state. Denoted $Y_i(w)$ for treatment $w$. The foundation of the Rubin Causal Model.
+
+\runinhead{Selection Bias} Systematic differences between treatment and control groups that confound the causal effect. Arises when treatment assignment is correlated with potential outcomes.
+
+\runinhead{SUTVA (Stable Unit Treatment Value Assumption)} The assumption that (i) each unit's outcome depends only on its own treatment, not others' treatments (no interference), and (ii) there is only one version of each treatment level (no hidden variations).
+
+\runinhead{Treatment Assignment Mechanism} The process determining which units receive treatment. May be randomised (experimental), as-if random (quasi-experimental), or confounded (observational).
+
+\section*{Panel Data Fundamentals}
+
+\runinhead{Balanced Panel} A panel dataset where all units are observed for the same time periods. Contrast with unbalanced panels where observation periods vary across units.
+
+\runinhead{First Differences} A transformation that removes time-invariant unobserved heterogeneity by taking $\Delta Y_{it} = Y_{it} - Y_{i,t-1}$. Alternative to fixed effects estimation.
+
+\runinhead{Fixed Effects (Unit)} Unobserved time-invariant characteristics of each unit, denoted $\alpha_i$. Absorbed by within-unit transformations or unit dummies.
+
+\runinhead{Fixed Effects (Time)} Common shocks affecting all units at each time period, denoted $\lambda_t$. Absorbed by time dummies or time-demeaning.
+
+\runinhead{Panel Data} Data with repeated observations on the same units over multiple time periods. The $(i,t)$ structure enables identification strategies unavailable in pure cross-sections.
+
+\runinhead{Two-Way Fixed Effects (TWFE)} A regression model including both unit and time fixed effects: $Y_{it} = \alpha_i + \lambda_t + \tau W_{it} + \varepsilon_{it}$. The workhorse specification for panel causal inference.
+
+\runinhead{Within Transformation} The operation that demeans each observation by its unit mean: $\tilde{Y}_{it} = Y_{it} - \bar{Y}_i$. Removes unit fixed effects.
+
+\section*{Difference-in-Differences}
+
+\runinhead{Canonical DiD} The classic $2 \times 2$ design with two groups (treated/control) and two periods (before/after). Estimates ATT via double-differencing.
+
+\runinhead{Cohort} A group of units that adopt treatment at the same time. In staggered designs, each adoption timing defines a distinct cohort.
+
+\runinhead{Event Time} Time relative to treatment adoption, denoted $k = t - G_i$ where $G_i$ is unit $i$'s adoption date. Allows alignment of heterogeneous adoption timings.
+
+\runinhead{Forbidden Comparisons} In staggered DiD, problematic comparisons that use already-treated units as controls. Can bias TWFE estimates under heterogeneous effects.
+
+\runinhead{Never-Treated} Units that never receive treatment during the sample period. Often serve as the comparison group in staggered designs.
+
+\runinhead{Not-Yet-Treated} Units that eventually receive treatment but have not yet adopted at a given time. Can serve as controls for early adopters.
+
+\runinhead{Parallel Trends} The identifying assumption that treatment and control groups would have followed identical outcome trajectories in the absence of treatment.
+
+\runinhead{Pre-Trend Test} A diagnostic examining whether treatment and control groups exhibited similar trends before treatment. Failure suggests parallel trends may not hold.
+
+\runinhead{Staggered Adoption} A treatment design where different units adopt at different times. Common in policy rollouts and marketing interventions.
+
+\section*{Event Studies}
+
+\runinhead{Dynamic Treatment Effects} Treatment effects that vary with time since treatment: $\tau_k = \mathbb{E}[Y_{it}(1) - Y_{it}(0) \mid t - G_i = k]$. Estimated via event-study specifications.
+
+\runinhead{Event-Study Plot} A graphical display of treatment effect estimates at each event time, typically with confidence intervals. Shows both pre-trends and dynamic post-treatment effects.
+
+\runinhead{Leads and Lags} Indicator variables for periods before (leads) and after (lags) treatment. Enable estimation of anticipation effects and dynamic responses.
+
+\runinhead{Reference Period} The omitted event-time category (typically $k = -1$) that serves as the normalisation point in event studies. Effects are measured relative to this period.
+
+\section*{Synthetic Control Methods}
+
+\runinhead{Convex Weights} Non-negative weights summing to one, constraining the synthetic control to be an interpolation (not extrapolation) of donor units.
+
+\runinhead{Donor Pool} The set of untreated units available for constructing a synthetic control. Selection requires substantive judgment about comparability.
+
+\runinhead{Pre-RMSPE} Root Mean Squared Prediction Error in the pre-treatment period. Measures synthetic control fit quality; used in placebo inference.
+
+\runinhead{Synthetic Control} A weighted combination of untreated units constructed to match the treated unit's pre-treatment trajectory. The estimated effect is the post-treatment gap.
+
+\runinhead{Synthetic Difference-in-Differences (SDID)} A hybrid method combining synthetic control weighting with DiD estimation. Provides doubly-robust identification and often outperforms either method alone.
+
+\section*{Factor Models and Matrix Methods}
+
+\runinhead{Interactive Fixed Effects} A model where unit and time effects interact multiplicatively: $Y_{it} = \sum_r \lambda_{ir} f_{rt} + \varepsilon_{it}$. More flexible than additive TWFE.
+
+\runinhead{Latent Factors} Unobserved common factors $f_t$ affecting all units with heterogeneous loadings $\lambda_i$. Capture patterns beyond additive fixed effects.
+
+\runinhead{Matrix Completion} Imputation of missing entries (counterfactuals) in the outcome matrix using low-rank structure. Nuclear norm minimisation is the convex relaxation.
+
+\runinhead{Nuclear Norm} The sum of singular values of a matrix, $\|M\|_* = \sum_r \sigma_r$. Regularisation with nuclear norm encourages low-rank solutions.
+
+\runinhead{Principal Component Analysis (PCA)} A method for estimating latent factors by extracting leading eigenvectors from the outcome covariance matrix.
+
+\section*{Inference and Uncertainty}
+
+\runinhead{Cluster-Robust Variance Estimator (CRVE)} A variance estimator allowing arbitrary correlation within clusters (e.g., units) while assuming independence across clusters.
+
+\runinhead{Conformal Prediction} A distribution-free method for constructing prediction intervals with guaranteed finite-sample coverage under exchangeability.
+
+\runinhead{False Discovery Rate (FDR)} The expected proportion of false rejections among all rejections. Controlled by Benjamini-Hochberg and related procedures.
+
+\runinhead{Familywise Error Rate (FWER)} The probability of making at least one false rejection among a family of hypothesis tests. Controlled by Bonferroni and stepdown procedures.
+
+\runinhead{Randomisation Inference} Exact inference based on permuting treatment assignments under the sharp null hypothesis. Provides valid p-values without distributional assumptions.
+
+\runinhead{Wild Cluster Bootstrap} A resampling method for inference with few clusters. Perturbs residuals with random signs at the cluster level.
+
+\section*{Machine Learning Methods}
+
+\runinhead{Cross-Fitting} A sample-splitting procedure in DML where nuisance functions are estimated on one fold and used to estimate treatment effects on another. Reduces overfitting bias.
+
+\runinhead{Double Machine Learning (DML)} A framework for causal inference with ML-estimated nuisance parameters. Combines Neyman orthogonality with cross-fitting for valid inference.
+
+\runinhead{Lasso} Least Absolute Shrinkage and Selection Operator. A penalised regression method ($\ell_1$ penalty) that performs variable selection and regularisation simultaneously.
+
+\runinhead{Nuisance Parameter} A parameter required for estimation but not of primary interest. In causal inference, typically includes propensity scores and outcome models.
+
+\runinhead{Orthogonal Score} An influence function that is locally insensitive to perturbations in nuisance parameter estimates. Key to valid inference after ML selection.
+
+\runinhead{Ridge Regression} A penalised regression method ($\ell_2$ penalty) that shrinks coefficients toward zero without setting them exactly to zero.
+
+\section*{Marketing Applications}
+
+\runinhead{Adstock} The cumulative effect of advertising over time, accounting for carryover. Often modelled as geometric decay: $A_t = \sum_{s=0}^{\infty} \lambda^s X_{t-s}$.
+
+\runinhead{Attribution} The process of assigning credit for conversions to marketing touchpoints. Causal attribution requires valid identification strategies.
+
+\runinhead{Designated Market Area (DMA)} A geographic region used for television advertising measurement. Common unit of analysis in geo-experiments.
+
+\runinhead{Geo-Experiment} A quasi-experimental design where geographic regions are assigned to treatment and control conditions for marketing tests.
+
+\runinhead{Holdout} A randomly selected subset of units withheld from treatment to serve as a control group. The gold standard for incrementality measurement.
+
+\runinhead{Incrementality} The causal effect of a marketing intervention---the lift in outcomes attributable to the treatment beyond what would have occurred anyway.
+
+\runinhead{Marketing Mix Modelling (MMM)} Statistical analysis of sales and marketing inputs to estimate the effect of each marketing channel. Often uses aggregate time-series data.
+
+\runinhead{Return on Advertising Spend (ROAS)} The revenue generated per unit of advertising expenditure. Causal ROAS requires identification of advertising's incremental effect.
+
+\runinhead{Saturation} The phenomenon where additional advertising spending yields diminishing returns. Often modelled via Hill functions or logarithmic transformations.
+
+\runinhead{Switchback Experiment} A design where treatment alternates over time within units. Used in platform settings to handle interference and measure short-run effects.
+
+\section*{Threats and Diagnostics}
+
+\runinhead{Anticipation Effects} Changes in outcomes before formal treatment implementation, arising when units anticipate treatment and adjust behaviour.
+
+\runinhead{Attrition} Loss of units from the sample over time. Differential attrition between treatment and control threatens validity.
+
+\runinhead{Composition Bias} Bias arising when treatment changes the composition of units being measured, rather than outcomes of fixed units.
+
+\runinhead{Interference} Violation of SUTVA where one unit's treatment affects another unit's outcome. Common in networks, platforms, and geographic spillovers.
+
+\runinhead{Overlap (Positivity)} The assumption that all units have positive probability of receiving each treatment level. Violation leads to extreme weights and extrapolation.
+
+\runinhead{Pre-Period Fit} The quality of counterfactual prediction in the pre-treatment period. Poor fit in synthetic control suggests potential bias.
+
+\runinhead{Sensitivity Analysis} Assessment of how conclusions change under violations of identifying assumptions. Quantifies robustness to unobserved confounding.
+
+\runinhead{Spillover} The indirect effect of treatment on untreated units, typically through geographic proximity, social networks, or market competition.
+
+\section*{Notation}
+
+\runinhead{$i$} Index for units (consumers, stores, markets).
+
+\runinhead{$t$} Index for time periods.
+
+\runinhead{$N$} Number of units in the panel.
+
+\runinhead{$T$} Number of time periods.
+
+\runinhead{$Y_{it}$} Observed outcome for unit $i$ at time $t$.
+
+\runinhead{$Y_{it}(w)$} Potential outcome for unit $i$ at time $t$ under treatment $w$.
+
+\runinhead{$W_{it}$} Treatment indicator (1 if treated, 0 otherwise).
+
+\runinhead{$X_{it}$} Vector of covariates for unit $i$ at time $t$.
+
+\runinhead{$G_i$} Treatment adoption time for unit $i$ (for staggered designs).
+
+\runinhead{$\alpha_i$} Unit fixed effect.
+
+\runinhead{$\lambda_t$} Time fixed effect.
+
+\runinhead{$\tau$} Treatment effect parameter.
+
+\runinhead{$\varepsilon_{it}$} Idiosyncratic error term.

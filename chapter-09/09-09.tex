@@ -1,0 +1,128 @@
+\section{Diagnostics and Validation}
+\label{sec:adv-matrix-diagnostics}
+
+For complementary inference and design tools when using SC/SDID rather than factor-based identification, see Chapter~\ref{ch:sc} and Chapter~\ref{ch:generalized-sc}, and use the design-diagnostics protocol in Chapter~\ref{ch:design-diagnostics}.
+
+\subsection*{Rank Diagnostics: The Eigenvalue Ratio Test}
+
+Scree plots provide a useful visual heuristic, but they lack formal statistical properties. For a rigorous determination of tensor rank, we recommend the \textbf{Eigenvalue Ratio Test} described by \citet{babii202410}. This procedure formalises the search for the ``cliff'' in the scree plot by analysing the ratios of consecutive eigenvalues.
+
+Consider a tensor $\mathcal{Y}$ matricised along mode $j$ into a matrix $\mathbf{Y}_{(j)}$. Let $\hat{\sigma}^2_{r,j}$ denote the $r$-th largest eigenvalue of the covariance matrix $\mathbf{Y}_{(j)}\mathbf{Y}_{(j)}^\top$. To test the null hypothesis that the rank is at most $k$, we construct the statistic:
+\[
+    S_j = \max_{k < r \leq K} \frac{\hat{\sigma}^2_{r,j} - \hat{\sigma}^2_{r+1,j}}{\hat{\sigma}^2_{r+1,j} - \hat{\sigma}^2_{r+2,j}}.
+\]
+This ratio explodes when the denominator approaches zero, which occurs at the true rank cutoff where the eigenvalues flatten into noise.
+
+\paragraph{Testing protocol.}
+\begin{enumerate}
+    \item \textbf{Matricise} the tensor along each dimension $j=1, \dots, d$.
+    \item \textbf{Compute p-values} for each mode by comparing the observed $S_j$ against a reference distribution generated from random Gaussian matrices (simulating pure noise).
+    \item \textbf{Combine} the evidence by aggregating p-values across modes (e.g., averaging) to reach a consensus on the number of factors.
+\end{enumerate}
+
+\paragraph{Cross-validation for rank selection.} Randomly hold out cells from the untreated set. Estimate the decomposition on remaining cells and compute prediction error on held-out cells. Choose the rank that minimises prediction error. Repeat for multiple random splits to assess stability (Section~\ref{sec:factor-tuning}).
+
+\paragraph{Stability across subsamples.} Partition untreated cells into subsets (e.g., early vs late periods) and estimate the decomposition on each. If estimated factors are similar (high correlation), the decomposition is stable. If factors differ substantially, conclusions are sensitive to the sample.
+
+\subsection*{Outlier Detection}
+
+\paragraph{Residual analysis.} Plot residuals from robust matrix completion (Section~\ref{sec:robust-matrix}). Outliers are cells with large residuals ($>$3 standard deviations). Inspect the distribution across units and time—concentration in a few units or periods suggests systematic data quality issues.
+
+\paragraph{Leverage and influence diagnostics.} High-leverage cells have unusual covariate values. High-influence cells substantially change estimates when removed.
+
+\begin{definition}[Cook's Distance]
+Cook's distance for cell $(i,t)$ measures the effect of removing that cell on all fitted values:
+\[
+D_{it} = \frac{(\hat{\mathbf{L}} - \hat{\mathbf{L}}_{(-it)})^\top (\hat{\mathbf{L}} - \hat{\mathbf{L}}_{(-it)})}{R \cdot \hat{\sigma}^2},
+\]
+where $\hat{\mathbf{L}}_{(-it)}$ is the estimate excluding cell $(i,t)$. Cells with $D_{it} > 4/(NT)$ warrant investigation.
+\end{definition}
+
+\begin{definition}[DFFITS]
+DFFITS measures the change in the fitted value for cell $(i,t)$ when that cell is removed:
+\[
+\text{DFFITS}_{it} = \frac{\hat{L}_{it} - \hat{L}_{it(-it)}}{\hat{\sigma} \sqrt{h_{it}}},
+\]
+where $h_{it}$ is the leverage of cell $(i,t)$. Cells with $|\text{DFFITS}_{it}| > 2\sqrt{R/(NT)}$ are influential.
+\end{definition}
+
+\paragraph{Robust vs non-robust comparison.} Estimate treatment effects using both robust and standard matrix completion. If estimates differ substantially ($>$20\%), outliers are influential and robust methods are necessary. This threshold is a rule of thumb; sensitivity analysis across multiple thresholds is recommended.
+
+\subsection*{Covariate Relevance}
+
+\paragraph{Variable importance.} Compute the decrease in $R^2$ when each covariate is removed. Covariates with large decreases are important; those with small decreases are redundant and can be excluded.
+
+\paragraph{Partial dependence plots.} Display the relationship between a covariate and outcome, averaging over other covariates. Nonlinear or non-monotonic relationships suggest transformations (logs, polynomials) may improve fit.
+
+\paragraph{Sensitivity to covariate inclusion.} Estimate treatment effects with different covariate sets (all covariates, only time-invariant, only time-varying). Stable estimates indicate robustness; varying estimates suggest multiple specifications should be reported.
+
+\subsection*{Computational Validation}
+
+\paragraph{Convergence diagnostics.} Plot the objective function (reconstruction error) over iterations. Convergence is indicated by a flat trajectory. Check that multiple random initialisations converge to the same solution (Section~\ref{sec:computation}).
+
+\paragraph{Solution stability.} Run the algorithm with different settings (initialisation, step size, stopping criterion) and verify solutions are similar. Large differences indicate numerical instability.
+
+\paragraph{Approximation error bounds.} Quantify error from approximation methods (randomised SVD, low-rank approximations). If approximation error is small relative to estimation error, the approximation is adequate.
+
+\subsection*{Software for Diagnostics}
+
+\paragraph{R.}
+\begin{itemize}
+\item \texttt{RMTstat}: Random matrix theory tools for eigenvalue ratio tests.
+\item \texttt{influence.ME}: Influence diagnostics for mixed-effects models (adaptable to factor models).
+\item \texttt{car}: Cook's distance, leverage plots, DFFITS for regression.
+\item \texttt{ggplot2}: Scree plots, residual distributions, partial dependence plots.
+\end{itemize}
+
+\paragraph{Python.}
+\begin{itemize}
+\item \texttt{statsmodels}: Influence diagnostics (Cook's distance, leverage).
+\item \texttt{sklearn.inspection}: Partial dependence plots, permutation importance.
+\item \texttt{matplotlib}/\texttt{seaborn}: Scree plots, residual analysis.
+\end{itemize}
+
+\subsection*{Diagnostic Checklist}
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Diagnostic Checklist for Matrix Completion]
+\textbf{Before estimation:}
+\begin{itemize}
+\item[$\square$] Inspect data for obvious outliers and missing patterns.
+\item[$\square$] Compute scree plot and eigenvalue ratio test to determine rank.
+\item[$\square$] Check covariate distributions for anomalies.
+\end{itemize}
+
+\textbf{Rank selection:}
+\begin{itemize}
+\item[$\square$] Run eigenvalue ratio test (formal p-values).
+\item[$\square$] Perform cross-validation for rank selection.
+\item[$\square$] Assess stability across subsamples.
+\end{itemize}
+
+\textbf{After estimation:}
+\begin{itemize}
+\item[$\square$] Plot residual distribution; check for heavy tails.
+\item[$\square$] Compute Cook's distance and DFFITS for influential cells.
+\item[$\square$] Compare robust vs standard MC estimates.
+\end{itemize}
+
+\textbf{Covariates:}
+\begin{itemize}
+\item[$\square$] Compute variable importance (drop-one $R^2$ decrease).
+\item[$\square$] Examine partial dependence plots for nonlinearity.
+\item[$\square$] Test sensitivity to covariate specification.
+\end{itemize}
+
+\textbf{Computation:}
+\begin{itemize}
+\item[$\square$] Verify convergence (flat objective trajectory).
+\item[$\square$] Check solution stability across initialisations.
+\item[$\square$] Quantify approximation error if using randomised methods.
+\end{itemize}
+
+\textbf{Reporting:}
+\begin{itemize}
+\item[$\square$] Report chosen rank and justification.
+\item[$\square$] Report influential cells identified and how handled.
+\item[$\square$] Report sensitivity analyses for covariates and specifications.
+\end{itemize}
+\end{tcolorbox}

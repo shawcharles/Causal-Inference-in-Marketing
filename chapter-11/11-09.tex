@@ -1,0 +1,67 @@
+\section{Conclusion}
+\label{sec:spillovers-conclusion}
+
+Interference is pervasive in marketing. Geographic spillovers arise from customer mobility and overlapping media markets. Network spillovers propagate through social connections and word-of-mouth. Competitive spillovers emerge from strategic interactions between firms. Ignoring these spillovers leads to biased treatment effect estimates and incorrect inferences about market dynamics.
+
+\subsection*{Chapter Roadmap}
+
+Table~\ref{tab:chapter-roadmap} summarises the chapter sections for easy reference.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Chapter 11 Roadmap}
+\label{tab:chapter-roadmap}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Topic} & \textbf{Section} & \textbf{Key Content} \\
+\midrule
+SUTVA and violations & Section~\ref{sec:sutva-interference} & Why SUTVA fails; interference types \\
+\addlinespace
+Spillover taxonomy & Section~\ref{sec:spillover-types} & Geographic, network, competitive \\
+\addlinespace
+Exposure mappings & Section~\ref{sec:exposure-mappings} & Formalising spillover mechanisms \\
+\addlinespace
+Partial interference & Section~\ref{sec:partial-interference} & Cluster designs; estimands \\
+\addlinespace
+Estimation & Section~\ref{sec:estimating-spillovers} & Five estimation approaches \\
+\addlinespace
+Competition \& saturation & Section~\ref{sec:competition-saturation} & Dynamic and market-level effects \\
+\addlinespace
+Diagnostics & Section~\ref{sec:spillovers-diagnostics} & Balance, placebo, sensitivity \\
+\addlinespace
+Applications & Section~\ref{sec:spillovers-applications} & Retail, social media, advertising \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+This chapter has developed a framework for causal inference under interference. Exposure mappings, as discussed in works by \citet{aronow2017estimating} and \citet{savje2021causal}, formalise how treatment of one unit affects outcomes of others. Partial interference provides a tractable structure by partitioning units into clusters. Estimation strategies exploit variation in own treatment and exposure to identify direct and spillover effects. Diagnostics detect interference and assess sensitivity to modelling choices.
+
+\begin{tcolorbox}[title=Box 11.2: Interference and Spillovers Workflow]
+\small
+\begin{quote}
+\textbf{1. Define exposure mapping} (Section~\ref{sec:exposure-mappings}): Specify the spillover mechanism (geographic, network, competitive) and formalise it with an exposure mapping (e.g., inverse distance, number of treated neighbours).
+
+\textbf{2. Choose design} (Section~\ref{sec:partial-interference}): Use a cluster-randomised trial, a two-stage design, or an observational design with exogenous variation in exposure. Justify the partial interference assumption if used.
+
+\textbf{3. Estimate direct and spillover effects} (Section~\ref{sec:estimating-spillovers}): Use regression with exposure controls, DiD with spillover groups, or a two-stage estimation approach. Report both direct and spillover effects.
+
+\textbf{4. Conduct diagnostics} (Section~\ref{sec:spillovers-diagnostics}): Run balance tests on pre-treatment exposure, placebo tests on untreated units across exposure levels, and sensitivity analyses varying the exposure mapping.
+
+\textbf{5. Assess competition and saturation} (Section~\ref{sec:competition-saturation}): If relevant, test for competitive reactions by examining competitor behaviour post-treatment. Check for saturation by testing if treatment effects decline as the proportion of treated units grows.
+
+\textbf{6. Inference and reporting} (Chapter~\ref{ch:inference}): Use cluster-robust inference at the level of randomisation. Report total effects alongside direct and spillover components. Follow the full diagnostic protocol in Chapter~\ref{ch:design-diagnostics}.
+\end{quote}
+\end{tcolorbox}
+
+Three lessons emerge for practitioners. First, always question the SUTVA assumption. Consider whether spillovers are plausible given the market structure, the treatment, and the outcome. If spillovers are likely, model them explicitly using exposure mappings.
+
+Second, design studies to generate variation in exposure. Cluster randomisation, two-stage designs, and observational designs with exogenous exposure variation enable identification of spillover effects.
+
+Third, report both direct and spillover effects. The total effect (combining direct and spillover components) is the policy-relevant estimand for evaluating market-level interventions.
+
+Future research should address several open questions. How can we estimate spillover effects when the network or geographic structure is unknown or measured with error? How can we distinguish spillovers from correlated shocks (for example, common demand shocks that affect connected units)?
+
+How can we scale spillover estimation to very large networks (millions of users) where computing exposure for all units is computationally infeasible? How can we incorporate spillovers into machine learning methods for heterogeneous treatment effects (Chapter~\ref{ch:ml-nuisance})? These questions are central to advancing causal inference in interconnected markets.
+\index{spillovers|)}

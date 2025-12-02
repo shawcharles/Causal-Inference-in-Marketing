@@ -1,0 +1,37 @@
+\section{Weak Instrument Diagnostics}
+\label{sec:weak-iv}
+\index{weak instruments|(}
+When using instrumental variables (Section~\ref{sec:iv-marketing}), weak identification occurs when the instrument is only weakly correlated with the treatment, rendering standard inference unreliable. This section provides diagnostic tools for detecting weak instruments and robust inference methods when weakness is suspected.
+
+\begin{definition}[Kleibergen-Paap rk Statistic]\label{def:kp-statistic}
+\index{Kleibergen-Paap statistic}
+For IV regression with multiple endogenous variables and clustering, the Kleibergen-Paap rk statistic tests the rank of the first-stage coefficient matrix. For a single endogenous variable with cluster-robust standard errors, the effective F-statistic is:
+\[
+F_{\text{eff}} = \frac{\hat{\pi}'\hat{V}_\pi^{-1}\hat{\pi}}{k_z},
+\]
+where $\hat{\pi}$ is the first-stage coefficient vector, $\hat{V}_\pi$ is its cluster-robust covariance, and $k_z$ is the number of instruments. Critical values from Stock-Yogo or Montiel Olea-Pflueger determine weak identification thresholds.
+\end{definition}
+
+When instruments are weak, we invert tests that are robust to weakness.
+
+\begin{definition}[Anderson-Rubin Test]\label{def:ar-test}
+\index{Anderson-Rubin test}
+The Anderson-Rubin test for $H_0: \beta = \beta_0$ in IV regression is based on the reduced-form statistic:
+\[
+\text{AR}(\beta_0) = \frac{(Y - X\beta_0)'P_Z(Y - X\beta_0) / k_z}{(Y - X\beta_0)'M_Z(Y - X\beta_0) / (n - k_z - k_x)},
+\]
+where $P_Z = Z(Z'Z)^{-1}Z'$ is the projection onto instruments and $M_Z = I - P_Z$. Under weak instruments and the null, $\text{AR}(\beta_0) \sim F(k_z, n - k_z - k_x)$. The AR test has correct size regardless of instrument strength.
+\end{definition}
+
+\paragraph{Implementation Note.} Critical values for weak instrument tests are available from several standard sources. The \textbf{Kleibergen-Paap rk statistic} (implemented in Stata's `ivreg2`) reports the rk statistic with robust errors, typically compared against Stock-Yogo (2005) critical values for homoskedastic designs. For robust effective F-statistics with size-corrected thresholds, practitioners should consult the \textbf{Montiel Olea-Pflueger (OP)} effective F, available via the `weakiv` package. The Stock-Yogo tables remain the standard reference for maximal size distortion and relative bias under homoskedasticity.
+
+\begin{remark}[Weak Instruments and Marketing Applications]\label{rem:weak-iv-marketing}
+Many marketing instruments are weak in practice. Cost shifters may explain only a small fraction of price variation; ad pre-emptions are infrequent. When the effective F-statistic falls below 10, do not rely on 2SLS point estimates. Options include:
+\begin{enumerate}
+\item \textbf{Report reduced-form effects only.} The effect of $Z$ on $Y$ is identified even when instruments are weak.
+\item \textbf{Use Anderson-Rubin confidence intervals.} These have correct coverage regardless of instrument strength.
+\item \textbf{Reconsider the identification strategy.} Often, a well-designed quasi-experiment (DiD, synthetic control) provides more credible identification than IV with weak or dubious instruments.
+\end{enumerate}
+For the applications in Chapter~\ref{ch:applications}, Tables~\ref{tab:transport-instruments}, \ref{tab:price-instruments}, and \ref{tab:position-instruments} note exclusion concerns alongside each proposed instrument. These concerns compound when instruments are also weak.
+\end{remark}
+\index{weak instruments|)}

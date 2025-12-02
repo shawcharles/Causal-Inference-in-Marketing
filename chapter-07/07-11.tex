@@ -1,0 +1,54 @@
+\section{Marketing Applications}
+\label{sec:hybrid-marketing}
+
+Hybrid methods are particularly well-suited to marketing applications where treated units are few, pre-treatment periods are short, treatment adoption is staggered, and transparency and robustness are priorities. This section illustrates hybrid method designs in four common marketing settings, chosen to demonstrate the range of contexts where hybrids add value. Each example includes quantitative results that illustrate what credible findings look like in practice.
+
+\subsection*{Application 1: Multiple-Market Loyalty Programme Rollout}
+
+A retailer launches a loyalty programme in ten flagship stores, selected for their size and demographics, with 40 untreated comparison stores and twelve quarters of pre-treatment data. The goal is to estimate the average effect on quarterly revenue.
+
+Following the decision framework in Section~\ref{sec:hybrid-when}, ASCM is the appropriate method because the treated stores differ systematically from the donor pool (larger, more urban), requiring augmentation to correct imbalances. For each treated store, construct a synthetic control using pre-treatment revenue and covariates (store size, income demographics, urbanisation). Augment with ridge-regularised regression (Section~\ref{sec:hybrid-tuning}, $\eta = 0.1$ selected by cross-validation).
+
+Diagnostics reveal that ASCM achieves pre-treatment RMSPE of 1.8 per cent of revenue SD, compared to 3.1 per cent for standard SC—a 42 per cent improvement justifying the augmentation. Covariate balance improves substantially: SMD for store size falls from 0.35 (SC) to 0.08 (ASCM). The effective number of donors is $N_{\text{eff}} = 9$, indicating moderate weight concentration. Leave-one-out sensitivity yields estimates from 3.8 to 5.2 per cent revenue lift.
+
+In-space placebos show the treated stores' aggregate RMSPE ratio ranks first among 51 units (10 treated plus 40 donors plus 1 aggregate), yielding $p = 1/51 \approx 0.02$. The aggregate treatment effect is a 4.6 per cent revenue lift (95\% CI: 2.1 to 7.1 per cent) over eight post-treatment quarters. The effect ramps up over quarters one through four as customers enrol and develop habits, then stabilises—consistent with loyalty programme dynamics. The retailer uses these estimates to project ROI for national rollout.
+
+\subsection*{Application 2: Staggered Advertising Campaign Launch}
+
+A brand launches advertising campaigns in 30 markets over six quarters: ten markets in Q1 (cohort 1), ten in Q3 (cohort 2), and ten in Q5 (cohort 3). Twenty never-treated markets serve as donors. The goal is to estimate event-time effects and assess cohort heterogeneity.
+
+SDID is chosen because the staggered structure requires time weights that accommodate different pre-treatment dynamics across cohorts (Section~\ref{sec:hybrid-sdid}). For each cohort, estimate SDID using not-yet-treated donors, following the cohort-time estimation framework in Section~\ref{sec:hybrid-multiple}. Aggregate into event-time effects using cohort weights proportional to sample size.
+
+The donor pool shrinks across cohorts: cohort 1 uses 30 donors (20 never-treated plus 10 cohort-2 plus 10 cohort-3), cohort 2 uses 30 donors (20 never-treated plus 10 cohort-3), and cohort 3 uses only 20 never-treated donors. Despite this shrinkage, pre-treatment fit remains acceptable: RMSPE is 6, 5, and 7 per cent of outcome SD for cohorts 1, 2, and 3 respectively. Time weights concentrate on the final three pre-treatment quarters ($T_{\text{eff}} = 4$), indicating that recent dynamics are most predictive.
+
+Event-time estimates show positive effects that ramp up from $\hat{\tau}_0 = 2.1$ (SE 1.4) to $\hat{\tau}_3 = 5.8$ (SE 1.9) and stabilise at approximately 5.5 per cent sales lift through $k = 8$. Pre-treatment leads ($k = -3, -2, -1$) are 0.4, -0.2, and 0.3, all statistically insignificant, supporting parallel trends after weighting. Cohort-specific effects are similar ($p = 0.42$ for test of cohort heterogeneity), suggesting advertising effects do not depend on adoption timing. The brand uses the event-time profile to plan campaign duration and budget allocation.
+
+\subsection*{Application 3: Overlapping Loyalty and Promotional Programmes}
+
+A retailer implements two programmes: a loyalty programme launching in Q1 and a promotional strategy launching in Q4. Ten markets receive both, ten receive only loyalty, ten receive only promotions, and 20 receive neither. The goal is to estimate separate effects and their interaction.
+
+The overlapping treatment structure requires careful counterfactual construction. For markets receiving both programmes, the relevant comparison is markets receiving neither—not markets receiving one programme, which would confound the effects. Construct ASCM for each treatment-sequence group using never-treated markets as donors (Section~\ref{sec:hybrid-ascm}). The augmentation model includes time-varying indicators for each programme, with coefficients identified from pre-treatment covariate relationships.
+
+Pre-treatment RMSPE is 4.2 per cent of outcome SD for the both-programmes group, 3.8 per cent for loyalty-only, and 5.1 per cent for promotions-only. Balance on market size and demographics is achieved (all SMDs below 0.15 after augmentation).
+
+Results reveal heterogeneous dynamics. The loyalty programme produces a persistent effect of 4.2 per cent sales lift (95\% CI: 1.8 to 6.6) that accumulates over quarters one through four and stabilises. The promotional strategy produces a transient effect: 3.5 per cent lift in quarters four and five (95\% CI: 0.9 to 6.1), decaying to 1.2 per cent by quarter six and becoming statistically insignificant by quarter seven. The interaction is negative: markets receiving both programmes show a combined effect of 5.8 per cent, less than the sum of individual effects (7.7 per cent). This suggests substitution or customer fatigue when programmes overlap.
+
+The retailer concludes that loyalty programmes provide sustained value while promotions provide temporary boosts. The negative interaction suggests staggering the programmes rather than launching simultaneously. ASCM enables separate identification of each programme's contribution, which would be confounded in a simple DID framework.
+
+\subsection*{Application 4: Flagship City Launch with Spillovers}
+
+A platform launches a service in a flagship city, with potential spillovers to five neighbouring cities. Thirty distant cities serve as donors. The goal is to estimate both the direct effect on the flagship city and the spillover effect on neighbours.
+
+This setting requires excluding potentially contaminated units from the donor pool (Section~\ref{sec:hybrid-tuning}). Construct ASCM for the flagship city using only the 30 distant donors, not the five neighbours. The identifying assumption for the direct effect is that distant donors are unaffected by the launch—plausible if spillovers decay with distance.
+
+Estimating spillover effects requires additional structure. Following the exposure mapping framework in Chapter~\ref{ch:spillovers}, define each neighbour's exposure as an indicator for adjacency to the flagship city, activated after Q1. Estimate the spillover effect by comparing each neighbour to a synthetic control constructed from distant cities, with augmentation that accounts for the neighbour's baseline similarity to the flagship city.
+
+For the flagship city, ASCM achieves pre-treatment RMSPE of 3.5 per cent of outcome SD using distant donors. The direct effect estimate is an 18.2 per cent increase in platform adoption (95\% CI: 12.4 to 24.0), ramping up from 8 per cent in Q1 to 18 per cent by Q4 and stabilising thereafter.
+
+For neighbouring cities, spillover effects emerge with a lag. Average spillover across the five neighbours is 5.4 per cent (95\% CI: 1.2 to 9.6), beginning in Q2—consistent with spillovers propagating through word-of-mouth or competitive response. Spillovers are larger for neighbours that are closer (8.1 per cent for the two adjacent neighbours vs 3.6 per cent for the three more distant neighbours), supporting a distance-decay model.
+
+The platform estimates the total regional impact as the direct effect (flagship city) plus spillover effects (neighbours), accounting for population weights. This informs geographic expansion strategy: launch in cities with large, proximate neighbours to maximise total impact through spillovers.
+
+\subsection*{Summary}
+
+These applications illustrate hybrid methods across common marketing settings. The key lessons are methodological: match the hybrid method to the data structure (ASCM for systematic covariate imbalance, SDID for staggered adoption), curate donor pools carefully (exclude contaminated units), and report diagnostics transparently (RMSPE, balance, weight dispersion). The quantitative results illustrate what credible findings look like: moderate effect sizes (3 to 18 per cent), uncertainty reflected in confidence intervals, and sensitivity analyses that confirm robustness. Readers can adapt these templates to their own marketing contexts by following the decision framework in Section~\ref{sec:hybrid-when} and the diagnostic workflow in Section~\ref{sec:hybrid-diagnostics}.

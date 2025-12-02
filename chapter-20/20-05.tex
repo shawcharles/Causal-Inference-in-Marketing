@@ -1,0 +1,52 @@
+\section{Method Selection and Design Guidance}
+\label{sec:method-selection-outlook}
+
+Practitioners now face a dizzying menu of methods: difference-in-differences, synthetic control, SDID, factor models, matrix completion, double machine learning, and their many variants. How should one choose? The method selection guidance in Chapter~\ref{ch:applications} (Section~\ref{sec:method-selection}) provides practical heuristics, but a formal decision framework remains elusive. This section articulates the open problems in method selection and proposes directions for progress.
+
+\subsection*{Current Heuristics}
+
+Current practice relies on informal rules summarised in Chapter~\ref{ch:applications}. Data features provide initial guidance: many treated units suggest DiD or staggered DiD, while few treated units suggest synthetic control. Long pre-treatment periods favour SC and factor models, while short pre-periods favour DiD. High-dimensional covariates suggest augmented methods or DML.
+
+Assumption plausibility matters as much as data features. If parallel trends are credible, DiD is natural. If pre-treatment fit is good, SC is attractive. If neither assumption is credible, factor models or bounds may be the only honest option. These assessments are subjective and rarely formalised.
+
+Diagnostic performance provides another signal. Running multiple methods and comparing diagnostics can reveal which assumptions are more plausible in a given setting. If DiD passes pre-trend tests and SC achieves good fit, both are candidates. If diagnostics fail, the analyst should reconsider the design or report bounds. Triangulation—applying multiple methods and comparing estimates—increases confidence when results agree and signals sensitivity to assumptions when they diverge. What remains unclear is how to weight or reconcile divergent estimates.
+
+\subsection*{Triangulating Panel Methods with MMM}
+
+A key open problem is reconciling panel causal methods with media mix modelling. The two approaches estimate different estimands: panel methods estimate ATT or ATE for specific interventions, while MMM estimates marginal effects of continuous spend variables. Reconciliation requires careful translation between these quantities.
+
+The identification strategies also differ. Panel methods rely on parallel trends, pre-treatment fit, or unconfoundedness. MMM relies on time-series variation and functional form assumptions such as adstock and saturation curves. Neither set of assumptions implies the other, and both may fail simultaneously.
+
+MMM estimates can be calibrated using experimental lift from geo-experiments or holdout tests, as discussed in Section~\ref{sec:mmm}. This bridges the two approaches but requires that experimental effects generalise to the MMM's continuous-dose framework—an assumption that is rarely tested. Emerging work attempts to unify panel causal inference with MMM by embedding both in a common structural model. This is promising but requires strong assumptions about functional forms and dynamics.
+
+When should each approach be used? MMM is appropriate for budget allocation across channels when experimental variation is unavailable. Panel methods are appropriate for evaluating specific interventions with credible counterfactuals. Triangulation uses both and investigates discrepancies, yet no formal framework exists for reconciling disagreement.
+
+\subsection*{Toward Formal Decision Frameworks}
+
+A formal method selection framework would map problem characteristics to recommended methods. The inputs would include the number of treated and control units, the length of pre-treatment and post-treatment periods, treatment timing (simultaneous, staggered, or continuous), outcome characteristics (continuous, count, binary, zero-inflated), covariate availability and dimensionality, and suspected threats such as parallel trends violations, interference, and nonstationarity.
+
+The output would be a decision rule that maps these inputs to a ranked list of methods, with diagnostics to run and sensitivity analyses to report. Such a framework requires understanding the relative performance of methods across the input space. This is difficult because performance depends on unknown features of the data-generating process, diagnostics are imperfect signals of assumption validity, and the preferred method depends on the loss function—how we trade off bias against variance or coverage against width.
+
+\subsection*{Benchmarking and Simulation Studies}
+
+Progress requires systematic benchmarking. Realistic simulations would generate panels with known treatment effects under realistic violations—parallel trends deviations, factor structure, interference, measurement error—and compare methods on bias, RMSE, and coverage. Semi-synthetic benchmarks would use real marketing data with synthetic treatment effects injected, preserving realistic covariate structure while providing ground truth.
+
+Held-out experiments provide the most direct benchmark. When experiments are available, they can serve as ground truth to evaluate observational methods applied to the same data. This is rare because it requires experimental access and willingness to share results. Community benchmarks—shared benchmark suites that allow method developers to compare performance on common tasks—would accelerate progress but require coordination and governance to prevent overfitting to specific benchmarks.
+
+\subsection*{When to Combine Methods}
+
+Rather than selecting a single method, practitioners may combine methods. Model averaging weights estimates from multiple methods based on diagnostic performance or prior beliefs. Bayesian model averaging provides a formal framework but requires specifying priors over methods, which is rarely straightforward.
+
+Ensemble estimation uses multiple methods as inputs to a meta-estimator. This can reduce variance but may not reduce bias if all methods are biased in the same direction. Specification curves report estimates across a range of reasonable specifications, as discussed in Section~\ref{sec:synthesis-reporting}. This reveals sensitivity but does not provide a single point estimate. If methods disagree, reporting the range of estimates as a bound on the true effect is conservative but honest.
+
+\subsection*{Open Problems}
+
+Given problem characteristics, what is the optimal method? Answering this requires a formal loss function and knowledge of method performance across the design space—knowledge we do not yet have. Can we use diagnostic performance to select methods adaptively? This risks overfitting to diagnostics that are themselves noisy.
+
+How should we reconcile estimates from panel methods and MMM when they disagree? What assumptions justify averaging or preferring one over the other? Should method choice be pre-registered? Pre-registration prevents specification searching but may lock in suboptimal choices before seeing the data.
+
+\subsection*{Research Directions}
+
+Progress will require benchmark suites with realistic simulations and semi-synthetic data that allow systematic method comparison. We need formal decision rules that map problem characteristics to method recommendations, with uncertainty quantification. Unified frameworks that nest panel methods and MMM as special cases would clarify when each is appropriate. Adaptive selection methods that use diagnostics to choose among methods while controlling for selection bias would help practitioners navigate the menu. Reporting standards that require triangulation and sensitivity analysis rather than single-method estimates would improve transparency.
+
+Until formal frameworks are available, practitioners should apply multiple methods, report diagnostics for each, investigate discrepancies, and acknowledge that method choice affects conclusions.

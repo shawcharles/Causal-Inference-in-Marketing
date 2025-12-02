@@ -1,0 +1,63 @@
+
+\section{Diagnostics and Robustness}
+\label{sec:dml-diagnostics}
+
+Credible DML analysis requires rigorous diagnostics. This section outlines the core diagnostic workflow, integrating with Chapter~\ref{ch:design-diagnostics} and comparing DML estimates to simpler design-based benchmarks. Section~\ref{sec:dml-tuning} covered overlap diagnostics and learner sensitivity in the context of implementation; here we focus on diagnostics for assessing the credibility of causal conclusions.
+
+\subsection*{Nuisance Fit}
+
+The first check assesses whether ML-estimated nuisance functions predict outcomes and treatment assignment well. For outcome regressions, compute out-of-sample $R^2$ (the fraction of variance explained in held-out data) and plot predicted versus observed outcomes. For propensity scores, compute the area under the ROC curve (AUC) and plot predicted propensities versus observed treatment indicators.
+
+High $R^2$ or AUC indicates good fit, but perfect fit may indicate overfitting or leakage. Moderate fit (e.g., $R^2$ between 0.3 and 0.7) is often ideal: the nuisance model captures systematic variation without memorising idiosyncratic noise.
+
+\subsection*{Balance Improvement}
+
+Balance improvement assesses whether propensity score weighting or regression adjustment reduces covariate imbalance between treated and control groups. Compute standardised mean differences (SMDs) for covariates before and after adjustment:
+\[
+\text{SMD} = \frac{\bar{X}_{\text{treat}} - \bar{X}_{\text{control}}}{\sqrt{(s^2_{\text{treat}} + s^2_{\text{control}}) / 2}},
+\]
+where $\bar{X}$ and $s^2$ are the mean and variance of covariate $X$. Compute SMDs both before adjustment (raw comparison) and after adjustment (weighted by inverse propensity scores or residualised).
+
+Balance is improved if $|\text{SMD}_{\text{after}}| < |\text{SMD}_{\text{before}}|$ for most covariates. Common thresholds are $|\text{SMD}| < 0.1$ (good balance) or $|\text{SMD}| < 0.25$ (acceptable balance). If balance remains poor after adjustment, this suggests that the nuisance models are misspecified or that overlap is weak.
+
+\subsection*{Overlap}
+
+Overlap checks assess common support between treated and control units. Section~\ref{sec:dml-tuning} discussed overlap diagnostics and trimming in detail. The key outputs are propensity score distribution plots (overlaid histograms for treated and control), the overlap statistic, and effective sample sizes after trimming.
+
+Flag regions where one group dominates—treated units concentrated at high propensities, controls at low propensities—and consider trimming extreme observations. Assess whether the trimmed sample remains representative of the population of interest.
+
+\subsection*{CATE Stability}
+
+Stability checks assess whether heterogeneous treatment effect estimates are robust across folds and tuning configurations. For each fold $k$, estimate CATEs $\hat{\tau}_k(x)$ using fold-specific nuisance estimates. Compute the correlation between CATE estimates across folds, for example $\text{Cor}(\hat{\tau}_1(x), \hat{\tau}_2(x))$.
+
+High correlation (above 0.7) indicates stability. Low correlation (below 0.5) suggests that learners are sensitive to sample composition or that the signal for heterogeneity is weak. Report the range of CATE estimates across folds for key subgroups and assess whether substantive conclusions—which subgroups have larger or smaller effects—are robust.
+
+\subsection*{Placebo Tests}
+
+Placebo tests in pre-periods check whether the DML estimator produces effects before treatment, where no effect should be present. Apply the DML procedure to pre-treatment periods, treating a pseudo-intervention date as the actual treatment date, and estimate pseudo effects.
+
+If parallel trends holds and nuisance models are well-specified, pseudo effects should be near zero. Large pseudo effects suggest that nuisance models capture spurious predictive signal (trends that differ between treated and control) or that pre-trends are present. Plot pseudo effects over multiple pre-treatment periods. If the distribution of pseudo effects overlaps with post-treatment effects, the design is not credible.
+
+\subsection*{Learner Sensitivity}
+
+Sensitivity to learner class assesses whether conclusions depend on the choice of ML algorithm. Section~\ref{sec:dml-tuning} discussed stability checks for hyperparameters; here we focus on comparing across learner classes.
+
+Estimate treatment effects using multiple learners (lasso, random forests, boosting), each with its own cross-validated tuning, and tabulate estimates alongside standard errors. If estimates are similar across learners (all within one standard error), conclusions are robust. If estimates vary widely, report results for multiple learners and interpret the range as reflecting model uncertainty.
+
+An ensemble estimate—the average across learners, weighted by inverse variance—provides a summary while acknowledging model uncertainty.
+
+\subsection*{Integration with Design-Based Diagnostics}
+
+DML analyses should be held to the same standards as design-based methods. Chapter~\ref{ch:design-diagnostics} develops the full diagnostic toolkit; here we highlight the key integration points.
+
+Run pre-trend tests on leads (periods before treatment) to assess parallel trends. Plot event-time effects with confidence intervals and check that pre-treatment effects are near zero. Conduct placebo tests on never-treated units or periods.
+
+Compare DML estimates to estimates from simpler methods (two-way fixed effects DiD, event studies, synthetic control). If DML estimates are similar to simpler estimates, flexible functional forms are not needed and the design is robust. If DML estimates differ substantially, investigate whether the difference reflects improved covariate adjustment (positive) or overfitting (negative).
+
+\subsection*{Triangulation}
+
+Comparing against simpler estimators clarifies the value added by DML. Estimate the ATT using three approaches: two-way fixed effects DiD, synthetic control, and DML with high-dimensional covariates.
+
+If all three estimates are similar, conclusions are robust to method choice. If DML differs from the others, assess whether the difference is due to improved control for confounders (DML adjusts for covariates that DiD and SC do not) or to model dependence (DML is sensitive to learner choice).
+
+Transparent reporting of multiple estimates builds confidence that conclusions are not driven by method artefacts. When estimates diverge, discuss the sources of divergence and which estimate is most credible given the design and domain knowledge.

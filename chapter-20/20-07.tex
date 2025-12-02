@@ -1,0 +1,44 @@
+\section{Continuous Treatments and Structural Response}
+\label{sec:continuous-outlook}
+
+Marketing treatments are often continuous: ad spend, price discounts, promotion intensity, and content frequency all vary in degree rather than presence or absence. Chapter~\ref{ch:continuous} developed dose–response methods for these settings, integrating with double machine learning (Chapter~\ref{ch:ml-nuisance}) and regularisation (Chapter~\ref{ch:high-dim}). Yet significant challenges remain, particularly when doses evolve dynamically, are set endogenously, or induce equilibrium responses.
+
+\subsection*{Dynamic Dosing and Anticipation}
+
+In practice, treatment intensity varies over time within units. Ad spend fluctuates weekly. Prices change daily. Promotion intensity varies by season. The dose at time $t$ may affect outcomes at $t+1, t+2, \ldots$, creating distributed lag structures that complicate identification.
+
+When future doses are predictable, units may respond in advance. Consumers stockpile before announced price increases. Advertisers front-load spend before budget exhaustion. Such anticipation violates the no-anticipation assumptions used in event studies from Chapter~\ref{ch:event} and complicates dose–response interpretation. Past doses affect current outcomes through adstock and habit formation. The Average Causal Response framework from Chapter~\ref{ch:continuous} addresses this by defining dynamic sensitivity over lags, but estimation requires assumptions about the decay structure.
+
+Identification under dynamic dosing typically relies on sequential ignorability: the dose at each time is independent of future potential outcomes, conditional on observed history. When doses respond to outcomes and forecasts, this assumption is strong and often implausible.
+
+\subsection*{Endogenous Dosing Rules}
+
+Platforms and firms set doses based on predicted responses, creating endogeneity. Bid optimisers, pacing algorithms, and dynamic pricing systems adjust dose based on predicted outcomes. Units with high predicted response receive higher doses, confounding the dose–response relationship. Spend is allocated to maximise value subject to budget constraints. High-performing units receive more spend, but this reflects selection rather than causation.
+
+Firms also adjust doses in response to competitor actions. Price changes trigger competitive responses. Ad spend responds to share-of-voice. The observed dose reflects equilibrium behaviour, not an exogenous intervention. Instrumental variables that shift dose without affecting outcomes directly can restore identification. Algorithmic discontinuities such as bid thresholds and budget exhaustion provide quasi-experimental variation. Valid instruments are rare, however, and local to specific mechanisms, so discontinuities may not generalise beyond their immediate context.
+
+\subsection*{Equilibrium and Structural Response}
+
+Dose–response estimates are partial equilibrium: they hold dose fixed for one unit while others remain unchanged. Policy interventions change doses for many units simultaneously, inducing equilibrium adjustments. When buyer treatment affects demand, sellers adjust prices, inventory, and quality. The full effect includes both the direct effect on buyers and the indirect effect through seller response.
+
+When all firms increase ad spend, the marginal effect of spend may decline as competition intensifies. Partial-equilibrium estimates can then overstate the effect of industry-wide changes. Large interventions such as platform-wide policy changes may alter wages, prices, and market structure. These equilibrium shifts lie beyond the scope of reduced-form dose–response estimation.
+
+Bridging partial-equilibrium estimates to policy-relevant equilibrium effects requires structural models that specify how agents respond to changes. This is often infeasible in marketing settings where agent behaviour is complex and heterogeneous.
+
+\subsection*{Overlap and Support Diagnostics}
+
+Continuous treatments require overlap: for each covariate value, a range of doses must have positive probability. In practice, this often fails. Some units always receive high doses because they are valuable customers. Others always receive low doses because they are unprofitable segments. Extreme regions of the dose distribution may be essentially unobserved for large parts of the population.
+
+When dose responds to outcomes, the observed dose distribution is selected. Units that would have poor outcomes under high dose are never observed at high dose. Trimming observations with extreme propensity scores improves effective support but changes the estimand. Extrapolation to unsupported regions depends on functional form assumptions that are difficult to verify.
+
+Overlap diagnostics for continuous treatments are less developed than for binary treatments. Generalised propensity score diagnostics can assess balance, but there is no consensus on acceptable thresholds or remediation strategies.
+
+\subsection*{Open Problems}
+
+Key questions remain. How can we estimate the full impulse response function when doses evolve endogenously and anticipation is present? What instruments are valid for continuous doses in marketing, and how should instrument strength and validity be assessed? How can we translate partial-equilibrium dose–response estimates to equilibrium policy effects without fully specified structural models? What diagnostics and procedures should we use when support is limited and dose assignment is endogenous? Dose–response curves require functional form choices—linear, polynomial, spline—and the sensitivity of conclusions to these choices remains poorly understood.
+
+\subsection*{Research Directions}
+
+Progress will require dynamic causal models that integrate dose–response estimation with distributed lag and state-space structures, building on the ACR framework. We need instrument-discovery methods that identify valid instruments for continuous treatments from algorithmic discontinuities and natural experiments. Bounds under endogeneity would provide informative partial identification when instruments are unavailable or weak. Structural–reduced-form bridges that link dose–response estimates to equilibrium effects under minimal structural assumptions would help translate estimates to policy. Overlap diagnostics tailored to continuous treatments, with clear thresholds and remediation strategies, would improve practice.
+
+Until these advances materialise, practitioners should document the dose assignment mechanism, assess overlap using generalised propensity score diagnostics, report sensitivity to functional form, and acknowledge that partial-equilibrium estimates may not generalise to policy interventions.

@@ -1,0 +1,29 @@
+\section{Assumptions and Stability}
+\label{sec:diagnostics-assumptions}
+
+We state core assumptions across the diagnostic workflow.
+
+\begin{assumption}[Stability across pre and post windows]
+\label{assump:diag-stability}
+Parameters, measurement definitions, and data-generating processes are stable across the pre-period and post-period windows used for diagnostics. Platform policy changes and structural breaks are documented and either excluded or modelled explicitly.
+\end{assumption}
+
+\begin{assumption}[Measurement invariance]
+\label{assump:diag-measurement}
+Outcome and exposure definitions remain stable over time and across treated and control states. Changes in attribution rules, viewability standards, or data coverage are reconciled or subjected to sensitivity analysis (Chapter~\ref{ch:threats}).
+\end{assumption}
+
+\begin{assumption}[Limited interference or explicit exposure mapping]
+\label{assump:diag-interference}
+Treatment effects are confined to own unit (SUTVA, Chapter~\ref{ch:frameworks}) or spillovers are explicitly modelled via exposure mappings (Definition~\ref{def:exposure-mapping}). Buffers and exclusion zones mitigate contamination when interference is plausible (Chapter~\ref{ch:spillovers}).
+\end{assumption}
+
+\begin{assumption}[Parallel trends as baseline reference]
+\label{assump:diag-parallel-trends}
+The baseline identification assumption is parallel trends or no anticipation, tested via leads and placebos. Departures are quantified via bounded-deviation sensitivity or flexible-trend specifications (Chapter~\ref{ch:did}).
+\end{assumption}
+
+\begin{assumption}[Adequate overlap and common support]
+\label{assump:diag-overlap}
+Treated and control units share common support on covariates, propensity scores, or dose. Trimming and reweighting are applied when overlap is weak, and sensitivity to trimming thresholds is reported.
+\end{assumption}

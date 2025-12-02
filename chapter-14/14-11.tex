@@ -1,0 +1,12 @@
+\section{Inference}
+\label{sec:continuous-inference}
+
+Inference for continuous treatment models follows the principles laid out in Chapter~\ref{ch:inference}, with adaptations for the dose-response setting.
+
+\subsection*{Standard Errors and Clustering}
+
+Build standard errors from influence functions and cluster to account for within-unit dependence. When the number of clusters is small (fewer than 30), use the wild cluster bootstrap to construct confidence intervals.
+
+\subsection*{Confidence Bands for Dose-Response Curves}
+
+For dose-response curves, report confidence bands that account for the multiple comparisons across the dose grid. Uniform bands (using multiplier bootstrap or Bonferroni corrections) ensure that the entire curve is covered with the stated probability, rather than just pointwise coverage at each dose level.

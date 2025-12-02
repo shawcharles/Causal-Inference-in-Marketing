@@ -1,0 +1,48 @@
+
+\section{Cross-Fitting under Panel Dependence}
+\label{sec:dml-crossfit}
+
+Cross-fitting (sample splitting) prevents overfitting by training nuisance models on one subset of the data and evaluating them on a disjoint subset.
+
+The key insight is that nuisance estimates used to construct scores for observation $Z_{it}$ must be trained on data that excludes $Z_{it}$, ensuring that estimation error in the nuisance functions does not correlate with the score's sampling error. In cross-sectional settings, random partitioning of observations into folds suffices.
+
+Panel data introduce two complications: observations within a unit are dependent across time, and observations across units may be dependent within a period due to common shocks. Cross-fitting must respect this dependence structure.
+
+\begin{definition}[K-Fold Cross-Fitting for Panels]\label{def:cross-fitting}
+A $K$-fold cross-fitting structure partitions the unit index set $\mathcal{I} = \{1, \ldots, N\}$ into $K$ disjoint folds $\mathcal{I}_1, \ldots, \mathcal{I}_K$ with $\bigcup_{k=1}^K \mathcal{I}_k = \mathcal{I}$. For each fold $k$:
+\begin{enumerate}[(i)]
+    \item \textbf{Training set:} $\mathcal{I}_{-k} = \mathcal{I} \setminus \mathcal{I}_k$ contains all units not in fold $k$;
+    \item \textbf{Nuisance estimation:} $\hat{\eta}^{(-k)}$ is estimated using observations $\{Z_{it} : i \in \mathcal{I}_{-k}, t = 1, \ldots, T\}$;
+    \item \textbf{Score evaluation:} For unit $i \in \mathcal{I}_k$ and all periods $t$, the score $\psi(Z_{it}; \tau, \hat{\eta}^{(-k)})$ uses out-of-fold nuisance estimates.
+\end{enumerate}
+The cross-fitted estimator solves:
+\[
+\frac{1}{NT} \sum_{k=1}^K \sum_{i \in \mathcal{I}_k} \sum_{t=1}^{T} \psi(Z_{it}; \hat{\tau}, \hat{\eta}^{(-k)}) = 0.
+\]
+\end{definition}
+
+The triple sum makes explicit that we average over all $n = NT$ unit-period observations, with each observation's score evaluated using nuisance functions trained on out-of-fold units.
+
+\begin{assumption}[Panel Cross-Fitting]\label{ass:panel-crossfit}
+For panel data with units $i = 1, \ldots, N$ and periods $t = 1, \ldots, T$:
+\begin{enumerate}[(i)]
+    \item \textbf{Unit-level folds:} Partition units into $K$ folds. For unit $i$ in fold $k$, all observations $(Y_{it}, W_{it}, X_{it})_{t=1}^T$ are held out, and nuisances are estimated on units in $\mathcal{I}_{-k}$;
+    \item \textbf{Conditional independence across folds:} Conditional on time effects $\gamma_t$, observations in different folds are independent: $\{Z_{it}\}_{i \in \mathcal{I}_k} \perp\!\!\!\perp \{Z_{jt}\}_{j \in \mathcal{I}_{k'}} \mid \gamma_t$ for $k \neq k'$. This assumes no strong spatial or network dependence across folds;
+    \item \textbf{No post-treatment training data:} When estimating the control outcome regression $\hat{\mu}_0$ for use in evaluating scores, the training set must exclude post-treatment observations from treated units to prevent leakage.
+\end{enumerate}
+\end{assumption}
+
+The conditional independence requirement in (ii) permits common time shocks that affect all units symmetrically. If dependence varies idiosyncratically across unit pairs, such as spatial spillovers or network effects, simple random partitioning may fail. In such cases, block cross-fitting (grouping dependent units into the same fold) is required.
+
+The no-leakage condition in (iii) deserves elaboration. Consider a retailer estimating the effect of a loyalty programme on store sales. Store $i$ adopts the programme in quarter $G_i = 3$. The outcome regression $\mu_0(x) = \mathbb{E}[Y | W=0, X=x]$ estimates the counterfactual sales for treated stores had they not adopted.
+
+If we train $\hat{\mu}_0$ using store $i$'s post-adoption sales $(Y_{i3}, Y_{i4}, \ldots)$, we contaminate the counterfactual with treated outcomes. The nuisance estimator learns the wrong function. The solution is straightforward: when estimating $\mu_0$, use only pre-treatment observations from treated units and all observations from never-treated units. This is sometimes called the "clean control" restriction.
+
+\paragraph{Alternative splitting strategies.}
+Unit-level folds are the default for panels with many units and moderate time spans. Two alternatives merit consideration.
+
+\emph{Time-based folds} partition periods rather than units. This approach suits settings with few units but many periods, such as aggregate time series with a single treated unit. For synthetic control applications (Chapters~\ref{ch:sc} and~\ref{ch:generalized-sc}), time-based splitting is natural: train nuisance functions on pre-treatment periods and evaluate on post-treatment periods. The limitation is that time-based folds cannot exploit cross-sectional variation in treatment timing for nuisance estimation.
+
+\emph{Block folds} partition both units and time into rectangular blocks. This approach handles settings where dependence is localised in both dimensions, such as spatial panels with regional shocks. Block folds are more conservative than unit or time folds alone, reducing effective sample size but providing stronger protection against dependence-induced bias.
+
+The choice among splitting strategies depends on the dependence structure. When within-unit serial correlation dominates, unit-level folds suffice. When cross-sectional correlation within periods dominates, time-based folds may be preferable. When both forms of dependence are present, block folds provide the most robust protection at the cost of statistical efficiency.

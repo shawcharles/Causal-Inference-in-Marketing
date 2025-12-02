@@ -1,0 +1,58 @@
+\section{Omitted Variable Bias and Sensitivity}
+\label{sec:ovb-sensitivity}
+
+When randomisation is imperfect (or absent), unobserved confounders may drive both treatment assignment and outcomes, leading to omitted variable bias ($B_{\text{confound}}$).
+
+\begin{definition}[Omitted Variable Bias]\label{def:ovb}
+Consider the true model $Y_{it} = \tau W_{it} + \gamma U_{it} + \varepsilon_{it}$ where $U_{it}$ is an unobserved confounder. The short regression omitting $U$ yields:
+\[
+\hat{\tau}^{\text{short}} \xrightarrow{p} \tau + \gamma \cdot \delta_U,
+\]
+where $\delta_U = \text{Cov}(W_{it}, U_{it}) / \text{Var}(W_{it})$ is the coefficient from regressing $U$ on $W$. The omitted variable bias is:
+\[
+B_{\text{OVB}} = \gamma \cdot \delta_U.
+\]
+Bias is large when the confounder strongly affects outcomes ($\gamma$ large) and is strongly correlated with treatment ($\delta_U$ large).
+\end{definition}
+
+To assess robustness to hidden bias, we employ sensitivity parameters that quantify how strong a confounder would need to be to explain away the result.
+
+\begin{definition}[Sensitivity Parameter $\Gamma$]\label{def:rosenbaum-gamma}
+Rosenbaum's sensitivity parameter $\Gamma \geq 1$ bounds the odds ratio of treatment assignment for units with identical observed covariates:
+\[
+\frac{1}{\Gamma} \leq \frac{P(W_i = 1 | X_i, U_i) / P(W_i = 0 | X_i, U_i)}{P(W_j = 1 | X_j, U_j) / P(W_j = 0 | X_j, U_j)} \leq \Gamma,
+\]
+for all pairs $(i, j)$ with $X_i = X_j$ but potentially $U_i \neq U_j$. When $\Gamma = 1$, assignment depends only on observed covariates (no hidden bias). As $\Gamma$ increases, larger departures from random assignment within strata are permitted.
+\end{definition}
+
+\begin{proposition}[Rosenbaum Bounds]\label{prop:rosenbaum-bounds}
+Under Assumption~\ref{assump:threats-overlap} and given sensitivity parameter $\Gamma$, bounds on the treatment effect p-value are:
+\[
+p^-(\Gamma) \leq p_{\text{true}} \leq p^+(\Gamma),
+\]
+where $p^-(\Gamma)$ and $p^+(\Gamma)$ are the minimum and maximum p-values over all assignments consistent with $\Gamma$. The critical value $\Gamma^*$ is the smallest $\Gamma$ such that $p^+(\Gamma^*) > \alpha$. Report $\Gamma^*$ to indicate how much hidden bias is required to overturn the finding.
+\end{proposition}
+
+An alternative approach, popular in economics, uses the stability of coefficients when controls are added to bound the bias from remaining unobservables.
+
+\begin{definition}[Coefficient Stability Approach]\label{def:oster-delta}
+Following Oster (2019), assume proportional selection: the relationship between treatment and unobservables is proportional to the relationship between treatment and observables. Define:
+\[
+\delta = \frac{\text{Selection on unobservables}}{\text{Selection on observables}}.
+\]
+The bias-adjusted treatment effect under proportional selection is:
+\[
+\tilde{\tau}(\delta) = \hat{\tau}_{\text{long}} - \delta \cdot (\hat{\tau}_{\text{short}} - \hat{\tau}_{\text{long}}) \cdot \frac{R^2_{\max} - R^2_{\text{long}}}{R^2_{\text{long}} - R^2_{\text{short}}},
+\]
+where $R^2_{\max}$ is the hypothetical $R^2$ if all confounders were observed (often set to 1 or calibrated). Report $\tilde{\tau}(\delta)$ for $\delta \in \{0, 1, 2\}$.
+\end{definition}
+
+\subsection*{Algorithmic Confounding and Targeting Feedback}
+
+Algorithmic confounding is a primary source of OVB in digital markets. Platforms use optimisers to target treatments based on predictions of user behaviour, creating selection on unobservables if the platform's model uses information unavailable to researchers. The result is that treated and control groups may differ in unobservable ways, biasing estimates.
+
+We can mitigate algorithmic confounding through clustered randomisation (limiting the optimiser's ability to target individuals) or switchback designs. The orthogonalised machine learning methods from Chapter~\ref{ch:ml-nuisance} offer another solution, allowing us to incorporate the platform's predictions as controls while respecting causal identification principles---bridging the gap between prediction and identification that \citet{breiman2001statistical} highlighted.
+
+\paragraph{Budget pacing and bandit learning.} Budget pacing redistributes spend over time to smooth delivery against capacity or budget constraints. Bandit learning adapts targeting rules as data accumulate. Both introduce intertemporal feedback that violates standard identification when interpreted as exogenous shocks.
+
+Event-time analyses (Chapter~\ref{ch:event}) and dynamic models (Chapter~\ref{ch:dynamics}) accommodate these adaptive mechanisms provided the timing and rules are documented. Treating algorithm-driven dose changes as if they were randomised invites bias and should be avoided.

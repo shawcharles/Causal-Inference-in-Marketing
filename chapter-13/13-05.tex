@@ -1,0 +1,82 @@
+\section{Post-Selection and Debiased Inference}
+\label{sec:hd-postselection}
+
+Inference after selection is not straightforward. Because the data are used to select the controls, standard statistical procedures can be misleading. This section presents methods to correct for this, including de-biased (or desparsified) lasso, and discusses robust inference for panel data.
+
+The problem with a naïve approach is that it ignores the selection step. An analyst might run lasso to select controls and then run an OLS regression on the selected model, treating it as if it were pre-specified. This understates uncertainty, producing confidence intervals that are too narrow and p-values that are too small. The selection process itself introduces uncertainty, and standard errors must account for it.
+
+De-biased (or desparsified) lasso constructs bias-corrected estimators that are asymptotically normal, enabling valid inference on target parameters like the treatment effect. The key insight is that the lasso estimator is biased because the penalty shrinks coefficients towards zero. De-biased lasso corrects for this by adding a term that counteracts the bias introduced by regularisation.
+
+\begin{definition}[Debiased Lasso]\label{def:debiased-lasso}
+The debiased (or desparsified) lasso estimator for the treatment effect $\tau$ is:
+\[
+\hat{\tau}^{\text{debiased}} = \hat{\tau}^{\text{lasso}} + \frac{\hat{\Theta}_{\tau,X}}{NT} \sum_{i,t} \tilde{X}_{it} (\tilde{Y}_{it} - \hat{\tau}^{\text{lasso}} \tilde{W}_{it} - \tilde{X}_{it}' \hat{\beta}^{\text{lasso}}),
+\]
+where $\hat{\Theta}_{\tau,X}$ is an approximate row of the precision matrix corresponding to the treatment coefficient. The debiasing term corrects for the regularisation bias introduced by the $\ell_1$ penalty.
+\end{definition}
+
+\begin{definition}[Nodewise Lasso]\label{def:nodewise-lasso}
+The precision matrix row $\hat{\Theta}_{\tau,X}$ is estimated via nodewise lasso. Regress $\tilde{W}_{it}$ on $\tilde{X}_{it}$ using lasso:
+\[
+\hat{\gamma} = \arg\min_\gamma \left\{ \frac{1}{NT}\sum_{i,t}(\tilde{W}_{it} - \tilde{X}_{it}'\gamma)^2 + \lambda_{\text{node}} \|\gamma\|_1 \right\}.
+\]
+Compute residuals $\hat{r}_{it} = \tilde{W}_{it} - \tilde{X}_{it}'\hat{\gamma}$ and set:
+\[
+\hat{\Theta}_{\tau,X} = \frac{\hat{r}_{it}}{\frac{1}{NT}\sum_{i,t} \hat{r}_{it}^2}.
+\]
+This provides an approximately unbiased estimate of the inverse covariance.
+\end{definition}
+
+The theoretical justification for debiased lasso is that under approximate sparsity (the true model has $s$ nonzero coefficients, where $s$ grows slowly relative to $N$), the debiased estimator satisfies asymptotic normality.
+
+\begin{theorem}[Debiased Lasso Inference]\label{thm:debiased-inference}
+Under Assumptions~\ref{ass:restricted-eigenvalue}–\ref{ass:sparsity-rate}, nodewise sparsity (the row of the precision matrix is approximately sparse), and the rate condition $s^2 \log p / G \to 0$, the debiased lasso estimator satisfies:
+\[
+\sqrt{NT}(\hat{\tau}^{\text{debiased}} - \tau_0) \xrightarrow{d} \mathcal{N}(0, V^{\text{debiased}}),
+\]
+where $V^{\text{debiased}} = \mathbb{E}[\varepsilon_{it}^2 \hat{r}_{it}^2] / (\mathbb{E}[\hat{r}_{it}^2])^2$ is the asymptotic variance. Under clustering with $G$ clusters:
+\[
+\sqrt{G}(\hat{\tau}^{\text{debiased}} - \tau_0) \xrightarrow{d} \mathcal{N}(0, V^{\text{debiased}}_{\text{cluster}}),
+\]
+where $V^{\text{debiased}}_{\text{cluster}}$ accounts for within-cluster dependence.
+\end{theorem}
+
+\subsection*{Cluster-Robust Inference}
+
+Cluster-robust inference for post-selection and debiased estimators accounts for within-cluster dependence by aggregating residuals and computing cluster-robust variance estimators. For double selection (OLS on the union of selected controls), the variance of $\hat{\tau}$ is estimated using the standard cluster-robust formula.
+
+\begin{proposition}[Cluster-Robust Variance]\label{prop:cluster-robust-debiased}
+Under clustering by unit, a consistent estimator of the asymptotic variance is:
+\[
+\hat{V}^{\text{debiased}}_{\text{cluster}} = \frac{1}{G} \sum_{i=1}^G \left(\sum_{t=1}^T \hat{r}_{it} \hat{\varepsilon}_{it}\right)^2 \Big/ \left(\frac{1}{NT}\sum_{i,t} \hat{r}_{it}^2\right)^2,
+\]
+where $\hat{\varepsilon}_{it} = \tilde{Y}_{it} - \hat{\tau}^{\text{debiased}} \tilde{W}_{it} - \tilde{X}_{it}'\hat{\beta}^{\text{lasso}}$ are residuals and $\hat{r}_{it}$ are nodewise residuals. The sum over $t$ aggregates within-unit contributions, respecting serial dependence.
+\end{proposition}
+
+\subsection*{Wild Cluster Bootstrap}
+
+Wild cluster bootstrap provides finite-sample inference when the number of clusters is small. The procedure resamples cluster-level residuals by multiplying them by random signs (Rademacher weights), recomputes the outcome variable, and re-runs the selection and estimation procedure (lasso or double selection or debiased lasso). Repeating this many times (for example, 1,000 replications) builds a bootstrap distribution of $\hat{\tau}$.
+
+The bootstrap confidence interval is constructed by taking the quantiles of the bootstrap distribution (for example, the 2.5th and 97.5th percentiles for a 95 per cent interval). Wild cluster bootstrap is valid under weak assumptions and avoids asymptotic approximations that may fail when $G$ is small. Chapter~\ref{ch:inference} provides detailed coverage of wild bootstrap variants (Rademacher, Mammen, Webb weights) and guidance on when to use them.
+
+\subsection*{Small-Sample Cautions}
+
+Debiased lasso requires that the number of truly nonzero coefficients $s$ is small relative to the effective sample size (the number of clusters $G$), specifically $s^2 \log p / G \to 0$ as $G \to \infty$. If $G$ is small (for example, $G < 30$) or $s$ is large (for example, $s > \sqrt{G}$), the debiasing correction may be unstable or biased, and wild cluster bootstrap is preferable.
+
+Double selection combined with cluster-robust standard errors is more robust to small $G$ than debiased lasso, because it does not rely on the asymptotic normality of the debiasing correction, but it still requires that the lasso penalties are chosen appropriately (using blocked cross-validation) to ensure that true confounders are retained. Reporting estimates and confidence intervals for multiple methods (double selection, debiased lasso, wild cluster bootstrap) provides evidence on robustness and enables triangulation across approaches.
+
+\subsection*{High-Dimensional Granger Causality}
+
+Forecasting problems in high-dimensional panels often conceal a sharper causal question. You may want to know whether a particular signal has genuine predictive content once you condition on a very rich information set. In time series language we ask whether a process $w_t$ Granger causes an outcome $y_t$ at horizon $h$.
+
+In high-dimensional settings this means testing whether a block of lag coefficients on a candidate driver is jointly zero once we include many other lags and covariates.
+
+Standard Wald and F tests break down after lasso selection. The lasso estimator is biased by construction and the usual covariance formulas ignore both shrinkage and serial correlation. Naively treating the selected model as fixed produces p-values that are too small and gives a false sense of discovery. \citet{babii202410} show how to recover valid Granger tests in this setting by combining debiasing with a long-run variance estimator.
+
+The idea is simple. First you estimate a high-dimensional regression of $y_{t+h}$ on lagged outcomes, lagged values of the candidate driver $w_t$, and other controls using lasso or sparse group lasso. You then construct a debiased version of the lasso coefficients for the block of interest and estimate their long-run covariance using a HAC estimator that respects time dependence.
+
+Finally you form a Wald statistic based on the bias-corrected coefficients and the HAC covariance matrix. Under the null that $w_t$ does not Granger cause $y_t$, this statistic converges to a chi-squared distribution with degrees of freedom equal to the number of lags in the block.
+
+For marketing panels the interpretation is direct. Suppose you run a weekly panel regression of brand sales on its own lags, lagged brand sentiment from Twitter, and a large set of controls capturing prices, promotions, search activity, and macro shocks. A bias-corrected Wald test on the block of sentiment lags now answers the question of whether sentiment contains incremental predictive content once you control for everything else.
+
+A non-rejection supports the view that sentiment is only a proxy for other drivers already in the model. A strong rejection, combined with stable coefficients and good diagnostics, supports the claim that movements in sentiment help forecast sales in a way that is not explained by observed fundamentals.

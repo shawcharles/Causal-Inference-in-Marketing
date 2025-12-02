@@ -1,0 +1,142 @@
+\section{Promotion and Price Elasticity}
+\label{sec:price-elasticity}
+
+Pricing is an equilibrium phenomenon. Prices respond to demand, and demand responds to prices. Naive regression of quantity on price yields biased estimates because high demand causes high prices (simultaneity) and unobserved quality drives both price and sales (omitted variables). Estimating causal price elasticity requires isolating exogenous variation in prices.
+
+\begin{remark}[Price Elasticity in the Taxonomy]\label{rem:price-taxonomy}
+In the taxonomy of Section~\ref{sec:taxonomy}, price elasticity estimation is primarily an \emph{endogeneity} problem: prices are set in response to anticipated demand, creating simultaneity bias. This is one domain where instrumental variables are well-established in marketing: cost shifters provide credible instruments with defensible exclusion restrictions (see Remark~\ref{rem:iv-scope} for general IV scope limitations). Secondary considerations include dynamics---short-run and long-run elasticities differ as consumers adjust behaviour---and interference when products are substitutes and cross-elasticity estimation is required.
+\end{remark}
+
+\subsection*{Estimand: Price Elasticity}
+
+We define the causal effect of price on demand.
+
+\begin{definition}[Price Elasticity]\label{def:price-elasticity}
+The own-price elasticity for product $j$ in store $s$ at time $t$ is:
+\[
+\eta_{jj} = \frac{\partial \log Q_{jst}}{\partial \log P_{jst}},
+\]
+where $Q_{jst}$ is quantity sold and $P_{jst}$ is price. The cross-price elasticity with respect to product $k$ is:
+\[
+\eta_{jk} = \frac{\partial \log Q_{jst}}{\partial \log P_{kst}}.
+\]
+Elasticity is typically negative for own-price ($\eta_{jj} < 0$) and positive for substitutes ($\eta_{jk} > 0$).
+\end{definition}
+
+For promotions, the estimand is the lift from a temporary price reduction:
+\[
+\tau_{\text{promo}} = \mathbb{E}[Q_{jst}(\text{promo}) - Q_{jst}(\text{regular}) | \text{promoted}].
+\]
+
+\begin{remark}[Short-Run vs.\ Long-Run Elasticity]\label{rem:dynamic-elasticity}
+The static elasticity $\eta_{jj}$ captures the contemporaneous response of quantity to price. In practice, consumer response has temporal structure:
+\begin{enumerate}
+\item \textbf{Adjustment lags.} Consumers may not immediately notice price changes or may wait for confirmation that changes are permanent. Long-run elasticity typically exceeds short-run elasticity in absolute value.
+\item \textbf{Reference price effects.} Consumers evaluate prices relative to an internal reference formed from past prices. Response to price increases (losses) often exceeds response to equivalent decreases (gains)---an asymmetry rooted in loss aversion.
+\item \textbf{Stockpiling and intertemporal substitution.} For storable goods, temporary promotions shift purchases across time, inflating short-run response but reducing post-promotion sales.
+\end{enumerate}
+When dynamics matter, the analyst should estimate distributed lag models or error correction specifications that distinguish short-run from long-run effects, linking to Chapter~\ref{ch:dynamics}.
+\end{remark}
+
+\subsection*{Identification Strategy 1: Instrumental Variables}
+
+The standard approach uses cost shifters as instruments for price.
+
+\begin{assumption}[IV Exclusion Restriction]\label{assump:price-iv}
+Let $Z_{jst}$ be an instrument (e.g., commodity cost, transport cost, exchange rate). The exclusion restriction requires:
+\[
+\text{Cov}(Z_{jst}, \varepsilon_{jst}) = 0, \quad \text{Cov}(Z_{jst}, P_{jst}) \neq 0,
+\]
+where $\varepsilon_{jst}$ is the demand shock. The instrument affects demand only through its effect on price.
+\end{assumption}
+
+Table~\ref{tab:price-instruments} summarises common instruments for price.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Instruments for price elasticity estimation}
+\label{tab:price-instruments}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Instrument} & \textbf{Mechanism} & \textbf{Exclusion Restriction} \\
+\midrule
+Commodity costs & Oil, wheat, sugar prices shift production costs & Input costs affect demand only via retail price \\
+Exchange rates & Currency fluctuations shift import costs & Macro shocks uncorrelated with local demand \\
+Hausman instruments & Prices of same product in other markets \citep{hausman1996valuation} & Cost shocks common, demand shocks local \\
+Regulatory shocks & Tax changes, tariffs, minimum prices & Policy changes exogenous to demand \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{Identification Strategy 2: Promotion Timing}
+
+For promotion effects, we exploit the timing of promotional events.
+
+\begin{assumption}[Exogenous Promotion Timing]\label{assump:promo-timing}
+Conditional on store-product fixed effects and time trends, the timing of promotions is uncorrelated with demand shocks:
+\[
+\mathbb{E}[\varepsilon_{jst} | \text{Promo}_{jst}, \alpha_{js}, \gamma_t] = 0.
+\]
+\end{assumption}
+
+This assumption is more credible for manufacturer-driven promotions planned months in advance than for retailer-initiated promotions, which may respond to inventory levels or competitive dynamics. It fails if retailers promote products that are selling poorly (endogenous promotion) or if promotions coincide with demand peaks (e.g., holiday displays). Pre-trend tests and placebo checks on non-promoted weeks help assess plausibility.
+
+\subsection*{Estimation}
+
+For IV estimation, use two-stage least squares (2SLS):
+\begin{align}
+\text{First stage:} \quad \log P_{jst} &= \pi_0 + \pi_1 Z_{jst} + \alpha_{js} + \gamma_t + u_{jst}, \\
+\text{Second stage:} \quad \log Q_{jst} &= \beta_0 + \eta_{jj} \widehat{\log P_{jst}} + \alpha_{js} + \gamma_t + \varepsilon_{jst},
+\end{align}
+where $\alpha_{js}$ are store-product fixed effects and $\gamma_t$ are time fixed effects.
+
+For promotion effects, use difference-in-differences comparing promoted vs. non-promoted store-weeks:
+\[
+\log Q_{jst} = \alpha_{js} + \gamma_t + \tau \cdot \text{Promo}_{jst} + X_{jst}'\beta + \varepsilon_{jst}.
+\]
+
+With scanner panel data, cluster standard errors at the store or store-product level to account for serial correlation.
+
+\begin{remark}[Cross-Elasticity and Interference]\label{rem:cross-elasticity-interference}
+Estimating cross-price elasticities $\eta_{jk}$ raises an interference concern. If products $j$ and $k$ are substitutes, promoting $j$ shifts demand from $k$. From the perspective of product $k$, this is a SUTVA violation: $k$'s outcome depends on $j$'s treatment. Credible cross-elasticity estimation requires either: (i) explicitly modelling the substitution structure via demand systems (e.g., logit, AIDS); or (ii) randomising promotions at the product-store level and measuring effects on the full product set. Simply including cross-price terms in a regression without addressing the joint determination of prices across substitutes yields biased estimates.
+\end{remark}
+
+\subsection*{Diagnostic Checklist}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.10: Price Elasticity Diagnostic Checklist]
+\textbf{For IV Estimation:}
+\begin{itemize}
+    \item First-stage F-statistic: Target $F > 10$ (Stock-Yogo threshold). Report Kleibergen-Paap rk statistic for clustered errors.
+    \item Exclusion restriction: Argue why the instrument affects demand only through price. Test for direct effects if possible.
+    \item Overidentification: If multiple instruments, report Hansen J-test.
+    \item Coefficient plausibility: Own-price elasticity typically in $[-3, -0.5]$ for consumer goods.
+\end{itemize}
+
+\textbf{For Promotion Analysis:}
+\begin{itemize}
+    \item Pre-trend test: Check for demand changes before promotion announcement.
+    \item Stockpiling: Test for post-promotion dip (consumers bought forward).
+    \item Spillovers: Check for substitution effects on competing products.
+    \item Heterogeneity: Report effects by product category, store type, and promotion depth.
+\end{itemize}
+\end{tcolorbox}
+
+\subsection*{Case Study: Scanner Panel Price Elasticity}
+
+We illustrate IV estimation using a hypothetical scanner panel. The numbers are illustrative and do not represent real data.
+
+\paragraph{Setting.} A retailer estimates own-price elasticity for a national beverage brand across 500 stores over 104 weeks. The instrument is the wholesale cost of sugar, a key input.
+
+\paragraph{Data.} Store-week level data on quantity sold, shelf price, and wholesale sugar cost. Controls include store-week fixed effects, display indicators, and feature advertising.
+
+\paragraph{First Stage.} Sugar cost strongly predicts shelf price: a 10\% increase in sugar cost raises shelf price by 2.3\% (SE = 0.4\%, $p < 0.01$). First-stage F-statistic = 34, well above the weak instrument threshold.
+
+\paragraph{Results.} The IV estimate of own-price elasticity is $\hat{\eta}_{jj} = -2.1$ (SE = 0.4). A 10\% price increase reduces quantity sold by 21\%. The OLS estimate is $-0.8$, biased toward zero due to simultaneity (high demand periods have both high prices and high sales).
+
+\paragraph{Diagnostics.} The exclusion restriction is plausible: sugar cost affects consumer demand only through its effect on price, not directly. Coefficient is in the plausible range for beverages. Residual diagnostics show no significant autocorrelation after clustering at the store level.
+
+\paragraph{Promotion Analysis.} Separately, we estimate promotion effects. A 20\% temporary price reduction increases quantity by 85\% during the promotion week (SE = 12\%). However, quantity in the two weeks following the promotion is 15\% below baseline, consistent with stockpiling. The net effect over a 4-week window is a 40\% quantity increase.
+
+\paragraph{Interpretation.} The IV elasticity of $-2.1$ implies that a permanent 5\% price increase would reduce sales by approximately 10.5\%. The promotion analysis shows strong short-run response but significant stockpiling, suggesting that promotion ROI depends critically on the time horizon of evaluation.

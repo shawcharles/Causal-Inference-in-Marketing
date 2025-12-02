@@ -1,0 +1,163 @@
+\section{Motivation and Setup}
+\label{sec:sc-motivation}
+
+Synthetic control methods provide a transparent, design-based approach to causal inference when a single unit or a small number of units receive treatment and a larger set of untreated units can serve as potential controls. Rather than relying on parallel trends across all control units, synthetic control constructs a counterfactual by reweighting control units to closely match the treated unit's pre-treatment trajectory. This chapter develops the method rigorously, articulates its theoretical foundations in factor models, and provides a critical assessment of its limitations---particularly the lack of principled guidance for model selection in the early literature.
+
+\subsection*{Formal Estimand and Estimator}
+
+We begin with precise definitions. Units are indexed by $i \in \{1, 2, \ldots, N+1\}$, and time by $t \in \{1, 2, \ldots, T\}$. Without loss of generality, let unit $i = 1$ be the treated unit, and let $T_0$ denote the last pre-treatment period, so that treatment begins in period $T_0 + 1$. The \index{donor pool}donor pool $\mathcal{J} = \{2, 3, \ldots, N+1\}$ consists of $N$ untreated units that are potential controls.
+
+In the potential outcomes framework (Chapter~\ref{ch:frameworks}), each unit has untreated potential outcomes $Y_{it}(0)$ and treated potential outcomes $Y_{it}(1)$. The \textbf{causal effect} for the treated unit at time $t > T_0$ is:
+\begin{equation}
+\tau_{1t} = Y_{1t}(1) - Y_{1t}(0).
+\label{eq:sc-estimand}
+\end{equation}
+We observe $Y_{1t} = Y_{1t}(1)$ for $t > T_0$, but $Y_{1t}(0)$ is the missing counterfactual. The synthetic control method constructs an estimate $\hat{Y}_{1t}(0)$ of this counterfactual by forming a weighted average of donor outcomes:
+\begin{equation}
+\hat{Y}_{1t}(0) = \sum_{j \in \mathcal{J}} w_j^* Y_{jt},
+\label{eq:sc-counterfactual}
+\end{equation}
+where the weights $\mathbf{w}^* = (w_2^*, w_3^*, \ldots, w_{N+1}^*)'$ satisfy $w_j^* \geq 0$ and $\sum_{j \in \mathcal{J}} w_j^* = 1$. The \textbf{synthetic control estimator} is:
+\begin{equation}
+\hat{\tau}_{1t} = Y_{1t} - \sum_{j \in \mathcal{J}} w_j^* Y_{jt}, \quad t > T_0.
+\label{eq:sc-estimator}
+\end{equation}
+This difference, often called the \textit{gap}, is visualised in \index{gap plot}gap plots that make the magnitude and persistence of the effect transparent.
+
+\subsection*{Factor Model Foundation}
+
+The theoretical foundation of synthetic control rests on a latent \index{factor model}factor model for untreated potential outcomes. Assume:
+\begin{equation}
+Y_{it}(0) = \delta_t + \boldsymbol{\lambda}_t' \boldsymbol{\mu}_i + \varepsilon_{it},
+\label{eq:sc-factor-model}
+\end{equation}
+where $\delta_t$ is a common time effect, $\boldsymbol{\lambda}_t \in \mathbb{R}^r$ is a vector of time-varying factor loadings (common across units), $\boldsymbol{\mu}_i \in \mathbb{R}^r$ is a vector of unit-specific factor loadings (fixed over time), and $\varepsilon_{it}$ is an idiosyncratic error with $\mathbb{E}[\varepsilon_{it}] = 0$.
+
+This factor structure nests several common specifications:
+\begin{itemize}
+\item \textit{Additive fixed effects}: $Y_{it}(0) = \alpha_i + \delta_t + \varepsilon_{it}$ (one factor, $\lambda_t = 1$, $\mu_i = \alpha_i$)
+\item \textit{Linear time trends}: $Y_{it}(0) = \alpha_i + \delta_t + \gamma_i \cdot t + \varepsilon_{it}$ (two factors)
+\item \textit{Interactive fixed effects}: General $r$-factor model (Chapter~\ref{ch:factor})
+\end{itemize}
+
+\textbf{Identification Condition.} If weights $\mathbf{w}^*$ can be found such that:
+\begin{equation}
+\boldsymbol{\mu}_1 = \sum_{j \in \mathcal{J}} w_j^* \boldsymbol{\mu}_j,
+\label{eq:sc-identification}
+\end{equation}
+then the synthetic control is unbiased for the counterfactual. To see this, substitute into (\ref{eq:sc-factor-model}):
+\begin{align}
+\sum_{j \in \mathcal{J}} w_j^* Y_{jt}(0) &= \sum_{j \in \mathcal{J}} w_j^* \left( \delta_t + \boldsymbol{\lambda}_t' \boldsymbol{\mu}_j + \varepsilon_{jt} \right) \nonumber \\
+&= \delta_t + \boldsymbol{\lambda}_t' \sum_{j \in \mathcal{J}} w_j^* \boldsymbol{\mu}_j + \sum_{j \in \mathcal{J}} w_j^* \varepsilon_{jt} \nonumber \\
+&= \delta_t + \boldsymbol{\lambda}_t' \boldsymbol{\mu}_1 + \bar{\varepsilon}_t^w \nonumber \\
+&= Y_{1t}(0) - \varepsilon_{1t} + \bar{\varepsilon}_t^w,
+\label{eq:sc-unbiased}
+\end{align}
+where $\bar{\varepsilon}_t^w = \sum_j w_j^* \varepsilon_{jt}$. Under standard regularity conditions with $T_0 \to \infty$, the idiosyncratic errors average to zero and the synthetic control consistently estimates the counterfactual.
+
+\textbf{Bias Decomposition.} When the identification condition (\ref{eq:sc-identification}) fails—that is, when the weights cannot exactly match the treated unit's factor loadings—the estimator is biased. Let $\boldsymbol{\mu}_1^{\text{sc}} = \sum_j w_j^* \boldsymbol{\mu}_j$ denote the synthetic control's implicit factor loadings. Then:
+\begin{equation}
+\mathbb{E}[\hat{\tau}_{1t} - \tau_{1t}] = \boldsymbol{\lambda}_t' \left( \boldsymbol{\mu}_1 - \boldsymbol{\mu}_1^{\text{sc}} \right) = \boldsymbol{\lambda}_t' \boldsymbol{\Delta}_\mu,
+\label{eq:sc-bias}
+\end{equation}
+where $\boldsymbol{\Delta}_\mu = \boldsymbol{\mu}_1 - \boldsymbol{\mu}_1^{\text{sc}}$ is the factor loading mismatch. This bias expression has important implications:
+\begin{enumerate}
+\item Bias depends on both the mismatch $\boldsymbol{\Delta}_\mu$ and the post-treatment factor evolution $\boldsymbol{\lambda}_t$
+\item Good pre-treatment fit does not guarantee small bias if $\boldsymbol{\lambda}_t$ changes post-treatment
+\item Bias can grow over time if $\boldsymbol{\lambda}_t$ trends away from pre-treatment patterns
+\end{enumerate}
+
+See Chapter~\ref{ch:factor} for a complete treatment of factor models in panel data.
+
+\subsection*{The Convexity Constraint: Justification and Limitations}
+
+The defining feature of synthetic control is the \textbf{\index{convex weights}convexity constraint}: weights are non-negative and sum to one, so the synthetic control is a convex combination of donors. This has both theoretical and pragmatic justifications.
+
+\textbf{Theoretical Justification.} The convexity constraint ensures the synthetic control \textit{interpolates} within the convex hull of the donor pool rather than \textit{extrapolating} beyond the observed data. This addresses the extrapolation concern raised by \citet{angrist2010credibility}: regression methods that assign implicit negative weights can produce counterfactuals unsupported by any observed unit. By construction, the synthetic control is a ``realistic'' counterfactual that resembles an average of actual control units.
+
+\textbf{Regularisation Interpretation.} From an estimation perspective, the convexity constraint acts as a regulariser, shrinking weights toward uniform and preventing extreme values. This reduces variance at the cost of potential bias, a bias-variance tradeoff analogous to ridge regression. \citet{doudchenko2016balancing} formalise this connection, showing that synthetic control is equivalent to constrained regression:
+\begin{equation}
+\mathbf{w}^* = \arg\min_{\mathbf{w}} \left\| \mathbf{Y}_1^{\text{pre}} - \mathbf{Y}_{\mathcal{J}}^{\text{pre}} \mathbf{w} \right\|_V^2 \quad \text{s.t.} \quad w_j \geq 0, \; \sum_j w_j = 1,
+\label{eq:sc-optimisation}
+\end{equation}
+where $\mathbf{Y}_1^{\text{pre}} \in \mathbb{R}^{T_0}$ is the treated unit's pre-treatment outcomes, $\mathbf{Y}_{\mathcal{J}}^{\text{pre}} \in \mathbb{R}^{T_0 \times N}$ is the donor matrix, and $\|\cdot\|_V$ is a weighted norm determined by predictor importance.
+
+\textbf{The \index{convex hull condition}Convex Hull Condition.} The identification condition (\ref{eq:sc-identification}) can be satisfied only if:
+\begin{equation}
+\boldsymbol{\mu}_1 \in \text{conv}\{\boldsymbol{\mu}_j : j \in \mathcal{J}\},
+\label{eq:convex-hull}
+\end{equation}
+that is, the treated unit's factor loadings must lie within the convex hull of the donors' factor loadings. When this condition fails:
+\begin{itemize}
+\item No convex combination of donors can match the treated unit
+\item The synthetic control will have non-zero bias $\boldsymbol{\Delta}_\mu \neq 0$
+\item Pre-treatment fit will be imperfect, but imperfect fit does not reveal the direction or magnitude of post-treatment bias
+\end{itemize}
+
+In marketing applications, the convex hull condition often fails. A flagship market may be systematically larger, more urban, or more competitive than any control market. The synthetic control will then be biased, and the bias may grow over time if the factors driving outcomes evolve differently for large versus small markets.
+
+\subsection*{A Critical Perspective on Early Synthetic Control Methods}
+
+The synthetic control method was introduced by \citet{abadie2003economic} and developed in the influential California tobacco study \citet{abadie2010synthetic}. These papers established the method's appeal: transparent weights, visual diagnostics, and placebo-based inference. However, the early literature has a fundamental limitation that practitioners must understand: \textbf{there is no principled guidance for model selection}.
+
+\textbf{The Model Selection Problem.} The optimisation (\ref{eq:sc-optimisation}) requires choosing:
+\begin{enumerate}
+\item Which predictors to include (pre-treatment outcomes, covariates, or both)
+\item How to weight different predictors (the matrix $V$ in the nested optimisation)
+\item Which donor units to include in $\mathcal{J}$
+\end{enumerate}
+The original Abadie, Diamond, and Hainmueller papers provide no guidance on these choices. The California tobacco study includes several pre-treatment outcome periods and covariates, but the selection appears ad hoc. Different predictor sets yield different weights, different pre-treatment fit, and potentially different post-treatment estimates. This creates opportunities for specification search—intentional or inadvertent data mining on the pre-treatment series.
+
+\textbf{Data Mining and Bias.} When practitioners search over specifications until they achieve good pre-treatment fit, they are engaging in in-sample optimisation. This can lead to:
+\begin{itemize}
+\item \textit{Overfitting to noise}: A specification that fits pre-treatment idiosyncratic shocks will not generalise to post-treatment periods
+\item \textit{Specification-dependent results}: Different defensible specifications yield materially different treatment effect estimates
+\item \textit{Illusory transparency}: The reported weights are transparent, but the search process that produced them is not
+\end{itemize}
+
+\textbf{Three Problematic ``Wisdoms''.} In the absence of principled guidance, several pieces of accepted wisdom have emerged. Recent research suggests these are not supported by empirical evidence:
+
+\begin{enumerate}
+\item \textit{``SC is robust to various implementations''}: Simulation studies by \citet{ferman2021synthetic} and others show that SC can be highly sensitive to donor pool composition, predictor selection, and weighting schemes. The robustness claim is overstated.
+
+\item \textit{``Covariates are unnecessary''}: The original formulation emphasises matching pre-treatment outcomes, suggesting covariates add little. However, covariates can anchor the synthetic control to units with similar characteristics, reducing extrapolation bias when the outcome series is noisy or the donor pool is heterogeneous.
+
+\item \textit{``Pre-treatment fit guides model selection''}: While good pre-treatment fit is necessary for credibility, it is not sufficient for post-treatment validity. Minimising pre-treatment RMSPE can lead to overfitting, and the specification with the best fit may not have the smallest post-treatment bias.
+\end{enumerate}
+
+\textbf{Implications for Practice.} Practitioners should:
+\begin{itemize}
+\item Pre-specify the predictor set and donor pool before examining post-treatment outcomes
+\item Report sensitivity of results to alternative specifications (Section~\ref{sec:sc-diagnostics})
+\item Consider augmented or regularised variants that reduce sensitivity to specification choices (Section~\ref{sec:sc-extensions})
+\item Treat vanilla SC as a starting point, not a complete solution
+\end{itemize}
+
+\subsection*{SC as Constrained Regression}
+
+The connection between synthetic control and regression clarifies the method's properties. \citet{doudchenko2016balancing} show that:
+\begin{itemize}
+\item \textit{Unconstrained regression}: OLS weights can be negative, allowing extrapolation
+\item \textit{SC (non-negative, sum-to-one)}: Weights are convex, ensuring interpolation
+\item \textit{Ridge/elastic net}: Weights are regularised toward zero or uniform, improving stability
+\item \textit{Difference-in-differences}: Equal weights $w_j = 1/N$, assuming parallel trends
+\end{itemize}
+
+This taxonomy shows that DiD is a special case of SC with uniform weights. SC relaxes the parallel trends assumption by allowing data-driven weights, but introduces the model selection problem discussed above. The factor model foundation (Section~\ref{sec:sc-identification}) provides the theoretical basis for when SC improves on DiD and when it does not.
+
+\subsection*{Marketing Applications}
+
+Marketing applications motivate synthetic control with concrete use-cases where a single unit or small number of units receive treatment:
+\begin{itemize}
+\item A consumer packaged goods brand launches a television campaign in a single \index{DMA (designated market area)}designated market area (DMA) while holding out other DMAs as controls
+\item A retailer implements a new store format in a flagship city and observes outcomes over two years
+\item A digital platform enters a major metropolitan market and seeks to estimate impact on restaurant revenues relative to markets that did not experience entry\index{platform}
+\end{itemize}
+
+In each case, the treated unit is unique or few in number, donors are plentiful, pre-treatment data are available, and transparency is paramount. However, the flagship market is often systematically different from controls (larger, more competitive, earlier-adopting), raising the convex hull concern. Practitioners must assess whether the synthetic control can plausibly approximate the treated unit and whether post-treatment bias is likely to be small.
+
+\subsection*{Chapter Roadmap}
+
+This chapter develops synthetic control methods with attention to both rigorous theory and practical implementation. Section~\ref{sec:sc-construction} explains how to construct the synthetic control, including predictor set selection, weight optimisation, and the role of the nested $V$-matrix. Section~\ref{sec:sc-identification} articulates identification assumptions and their connection to factor models formally. Section~\ref{sec:sc-inference} presents inference procedures, including in-space and in-time placebos, RMSPE ratios, and permutation tests. Section~\ref{sec:sc-diagnostics} outlines diagnostic workflows, goodness-of-fit assessments, and specification sensitivity analysis. Section~\ref{sec:sc-practical} addresses practical issues including donor curation, missing data, anticipation, and spillovers. Section~\ref{sec:sc-extensions} discusses extensions: multiple treated units, staggered adoption, and augmented or regularised variants that address the limitations of vanilla SC. Section~\ref{sec:sc-marketing} illustrates applications in marketing. Section~\ref{sec:sc-workflow} provides a workflow checklist.
+
+See Chapter~\ref{ch:did} for DiD estimands and staggered-adoption methods, Chapter~\ref{ch:event} for event-study design, and Chapters~\ref{ch:factor} and \ref{ch:advanced-matrix} for factor and matrix completion methods that provide the theoretical foundation for synthetic control identification.

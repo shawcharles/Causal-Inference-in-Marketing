@@ -1,0 +1,68 @@
+\section{Regularised and Balancing Variants of SC}
+\label{sec:hybrid-regularised}
+
+Standard synthetic control can overfit. When the donor pool is large and the pre-treatment period short, the optimisation finds weights that match noise rather than signal. A donor that happens to correlate with the treated unit's idiosyncratic pre-treatment fluctuations receives weight it does not deserve. The synthetic control fits the pre-treatment data tightly but predicts post-treatment outcomes poorly.
+
+Return to the flagship stores. The retailer has twenty potential control stores. Standard synthetic control assigns weight 0.45 to one suburban store that happened to experience a similar seasonal spike in month fourteen, weight 0.35 to a regional store with an unrelated promotional calendar, and distributes the remaining 0.20 across three others. The pre-treatment root mean squared prediction error is impressively low. But the weights reflect coincidence, not structural similarity. When the loyalty programme launches, the synthetic control diverges from the flagships' trajectory because the weighted donors share noise, not fundamentals.
+
+Regularised synthetic control attacks this problem by penalising weight concentration. Rather than allowing the optimisation to chase pre-treatment fit at any cost, regularisation shrinks weights toward simplicity. The fit deteriorates slightly, but the weights become more stable and less sensitive to sampling variability.
+
+\subsection*{Ridge Synthetic Control}
+\label{sec:hybrid-ridge}
+
+Ridge synthetic control adds an L2 penalty to the optimisation:
+\[
+\min_{w} \| X_1 - X_0 w \|_V + \eta \| w \|^2 \quad \text{subject to} \quad w_j \geq 0, \, \sum_j w_j = 1,
+\]
+where $X_1$ contains pre-treatment outcomes and covariates for the treated unit, $X_0$ stacks the corresponding donor values, $V$ weights the predictors, and $\eta > 0$ controls the penalty strength. The term $\| w \|^2 = \sum_j w_j^2$ penalises concentrated weights: a solution that assigns all weight to one donor incurs maximum penalty, while uniform weights $w_j = 1/N$ minimise the penalty.
+
+The penalty parameter $\eta$ governs the bias-variance trade-off. Set $\eta = 0$ and you recover standard synthetic control. Let $\eta$ grow large and the weights converge to uniform, ignoring the pre-treatment data entirely. The optimal $\eta$ lies between these extremes. Cross-validation provides a principled choice: split the pre-treatment period into training and validation sets, estimate ridge SC for a grid of $\eta$ values, and select the $\eta$ that minimises out-of-sample prediction error on the validation set.
+
+Apply ridge SC to the flagship stores with $\eta$ chosen by cross-validation. The weights spread across eight donors instead of concentrating on two. Pre-treatment RMSPE increases from 0.03 to 0.05, a modest deterioration. But the synthetic control now reflects stores with similar customer demographics and format characteristics rather than stores with coincidentally similar seasonal patterns. Figure~\ref{fig:hybrid-ridge} illustrates this shift: unregularised weights cluster on a few donors, while ridge-regularised weights distribute more evenly across the pool.
+
+The cost of regularisation is bias. If the true counterfactual is indeed well-approximated by a sparse combination of donors—two stores that genuinely resemble the flagships—then ridge SC introduces error by diluting those weights. You trade accuracy in the best case for robustness in the typical case. In marketing panels with short pre-periods and noisy outcomes, the variance reduction usually dominates.
+
+There is a deeper cost that the bias-variance framing obscures. Regularisation moves you away from design-based transparency. Standard synthetic control constructs a counterfactual from observable data without functional-form assumptions. Ridge SC imposes a prior: that weights should be diffuse. This is a modelling choice, not a design feature. The credibility of the estimator now depends on whether that prior is appropriate. Acknowledge this when reporting results.
+
+\subsection*{Balancing Synthetic Control}
+
+Ridge SC penalises weight concentration. Balancing SC takes a different approach: it enforces explicit covariate balance as a constraint rather than an objective. The optimisation becomes:
+\[
+\min_{w} \| w \|^2 \quad \text{subject to} \quad w_j \geq 0, \, \sum_j w_j = 1, \, \| X_1 - X_0 w \| \leq \delta,
+\]
+where $\delta$ is a tolerance parameter. The objective minimises weight concentration (favouring diffuse weights), while the constraint requires that the synthetic control match the treated unit on covariates within tolerance $\delta$.
+
+This inverts the standard SC problem. Standard SC minimises covariate imbalance subject to convex weights. Balancing SC minimises weight complexity subject to approximate covariate balance. The inversion matters when you have strong prior beliefs about which covariates must be balanced.
+
+Consider a DMA-level advertising study. The treated DMA (San Francisco) has population 4.7 million, median household income \$112,000, and baseline monthly sales of \$2.3 million. The analyst believes that any credible counterfactual must match these characteristics within 10 per cent. Standard SC might achieve a tighter match on pre-treatment sales by assigning large weight to a small DMA with similar sales trends but very different demographics. Balancing SC prevents this: it finds weights that satisfy the demographic constraints, accepting some deterioration in pre-treatment sales fit.
+
+The tolerance parameter $\delta$ controls the trade-off. Set $\delta = 0$ and perfect balance is required—the problem may be infeasible if the treated unit lies outside the donor convex hull. Set $\delta$ large and the constraint becomes slack, returning you to uniform weights. The right $\delta$ achieves standardised mean differences below 0.1 on critical covariates while maintaining interpretable weights.
+
+When should you prefer balancing SC over ridge SC? Use balancing SC when specific covariates are non-negotiable for credibility. If a marketing executive will reject any counterfactual that differs substantially from the treated market's demographics, encode that requirement as a constraint. Use ridge SC when you want general regularisation without strong covariate priors.
+
+\subsection*{Elastic Net and Other Variants}
+
+Elastic net synthetic control combines L1 and L2 penalties. In regression settings, the L1 penalty induces sparsity—many coefficients shrink to exactly zero. In synthetic control, the convexity constraint already induces sparsity: many donors receive zero weight even without explicit penalisation. The L1 term adds little beyond what convexity provides. Elastic net SC is occasionally useful when the donor pool is extremely large and the analyst wants aggressive regularisation, but ridge SC suffices for most marketing applications.
+
+Other variants exist. Entropy-balancing weights minimise a divergence criterion subject to moment constraints. Kernel-based approaches weight donors by similarity in a feature space. Bayesian formulations place priors on weights or counterfactual trajectories. These methods trade off fit, stability, and interpretability in different ways. The core principle remains: regularisation imposes structure on weights to improve out-of-sample performance at the cost of in-sample fit.
+
+\subsection*{Extrapolation and Interpolation}
+
+Regularisation affects where the synthetic control lies relative to the donor pool. Unregularised SC interpolates within the convex hull of donors, potentially assigning large weight to boundary donors that resemble the treated unit. Ridge SC shrinks toward the centre of the donor distribution, reducing reliance on boundary observations. This is helpful when the treated unit is near the centre—the synthetic control becomes less sensitive to outlier donors. But it can hurt when the treated unit genuinely differs from the pool average. Shrinking toward the centre introduces bias.
+
+Balancing SC has a different pathology. The covariate constraints may force the optimisation to assign weight to donors that match on covariates but differ on outcomes. The synthetic control satisfies the balance constraints but predicts outcomes poorly. Tight constraints combined with a donor pool that poorly spans the treated unit's characteristics is a recipe for failure.
+
+The diagnostic is pre-treatment fit. If regularisation dramatically worsens RMSPE, the method is fighting the data. If regularisation modestly increases RMSPE while stabilising weights, the trade-off is likely favourable.
+
+\subsection*{Choosing Among Variants}
+\label{sec:hybrid-when}
+
+The choice among standard, ridge, and balancing SC depends on the data structure and the analyst's priorities.
+
+Standard SC is appropriate when the donor pool is small, the pre-treatment period is long, and the treated unit lies comfortably within the donor convex hull. In this setting, unregularised weights achieve tight fit without instability.
+
+Ridge SC is appropriate when the donor pool is large relative to the pre-treatment period. The penalty prevents overfitting and produces weights that average over more donors. The flagship stores with twenty donors and twenty-four pre-treatment months are a natural case.
+
+Balancing SC is appropriate when specific covariates are critical for credibility and the analyst wants to encode balance requirements explicitly. The DMA study where demographic match is non-negotiable illustrates this case.
+
+A robust workflow estimates all three variants and compares their performance. If estimates agree, conclusions are robust to regularisation choice. If estimates diverge, investigate. Does standard SC show unstable weights? Does ridge SC produce implausibly uniform weights? Does balancing SC achieve the required balance? Report the comparison transparently. Method choice is itself a source of uncertainty, and honest reporting conveys that uncertainty rather than hiding it behind a single point estimate.

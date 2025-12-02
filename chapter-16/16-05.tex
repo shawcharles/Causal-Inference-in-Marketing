@@ -1,0 +1,66 @@
+\section{Randomisation Inference}
+\label{sec:randomisation}
+\index{randomisation inference|(}
+\index{Fisher randomisation test}
+
+For design-based causal inference, particularly with Synthetic Control (Chapter~\ref{ch:sc}) or small-N Difference-in-Differences, randomisation inference (RI) offers exact p-values without relying on large-sample asymptotics. The logic is simple: if the treatment had been assigned to a different unit, would we see the same effect?
+
+\begin{definition}[Fisher Randomisation Test]\label{def:randomisation-inference}
+Let $\mathcal{W}$ be the set of all feasible treatment assignments under the experimental design. The randomisation p-value for test statistic $T(\mathbf{Y}, \mathbf{W})$ is:
+\[
+p_{\text{rand}} = \frac{1}{|\mathcal{W}|} \sum_{\mathbf{w} \in \mathcal{W}} \mathbf{1}\{T(\mathbf{Y}, \mathbf{w}) \geq T(\mathbf{Y}, \mathbf{W}^{\text{obs}})\},
+\]
+where $\mathbf{W}^{\text{obs}}$ is the observed assignment. Under the sharp null $H_0: Y_i(1) = Y_i(0)$ for all $i$, the potential outcomes are fixed and only assignment varies.
+\end{definition}
+
+This method provides a gold standard for validity.
+
+\begin{assumption}[Known assignment mechanism for randomisation inference]
+\label{assump:inference-assignment}
+The set of feasible treatment assignments $\mathcal{W}$ is known and correctly specified. Permutations respect the design (geo-stratification, switchback periods, partial interference structure). Assignment is unconfounded within the permutation class.
+\end{assumption}
+
+\begin{theorem}[Exact Size Control]\label{thm:randomisation-exact}
+Under Assumption~\ref{assump:inference-assignment} (known assignment mechanism) and the sharp null hypothesis:
+\begin{itemize}
+    \item The randomisation p-value is exactly uniformly distributed: $P(p_{\text{rand}} \leq \alpha) = \alpha$ for all $\alpha \in [0,1]$.
+    \item No distributional assumptions on outcomes are required.
+    \item The test controls size exactly in finite samples for any $G$ or $N$.
+\end{itemize}
+When $|\mathcal{W}|$ is large, Monte Carlo approximation with $B$ random draws yields $\hat{p}_{\text{rand}}$ with simulation error $O(B^{-1/2})$.
+\end{theorem}
+
+The power of the test depends on the choice of statistic.
+
+\begin{definition}[Choice of Test Statistic]\label{def:test-statistic-choice}
+For randomisation inference, Table~\ref{tab:ri-statistics} summarises common test statistics and their properties.
+\end{definition}
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Test statistics for randomisation inference}
+\label{tab:ri-statistics}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Statistic} & \textbf{Formula} & \textbf{Properties} \\
+\midrule
+Difference in means & $T_{\text{diff}} = \bar{Y}_{\text{treat}} - \bar{Y}_{\text{control}}$ & Unstudentised; simple but less powerful \\
+t-statistic & $T_t = (\bar{Y}_{\text{treat}} - \bar{Y}_{\text{control}}) / \hat{\text{se}}$ & Studentised; better power under heterogeneity \\
+Rank statistic & $T_{\text{rank}} = \sum_{i: W_i = 1} R_i$ & Robust to outliers; distribution-free \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\begin{remark}[Randomisation Inference in Marketing Applications]\label{rem:ri-marketing}
+Randomisation inference is the preferred method for:
+\begin{enumerate}
+\item \textbf{Synthetic control} (Chapter~\ref{ch:sc}): Permute treatment across donor units to generate placebo distribution.
+\item \textbf{Geo-experiments with few markets} (Section~\ref{sec:geo-experiments}): When $G < 10$, RI provides exact inference where bootstrap fails.
+\item \textbf{Switchback experiments} (Section~\ref{sec:platform-experiments}): Permute treatment periods within the design structure.
+\item \textbf{Single-unit interventions}: When only one unit is treated, RI is the only valid approach.
+\end{enumerate}
+The key requirement is that the permutation class $\mathcal{W}$ correctly reflects the experimental design.
+\end{remark}
+\index{randomisation inference|}

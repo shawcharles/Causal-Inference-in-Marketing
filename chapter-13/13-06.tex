@@ -1,0 +1,78 @@
+\section{Panels with DiD/Event-Study and Many Controls}
+\label{sec:hd-did}
+
+Integrating regularisation with DiD and event-study designs requires that we respect the logic of those methods. This means avoiding colliders, using only pre-treatment controls, and aligning the selection process with the cohort-time structure. This section shows how to achieve this.
+
+Sparse augmentation of DiD uses lasso to select a small set of controls to include in the regression. The goal is to move from a parallel trends assumption to a more plausible conditional parallel trends assumption, thereby improving precision and reducing bias. The baseline DiD model is augmented with a vector of controls $X_{it}$ whose coefficients are penalised.
+
+The augmented DiD specification with high-dimensional controls is
+\[
+Y_{it} = \tau W_{it} + X_{it}' \beta + \alpha_i + \gamma_t + \varepsilon_{it},
+\]
+where $X_{it}$ are time-varying controls and $\beta$ are their coefficients.
+
+\begin{assumption}[Conditional Parallel Trends]\label{ass:cond-parallel-trends}
+For units in cohort $g$ and comparison units $\mathcal{C}$, parallel trends holds conditional on a sparse set of controls $X_S$:
+\[
+\mathbb{E}[Y_{it}(0) - Y_{it'}(0) | G_i = g, X_{S,i}] = \mathbb{E}[Y_{jt}(0) - Y_{jt'}(0) | j \in \mathcal{C}, X_{S,j}],
+\]
+where $S \subseteq \{1, \ldots, p\}$ with $|S| = s \ll p$. The controls in $S$ are sufficient to eliminate differential pre-trends between treated and comparison units.
+\end{assumption}
+
+\begin{proposition}[Sparse DiD Estimator]\label{prop:sparse-did}
+Under Assumptions~\ref{ass:cond-parallel-trends} and~\ref{ass:sparsity-rate}, the sparse-augmented DiD estimator using double selection satisfies:
+\[
+\sqrt{G}(\hat{\tau}^{\text{sparse-DiD}} - \tau_0) \xrightarrow{d} \mathcal{N}(0, V^{\text{DiD}}),
+\]
+where $V^{\text{DiD}}$ is the asymptotic variance. The estimator combines within-transformation (removing unit and time fixed effects), lasso selection of controls (achieving parsimony), and post-selection OLS (enabling valid inference).
+\end{proposition}
+
+The challenge is selecting which controls to include when $p$ (the dimension of $X_{it}$) is large. Lasso selects controls by regressing within-transformed outcomes on within-transformed treatment and controls:
+\[
+(\hat{\tau}^{\text{lasso}}, \hat{\beta}^{\text{lasso}}) = \arg\min_{\tau, \beta} \left\{ \sum_{i,t} (\tilde{Y}_{it} - \tau \tilde{W}_{it} - \tilde{X}_{it}' \beta)^2 + \lambda \sum_{j=1}^p |\beta_j| \right\},
+\]
+where $\tilde{Y}_{it}, \tilde{W}_{it}, \tilde{X}_{it}$ are within-transformed. The penalty $\lambda$ is chosen via unit-blocked cross-validation, ensuring that the selected controls predict outcomes conditional on fixed effects and treatment.
+
+\subsection*{Avoiding Colliders and Post-Treatment Variables}
+
+Double selection selects controls from both the outcome model (lasso of $\tilde{Y}$ on $\tilde{X}$) and the treatment model (lasso of $\tilde{W}$ on $\tilde{X}$), then runs OLS of $\tilde{Y}$ on $\tilde{W}$ and the union of selected controls, with cluster-robust standard errors.
+
+It is essential to avoid including collider or post-treatment variables in the set of potential controls. A collider is a variable affected by both the treatment and the outcome. Conditioning on it induces spurious associations. A post-treatment control is a variable measured after treatment begins that may itself be affected by the treatment. Conditioning on it can block the causal path of interest, leading to biased estimates.
+
+The solution is to pre-specify a set of pre-treatment controls (measured before treatment begins) that are plausibly exogenous (not affected by treatment or outcomes) and to exclude post-treatment or endogenous controls from the lasso. For staggered adoption, pre-treatment controls for cohort $g$ are those measured in periods $t < g$, and the lasso should be trained only on pre-treatment data for cohort $g$ units and on not-yet-treated or never-treated units as comparisons.
+
+This ensures that selected controls are not affected by treatment and that they do not induce collider bias. Transparent reporting of which controls are included (pre-treatment, time-varying but plausibly exogenous) and which are excluded (post-treatment, endogenous, colliders) builds confidence that regularisation respects identification.
+
+\subsection*{Aligning with Cohort-Time Structure}
+
+Aligning with cohort-time structure (Chapters~\ref{ch:did} and~\ref{ch:event}) requires estimating cohort-time effects $\text{ATT}(g, t)$ separately for each cohort $g$ and period $t \geq g$, with controls selected separately for each cohort.
+
+The procedure is as follows. For each cohort $g$, construct the treated group (units with $G_i = g$) and the comparison group (not-yet-treated or never-treated units). For each period $t \geq g$, run double selection using pre-treatment data for cohort $g$ and comparison units up to period $t$. Estimate $\text{ATT}(g, t)$ using OLS with the union of selected controls and cluster-robust standard errors.
+
+Aggregate $\widehat{\text{ATT}}(g, t)$ across cohorts using cohort weights (the share of treated units in cohort $g$) to obtain event-time effects $\theta_k = \sum_g w_g \widehat{\text{ATT}}(g, g+k)$, where $k = t - g$ is the lag since treatment. This procedure combines the flexibility of lasso (selecting controls that predict outcomes and treatment conditional on fixed effects) with the transparency of cohort-time identification (estimating effects separately for each cohort, avoiding biased aggregation).
+
+\subsection*{Event-Time with Rich Covariates}
+
+Regularisation stabilises noisy event-time profiles by selecting a parsimonious set of controls that reduce residual variance without overfitting. Event-study specifications estimate treatment effects at each lag $k$ relative to treatment adoption:
+\[
+Y_{it} = \sum_{k \neq -1} \theta_k \mathds{1}\{t - G_i = k\} + X_{it}' \beta + \alpha_i + \gamma_t + \varepsilon_{it},
+\]
+where $\theta_k$ is the treatment effect at lag $k$, and $k = -1$ is the omitted reference lag. When $p$ is large, including all controls in the event-study specification produces unstable estimates of $\theta_k$ (wide confidence intervals, noisy profiles over lags) due to overfitting. Lasso selects controls by regressing within-transformed outcomes on within-transformed event-time indicators and controls:
+\[
+(\hat{\theta}^{\text{lasso}}, \hat{\beta}^{\text{lasso}}) = \arg\min_{\theta, \beta} \left\{ \sum_{i,t} \left( \tilde{Y}_{it} - \sum_{k \neq -1} \theta_k \mathds{1}\{t - G_i = k\} - \tilde{X}_{it}' \beta \right)^2 + \lambda \sum_{j=1}^p |\beta_j| \right\},
+\]
+where the penalty is applied only to control coefficients $\beta$, not to event-time coefficients $\theta_k$ (the targets). This produces sparser models (fewer controls) and smoother event-time profiles (smaller confidence intervals for $\theta_k$).
+
+\subsection*{Support-by-Event-Time Reporting}
+
+Support-by-event-time reporting assesses whether the selected controls vary across lags, providing evidence on whether the parallel trends assumption holds conditional on the selected set. For each lag $k$, report which controls are selected by the lasso (or by double selection) when estimating $\theta_k$.
+
+If the selected controls are stable across lags (the same controls are selected for all $k$), this supports the assumption that parallel trends holds conditional on the selected set. If the selected controls vary substantially across lags (different controls are selected for different $k$), this suggests that the relationship between outcomes and controls shifts over time, violating the stability assumption required for causal interpretation.
+
+Transparent reporting of selected controls by lag, alongside event-time profiles and confidence intervals, enables readers to assess the robustness of conclusions to covariate selection and to specification choices.
+
+\subsection*{Alignment with Dynamic Effects}
+
+Aligning with Chapter~\ref{ch:dynamics} (dynamic effects) and Chapter~\ref{ch:event} (event studies) ensures that regularisation serves identification rather than undermining it. Dynamic effects estimate distributed lags of treatment (how treatment effects evolve over time) and carryover (how past treatments affect current outcomes). Regularisation selects which lags to include (for example, using group lasso to select all lags of treatment jointly, or using hierarchical lasso to enforce that lower-order lags are included before higher-order lags).
+
+Event studies estimate heterogeneity-robust event-time effects by comparing treated cohorts to appropriate controls at each lag. Regularisation selects controls that stabilise event-time profiles without biasing the cohort-time comparisons. The unifying theme is that regularisation provides flexibility in covariate adjustment while respecting the design-based logic that provides identification.

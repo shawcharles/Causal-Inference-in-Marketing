@@ -1,0 +1,118 @@
+\chapter{Stationarity and Cointegration in Panels}
+\label{app:stationarity-panels}
+
+Panel data combine a cross-section of units with time series. With short $T$, unit root tests have low power and design-based identification often dominates. With longer $T$ (e.g., $T > 30$) or macro-style outcomes, stochastic trends and cointegration matter. This appendix provides a practical diagnostic handbook for detecting and managing nonstationarity.
+
+\section*{Decision Framework}
+\label{sec:stationarity-decision}
+
+Before running tests, assess the theoretical properties of the outcome variable and the dimensions of the panel.
+
+\begin{enumerate}
+    \item \textbf{Assess Panel Dimensions ($N$ vs $T$)}
+    \begin{itemize}
+        \item \textbf{Short $T$ ($T < 20$):} Unit root tests have very low power. Rely on fixed effects and time trends. Nonstationarity is often indistinguishable from trend-stationarity.
+        \item \textbf{Long $T$ ($T \ge 30$):} Stationarity matters. Spurious regression is a risk. Proceed to testing.
+    \end{itemize}
+
+    \item \textbf{Assess Variable Type}
+    \begin{itemize}
+        \item \textbf{Bounded variables} (e.g., probabilities [0,1], satisfaction scores [1-5], market shares): Cannot be truly $I(1)$ as they cannot wander to infinity. Treat as stationary or use logistic transformation.
+        \item \textbf{Growth variables} (e.g., sales, GDP, revenue): Likely $I(1)$. Often require log-differencing (growth rates) to induce stationarity.
+        \item \textbf{Ratio variables} (e.g., P/E ratio, unemployment rate): Ambiguous. Often persistent ($I(d)$ with $d \approx 1$) but theoretically bounded. Test required.
+    \end{itemize}
+
+    \item \textbf{Diagnostic Path}
+    \begin{itemize}
+        \item \textbf{Step 1: Plot the data.} Look for trending means and wandering variances. Plot individual series for a sample of units.
+        \item \textbf{Step 2: Test for Unit Roots.} If $H_0$ (Nonstationary) is not rejected $\to$ Variable is likely $I(1)$.
+        \item \textbf{Step 3: Test for Cointegration.} If Dependent ($Y$) and Independent ($X$) are both $I(1)$, test residuals of $Y \sim X$. If residuals are $I(0)$, a long-run relationship exists.
+        \item \textbf{Step 4: Choose Specification.}
+        \begin{itemize}
+            \item $Y \sim I(0), X \sim I(0)$: Use standard FE or Distributed Lag.
+            \item $Y \sim I(1), X \sim I(1)$, Cointegrated: Use Error Correction Model (ECM) or Dynamic OLS.
+            \item $Y \sim I(1), X \sim I(1)$, Not Cointegrated: First-difference ($\Delta Y \sim \Delta X$).
+        \end{itemize}
+    \end{itemize}
+\end{enumerate}
+
+\section*{Panel Unit Root Tests}
+Heterogeneous panels and cross-section dependence challenge classical tests. Common options:
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Panel unit root tests: scope and assumptions}
+\label{tab:panel-ur-tests}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Test} & \textbf{Key feature} & \textbf{Notes} \\
+\midrule
+Levin--Lin--Chu (LLC, 2002) & Common autoregressive parameter across units & Allows heteroskedasticity across $i$; limited cross-section dependence handling. \\
+Im--Pesaran--Shin (IPS, 2003) & Heterogeneous AR parameters; averages unit-level ADFs & More flexible than LLC; assumes weak cross-section dependence. \\
+Pesaran CIPS (2007) & Cross-section dependence via common factors (CADF) & Robust under unobserved common factors; recommended with strong cross-dependence. \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\section*{Panel Cointegration}
+If variables are $I(1)$ but share a long-run equilibrium, cointegration justifies level regressions with an error-correction representation. Common tests:
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Panel cointegration tests}
+\label{tab:panel-ct-tests}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Test} & \textbf{Key feature} & \textbf{Notes} \\
+\midrule
+Pedroni (1999, 2004) & Within- and between-dimension tests; heterogeneous cointegrating vectors & Widely used; accommodates individual intercepts and trends. \\
+Kao (1999) & Residual-based test; homogeneous cointegrating vector & Simpler but restrictive homogeneity. \\
+Westerlund (2007) & Error-correction-based tests with robust small-sample properties & Powerful under general dynamics and some cross-dependence. \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\section*{Implementation Notes}
+
+While this book does not prescribe specific software, the following map conceptual tests to standard implementations in major statistical packages.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Implementation Map for Stationarity Diagnostics}
+\label{tab:implementation-map}
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+\textbf{Task} & \textbf{Method Class} & \textbf{Implementation Pointer} \\
+\midrule
+Unit Root (Basic) & IPS / LLC & \textbf{R:} \texttt{plm::purtest} (modes: "ips", "levinlin") \newline \textbf{Stata:} \texttt{xtunitroot ips}, \texttt{xtunitroot llc} \\
+\addlinespace
+Unit Root (Robust) & Pesaran CIPS & \textbf{R:} \texttt{punitroots::pbadf} \newline \textbf{Stata:} \texttt{xtcips} (community-contributed) \\
+\addlinespace
+Cointegration & Pedroni / Westerlund & \textbf{R:} \texttt{pco::pedroni}, \texttt{plm} extensions \newline \textbf{Stata:} \texttt{xtcointtest pedroni}, \texttt{xtwest} \\
+\addlinespace
+Error Correction & PMG / MG & \textbf{R:} \texttt{plm::pmg} \newline \textbf{Stata:} \texttt{xtpmg} \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\section*{Marketing Scenarios}
+
+\textbf{Scenario A: Daily Category Sales (High Frequency)}
+\begin{itemize}
+    \item \textbf{Data:} Daily sales for 500 SKUs over 3 years ($T \approx 1000$).
+    \item \textbf{Diagnosis:} Strong weekly seasonality and holiday spikes. Likely trend-stationary with structural breaks.
+    \item \textbf{Action:} Do not difference blindly. Use deterministic seasonals (day-of-week FE) and test for unit roots on the de-seasonalised series.
+\end{itemize}
+
+\textbf{Scenario B: Brand Tracking Survey (Bounded)}
+\begin{itemize}
+    \item \textbf{Data:} Monthly "Consideration" scores (0-100\%) for 20 brands over 5 years ($T=60$).
+    \item \textbf{Diagnosis:} Variable is bounded [0, 100]. A random walk is theoretically impossible.
+    \item \textbf{Action:} Treat as stationary ($I(0)$). If persistence is high ($\rho \approx 0.9$), use dynamic panel models (Arellano-Bond) rather than cointegration.
+\end{itemize}

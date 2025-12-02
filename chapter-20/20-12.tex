@@ -1,0 +1,52 @@
+\section{Practitioner Roadmap}
+\label{sec:practitioner-roadmap}
+
+This book has covered many methods, each with its own assumptions, diagnostics, and failure modes. Practitioners facing real problems need a workflow that turns this material into actionable steps. This section provides that workflow.
+
+\subsection*{Before You Start}
+
+Begin with the question, not the method. What causal effect do you want to estimate? Be precise. "The effect of advertising on sales" is too vague. Specify: the effect of what treatment (TV spend, digital impressions, a specific campaign), on what outcome (weekly store sales, online conversions, brand awareness), for what population (all customers, new customers, a specific segment), over what time horizon (immediate, cumulative over 12 weeks, long-run equilibrium).
+
+Assess data availability honestly. What data do you have? What data would you need for your preferred method? If you want to run difference-in-differences, do you have pre-treatment data for both treated and control units? If you want synthetic control, do you have enough donor units with similar pre-treatment trajectories? If the data do not support the method, choose a different method or acknowledge that the question cannot be answered with available data.
+
+Identify the dominant threats. Every setting has threats to validity. Is selection the main concern—treated units differ systematically from controls? Is interference likely—treating one unit affects others? Is nonstationarity a risk—the environment is changing during the study period? Is measurement error substantial—outcomes or treatments are measured with noise? The dominant threat determines which methods are viable and which diagnostics are essential.
+
+\subsection*{Design Phase}
+
+Choose the method based on data features and threats. Chapter~\ref{ch:applications} provides a mapping from problem characteristics to methods. Few treated units with good pre-treatment data suggest synthetic control. Many treated units with staggered adoption suggest modern DiD estimators. Continuous treatments suggest dose-response methods. Dense interference suggests cluster randomisation or switchback designs. No single method dominates; the choice depends on the setting.
+
+Pre-register the analysis plan. Before accessing outcome data, commit to the estimand, sample definition, method, diagnostics, and inference procedure. Section~\ref{sec:reproducibility-standards} details what to include. Pre-registration does not prevent learning from the data—you can still run exploratory analyses—but it distinguishes confirmatory from exploratory findings.
+
+Plan the diagnostics in advance. Decide which diagnostics you will run and what thresholds will trigger concern. For DiD, specify the pre-trend test and what magnitude of pre-trend would undermine credibility. For synthetic control, specify the acceptable pre-treatment RMSPE. For propensity methods, specify the overlap threshold. Writing these down in advance prevents post-hoc rationalisation.
+
+\subsection*{Estimation Phase}
+
+Run diagnostics before estimates. The temptation is to estimate the effect first and check diagnostics later. Resist this. If diagnostics fail, the estimate is not credible, and seeing the estimate first biases your interpretation of the diagnostics. Run pre-trend tests, balance checks, and overlap diagnostics before computing treatment effects.
+
+Interpret diagnostic failures honestly. If pre-trends are not parallel, DiD is suspect. If synthetic control fit is poor, the counterfactual is unreliable. If overlap is limited, propensity methods extrapolate beyond the data. Diagnostic failure does not mean the analysis is worthless, but it means the results should be interpreted with caution and reported with appropriate caveats.
+
+Apply multiple methods when feasible. If the data support both DiD and synthetic control, run both. If results agree, confidence increases. If results diverge, investigate why. The divergence may reveal sensitivity to assumptions that a single method would hide. Section~\ref{sec:method-selection-outlook} discusses triangulation in detail.
+
+\subsection*{Reporting Phase}
+
+Report what you did, not just what you found. A credible report includes the estimand, the identification assumption, the data and sample, the method, the diagnostics, and the sensitivity analyses. Section~\ref{sec:reproducibility-standards} provides a template. Readers should be able to assess validity without relying on the author's judgment.
+
+Communicate uncertainty honestly. Report confidence intervals, not just point estimates. When assumptions are uncertain, report bounds or sensitivity analyses. When diagnostics are marginal, say so. When the sample is small or clusters are few, acknowledge that inference is imprecise. Overstating precision undermines credibility; honest uncertainty builds trust.
+
+Tailor communication to the audience. Technical audiences want diagnostics, robustness checks, and methodological details. Business audiences want the bottom line, the confidence level, and the implications for decisions. Both need honesty about limitations, but the framing differs. Section~\ref{sec:synthesis-reporting} in Chapter~\ref{ch:applications} provides guidance on stakeholder communication.
+
+\subsection*{When Things Go Wrong}
+
+Diagnostics will sometimes fail. Pre-trends will not be parallel. Overlap will be limited. Fit will be poor. This is not a crisis; it is information. The question is what to do next.
+
+Consider alternative methods. If DiD fails pre-trends, can synthetic control achieve better fit? If propensity methods lack overlap, can you restrict to a subsample with common support? If factor models require too many factors, is the low-rank assumption appropriate? Method failure in one approach may not imply failure in all approaches.
+
+Report bounds instead of points. When identification is partial, report what can be learned rather than pretending to know more. Section~\ref{sec:partial-identification} discusses bounding strategies. A wide bound that is credible is more valuable than a narrow estimate that is not.
+
+Acknowledge when the question cannot be answered. Sometimes the data do not support causal inference. Selection is too severe, interference is too pervasive, nonstationarity is too pronounced. In these cases, the honest response is to say so. Descriptive analysis may still be valuable, but it should not be dressed up as causal. The credibility of the field depends on practitioners who know when to stop.
+
+\subsection*{The Practitioner's Mindset}
+
+The methods in this book are tools, not answers. They encode assumptions that may or may not hold. Diagnostics provide evidence about assumptions but cannot prove them. Triangulation increases confidence but does not eliminate uncertainty. The practitioner's job is to use these tools thoughtfully, report results honestly, and acknowledge what remains unknown.
+
+This is harder than it sounds. Stakeholders want certainty. Deadlines pressure shortcuts. Incentives reward positive findings. Resisting these pressures requires discipline and institutional support. But the alternative—false confidence in unreliable estimates—serves no one. The methods in this book are only as good as the judgment and integrity of those who use them.

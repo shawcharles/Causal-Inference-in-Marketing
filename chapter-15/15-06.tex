@@ -1,0 +1,20 @@
+\section{Partial Identification}
+\label{sec:partial-identification-core}
+
+When point identification is impossible due to threats like measurement error or parallel trends violations, we turn to partial identification.
+
+\begin{definition}[Identified Set]\label{def:identified-set}
+Under a set of maintained assumptions $\mathcal{A}$, the identified set for parameter $\tau$ is:
+\[
+\mathcal{T}_{\mathcal{A}} = \{\tau : \text{there exists a DGP satisfying } \mathcal{A} \text{ that generates the observed data and has parameter } \tau\}.
+\]
+Point identification occurs when $\mathcal{T}_{\mathcal{A}}$ is a singleton. Partial identification occurs when $\mathcal{T}_{\mathcal{A}}$ is an interval (or more general set). Report $\mathcal{T}_{\mathcal{A}}$ as bounds when point identification fails.
+\end{definition}
+
+\begin{proposition}[Hierarchical Bounds]\label{prop:hierarchical-bounds}
+For nested assumption sets $\mathcal{A}_1 \supset \mathcal{A}_2 \supset \mathcal{A}_3$ (progressively stronger):
+\[
+\mathcal{T}_{\mathcal{A}_1} \supseteq \mathcal{T}_{\mathcal{A}_2} \supseteq \mathcal{T}_{\mathcal{A}_3}.
+\]
+Stronger assumptions yield tighter bounds. Report bounds under multiple assumption sets: weak bounds under minimal assumptions, moderate bounds under bounded violations, and a point estimate under the maintained assumptions.
+\end{proposition}

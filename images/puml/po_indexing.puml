@@ -1,0 +1,96 @@
+@startuml po_indexing
+' Potential Outcomes Indexing: Contemporaneous vs Path-Dependent Notation
+
+skinparam backgroundColor white
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 11
+skinparam shadowing false
+skinparam roundCorner 5
+
+title <b>Potential Outcomes Indexing: Contemporaneous vs Path-Dependent Notation</b>
+
+' ============================================================================
+' PANEL A: Contemporaneous Notation
+' ============================================================================
+
+package "Panel A: Contemporaneous Notation Y(w)" as PanelA #FAFAFA {
+    card "t=1\nw=0" as A1 #E8E8E8
+    card "t=2\nw=0" as A2 #E8E8E8
+    card "t=3\nw=1" as A3 #4A90E2
+    card "t=4\nw=1" as A4 #B8D4E8
+    card "t=5\nw=1" as A5 #B8D4E8
+    card "t=6\nw=1" as A6 #B8D4E8
+}
+
+A1 -[hidden]right- A2
+A2 -[hidden]right- A3
+A3 -[hidden]right- A4
+A4 -[hidden]right- A5
+A5 -[hidden]right- A6
+
+note top of A1 : Y1(w1)
+note top of A2 : Y2(w2)
+note top of A3 : Y3(w3)
+note top of A4 : Y4(w4)
+note top of A5 : Y5(w5)
+note top of A6 : Y6(w6)
+
+note bottom of PanelA : //Outcome depends only on current treatment//
+
+' ============================================================================
+' PANEL B: Path-Dependent Notation
+' ============================================================================
+
+package "Panel B: Path-Dependent Notation Y(w^t)" as PanelB #FAFAFA {
+    card "t=1\nw=0" as B1 #E8E8E8
+    card "t=2\nw=0" as B2 #E8E8E8
+    card "t=3\nw=1" as B3 #4A90E2
+    card "t=4\nw=1" as B4 #B8D4E8
+    card "t=5\nw=1" as B5 #B8D4E8
+    card "t=6\nw=1" as B6 #B8D4E8
+}
+
+B1 -[hidden]right- B2
+B2 -[hidden]right- B3
+B3 -[hidden]right- B4
+B4 -[hidden]right- B5
+B5 -[hidden]right- B6
+
+note top of B1 : Y1(w^1)
+note top of B2 : Y2(w^2)
+note top of B3 : Y3(w^3)
+note top of B4 : Y4(w^4)
+note top of B5 : Y5(w^5)
+note top of B6 : Y6(w^6)
+
+' Path dependency arrows
+B1 .[#888888,dashed].> B3
+B2 .[#888888,dashed].> B3
+
+B1 .[#888888,dashed].> B4
+B2 .[#888888,dashed].> B4
+B3 .[#888888,dashed].> B4
+
+B1 .[#888888,dashed].> B5
+B2 .[#888888,dashed].> B5
+B3 .[#888888,dashed].> B5
+B4 .[#888888,dashed].> B5
+
+note bottom of PanelB : //Outcome depends on entire treatment history//
+
+' Vertical stacking
+PanelA -[hidden]down- PanelB
+
+' Treatment adoption callout
+note right of A3 : **Treatment Adoption**
+note right of B3 : **Treatment Adoption**
+
+legend right
+    |= Colour |= Description |
+    | <back:#E8E8E8> Grey </back> | Pre-treatment (w=0) |
+    | <back:#4A90E2> Dark Blue </back> | Treatment adoption |
+    | <back:#B8D4E8> Light Blue </back> | Post-treatment (w=1) |
+endlegend
+
+caption Potential Outcomes Indexing
+@enduml

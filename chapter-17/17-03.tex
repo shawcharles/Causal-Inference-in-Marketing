@@ -1,0 +1,44 @@
+\section{Overlap and Balance Diagnostics}
+\label{sec:overlap-balance}
+
+Overlap ensures that treated and control units are comparable. If they do not share common support on key covariates, any comparison will rely on extrapolation beyond support. We assess this by plotting the distribution of propensity scores (Chapter~\ref{ch:ml-nuisance}) for treated and control groups.
+
+\begin{definition}[Overlap Statistics]\label{def:overlap-statistics}
+For propensity scores $e(X_i)$ in treated and control groups, overlap is quantified by three statistics. The coefficient of overlap is $\text{OVL} = \int \min\{f_1(e), f_0(e)\} \, de$, where $f_1(e)$ and $f_0(e)$ are the propensity score densities for treated and control groups; $\text{OVL} \in [0,1]$ with 1 indicating perfect overlap. The normalised overlap adjusts for mean differences: $\text{OVL}_{\text{norm}} = \text{OVL} / (1 - |\bar{e}_1 - \bar{e}_0| / 2)$. The common support fraction is $N_{\text{common}} / N$, where $N_{\text{common}}$ counts units with $e(X_i) \in [\epsilon, 1-\epsilon]$ for threshold $\epsilon$ (typically 0.1).
+\end{definition}
+
+\begin{definition}[Common Support]\label{def:common-support}
+Units $i$ satisfy the common support condition if:
+\[
+0 < e(X_i) < 1, \quad \text{or more stringently} \quad \epsilon < e(X_i) < 1 - \epsilon,
+\]
+for trimming threshold $\epsilon > 0$. The common support set is:
+\[
+\mathcal{S}_{\epsilon} = \{i : \epsilon \leq e(X_i) \leq 1 - \epsilon\}.
+\]
+Estimates restricted to $\mathcal{S}_{\epsilon}$ have reduced variance from extreme weights but altered estimand (ATT on trimmed population).
+\end{definition}
+
+Where there is no overlap, we may need to trim the sample or re-weight our observations. For the continuous treatments discussed in Chapter~\ref{ch:continuous}, we need to ensure this overlap exists at each level of the dose.
+
+Exposure overlap in spillover-aware designs (Chapter~\ref{ch:spillovers}) maps the distribution of neighbours' treatment intensities. Buffers and exclusion zones reduce extreme exposures, and sensitivity to buffer radii assesses robustness. Stabilised weights or inverse-probability-of-treatment weights improve balance, but extreme weights signal fragility and invite either trimming or clustered assignment to break the dependence.
+
+Covariate balance reports means and standardised differences for key covariates before and after weighting or selection.
+
+\begin{definition}[Standardised Mean Difference]\label{def:smd}
+The standardised mean difference (SMD) for covariate $X_j$ between treated and control groups is:
+\[
+\text{SMD}_j = \frac{\bar{X}_{j,1} - \bar{X}_{j,0}}{\sqrt{(s_{j,1}^2 + s_{j,0}^2)/2}},
+\]
+where $\bar{X}_{j,w}$ and $s_{j,w}^2$ are the mean and variance of covariate $j$ in group $w \in \{0,1\}$. After weighting with weights $\hat{w}_i$:
+\[
+\text{SMD}_j^{\text{weighted}} = \frac{\sum_i \hat{w}_i W_i X_{ij} / \sum_i \hat{w}_i W_i - \sum_i \hat{w}_i (1-W_i) X_{ij} / \sum_i \hat{w}_i (1-W_i)}{\sqrt{(s_{j,1}^2 + s_{j,0}^2)/2}}.
+\]
+Convention: $|\text{SMD}| < 0.1$ indicates good balance; $|\text{SMD}| < 0.25$ is acceptable.
+\end{definition}
+
+\begin{remark}[Balance Improvement from Weighting]\label{rem:balance-improvement}
+For inverse propensity weighted estimators with weights $\hat{w}_i = D_i / \hat{e}(X_i) + (1-D_i) / (1 - \hat{e}(X_i))$, if $\hat{e}(X) = e(X)$ is correctly specified, then $\text{SMD}_j^{\text{weighted}} \xrightarrow{p} 0$ for all covariates $j$. The variance ratio $\text{VR}_j = s_{j,1}^{2,\text{weighted}} / s_{j,0}^{2,\text{weighted}}$ should approach 1 after weighting. Good balance on covariates is necessary but not sufficient for unconfoundedness (Chapter~\ref{ch:frameworks}); report $\text{SMD}_j$ before and after weighting for all key covariates.
+\end{remark}
+
+Pre-period outcome balance is especially diagnostic because outcomes summarise many unobserved factors. Residualising outcomes against covariates or fixed effects and then checking balance on residuals aligns with the design. Balance improvement after propensity weighting or double selection (Chapters~\ref{ch:ml-nuisance}--\ref{ch:high-dim}) demonstrates that the adjustment reduces confounding, though balance alone does not guarantee unconfoundedness.

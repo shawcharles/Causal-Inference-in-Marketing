@@ -1,0 +1,159 @@
+\section{Customer Lifetime Value and Acquisition}
+\label{sec:clv-acquisition}
+
+Customer Lifetime Value (CLV) is a long-term outcome that summarises the total value a customer generates over their relationship with a firm. Marketing decisions---acquisition channel, onboarding experience, early promotions---may have persistent effects on CLV that short-term metrics miss. Estimating the causal effect of these decisions on CLV requires addressing both selection and measurement challenges.
+
+\begin{remark}[CLV Attribution in the Taxonomy]\label{rem:clv-taxonomy}
+In the taxonomy of Section~\ref{sec:taxonomy}, CLV attribution is primarily a \emph{confounding} problem: customers self-select into acquisition channels based on characteristics correlated with their potential lifetime value. Paid search attracts high-intent customers; referrals attract customers similar to existing high-value customers. The temporal dimension is also central: CLV is a cumulative outcome over time, and channel effects may operate through retention (how long customers stay), intensity (how much they spend per period), or both. Early-tenure interventions---onboarding experiences, welcome promotions---create path-dependent effects where initial treatment shapes the entire margin trajectory. See Section~\ref{sec:loyalty-valuation} for related analysis of loyalty programme effects on spending, and Section~\ref{sec:digital-attribution} for multi-touch attribution when customers interact with multiple channels.
+\end{remark}
+
+\subsection*{Estimand: CLV and Channel Effects}
+
+We first define CLV, then the causal effect of acquisition channel.
+
+\begin{definition}[Customer Lifetime Value]\label{def:clv}
+For customer $i$ acquired at time $t_0$, the Customer Lifetime Value over horizon $T$ is:
+\[
+\text{CLV}_i(T) = \sum_{t=t_0}^{t_0 + T} \delta^{t-t_0} \cdot m_{it},
+\]
+where $m_{it}$ is the margin (revenue minus variable cost) from customer $i$ in period $t$, and $\delta \in (0,1]$ is the discount factor. For $\delta = 1$, this is undiscounted cumulative margin.
+\end{definition}
+
+The causal question is whether the acquisition channel affects CLV beyond its effect on who is acquired.
+
+\begin{definition}[Channel Causal Effect on CLV]\label{def:channel-clv}
+Let $C_i \in \{1, \ldots, K\}$ denote the acquisition channel for customer $i$. The causal effect of channel $c$ versus channel $c'$ on CLV is:
+\[
+\tau_{c,c'} = \mathbb{E}[\text{CLV}_i(c) - \text{CLV}_i(c')],
+\]
+where $\text{CLV}_i(c)$ is the potential CLV if customer $i$ had been acquired via channel $c$.
+\end{definition}
+
+This estimand requires the \emph{overlap} (positivity) assumption: each customer must have positive probability of being acquired via each channel being compared. Overlap often fails in practice---customers without social media accounts cannot be acquired via social; customers who never search for the product cannot be acquired via paid search. When overlap fails, options include: (i) restricting comparison to the subpopulation with positive probability for both channels; (ii) trimming observations with extreme propensity scores; or (iii) focusing on the ATT for customers actually acquired via channel $c$, asking what their CLV would have been under an alternative channel.
+
+A more practical estimand is the Average Treatment Effect on the Treated (ATT) for customers acquired via channel $c$:
+\[
+\tau_c = \mathbb{E}[\text{CLV}_i(c) - \text{CLV}_i(c') | C_i = c].
+\]
+
+\subsection*{Identification Challenge: Selection into Channels}
+
+Customers who respond to different channels differ systematically. Paid search attracts high-intent customers; social media attracts younger demographics; referrals attract customers similar to existing customers. Naive comparison of CLV across channels confounds channel effects with selection effects.
+
+\begin{assumption}[Unconfoundedness for Channel Assignment]\label{assump:clv-unconf}
+Conditional on observed covariates $X_i$ (demographics, acquisition context, first-session behaviour), channel assignment is independent of potential CLV:
+\[
+\text{CLV}_i(c) \perp\!\!\!\perp C_i \mid X_i, \quad \forall c.
+\]
+\end{assumption}
+
+This assumption requires that we observe all variables that jointly affect channel choice and CLV. It is strong and often implausible—customers who click on paid ads may differ from organic arrivals in unobservable ways (e.g., price sensitivity, brand awareness).
+
+\subsection*{Identification Strategy 1: Propensity Score Methods}
+
+When unconfoundedness is plausible, propensity score methods adjust for selection.
+
+\begin{definition}[Generalised Propensity Score]\label{def:gps-channel}
+For multi-valued channel $C_i \in \{1, \ldots, K\}$, the generalised propensity score is:
+\[
+e_c(X_i) = P(C_i = c | X_i).
+\]
+Inverse probability weighting (IPW) reweights observations to balance covariates across channels.
+\end{definition}
+
+The doubly robust estimator combines propensity weighting with outcome regression:
+\[
+\hat{\tau}_{c,c'}^{\text{DR}} = \frac{1}{n} \sum_{i=1}^n \left[ \hat{\mu}_c(X_i) - \hat{\mu}_{c'}(X_i) + \frac{\mathbf{1}(C_i = c)}{\hat{e}_c(X_i)}(Y_i - \hat{\mu}_c(X_i)) - \frac{\mathbf{1}(C_i = c')}{\hat{e}_{c'}(X_i)}(Y_i - \hat{\mu}_{c'}(X_i)) \right],
+\]
+where $\hat{\mu}_c(X_i) = \hat{\mathbb{E}}[\text{CLV}_i | X_i, C_i = c]$ is the outcome regression.
+
+\subsection*{Identification Strategy 2: Instrumental Variables}
+
+When unconfoundedness fails, we need exogenous variation in channel exposure.
+
+\begin{assumption}[Channel Instrument]\label{assump:clv-iv}
+Let $Z_i$ be an instrument that affects channel assignment but not CLV directly:
+\[
+\text{Cov}(Z_i, C_i) \neq 0, \quad \text{Cov}(Z_i, \varepsilon_i) = 0,
+\]
+where $\varepsilon_i$ is the unobserved component of CLV.
+\end{assumption}
+
+Table~\ref{tab:clv-instruments} summarises potential instruments. In practice, IV is rarely used for CLV attribution because valid instruments are scarce and the exclusion restriction is difficult to defend---most factors that affect channel exposure also plausibly affect customer quality.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Potential instruments for channel effects on CLV}
+\label{tab:clv-instruments}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Instrument} & \textbf{Mechanism} & \textbf{Exclusion Concern} \\
+\midrule
+Ad auction randomness & Real-time bidding variation & Auction winners may differ in quality \\
+Geographic variation & Differential channel availability & Regions differ in customer characteristics \\
+Temporal variation & Channel-specific promotions/outages & Timing correlates with demand shocks \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{Estimation}
+
+For propensity score methods, use the estimators from Chapter~\ref{ch:ml-nuisance}. With high-dimensional covariates, use double machine learning (DML) to estimate both the propensity score and outcome regression flexibly.
+
+For CLV prediction, common models include the BG/NBD + Gamma-Gamma probabilistic framework for transaction frequency and monetary value \citep{fader2005counting}, survival models (Cox proportional hazards for churn, with CLV as expected discounted margin conditional on survival), and direct regression approaches that predict CLV from early-tenure features using gradient boosting or neural networks.
+
+\begin{remark}[CLV Trajectory and Path Dependence]\label{rem:clv-trajectory}
+The CLV definition aggregates margins over time, but channel effects may operate differently across the customer lifecycle:
+\begin{enumerate}
+\item \textbf{Retention effects.} The channel affects how long customers remain active. Referral customers may have higher retention because social ties create switching costs.
+\item \textbf{Intensity effects.} The channel affects per-period spending conditional on remaining active. Paid search customers may have higher order values because they arrived with purchase intent.
+\item \textbf{Trajectory effects.} The channel affects the shape of the margin path---whether spending grows, stays flat, or declines over tenure.
+\end{enumerate}
+Decomposing CLV into these components clarifies the mechanism and informs intervention design. If the channel effect operates through retention, onboarding and engagement programmes may amplify it; if through initial order value, the effect may be harder to replicate.
+\end{remark}
+
+\subsection*{Diagnostic Checklist}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.11: CLV Attribution Diagnostic Checklist]
+\textbf{For Propensity Score Methods:}
+\begin{itemize}
+    \item Overlap: Check that all channels have positive probability for all covariate values. Trim extreme propensity scores.
+    \item Balance: Report SMD for key covariates before and after weighting. Target $|\text{SMD}| < 0.1$.
+    \item Sensitivity: Use Rosenbaum bounds or Oster's $\delta$ to assess robustness to unobserved confounding.
+\end{itemize}
+
+\textbf{For CLV Measurement:}
+\begin{itemize}
+    \item Horizon: Report CLV at multiple horizons (6 months, 1 year, 2 years). Short horizons may miss channel effects; long horizons have more noise.
+    \item Censoring: Account for customers who are still active (right-censoring). Use survival-based CLV models.
+    \item Discounting: Report sensitivity to discount rate. High discount rates favour channels with early revenue.
+\end{itemize}
+
+\textbf{For Causal Interpretation:}
+\begin{itemize}
+    \item Placebo channels: Test for CLV differences between channels that should have no causal effect (e.g., two organic search variants).
+    \item Mechanism: Decompose CLV into frequency, monetary value, and tenure. Which component drives the channel effect?
+\end{itemize}
+\end{tcolorbox}
+
+\subsection*{Case Study: Acquisition Channel CLV Comparison}
+
+We illustrate propensity score methods with a hypothetical e-commerce retailer. The numbers are illustrative and do not represent real data.
+
+\paragraph{Setting.} An online retailer acquires customers through three channels: paid search (40\%), social media ads (35\%), and organic/referral (25\%). The question is whether paid search customers have higher CLV than social media customers, or whether the observed difference reflects selection.
+
+\paragraph{Data.} 100,000 customers acquired over 12 months, observed for 24 months post-acquisition. Covariates include age, gender, device type, first-session pages viewed, and acquisition month. Outcome is 24-month CLV.
+
+\paragraph{Naive Comparison.} Mean CLV by channel: paid search = \$285, social media = \$195, organic = \$340. Paid search appears \$90 higher than social media.
+
+\paragraph{Propensity Score Analysis.} We estimate the generalised propensity score using gradient boosting on the covariate set. After IPW reweighting, covariate balance improves: all SMDs fall below 0.05.
+
+\paragraph{Results.} The doubly robust estimate of the paid search vs. social media effect is \$42 (SE = \$18, $p = 0.02$). This is less than half the naive difference of \$90, indicating substantial selection bias. Paid search customers are older, use desktop devices, and view more pages—all predictors of higher CLV.
+
+\paragraph{Sensitivity Analysis.} We assess robustness to unobserved confounding using Rosenbaum bounds, which ask: how strong would an unobserved confounder need to be to explain away the estimated effect? The bounds show that a confounder would need to increase the odds of paid search assignment by a factor of $\Gamma = 1.8$ (holding covariates fixed) to reduce the effect to zero. Since plausible confounders---such as prior brand awareness or purchase intent---could reasonably have this magnitude, the causal interpretation is tentative. For a formal treatment of sensitivity analysis, see Section~\ref{sec:sensitivity-analyses}.
+
+\paragraph{Mechanism.} Decomposing CLV: paid search customers have similar purchase frequency but 15\% higher average order value. The channel effect operates through basket size, not retention.
+
+\paragraph{Interpretation.} Paid search generates higher CLV than social media, but the effect (\$42) is smaller than the naive comparison (\$90) suggests. The difference is driven by order value, not frequency. Given sensitivity to unobserved confounding, we recommend a randomised channel experiment to confirm the causal effect before reallocating budget.

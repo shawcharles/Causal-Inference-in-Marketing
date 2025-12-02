@@ -1,0 +1,83 @@
+\section{The Application Protocol}
+\label{sec:application-protocol}
+
+Marketing causal inference requires a disciplined workflow that transforms vague business questions into precise, testable claims. A question like "Does advertising work?" is not actionable. The causal question must specify the treatment, the outcome, the population, and the counterfactual. This section provides a reusable protocol for any marketing application.
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.1: The Six-Step Application Protocol]
+\textbf{Step 1: Define the estimand.} State the causal quantity in potential outcomes notation. For advertising incrementality, this is typically $\tau = \mathbb{E}[Y_i(1) - Y_i(0) | W_i = 1]$ (ATT) or the incremental revenue per dollar spent. For price elasticity, it is the causal derivative $\partial \log Q / \partial \log P$. Vague objectives like "measure ROI" must be translated into a specific estimand before proceeding.
+
+\textbf{Step 2: Assess data requirements.} Consult Table~\ref{tab:data-requirements} to determine the unit of analysis, time granularity, and minimum pre-period length for your application. Insufficient pre-period data undermines pre-trend tests and synthetic control fit. Missing covariates limit balance diagnostics.
+
+\textbf{Step 3: Select identification strategy.} Choose the source of identifying variation and state the required assumptions explicitly:
+\begin{itemize}
+    \item \textbf{Randomisation:} Unconfoundedness by design (Chapter~\ref{ch:frameworks}).
+    \item \textbf{Parallel trends:} Difference-in-differences, event studies (Chapter~\ref{ch:did}, Chapter~\ref{ch:event}).
+    \item \textbf{Synthetic counterfactual:} SC, SDID, factor models (Chapter~\ref{ch:sc}, Chapter~\ref{ch:generalized-sc}, Chapter~\ref{ch:factor}).
+    \item \textbf{Instrumental variables:} Exclusion restriction (Chapter~\ref{ch:inference}).
+    \item \textbf{Regression discontinuity:} Local randomisation at a threshold.
+\end{itemize}
+
+\textbf{Step 4: Choose estimation method.} Match the estimator to the identification strategy and data structure. For staggered adoption, use heterogeneity-robust estimators (Chapter~\ref{ch:did}). For high-dimensional controls, use double machine learning (Chapter~\ref{ch:ml-nuisance}). For continuous treatments, use dose-response methods (Chapter~\ref{ch:continuous}).
+
+\textbf{Step 5: Run diagnostics.} Follow the diagnostic workflow in Chapter~\ref{ch:design-diagnostics}:
+\begin{itemize}
+    \item Pre-trend tests and placebos (Section~\ref{sec:pretrends-placebo}).
+    \item Overlap and balance assessment (Section~\ref{sec:overlap-balance}).
+    \item Influence and weight diagnostics (Section~\ref{sec:influence-stability}).
+    \item Support-by-$k$ for event studies (Section~\ref{sec:support-exposure}).
+\end{itemize}
+
+\textbf{Step 6: Conduct sensitivity analysis.} Stress-test findings against assumption violations (Section~\ref{sec:sensitivity-analyses}). Report breakdown values for parallel trends, bounds under partial identification, and specification curves across defensible alternatives.
+\end{tcolorbox}
+
+\subsection*{Method Selection Guide}
+
+The choice of method depends on the source of variation and the data structure. When treatment is randomised at the geo level, difference-in-differences with randomisation inference is the gold standard. When only one unit is treated, synthetic control or SDID exploits the panel structure to construct a counterfactual. When treatment timing varies across units, staggered DiD with heterogeneity-robust aggregation avoids negative weighting. When treatment is continuous (e.g., ad spend), dose-response methods estimate marginal effects. When selection is on observables but not on timing, propensity score methods or doubly robust estimators apply.
+
+No single method dominates. The credibility of the estimate depends on the plausibility of the identifying assumptions in the specific context. When multiple methods are applicable, triangulation across approaches strengthens conclusions.
+
+\subsection*{When Diagnostics Fail}
+
+Diagnostics do not always pass. When they fail, the protocol provides guidance:
+
+\paragraph{Pre-trends rejected.} If the joint pre-trend test rejects parallel trends, do not proceed with naive DiD. Options include: (1) switching to synthetic control or factor methods that do not require exact parallel trends; (2) using sensitivity analysis to bound the effect under plausible trend deviations; (3) reporting that the design is not credible for this application.
+
+\paragraph{Poor overlap.} If propensity score distributions do not overlap, the ATE is not identified without extrapolation. Options include: (1) trimming to the region of common support and reporting the trimmed estimand; (2) switching to ATT, which requires overlap only for controls; (3) using bounds that acknowledge the extrapolation.
+
+\paragraph{Influential units.} If leave-one-out diagnostics reveal that a single unit drives the result, the estimate is fragile. Options include: (1) reporting the influence profile transparently; (2) using regularisation to spread weight; (3) concluding that the sample is too small for credible inference.
+
+\paragraph{Specification sensitivity.} If the specification curve shows sign changes or wide dispersion, the result depends on arbitrary choices. Options include: (1) reporting the full range rather than a point estimate; (2) pre-registering the primary specification to avoid post-hoc selection; (3) acknowledging that the evidence is inconclusive.
+
+The goal is not to force a significant result but to report what the data credibly support.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\textwidth]{images/fig_app_overlap_balance.pdf}
+\caption{Diagnostic protocol: Overlap and balance assessment}
+\label{fig:app-overlap-balance}
+\small\textit{Left panel shows propensity score distributions for treated (blue) and control (orange) units. Overlap statistic = 0.78 indicates adequate common support. Red dashed lines mark trimming thresholds at 0.1 and 0.9. Right panel shows Standardised Mean Differences (SMD) for key covariates before (red) and after (green) inverse propensity weighting. All post-weighting SMDs fall below 0.1, indicating good balance. These diagnostics should be reported for any observational study.}
+\end{figure}
+
+Table~\ref{tab:data-requirements} summarises the data requirements for each application domain. These requirements should be verified before committing to a design.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Data requirements by marketing application domain}
+\label{tab:data-requirements}
+\begin{tabularx}{\textwidth}{Y Y Y Y Y}
+\toprule
+\textbf{Application} & \textbf{Unit} & \textbf{Time Granularity} & \textbf{Pre-Period} & \textbf{Key Variables} \\
+\midrule
+Geo-experiment & DMA/postcode & Weekly & 26--52 weeks & Sales, demographics \\
+Digital attribution & User-session & Daily & 4--8 weeks & Conversions, exposures \\
+Media mix & National & Weekly & 2--3 years & Spend, sales, promotions \\
+Loyalty programme & Store/customer & Monthly & 12 months & Transactions, enrolment \\
+Price elasticity & Store-SKU & Weekly & 52 weeks & Price, quantity, costs \\
+CLV attribution & Customer & Monthly & 24 months & Revenue, tenure, channel \\
+Dynamic pricing & Route-day & Daily & 90 days & Price, bookings, capacity \\
+Platform experiment & User-market & Hourly/daily & 2--4 weeks & Transactions, supply \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}

@@ -1,0 +1,97 @@
+\section{Privacy, Policy, and Governance}
+\label{sec:privacy-governance}
+
+Privacy regulations, platform policies, and data governance practices shape what data are available for causal analysis. These constraints are not merely obstacles—they define the feasible set of research designs and require explicit accommodation in study planning.
+
+\subsection*{Privacy Regulations and Consent}
+
+Privacy regulations fundamentally constrain our ability to collect and link data.
+
+\paragraph{Key regulations:}
+\begin{itemize}
+    \item \textbf{GDPR} (EU): Requires explicit consent for personal data processing; grants data subjects rights to access, rectification, and erasure.
+    \item \textbf{CCPA/CPRA} (California): Requires disclosure of data collection practices; grants opt-out rights for data sales.
+    \item \textbf{Apple ATT}: Requires per-app consent for cross-app tracking; opt-in rates typically 20–30\%.
+    \item \textbf{Cookie deprecation}: Third-party cookies being phased out in major browsers, eliminating a primary tracking mechanism.
+\end{itemize}
+
+\paragraph{Causal implications of consent.} Consent requirements shrink samples and introduce selection bias. Users who consent differ systematically from those who do not—they may be more engaged, more trusting, or less privacy-conscious. If consent correlates with potential outcomes, estimates from consented samples do not generalise to the full population.
+
+\paragraph{Sample size impact.} With 25\% opt-in rates, effective sample size drops by 75\%. Power calculations must account for consent rates. For rare outcomes, user-level experiments may become infeasible, requiring a shift to geo-level designs (Section~\ref{sec:geo-experiments}).
+
+\subsection*{Privacy-Preserving Techniques}
+
+When individual-level data are unavailable, privacy-preserving techniques enable aggregate analysis.
+
+\paragraph{Differential privacy.} Adds calibrated noise to query results, providing formal privacy guarantees. Platforms (Google, Apple, Meta) increasingly report differentially private aggregates. The privacy-utility trade-off means that stronger privacy (smaller $\epsilon$) yields noisier estimates.
+
+\paragraph{Secure aggregation.} Computes aggregates across users without exposing individual records. Useful for federated learning and cross-platform measurement.
+
+\paragraph{Data clean rooms.} Secure environments where multiple parties can join data without exposing raw records. Enable advertiser-publisher matching while preserving privacy. Examples include Google Ads Data Hub, Amazon Marketing Cloud, and LiveRamp Safe Haven.
+
+\paragraph{Aggregated conversion APIs.} Platform-provided APIs (Meta Aggregated Event Measurement, Google Privacy Sandbox) report conversions at aggregate levels with noise injection. These replace user-level conversion tracking but introduce measurement error.
+
+\paragraph{Causal implications.} Aggregation reduces statistical power and may introduce bias if aggregation boundaries (e.g., cohorts, time windows) do not align with treatment variation. Sensitivity analysis should assess how privacy-induced noise affects confidence intervals.
+
+\subsection*{Platform Policy Changes}
+
+Platform policy changes create regime breaks that threaten identification.
+
+\paragraph{Types of policy changes:}
+\begin{itemize}
+    \item \textbf{Auction mechanism updates:} Changes to bidding algorithms, reserve prices, or quality scores alter who sees ads conditional on observables and unobservables, introducing algorithmic confounding (Chapter~\ref{ch:threats}).
+    \item \textbf{Ranking algorithm revisions:} Updates to search or social feed algorithms change organic versus paid exposure correlation.
+    \item \textbf{Conversion definition shifts:} Platforms redefine attribution windows (7-day to 28-day), add post-view conversions, or change deduplication rules.
+    \item \textbf{Targeting restrictions:} Removal of sensitive targeting categories (e.g., political, health) changes the feasible treatment space.
+\end{itemize}
+
+\paragraph{Monitoring for breaks.} Track changelogs, release notes, and A/B test schedules to flag break dates. Subscribe to platform developer blogs and API update notifications. Maintain an internal calendar of known policy changes.
+
+\paragraph{Guarding designs against regime breaks:}
+\begin{itemize}
+    \item Restrict analysis windows to stable periods before and after breaks.
+    \item Model breaks explicitly via time-varying parameters or structural break tests.
+    \item Report before-and-after estimates separately with transparency about comparability.
+    \item Use placebo tests around break dates to assess impact on control outcomes.
+\end{itemize}
+
+\subsection*{Data Governance for Reproducibility}
+
+Data governance ensures that causal analyses are reproducible and auditable.
+
+\paragraph{Dataset versioning.} Snapshot dates and schema hashes prevent silent updates from changing results. Tag datasets with version identifiers; never overwrite historical extracts.
+
+\paragraph{Schema migration logs.} Document field additions, deletions, or redefinitions. A field renamed from "clicks" to "valid\_clicks" with a new definition invalidates historical comparisons.
+
+\paragraph{Reproducible extracts.} Use version-controlled queries (SQL in Git) and deterministic sampling (fixed random seeds). Document all filters, joins, and transformations.
+
+\paragraph{Access controls and audit trails.} Track who accessed data when, supporting compliance and preventing leakage. Role-based access limits exposure to sensitive fields.
+
+\paragraph{Retention policies.} Balance replication (keep data long enough for independent verification) with privacy (delete data after study completion). Document retention periods in study protocols.
+
+\subsection*{Governance Checklist}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 19.6: Privacy and Governance Checklist]
+\textbf{Privacy compliance:}
+\begin{itemize}
+    \item What consent is required for data collection? What is the expected opt-in rate?
+    \item Does the analysis require individual-level data, or can aggregates suffice?
+    \item Are privacy-preserving techniques (differential privacy, clean rooms) available?
+    \item Have you assessed selection bias from consent-based sampling?
+\end{itemize}
+
+\textbf{Policy monitoring:}
+\begin{itemize}
+    \item Have you documented all platform policy changes during the analysis period?
+    \item Are there known regime breaks that require window restrictions?
+    \item Have you run placebo tests around break dates?
+\end{itemize}
+
+\textbf{Data governance:}
+\begin{itemize}
+    \item Are datasets versioned with snapshot dates and schema hashes?
+    \item Are extraction queries version-controlled and reproducible?
+    \item Are access controls and audit trails in place?
+    \item Is the retention policy documented and compliant with regulations?
+\end{itemize}
+\end{tcolorbox}

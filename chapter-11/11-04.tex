@@ -1,0 +1,154 @@
+\section{Partial Interference and Cluster Designs}
+\label{sec:partial-interference}
+
+The partial interference framework provides a tractable middle ground between SUTVA (no interference) and full interference (arbitrary spillovers across all units). Partial interference assumes that the population can be partitioned into clusters, with interference occurring within clusters but not between clusters.
+
+This assumption is plausible in many marketing settings where spillovers are geographically or socially localised. For exposure mappings, see Section~\ref{sec:exposure-mappings}. For estimation, see Section~\ref{sec:estimating-spillovers}. For diagnostics, see Chapter~\ref{ch:design-diagnostics}. For inference, see Chapter~\ref{ch:inference}.
+
+\subsection*{Formal Framework}
+
+\begin{assumption}[Partial Interference]\label{ass:partial-interference}
+The population can be partitioned into $G$ non-overlapping clusters $\mathcal{C}_1, \ldots, \mathcal{C}_G$ with $\bigcup_{g=1}^G \mathcal{C}_g = \mathcal{I}$ and $\mathcal{C}_g \cap \mathcal{C}_{g'} = \emptyset$ for $g \neq g'$. Interference occurs only within clusters:
+\[
+Y_{git}(\mathbf{W}_1, \ldots, \mathbf{W}_G) = Y_{git}(\mathbf{W}_g),
+\]
+where $\mathbf{W}_g = (W_{g1}, \ldots, W_{gN_g})'$ is the treatment vector within cluster $g$.
+\end{assumption}
+
+\begin{definition}[Cluster Treatment Intensity]\label{def:cluster-intensity}
+For cluster $g$ with $N_g$ units, the cluster treatment intensity is:
+\[
+p_{gt} = \frac{1}{N_g} \sum_{i=1}^{N_g} W_{git}.
+\]
+Under partial interference with exposure mapping sufficiency, potential outcomes reduce to:
+\[
+Y_{git}(W_{git}, p_{gt}),
+\]
+depending on own treatment $W_{git}$ and cluster intensity $p_{gt}$.
+\end{definition}
+
+\subsection*{Estimands Under Partial Interference}
+
+Table~\ref{tab:partial-interference-estimands} summarises the estimands.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Estimands Under Partial Interference}
+\label{tab:partial-interference-estimands}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Estimand} & \textbf{Formula} & \textbf{Interpretation} \\
+\midrule
+Direct effect at $p$ & $\tau^{\text{direct}}(p) = \mathbb{E}[Y(1,p) - Y(0,p)]$ & Own treatment effect, holding intensity fixed \\
+\addlinespace
+Spillover effect & $\tau^{\text{spillover}}(p, p') = \mathbb{E}[Y(0,p') - Y(0,p)]$ & Intensity change effect on untreated \\
+\addlinespace
+Total effect & $\tau^{\text{total}}(p, p') = \mathbb{E}[Y(1,p') - Y(0,p)]$ & Combined own treatment and intensity change \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\begin{definition}[Estimands Under Partial Interference]\label{def:estimands-pi}
+Under Assumption~\ref{ass:partial-interference}:
+
+\textbf{(i) Direct effect:} Effect of changing own treatment, holding intensity fixed.
+
+\textbf{(ii) Spillover effect:} Effect on untreated units of changing cluster intensity.
+
+\textbf{(iii) Total effect:} Combined effect of changing own treatment and cluster intensity.
+
+\textbf{Decomposition:}
+\[
+\tau^{\text{total}}(p, p') = \tau^{\text{direct}}(p') + \tau^{\text{spillover}}(p, p').
+\]
+The total effect equals the direct effect (at the new intensity) plus the spillover effect. If the direct effect varies with intensity, we have interaction between own treatment and cluster environment.
+\end{definition}
+
+\subsection*{Identification and Estimation}
+
+\begin{assumption}[Cluster Randomisation]\label{ass:cluster-randomisation}
+Treatment is randomised at two levels:
+\begin{enumerate}[(i)]
+    \item \textbf{First stage:} Clusters are randomly assigned to treatment intensities $p_g \in \{p^{(1)}, \ldots, p^{(K)}\}$ with probabilities $\{\pi_k\}_{k=1}^K$;
+    \item \textbf{Second stage:} Within each cluster assigned to intensity $p^{(k)}$, a fraction $p^{(k)}$ of units are randomly selected for treatment.
+\end{enumerate}
+\end{assumption}
+
+\begin{theorem}[Identification Under Cluster Randomisation]\label{thm:identification-cluster}
+Under Assumptions~\ref{ass:partial-interference} and~\ref{ass:cluster-randomisation}:
+
+\textbf{(i)} Direct effect: $\tau^{\text{direct}}(p^{(k)}) = \mathbb{E}[Y | W = 1, p_g = p^{(k)}] - \mathbb{E}[Y | W = 0, p_g = p^{(k)}]$.
+
+\textbf{(ii)} Spillover effect: $\tau^{\text{spillover}}(p^{(k)}, p^{(k')}) = \mathbb{E}[Y | W = 0, p_g = p^{(k')}] - \mathbb{E}[Y | W = 0, p_g = p^{(k)}]$.
+
+\textbf{(iii)} Total effect: $\tau^{\text{total}}(p^{(k)}, p^{(k')}) = \mathbb{E}[Y | W = 1, p_g = p^{(k')}] - \mathbb{E}[Y | W = 0, p_g = p^{(k)}]$.
+\end{theorem}
+
+\begin{proposition}[Horvitz-Thompson Estimator]\label{prop:ht-interference}
+Under cluster randomisation with known assignment probabilities, the Horvitz-Thompson estimator for the total effect is:
+\[
+\hat{\tau}^{\text{total}}_{\text{HT}} = \frac{1}{N} \sum_{g=1}^G \sum_{i=1}^{N_g} \left( \frac{W_{git} Y_{git} \mathbf{1}\{p_{gt} = p'\}}{\pi_{p'} \cdot p'} - \frac{(1 - W_{git}) Y_{git} \mathbf{1}\{p_{gt} = p\}}{\pi_p \cdot (1 - p)} \right).
+\]
+This estimator is unbiased: $\mathbb{E}[\hat{\tau}^{\text{total}}_{\text{HT}}] = \tau^{\text{total}}(p, p')$.
+\end{proposition}
+
+\subsection*{Worked Example: Retail Promotion Experiment}
+
+\paragraph{Setting.} A retailer operates 100 stores across 20 metropolitan areas (clusters). The retailer randomises promotion intensity across metros: 5 metros at 0\% (control), 5 at 25\%, 5 at 50\%, 5 at 75\%.
+
+\paragraph{First stage.} Assign metros to intensities: $p \in \{0, 0.25, 0.50, 0.75\}$ with $\pi_p = 0.25$ each.
+
+\paragraph{Second stage.} Within each metro assigned to intensity $p$, randomly select $p \times N_g$ stores for promotion.
+
+\paragraph{Identification.} The direct effect at $p = 0.50$ is identified by comparing treated versus untreated stores within 50\% metros. The spillover effect is identified by comparing untreated stores in 75\% versus 25\% metros. The total effect is identified by comparing treated stores in 75\% metros versus untreated stores in 25\% metros.
+
+\subsection*{When Partial Interference Fails}
+
+The partial interference assumption may fail in several scenarios:
+
+\paragraph{Between-cluster spillovers.} If units in different clusters interact (e.g., customers shop across metro areas, social networks span geographic boundaries), the assumption $Y_{git}(\mathbf{W}_1, \ldots, \mathbf{W}_G) = Y_{git}(\mathbf{W}_g)$ is violated. Diagnostic: test whether outcomes in cluster $g$ correlate with treatment intensity in adjacent clusters.
+
+\paragraph{Misspecified clusters.} If the true interference structure differs from the assumed partition, estimates are biased. Example: if spillovers occur within 5 km but clusters are defined as 20 km metros, untreated units may be affected by treated units in other clusters.
+
+\paragraph{Endogenous cluster size.} If cluster sizes $N_g$ respond to treatment, the exposure mapping $p_{gt} = N_g^{-1} \sum W_{git}$ is confounded. Example: promotions attract customers to a metro area, changing the denominator.
+
+\paragraph{Remedies.} Use sensitivity analysis varying cluster definitions. Test for between-cluster spillovers. Use buffer zones (exclude units near cluster boundaries).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{images/fig_cluster_randomisation.pdf}
+\caption{Cluster Randomisation Design with Varying Treatment Intensities. Each cluster (metro area) is randomly assigned a treatment intensity $p \in \{0\%, 25\%, 50\%, 75\%\}$. Within each cluster, units are randomly selected for treatment at the assigned rate. Filled circles denote treated units; hollow circles denote untreated units. Under partial interference, spillovers occur within clusters but not between clusters.}
+\label{fig:cluster-randomisation}
+\end{figure}
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Practical Guidance: Cluster Construction]
+\textbf{Cluster selection criteria:}
+\begin{itemize}
+\item[$\square$] Geographic proximity (metros, DMAs, regions).
+\item[$\square$] Network structure (communities, cliques).
+\item[$\square$] Institutional boundaries (stores, schools, firms).
+\end{itemize}
+
+\textbf{Cluster size considerations:}
+\begin{itemize}
+\item[$\square$] Large enough for within-cluster variation.
+\item[$\square$] Small enough to assume no between-cluster spillovers.
+\item[$\square$] Similar sizes across clusters (avoids heterogeneity in power).
+\end{itemize}
+
+\textbf{Intensity selection:}
+\begin{itemize}
+\item[$\square$] Include $p = 0$ (pure control) and $p = 1$ (saturation) if possible.
+\item[$\square$] Multiple intermediate intensities (e.g., 25\%, 50\%, 75\%) enable spillover curve estimation.
+\item[$\square$] Equal allocation across intensities maximises power for contrasts.
+\end{itemize}
+
+\textbf{Diagnostics:}
+\begin{itemize}
+\item[$\square$] Test for between-cluster spillovers (e.g., adjacent metros).
+\item[$\square$] Check balance across clusters.
+\item[$\square$] Conduct placebo tests (Chapter~\ref{ch:design-diagnostics}).
+\end{itemize}
+\end{tcolorbox}

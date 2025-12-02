@@ -1,0 +1,53 @@
+\section{Measurement Error}
+\label{sec:measurement-error}
+
+Measurement error ($B_{\text{meas}}$) is another pervasive threat. Our measures of exposure (e.g., ad impressions) and outcomes (e.g., sales) are imperfect. We distinguish between classical error, which attenuates estimates, and non-classical error, which can introduce bias in any direction.
+
+\begin{definition}[Classical Measurement Error]\label{def:classical-me}
+For true treatment $W_{it}^*$, the observed treatment $W_{it}$ satisfies:
+\[
+W_{it} = W_{it}^* + \eta_{it},
+\]
+where $\eta_{it}$ is measurement error. This error has mean zero, is independent of the true treatment, and is independent of the outcome error. Classical measurement error in treatment attenuates estimates toward zero.
+\end{definition}
+
+\begin{proposition}[Attenuation Factor]\label{prop:attenuation}
+Under classical measurement error in treatment with reliability ratio:
+\[
+\lambda = \frac{\text{Var}(W_{it}^*)}{\text{Var}(W_{it})} = \frac{\text{Var}(W_{it}^*)}{\text{Var}(W_{it}^*) + \text{Var}(\eta_{it})} \in (0, 1],
+\]
+the OLS estimator satisfies:
+\[
+\hat{\tau}^{\text{OLS}} \xrightarrow{p} \lambda \cdot \tau_0.
+\]
+The attenuation factor $\lambda < 1$ implies that estimates are biased toward zero. The bias is:
+\[
+B_{\text{attenuation}} = (1 - \lambda) \cdot \tau_0.
+\]
+\end{proposition}
+
+In marketing data, error is often non-classical.
+
+\begin{definition}[Non-Classical Measurement Error]\label{def:nonclassical-me}
+Non-classical measurement error violates the conditions of classical error:
+\begin{itemize}
+\item \textbf{Differential error:} the error correlates with outcomes.
+\item \textbf{Endogenous error:} the error correlates with the true treatment.
+\item \textbf{Systematic bias:} the error depends on covariates.
+\end{itemize}
+Non-classical error can bias estimates in any direction, not necessarily toward zero. Platform-specific measurement (e.g., attribution rules) often induces non-classical error.
+\end{definition}
+
+\begin{proposition}[Measurement Error Bounds]\label{prop:me-bounds}
+Suppose the measurement error satisfies $|\eta_{it}| \leq \bar{\eta}$ almost surely. The identified set for $\tau_0$ is:
+\[
+\mathcal{T}(\bar{\eta}) = \left[ \frac{\hat{\tau}}{\lambda^+(\bar{\eta})}, \frac{\hat{\tau}}{\lambda^-(\bar{\eta})} \right],
+\]
+where $\lambda^-(\bar{\eta})$ and $\lambda^+(\bar{\eta})$ are the minimum and maximum reliability ratios consistent with $\bar{\eta}$. Report bounds for plausible ranges of $\bar{\eta}$ based on validation data.
+\end{proposition}
+
+\subsection*{Attribution Misalignment}
+
+Attribution misalignment is a specific form of measurement threat. The way a platform attributes a conversion to a treatment often depends on the treatment assignment itself (e.g., last-click attribution). This differs from the counterfactual-based estimands we seek in causal inference.
+
+The best practice is to use stable, external outcomes when possible. If platform-reported conversions must be used, be transparent about the assumptions and run sensitivity analyses on the attribution rules.

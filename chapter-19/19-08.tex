@@ -1,0 +1,117 @@
+\section{Validation and Reconciliation}
+\label{sec:validation-reconciliation}
+
+Credible causal inference requires validation at two levels: data source validation (do different data sources agree on basic facts?) and method reconciliation (do different estimation methods yield consistent causal estimates?). Discrepancies at either level signal potential problems that must be diagnosed and addressed.
+
+\subsection*{Data Source Reconciliation}
+
+Platform-reported metrics rarely match external data sources perfectly. Reconciliation quantifies and explains these discrepancies.
+
+\paragraph{Common discrepancy sources:}
+\begin{itemize}
+    \item \textbf{Coverage differences:} Platform data may include or exclude certain channels, devices, or user segments that external data capture differently.
+    \item \textbf{Attribution differences:} Platform uses 7-day click attribution; CRM uses first-touch; financial reports use cash basis.
+    \item \textbf{Timing differences:} Platform reports in UTC; retailer reports in local time; financial reports use fiscal periods.
+    \item \textbf{Definition differences:} "Conversion" means different things—platform counts leads, CRM counts sales, finance counts revenue.
+    \item \textbf{Deduplication rules:} Platforms may count unique users differently than CRM systems.
+\end{itemize}
+
+\paragraph{Reconciliation workflow:}
+\begin{enumerate}
+    \item \textbf{Identify overlap period:} Find a time window where all data sources are available and definitions are stable.
+    \item \textbf{Align definitions:} Map each source's metrics to a common definition (e.g., "completed purchase within 7 days of click").
+    \item \textbf{Compute discrepancy:} Calculate the ratio or difference between sources for the aligned metric.
+    \item \textbf{Diagnose root cause:} Decompose discrepancy into coverage, timing, and definition components.
+    \item \textbf{Document and adjust:} Record the discrepancy magnitude and apply calibration factors if justified.
+\end{enumerate}
+
+\paragraph{Acceptable discrepancy thresholds.} There is no universal threshold, but rules of thumb include:
+\begin{itemize}
+    \item $<$5\% discrepancy: Likely measurement noise; proceed with caution.
+    \item 5–20\% discrepancy: Investigate root cause; consider calibration.
+    \item $>$20\% discrepancy: Serious concern; do not proceed without resolution.
+\end{itemize}
+
+\paragraph{Persistent gaps.} If discrepancies persist after alignment, they may signal measurement drift (gradual change in definitions) or structural breaks (sudden policy changes). Monitor discrepancies over time; sudden jumps indicate breaks that require window restrictions or explicit modelling.
+
+\subsection*{Method Reconciliation}
+
+Different causal methods impose different identification assumptions. Comparing estimates across methods reveals sensitivity to these assumptions.
+
+\paragraph{Methods to compare:}
+\begin{itemize}
+    \item \textbf{Difference-in-differences} (Chapter~\ref{ch:did}): Requires parallel trends.
+    \item \textbf{Synthetic control} (Chapter~\ref{ch:sc}): Requires good pre-treatment fit.
+    \item \textbf{SDID} (Chapter~\ref{ch:generalized-sc}): Combines DiD and SC assumptions.
+    \item \textbf{Factor models} (Chapter~\ref{ch:factor}): Requires low-rank structure.
+    \item \textbf{Double machine learning} (Chapter~\ref{ch:ml-nuisance}): Requires correct nuisance function specification.
+    \item \textbf{Continuous-dose estimators} (Chapter~\ref{ch:continuous}): Requires overlap and correct dose-response form.
+\end{itemize}
+
+\paragraph{Interpreting agreement and divergence:}
+\begin{itemize}
+    \item \textbf{Agreement:} If multiple methods with different assumptions yield similar estimates, confidence in the causal effect increases. This is triangulation.
+    \item \textbf{Divergence:} If methods disagree, diagnose the source. Design diagnostics (Chapter~\ref{ch:design-diagnostics}) can identify whether overlap, pre-trends, weights, or functional form drive differences.
+\end{itemize}
+
+\paragraph{Root cause analysis for divergent estimates:}
+\begin{enumerate}
+    \item \textbf{Check sample differences:} Do methods use the same sample? Exclusions for overlap or balance may differ.
+    \item \textbf{Check pre-trend tests:} Does DiD fail pre-trends while SC passes fit tests?
+    \item \textbf{Check weight distributions:} Are SC or IPW weights concentrated on a few units?
+    \item \textbf{Check functional form:} Does the dose-response curve assumption matter?
+    \item \textbf{Check time horizon:} Are methods estimating effects at different post-treatment windows?
+\end{enumerate}
+
+\paragraph{Reporting standards.} Report all estimates with:
+\begin{itemize}
+    \item Sample sizes and exclusion criteria
+    \item Identification assumptions stated explicitly
+    \item Diagnostic test results (pre-trends, balance, fit)
+    \item Confidence intervals with appropriate inference
+\end{itemize}
+This allows readers to assess robustness and prefer estimates supported by multiple methods.
+
+\subsection*{Triangulation Strategy}
+
+Triangulation combines evidence from multiple data sources and methods to strengthen conclusions.
+
+\paragraph{Data triangulation.} Compare platform conversions to CRM sales to financial revenue. If all three show similar lift, confidence increases.
+
+\paragraph{Method triangulation.} Compare DiD, SC, and MMM estimates. If all three point to similar advertising effects, the finding is robust.
+
+\paragraph{Design triangulation.} Compare geo-experiments to user-level A/B tests to natural experiments. Different designs have different threats; agreement across designs is strong evidence.
+
+\paragraph{When triangulation fails.} If sources or methods disagree, do not average or cherry-pick. Instead:
+\begin{itemize}
+    \item Report all estimates transparently.
+    \item Diagnose the source of disagreement.
+    \item Acknowledge uncertainty in conclusions.
+    \item Recommend follow-up studies to resolve discrepancies.
+\end{itemize}
+
+\subsection*{Validation and Reconciliation Checklist}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 19.8: Validation and Reconciliation Checklist]
+\textbf{Data source reconciliation:}
+\begin{itemize}
+    \item Have you compared platform metrics to external data (CRM, scanner, financial)?
+    \item What is the discrepancy magnitude? Is it within acceptable thresholds?
+    \item Have you diagnosed root causes (coverage, timing, definitions)?
+    \item Are discrepancies stable over time, or do they show drift or breaks?
+\end{itemize}
+
+\textbf{Method reconciliation:}
+\begin{itemize}
+    \item Have you estimated effects using multiple methods with different assumptions?
+    \item Do estimates agree or diverge? If divergent, have you diagnosed the source?
+    \item Have you reported all estimates with sample sizes, assumptions, and diagnostics?
+\end{itemize}
+
+\textbf{Triangulation:}
+\begin{itemize}
+    \item Does evidence from multiple data sources point in the same direction?
+    \item Does evidence from multiple methods point in the same direction?
+    \item If triangulation fails, have you acknowledged uncertainty and recommended follow-up?
+\end{itemize}
+\end{tcolorbox}

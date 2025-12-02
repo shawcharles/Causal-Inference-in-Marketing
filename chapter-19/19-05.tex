@@ -1,0 +1,94 @@
+\section{Platform Metrics vs Econometric Estimands}
+\label{sec:platform-metrics}
+
+Platform-reported metrics and econometric estimands often measure different quantities. This section clarifies the distinction, identifies common pitfalls, and provides strategies for reconciliation.
+
+\subsection*{The Platform Lift Problem}
+
+We must be wary of platform-reported "lift" metrics. These often compare exposed and unexposed groups without accounting for the endogeneity of exposure, conflating the treatment effect with selection bias.
+
+\paragraph{Why platform lift is biased.} Platform algorithms target ads to users with high predicted conversion probability. Users who see ads differ systematically from those who do not—they were selected precisely because they were likely to convert anyway. Comparing conversion rates between exposed and unexposed groups captures both the causal effect and the selection effect.
+
+\paragraph{Example.} A platform reports 15\% lift: exposed users converted at 3.0\% vs. 2.6\% for unexposed. But if the algorithm targeted users with 20\% higher baseline propensity, the true causal lift may be near zero or even negative. The platform metric is not wrong—it accurately describes the data—but it does not answer the counterfactual question: what would have happened without the ad?
+
+\paragraph{Econometric estimands.} Our estimands—ATE, ATT, GATE—are based on counterfactual logic \citet{pearl2009causality}. They require identification strategies that sever the link between treatment assignment and potential outcomes (Section~\ref{sec:digital-attribution}).
+
+\subsection*{Delivery Metrics and Measurement Gaps}
+
+Delivery metrics report what the platform did, not what the user experienced.
+
+\paragraph{Key delivery metrics:}
+\begin{itemize}
+    \item \textbf{Coverage:} Share of target audience reached.
+    \item \textbf{Pacing:} Spend rate over time (front-loaded, even, back-loaded).
+    \item \textbf{Auction diagnostics:} Win rates, bid landscape, competitive density.
+    \item \textbf{Frequency:} Average impressions per reached user.
+\end{itemize}
+
+\paragraph{Measurement gaps.} Platform-implied exposure from delivery logs may depart from actual exposure:
+\begin{itemize}
+    \item \textbf{Viewability:} An impression is logged when the ad is served, not when it is seen. Viewability rates vary from 30\% to 80\% depending on placement.
+    \item \textbf{Bot traffic:} Fraudulent impressions inflate counts. Industry estimates suggest 5–20\% of digital ad spend is lost to fraud.
+    \item \textbf{Post-hoc filters:} Fraud filters applied after delivery may remove impressions retroactively, creating discrepancies between real-time and reconciled data.
+\end{itemize}
+
+\paragraph{The prediction–identification tension.} Delivery optimisers predict conversions to allocate exposure, but those predictions embed unobserved heterogeneity that confounds causal inference \citet{breiman2001statistical}. The same model that improves targeting efficiency creates selection bias for causal estimation. Orthogonalised machine learning (Chapter~\ref{ch:ml-nuisance}) mitigates this by cross-fitting delivery models and treatment effect models on separate folds.
+
+\subsection*{Design-Faithful Measurement}
+
+Design-faithful measurement means that metric definitions align with identification assumptions. When definitions change mid-study, causal estimates are compromised.
+
+\paragraph{Method-specific requirements:}
+\begin{itemize}
+    \item \textbf{Difference-in-differences} (Chapter~\ref{ch:did}) and \textbf{event studies} (Chapter~\ref{ch:event}) require stable outcome definitions across pre and post periods.
+    \item \textbf{Synthetic control} (Chapter~\ref{ch:sc}) and \textbf{SDID} (Chapter~\ref{ch:generalized-sc}) require donor outcomes measured identically to treated outcomes.
+    \item \textbf{Factor models} (Chapter~\ref{ch:factor}) require that missing data patterns are stable or explicitly modelled.
+\end{itemize}
+
+\paragraph{Common violations:}
+\begin{itemize}
+    \item \textbf{Attribution window changes:} Platform changes from 28-day to 7-day click attribution mid-campaign.
+    \item \textbf{Viewability standard shifts:} MRC viewability definition changes (e.g., from 50\% pixels for 1 second to 100\% pixels for 2 seconds).
+    \item \textbf{Cookie policy updates:} iOS ATT or Chrome cookie deprecation reduces trackable conversions.
+    \item \textbf{Conversion modelling:} Platform begins imputing conversions for untracked users, changing the outcome definition.
+\end{itemize}
+
+These violations break comparability and require sensitivity analysis or restriction to stable windows.
+
+\subsection*{Reconciliation Strategies}
+
+When platform metrics diverge from external data, reconciliation is required.
+
+\paragraph{External validation.} Use independent outcome data—retail scanner sales, CRM transactions, financial results—to validate platform-reported conversions. Discrepancies reveal measurement error or attribution inflation.
+
+\paragraph{Incrementality calibration.} Run periodic geo-experiments or randomised holdouts to estimate true incrementality. Use these estimates to calibrate platform lift metrics (Section~\ref{sec:geo-experiments}, Section~\ref{sec:mmm}).
+
+\paragraph{Multi-source triangulation.} Compare estimates from multiple methods: platform lift, MMM, geo-experiments, and attribution models. Convergence increases confidence; divergence signals measurement or identification problems.
+
+\paragraph{Audit trails.} Document all metric definitions, platform versions, and policy changes. Maintain a changelog that maps dates to definition changes for sensitivity analysis.
+
+\subsection*{Platform Metric Validation Checklist}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 19.5: Platform Metric Validation Checklist]
+\textbf{Before using platform metrics:}
+\begin{itemize}
+    \item What is the platform's definition of "conversion"? Does it match your business outcome?
+    \item What attribution window is used? Has it changed during the analysis period?
+    \item What fraction of conversions are modelled (imputed) vs. observed?
+    \item What is the viewability rate? Are non-viewable impressions included?
+\end{itemize}
+
+\textbf{For lift metrics:}
+\begin{itemize}
+    \item How was the control group constructed? Is it a true holdout or algorithmic?
+    \item What is the selection mechanism into exposure? Is it endogenous?
+    \item Has the lift been validated against external incrementality tests?
+\end{itemize}
+
+\textbf{For reconciliation:}
+\begin{itemize}
+    \item Do platform conversions match CRM or sales data? What is the discrepancy rate?
+    \item Have you run geo-experiments to calibrate platform estimates?
+    \item Are metric definitions stable across the pre and post periods?
+\end{itemize}
+\end{tcolorbox}

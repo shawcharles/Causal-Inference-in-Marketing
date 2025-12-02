@@ -1,0 +1,67 @@
+@startuml ecosystem
+' Marketing Analytics Ecosystem - Four Pillars with Central Triangulation
+' Generates: ecosystem.svg / ecosystem.png
+
+skinparam backgroundColor white
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 11
+skinparam shadowing false
+skinparam roundCorner 15
+skinparam padding 10
+
+skinparam rectangle {
+    BorderThickness 2
+    FontStyle bold
+}
+
+skinparam card {
+    BorderThickness 2
+}
+
+' Layout using rectangles in a diamond pattern around center
+
+together {
+    rectangle "<b>RANDOMISED EXPERIMENTS</b>\n\nA/B tests\nGeo experiments\nHoldout designs\n\n<color:#666>Days – Weeks</color>" as EXP #E3F2FD;line:1565C0
+}
+
+together {
+    rectangle "<b>PANEL METHODS</b>\n\nDiD / Event studies\nSynthetic control\nFactor models\n\n<color:#666>Months – Years</color>" as PANEL #E8F5E9;line:2E7D32
+}
+
+together {
+    rectangle "<b>MARKETING MIX MODELS</b>\n\nAggregate response\nAdstock / Saturation\nBudget allocation\n\n<color:#666>Weeks – Quarters</color>" as MMM #FFF3E0;line:EF6C00
+}
+
+together {
+    rectangle "<b>ATTRIBUTION MODELS</b>\n\nMulti-touch\nData-driven\nCustomer journeys\n\n<color:#666>Real-time</color>" as ATTR #F3E5F5;line:7B1FA2
+}
+
+' Central hub
+card "<b>TRIANGULATION</b>\nMultiple methods\nDifferent assumptions\nRobust conclusions" as CENTER #FFECB3;line:F57C00
+
+' Position: diamond layout
+EXP -[hidden]down- CENTER
+PANEL -[hidden]down- CENTER  
+MMM -[hidden]up- CENTER
+ATTR -[hidden]up- CENTER
+
+' Connections to center (convergence)
+EXP --> CENTER : validates
+PANEL --> CENTER : extends
+MMM --> CENTER : guides
+ATTR --> CENTER : informs
+
+' Pairwise complementarities (outer ring)
+EXP <.[#1565C0,dashed].> PANEL : calibration
+PANEL <.[#2E7D32,dashed].> MMM : panel MMM
+MMM <.[#EF6C00,dashed].> ATTR : validation
+ATTR <.[#7B1FA2,dashed].> EXP : targeting
+
+note bottom of CENTER
+  <b>Key Insight:</b> Where methods converge,
+  evidence is strongest. No single approach
+  suffices for credible causal measurement.
+end note
+
+caption The Marketing Analytics Ecosystem
+@enduml

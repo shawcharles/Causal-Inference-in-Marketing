@@ -1,0 +1,50 @@
+\section{Method Selection Map}
+\label{sec:method-selection-map}
+
+The design of a marketing panel study determines which estimators are appropriate and which assumptions are required for causal identification. This section provides a narrative map from design features---assignment mechanism, data structure, treatment variation---to the methods developed in subsequent chapters. The goal is not to prescribe a single correct method for each setting but to clarify the menu of options and the trade-offs among them. It complements the crosswalk in Chapter~\ref{ch:frameworks} by highlighting how specific design choices steer you toward particular estimators.
+
+\subsection{Randomised Block Designs}
+
+If treatment is randomised across units at a single point in time and remains constant thereafter (a block design), the standard difference-in-differences estimator (Chapter~\ref{ch:did}) is appropriate. The estimator compares the change in outcomes for treated units to the change in outcomes for control units. Under randomisation, the parallel trends condition holds in expectation by design. Inference can use cluster-robust standard errors, randomisation inference, or wild cluster bootstrap depending on the number of clusters and the correlation structure (Chapter~\ref{ch:inference}). Event-study specifications (Chapter~\ref{ch:event}) extend the analysis to check for pre-trends and estimate dynamic effects. In a randomised design, these checks should confirm the absence of pre-trends and focus attention on dynamics after treatment.
+
+\subsection{Staggered Adoption Without Heterogeneity}
+
+If treatment is adopted at different times across units and treatment effects are constant across cohorts and time, the two-way fixed effects (TWFE) regression provides a simple, unbiased estimate of the ATT under the standard parallel trends and no-anticipation assumptions. The regression includes unit and time fixed effects and regresses outcomes on a treatment indicator. The coefficient on the treatment indicator estimates the constant treatment effect. TWFE is computationally straightforward and scales to large datasets, but it is valid only when treatment effects are truly constant. Pre-trends and event-study plots (Chapter~\ref{ch:event}) provide diagnostics. When they suggest heterogeneous effects, the modern estimators in Chapter~\ref{ch:did} described in the next subsection are more appropriate.
+
+\subsection{Staggered Adoption With Heterogeneity}
+
+If treatment effects are heterogeneous across cohorts or over time---as is typical in marketing---the standard TWFE estimator can be biased. Modern heterogeneity-robust estimators (Chapter~\ref{ch:did}) target the cohort-time effects $\text{ATT}(g,t)$ directly.
+
+These methods proceed in two steps. First, estimate $\text{ATT}(g,t)$ for each cohort $g$ and period $t$ using appropriate control groups such as not-yet-treated units. Second, aggregate these elementary effects using user-specified weights $\omega_{g,t}$ that are typically non-negative and sum to one:
+\[ \tau_{\text{summary}} = \sum_{g,t} \omega_{g,t} \, \widehat{\text{ATT}}(g,t). \]
+Common aggregations include the simple ATT (weighted by cohort size), event-study coefficients $\theta_k$ (aggregating by relative time $k = t-g$), or calendar-time effects. This explicit aggregation avoids the opaque and potentially negative weighting inherent in the static TWFE specification.
+
+\subsection{Single Treated Unit or Few Treated Units}
+
+If only one or a few units are treated and many controls are available, synthetic control methods (Chapter~\ref{ch:sc}) construct a weighted combination of control units to approximate the counterfactual trajectory of the treated unit. Synthetic control does not require parallel trends in levels but instead uses pre-treatment fit: if the synthetic control matches the treated unit well before treatment, it provides a credible counterfactual after treatment. Inference relies on placebo tests that compare the actual effect to the distribution of placebo effects obtained by applying synthetic control to each control unit.
+
+Hybrid methods (Chapter~\ref{ch:generalized-sc}), particularly synthetic difference-in-differences (SDID), combine synthetic control with difference-in-differences by weighting both units and time periods. SDID often outperforms both DiD and SC in finite samples by improving pre-treatment fit while leveraging parallel trends when they hold.
+
+\subsection{Common Time-Varying Shocks Without Parallel Trends}
+
+If treated and control units are subject to common shocks---macroeconomic trends, industry demand shifts, platform algorithm changes---that affect units differentially, factor models (Chapters~\ref{ch:factor}, \ref{ch:advanced-matrix}) provide identification without requiring parallel trends. Interactive fixed effects models posit that untreated potential outcomes are driven by a small number of latent factors, with units loading differentially on those factors. Matrix completion and nuclear norm methods estimate the factors and loadings jointly, imputing counterfactual outcomes for treated units in treated periods.
+
+Factor models are particularly valuable in settings where units are heterogeneous and where common shocks dominate idiosyncratic variation. Marketing panels where all stores face category-level demand shocks, all markets experience national advertising campaigns, or all platforms face technological disruptions often exhibit low-rank structure conducive to factor methods.
+
+\subsection{Dynamic Effects and Carryover}
+
+If treatment effects exhibit carryover, anticipation, or other forms of dynamic path dependence, distributed lag models (Chapter~\ref{ch:dynamics}) parameterise the lag structure, estimating the effect of current and past treatments on current outcomes. Vector autoregressions, state-space models, and structural dynamic panel models extend the approach to incorporate feedback, equilibrium, and optimisation. These methods require assumptions about the lag length, the functional form of the decay, and the absence of omitted dynamics. However, they enable richer substantive conclusions about the time path of effects and the cumulative long-run impact.
+
+\subsection{Spillovers and Interference}
+
+If SUTVA is violated---customers influence friends, competitors respond to rivals' actions, advertising spills across markets---estimators must model the interference structure explicitly (Chapter~\ref{ch:spillovers}). Spatial econometric models, network models, and exposure mappings enable joint estimation of direct and spillover effects. Cluster-randomised designs that internalise spillovers within clusters provide clean identification of total effects (direct plus within-cluster spillovers), though they do not separately identify direct and spillover components without additional assumptions.
+
+Partial identification approaches bound effects when the spillover structure is uncertain, providing intervals rather than point estimates. These bounds are often wide but more honest about the limits of what can be learned without strong assumptions.
+
+\subsection{Machine Learning for Nuisance Functions and Heterogeneity}
+
+When the goal is to uncover heterogeneous treatment effects or to flexibly control for high-dimensional confounders, machine learning methods (Chapters~\ref{ch:ml-nuisance}, \ref{ch:high-dim}) provide powerful tools. Double machine learning (DML) uses random forests, gradient boosting, or neural networks to estimate nuisance functions---propensity scores, outcome models, factor loadings---while preserving valid inference on causal parameters through Neyman orthogonalisation and cross-fitting. Causal forests estimate heterogeneous treatment effects as a function of covariates, revealing which features moderate the treatment response.
+
+High-dimensional controls (Chapter~\ref{ch:high-dim}) employ lasso, elastic net, or group lasso to select relevant confounders from a large candidate set, enabling parsimonious specifications without manual variable selection. Post-selection inference methods provide confidence intervals that account for the data-driven selection, ensuring that uncertainty is not understated.
+
+This map from design features to methods is not exhaustive, and many studies will combine multiple approaches. The key principle is to let the design guide method selection rather than imposing a preferred method on the data. When the design supports multiple methods, comparing results across approaches provides evidence on robustness. When the design clearly favours one method, that method should be used even if it is computationally complex or yields wider confidence intervals than alternatives. Credibility trumps precision.

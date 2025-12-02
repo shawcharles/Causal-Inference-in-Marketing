@@ -1,0 +1,64 @@
+\section{Marketing Applications}
+\label{sec:hd-marketing}
+
+Regularisation methods are particularly valuable in marketing applications where many potential confounders are available (rich demographics, competitor actions, seasonality, platform signals) and where parsimony aids interpretation and communication. This section illustrates regularisation in four marketing settings: MMM-style panels with rich covariates, competitor controls in pricing studies, high-resolution calendar and catalogue features in retail, and creative attributes in advertising effectiveness.
+
+\subsection*{MMM-Style Panels with Rich Covariates}
+
+MMM-style panels with rich covariates arise when estimating the effects of multiple marketing channels (TV, digital, print, radio, social media) on sales using panel data with hundreds of controls. Consider a hypothetical retailer estimating channel effects using a panel of 200 stores observed over 104 weeks, with 150 covariates per store-week: demographics (age, income, education, household composition), competitive density (number of competitors within 5 km, their prices and promotions), seasonality (week-of-year dummies, holiday indicators, weather), search trends (Google Trends indices for 30 brand-related keywords), social media engagement (brand mentions, sentiment scores), and lagged outcomes (sales in prior weeks).
+
+The covariate dimension $p = 150$ is comparable to the number of stores ($N = 200$), and naïve inclusion of all covariates produces unstable estimates.
+
+The regularisation procedure uses double selection with unit-level blocking. For each channel (for example, TV advertising GRPs), run lasso of sales on all 150 covariates (without the channel variable), run lasso of the channel variable on all 150 covariates, and take the union of selected controls. Run OLS of sales on the channel variable and the union of selected controls, with unit and time fixed effects and cluster-robust standard errors.
+
+In this illustrative example, suppose the estimates show that TV advertising generates a moderate sales lift with a relatively narrow confidence interval, digital advertising a smaller lift, and social media a still smaller effect with a confidence interval that includes zero. The selected controls might include demographics (age, income), competitive density (number of competitors, their prices), and seasonality (week-of-year dummies).
+
+Diagnostics would show good balance (SMDs below 0.15 for all covariates after adjustment), adequate overlap (propensities bounded away from zero and one), and stability (the same controls selected in all folds). Such an analysis would inform the retailer's budget allocation across channels, prioritising channels with larger effects and narrower confidence intervals.
+
+\subsection*{Competitor Controls in Pricing Studies}
+
+Competitor controls in pricing studies illustrate the use of group lasso to select competitor variables jointly. Consider a hypothetical panel of 500 stores observed over 52 weeks, with prices and sales for the focal brand and 10 competing brands. The goal is to estimate the own-price elasticity of the focal brand, controlling for competitor prices and other covariates (demographics, seasonality).
+
+The covariate dimension includes 10 competitor prices, 30 demographic variables, and 52 week-of-year dummies, totalling $p = 92$. Group lasso applies group penalties to the 10 competitor prices jointly (selecting all competitor prices together or excluding all together), ensuring that the competitive context is either fully controlled for or not at all.
+
+The regularisation procedure partitions stores into five folds, trains group lasso on four folds, validates on the fifth fold, and selects the penalty that minimises validation error. In this illustrative setting, suppose the selected model includes the 10 competitor prices (group selected) and 5 demographic variables (selected individually).
+
+The resulting own-price elasticity estimate would typically be negative (for example, in the range of -2 to -3 for grocery categories), indicating that price increases reduce sales. Diagnostics would show that the selected model balances treated and control observations (low SMDs), that propensities are bounded (no extreme values), and that the elasticity estimate is stable across penalties. Such an analysis informs the brand's pricing strategy, with the elasticity estimate used to forecast revenue impacts of price changes.
+
+\subsection*{High-Resolution Calendar and Catalogue Features}
+
+High-resolution calendar and catalogue features in retail arise when estimating the effect of promotional campaigns using daily or weekly data with rich calendar controls (day-of-week, week-of-year, month-of-year, holiday indicators, weather) and catalogue features (product attributes, SKU-level promotions, cross-promotions).
+
+Consider a hypothetical panel of 1,000 SKUs observed over 365 days, with 200 calendar and catalogue features per SKU-day. Lasso might select around 20 features (day-of-week dummies, major holiday indicators, temperature, and selected SKU-level promotions) that predict sales strongly.
+
+The promotional campaign effect estimate would be robust to penalty choice and stable across folds. The selected features should align with domain knowledge (major holidays and temperature are known drivers of retail sales), building confidence that the selected model is credible.
+
+\subsection*{Creative Attributes in Advertising Effectiveness}
+
+Creative attributes in advertising effectiveness illustrate hierarchical lasso to select ad creative features (message, imagery, format, length) while respecting the hierarchy that campaigns must be included before individual creative elements.
+
+Consider a hypothetical panel of 100 DMAs observed over 52 weeks, with 50 advertising campaigns and 200 creative attributes (10 message themes, 20 image types, 5 formats, 4 lengths). Hierarchical lasso enforces that a campaign must be selected before its creative attributes are selected, ensuring that creative effects are estimated only for campaigns that have nonzero effects.
+
+In this illustrative example, the procedure might select a subset of campaigns and creative attributes (for example, message theme "quality", image type "lifestyle", format "video", length "30 seconds"). The analysis would inform the advertiser's creative strategy, prioritising campaigns with large effects and creative attributes that amplify those effects.
+
+\subsection*{Brand Premiums in Commodity Categories}
+
+Brand premiums in commodity categories provide a direct bridge between regularisation and brand equity measurement. Consider a scanner panel with brands $b = 1, \ldots, B$ (for example, Heinz and several supermarket own labels), stores $s = 1, \ldots, S$, and weeks $t = 1, \ldots, T$. Let $Q_{bst}$ denote the quantity sold of brand $b$ in store $s$ and week $t$, and $P_{bst}$ its shelf price. A simple log-demand specification is
+\[
+  \log Q_{bst} = \alpha_s + \gamma_t + \delta_b + \beta_p \log P_{bst} + X_{bst}' \theta + \varepsilon_{bst},
+\]
+where $\alpha_s$ and $\gamma_t$ are store and week fixed effects, $X_{bst}$ collects high-dimensional controls (promotions, displays, distribution, local demographics, competitor prices), and $\delta_b$ is a brand-specific intercept. Normalising the supermarket own label to $\delta_{\text{own}} = 0$, the coefficient $\delta_b$ captures the average log-demand shift for brand $b$ relative to the own label after controlling for price and covariates. Under a standard discrete-choice interpretation, $\delta_b$ is proportional to a difference in mean utility and can be mapped into a willingness-to-pay premium by solving for the compensating price change that keeps expected demand constant. For small changes, the approximate brand premium in level terms is
+\[
+  \Delta p_b \approx - \frac{\delta_b}{\beta_p} \bar{p},
+\]
+where $\bar{p}$ is a reference price in the category. A positive $\delta_b$ therefore corresponds to consumers being willing to pay more for brand $b$ than for the otherwise similar own label.
+
+The high-dimensional version of this model includes many brand--size combinations, store characteristics, and competitor interactions in $X_{bst}$. Group lasso or sparse group lasso can treat brand indicators (or brand--size blocks) as structured groups, shrinking small or indistinct brands' intercepts toward the own-label baseline while retaining distinct premiums for major brands such as Heinz.
+
+Double selection ensures that both price and brand indicators remain in the post-selection specification whenever they act as confounders for each other, even if a purely predictive lasso would have dropped some of them. The resulting estimates provide a disciplined, design-compatible measure of brand premiums in commodity categories, grounded in revealed-preference data rather than stated preference surveys.
+
+\subsection*{Summary}
+
+These applications illustrate the versatility of regularisation in marketing. Double selection controls for confounding flexibly while preserving valid inference. Group lasso selects structured groups of controls (competitor prices, media channels, creative attributes, and brand indicators) jointly, respecting domain knowledge. Hierarchical lasso enforces logical dependencies (campaigns before creatives, main effects before interactions).
+
+The unifying theme is that regularisation provides a principled method for managing high-dimensional controls in marketing panels, enabling precise and credible causal inference while maintaining interpretability and alignment with identification requirements. Chapter~\ref{ch:applications} revisits brand equity from a dynamic stock perspective in media mix settings, linking these cross-sectional premiums to long-run pricing power.

@@ -1,0 +1,105 @@
+\section{Canonical 2×2 DiD and Parallel Trends}
+\label{sec:canonical-did}
+
+A retailer launches a loyalty programme in 50 stores and wants to know whether it lifted sales. Fifty control stores that did not receive the programme provide a benchmark. Before the launch, treated stores averaged £100K in quarterly sales while control stores averaged £80K. After the launch, treated stores averaged £130K and control stores £95K. The treated stores grew by £30K, but control stores also grew---by £15K. The difference-in-differences estimate attributes the £15K excess growth to the programme. This simple logic underpins one of the most widely used causal designs in applied economics.
+
+The canonical difference-in-differences design involves two groups of units---treated and control---observed in two periods---pre-treatment and post-treatment. All treated units receive treatment in the same period, and all control units remain untreated throughout. We summarise the data in a two-by-two table of group-period means, and the estimator is a simple function of these four means.
+
+The design requires two key assumptions. \index{parallel trends}Parallel trends asserts that treated and control units would have followed the same trend absent treatment. The \index{SUTVA}stable unit treatment value assumption (SUTVA) rules out interference between units. We formalise both below.
+
+Let $\bar{Y}_{\text{treat}, \text{pre}}$ denote the average outcome for treated units in the pre-treatment period, $\bar{Y}_{\text{treat}, \text{post}}$ the average for treated units in the post-treatment period, and analogously for control units. The estimator is
+\[
+\hat{\tau}^{\text{DiD}} = \left( \bar{Y}_{\text{treat}, \text{post}} - \bar{Y}_{\text{treat}, \text{pre}} \right) - \left( \bar{Y}_{\text{control}, \text{post}} - \bar{Y}_{\text{control}, \text{pre}} \right).
+\]
+The first term is the change in outcomes for treated units from pre to post. The second term is the change for control units. The estimator is the difference between these two changes.
+
+Returning to our store example, the estimate is $(130 - 100) - (95 - 80) = 30 - 15 = \text{£}15\text{K}$. Notice that treated stores started with higher sales (£100K vs £80K), but the method does not require equal levels. It requires only that the £15K growth in control stores would have been the same for treated stores absent treatment. Level differences do not invalidate the design in principle, but they often signal trend differences in practice---a point we return to below.
+
+Under the parallel trends assumption, this estimator has a causal interpretation. Parallel trends asserts that in the absence of treatment, treated and control units would have experienced the same change in outcomes from pre to post. Formally, the assumption is
+\[
+\mathbb{E}[Y_{it}(0) - Y_{i,t-1}(0) \mid i \in \text{treated}] = \mathbb{E}[Y_{it}(0) - Y_{i,t-1}(0) \mid i \in \text{control}]
+\]
+for the relevant pre and post periods. The notation $Y_{it}(0)$ denotes the potential outcome under control, so this assumption is about counterfactual trends—the trends that would have been observed if neither group had been treated.
+
+Parallel trends does not require that treated and control units have the same levels of outcomes in the pre-treatment period. Levels can differ due to time-invariant characteristics (which are absorbed by unit fixed effects in a regression framework). Parallel trends also does not require that treated and control units exhibited identical growth rates throughout their entire pre-treatment history. What matters is the specific counterfactual change from the final pre-treatment period to the post-treatment period. Treated and control units could have followed different trajectories in the distant past, yet still satisfy parallel trends if their period-to-period changes would have converged by the treatment window. Conversely, units with similar historical growth rates might violate parallel trends if a shock differentially affects their trajectories precisely when treatment occurs. This distinction is subtle but important: parallel trends is a statement about one specific counterfactual change, not about the entire historical trajectory.
+
+When is it reasonable to believe that trends converge despite different histories? Convergence is plausible when treated and control units share a common exposure to the same market forces, macroeconomic conditions, or seasonal patterns that dominate idiosyncratic dynamics. For example, retail stores in the same region may have followed different growth paths in the past due to local factors, but if both are now subject to the same regional economy, their period-to-period changes may align. Convergence is implausible when the factors that drove historical divergence persist into the treatment window—for instance, if treated stores are in gentrifying neighbourhoods while control stores are in declining areas. The burden is on the analyst to articulate why convergence is credible in the specific context.
+
+\begin{assumption}[Parallel Trends]
+\label{assump:parallel-trends-canonical}
+\[
+\mathbb{E}[Y_{i, \text{post}}(0) - Y_{i, \text{pre}}(0) \mid i \in \text{treated}] = \mathbb{E}[Y_{i, \text{post}}(0) - Y_{i, \text{pre}}(0) \mid i \in \text{control}].
+\]
+\end{assumption}
+
+In addition to parallel trends, valid inference requires the Stable Unit Treatment Value Assumption (SUTVA), which ensures that the treatment status of one unit does not affect the potential outcomes of another. SUTVA is not merely a convenience: without it, the potential outcome $Y_{it}(0)$ is not a well-defined scalar because it would depend on the entire assignment vector $\mathbf{w}$, not just on unit $i$'s own treatment status. The notation we have been using presupposes SUTVA.
+
+\begin{assumption}[No Interference (SUTVA)]
+\label{assump:sutva-canonical}
+For any two assignment vectors $\mathbf{w}$ and $\mathbf{w}'$, if $w_{it} = w'_{it}$, then $Y_{it}(\mathbf{w}) = Y_{it}(\mathbf{w}')$ for all $i,t$.
+\end{assumption}
+
+This rules out spillovers between units. While often plausible in isolated settings, violations are common in marketing (see Section~\ref{sec:did-marketing} and Chapter~\ref{ch:spillovers}).
+
+Under these assumptions, the DiD estimator consistently estimates the \index{ATT (average treatment effect on treated)}average treatment effect on the treated (ATT):
+\[
+\text{ATT} = \mathbb{E}[Y_{i, \text{post}}(1) - Y_{i, \text{post}}(0) \mid i \in \text{treated}].
+\]
+The observed change for treated units is
+\[
+\mathbb{E}[Y_{i, \text{post}} - Y_{i, \text{pre}} \mid i \in \text{treated}] = \mathbb{E}[Y_{i, \text{post}}(1) - Y_{i, \text{pre}}(0) \mid i \in \text{treated}]
+\]
+because treated units are treated in the post period and untreated in the pre period. For control units, the observed change is
+\[
+\mathbb{E}[Y_{i, \text{post}} - Y_{i, \text{pre}} \mid i \in \text{control}] = \mathbb{E}[Y_{i, \text{post}}(0) - Y_{i, \text{pre}}(0) \mid i \in \text{control}].
+\]
+The control-group change is fully observed because control units are never treated. This is the key: we use the control group's observed change as a stand-in for the treated group's counterfactual change. Parallel trends is the assumption that licenses this substitution.
+
+Taking the difference,
+\[
+\hat{\tau}^{\text{DiD}} = \mathbb{E}[Y_{i, \text{post}}(1) - Y_{i, \text{pre}}(0) \mid i \in \text{treated}] - \mathbb{E}[Y_{i, \text{post}}(0) - Y_{i, \text{pre}}(0) \mid i \in \text{control}].
+\]
+Under parallel trends, the second term equals $\mathbb{E}[Y_{i, \text{post}}(0) - Y_{i, \text{pre}}(0) \mid i \in \text{treated}]$, so
+\[
+\hat{\tau}^{\text{DiD}} = \mathbb{E}[Y_{i, \text{post}}(1) - Y_{i, \text{post}}(0) \mid i \in \text{treated}] = \text{ATT}.
+\]
+
+The canonical 2×2 design is conceptually simple and provides a clear benchmark for understanding DiD logic, but it is rare in marketing applications. Most marketing interventions unfold over multiple periods, not just two, and treatment is often adopted in staggered fashion across units rather than simultaneously. Extending 2×2 logic to panels with multiple periods and staggered adoption requires care: heterogeneous effects and comparisons with already-treated units break the simple differencing intuition. Figure~\ref{fig:canonical-did} illustrates the canonical 2×2 design and the parallel trends assumption visually.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{images/canonical_did.pdf}
+\caption{Canonical 2×2 DiD: Timing and Parallel Trends}
+\label{fig:canonical-did}
+\small\textit{The figure illustrates the canonical difference-in-differences design with two groups and two periods. The left panel shows the treatment timing: control units (blue) remain untreated throughout, while treated units (green) switch from untreated to treated in the post-treatment period. The right panel illustrates the parallel trends assumption. Solid lines show observed outcomes: treated units start higher and grow faster. The dashed line shows the counterfactual path for treated units under parallel trends --- what their outcomes would have been absent treatment. The DiD estimator measures the vertical gap between the observed treated outcome and the counterfactual at the post-treatment period. Parallel trends asserts that the dashed counterfactual line is parallel to the control group's trajectory, not that pre-treatment levels are equal.}
+\end{figure}
+
+In regression form for two groups and multiple periods,
+\[
+Y_{it} = \alpha_i + \beta_t + \tau W_{it} + \varepsilon_{it}
+\]
+includes unit fixed effects $\alpha_i$ (which absorb time-invariant differences between treated and control units), time fixed effects $\beta_t$ (which absorb common trends or shocks affecting all units in a given period), and a treatment indicator $W_{it}$ that switches from zero to one for treated units in the post-treatment period. The coefficient $\tau$ on the treatment indicator is numerically identical to the 2×2 DiD estimator when only two periods are observed. It generalises the estimator to settings with multiple pre-treatment and post-treatment periods provided that the parallel trends assumption holds in all periods and that treatment effects are constant over time.
+
+Parallel trends is fundamentally an assumption about unobservables---about what would have happened to treated units had they not been treated. We cannot test it directly because we never observe $Y_{it}(0)$ for treated units in treated periods. However, we can bring indirect evidence to bear. If treated and control units exhibited parallel trends in multiple pre-treatment periods, this strengthens the plausibility that parallel trends would have continued into the post-treatment period. Placebo tests that apply the estimator to pre-treatment periods only---treating an earlier period as if it were the post-treatment period---should yield estimates near zero if parallel trends holds. Divergence in pre-treatment trends is a red flag that signals parallel trends is unlikely to hold.
+
+A word of caution: pre-trend tests have well-documented limitations \citet{roth2022pretest}. They have low power against many plausible violations, so passing a pre-trend test does not guarantee that parallel trends holds. Worse, conditioning on passing a pre-trend test can bias subsequent estimates because the test selects for specifications where pre-treatment noise happened to cancel out. Pre-trend tests are useful as a diagnostic---divergent pre-trends are a clear warning---but they cannot validate the assumption. The credibility of parallel trends ultimately rests on substantive arguments about the assignment mechanism and the data-generating process, not on statistical tests.
+
+The plausibility of parallel trends depends on the substantive context. If treated units are selected for treatment based on anticipated future outcomes---for example, if a retailer assigns a loyalty programme to stores expected to experience rapid sales growth---then parallel trends is violated because treated units would have grown faster than controls even without treatment. Common threats to parallel trends in marketing include: (1) \textit{selection on growth}, where high-growth units are assigned treatment first; (2) \textit{timing endogeneity}, where treatment timing responds to unit-specific shocks; (3) \textit{competitive dynamics}, where rivals respond to treatment announcement, contaminating control outcomes; and (4) \textit{seasonality confounds}, where treatment timing is correlated with seasonal patterns that differ across units.
+
+When treatment is assigned based on past outcomes or on characteristics correlated with trends, conditioning on those characteristics can restore identification. \index{parallel trends!conditional}Conditional parallel trends asserts that after conditioning on observed covariates $X_i$, treated and control units would have followed similar trends.
+
+\begin{assumption}[Conditional Parallel Trends]
+\label{assump:conditional-parallel-trends}
+For observed pre-treatment covariates $X_i$:
+\[
+\mathbb{E}[Y_{i, \text{post}}(0) - Y_{i, \text{pre}}(0) \mid i \in \text{treated}, X_i] = \mathbb{E}[Y_{i, \text{post}}(0) - Y_{i, \text{pre}}(0) \mid i \in \text{control}, X_i].
+\]
+\end{assumption}
+
+Conditional parallel trends is often more plausible than unconditional parallel trends in observational settings. If stores receiving a loyalty programme differ systematically from control stores in size, demographics, or competitive intensity, conditioning on these covariates through regression adjustment, propensity score weighting, or matching can make the trends assumption more credible. The cost is that identification now relies on correct specification of the conditioning set and on sufficient overlap in covariate distributions between treated and control units.
+
+Mis-specifying the conditioning set can introduce bias rather than remove it. Conditioning on a post-treatment variable---a so-called "bad control"---opens a backdoor path and invalidates the design. Omitting a confounder that drives both treatment assignment and trends leaves selection bias intact. Including irrelevant covariates inflates variance without improving identification. The analyst must justify each covariate on substantive grounds: why does conditioning on this variable make parallel trends more plausible? Mechanical inclusion of all available covariates is not a substitute for careful reasoning about the assignment mechanism.
+
+Marketing applications of canonical DiD include evaluating the impact of discrete events that affect all treated units simultaneously. A regulatory change that applies to all firms in a single period, a major advertising campaign launched nationwide at a single date, or a platform algorithm update rolled out globally at once all produce canonical DiD designs. The treated group consists of units exposed to the event, and the control group consists of comparable units not exposed (perhaps in different geographic regions, different segments, or different platforms). The identifying variation comes from the discrete timing of the event and from the availability of control units that provide a counterfactual trend.
+
+Despite its conceptual appeal, the canonical 2×2 DiD is ill-suited to many marketing panel datasets where treatment adoption is staggered, where treatment effects evolve dynamically over time, and where heterogeneity across units or cohorts is substantively important. The next section defines estimands for staggered adoption that accommodate heterogeneous treatment effects across cohorts and time.

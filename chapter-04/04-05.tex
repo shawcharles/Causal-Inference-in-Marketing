@@ -1,0 +1,160 @@
+\section{Modern Estimators for Staggered Designs}
+\label{sec:modern-estimators}
+
+A retailer has rolled out a loyalty programme to 500 stores over 8 quarters, with 5 adoption cohorts. Which estimator should they use? The answer depends on the data structure, the estimand of interest, and the plausibility of identifying assumptions. This section surveys the major families of heterogeneity-robust estimators and provides practical guidance on choosing among them.
+
+Modern \index{heterogeneity-robust estimators}difference-in-differences estimators address the pathologies of TWFE by constructing clean comparisons---comparing treated units to never-treated or not-yet-treated controls---and aggregating cohort-time effects with transparent, non-negative weights.
+
+The fundamental insight shared by all modern estimators is that identification of $\text{ATT}(g, t)$ should not use already-treated units as controls. Instead, for each cohort $g$ in each post-treatment period $t \geq g$, the estimator compares outcomes for cohort $g$ to outcomes for a comparison group consisting of never-treated units ($G_i = \infty$) or not-yet-treated units ($G_i > t$). This ensures that the comparison group provides a valid counterfactual under parallel trends.
+
+Using not-yet-treated units as controls requires an additional assumption: that treatment timing is not correlated with potential outcomes. If early adopters would have grown faster than late adopters even absent treatment, then not-yet-treated units do not provide a valid counterfactual for early adopters. This assumption is implicit in all modern estimators that use not-yet-treated controls, and it should be justified on substantive grounds.
+
+The estimators differ in how they construct these comparisons, how they aggregate them across cohorts and time, and what additional assumptions or normalisations they impose.
+
+\subsubsection*{Unified Setup and Notation}
+
+Throughout this section we work in the staggered-adoption setting from Section~\ref{sec:staggered-estimands}. We observe a panel with units $i = 1,\ldots,N$ and periods $t = 1,\ldots,T$, outcomes $Y_{it}$, and a binary treatment indicator $W_{it} \in \{0,1\}$. For each unit, let
+\[
+G_i = \min\{t : W_{it} = 1\}
+\]
+denote the adoption date, with $G_i = \infty$ for never-treated units. This setup assumes treatment is absorbing: once a unit adopts, it remains treated. Non-absorbing treatments (e.g., advertising campaigns that turn on and off) require different approaches; see Chapter~\ref{ch:dynamics} for dynamic treatment regimes.
+
+The panel may be balanced (all units observed in all periods) or unbalanced (units enter or exit). Callaway--Sant'Anna and Borusyak--Jaravel--Spiess accommodate unbalanced panels directly. Sun--Abraham's regression approach may require adjustments for unbalanced data; consult the \texttt{fixest} documentation for implementation details. Event time is $k = t - G_i$, and we work with adoption-time-specific potential outcomes $Y_{it}(g)$ and $Y_{it}(\infty)$ as in Section~\ref{sec:staggered-estimands}. The cohort-time estimand
+\[
+\text{ATT}(g, t) = \mathbb{E}[Y_{it}(g) - Y_{it}(\infty) \mid G_i = g,\ t \geq g]
+\]
+remains our basic building block.
+
+For each cohort $g$ and post-adoption period $t \geq g$, define the treated cohort
+\[
+\mathcal{T}_{g} = \{i : G_i = g\}
+\]
+and generic comparison sets
+\[
+\mathcal{C}^{\text{NT}}_{t} = \{i : G_i = \infty\}, \qquad \mathcal{C}^{\text{NYT}}_{g,t} = \{i : G_i > t\}.
+\]
+Modern estimators construct comparisons between $\mathcal{T}_{g}$ and a choice of $\mathcal{C}_{g,t} \subseteq \mathcal{C}^{\text{NT}}_{t} \cup \mathcal{C}^{\text{NYT}}_{g,t}$ using a DiD contrast of the form
+\[
+\widehat{\text{ATT}}(g,t; \mathcal{C}_{g,t}) = \Bigg[\frac{1}{|\mathcal{T}_{g}|} \sum_{i \in \mathcal{T}_{g}} (Y_{it} - Y_{i,g-1})\Bigg]
+\;-
+\Bigg[\frac{1}{|\mathcal{C}_{g,t}|} \sum_{i \in \mathcal{C}_{g,t}} (Y_{it} - Y_{i,g-1})\Bigg].
+\]
+Under the staggered parallel trends assumptions in Section~\ref{sec:staggered-identification}, and provided that $g-1$ is pre-treatment for all units in $\mathcal{T}_g$ and $\mathcal{C}_{g,t}$, this is an unbiased estimator of $\text{ATT}(g,t)$ for an appropriate choice of $\mathcal{C}_{g,t}$.
+
+Aggregated estimators can then be written abstractly as
+\[
+\hat{\tau}^{(\mathrm{est})} = \sum_{g} \sum_{t \geq g} w^{(\mathrm{est})}_{g,t} \, \widehat{\text{ATT}}(g,t; \mathcal{C}_{g,t}), \qquad \sum_{g} \sum_{t \geq g} w^{(\mathrm{est})}_{g,t} = 1,
+\]
+where the weights $w^{(\mathrm{est})}_{g,t}$ depend on the estimator. In this unified notation, Callaway--Sant'Anna, Sun--Abraham, de Chaisemartin--d'Haultf\oe uille, and Borusyak--Jaravel--Spiess differ primarily in their choice of comparison sets $\mathcal{C}_{g,t}$, their weighting schemes $w^{(\mathrm{est})}_{g,t}$, and how they incorporate covariates or factor structures.
+
+\subsection*{\index{estimators!Callaway--Sant'Anna}Callaway and Sant'Anna}
+
+Callaway and Sant'Anna (hereafter CS) estimates $\text{ATT}(g, t)$ for each cohort-time pair using not-yet-treated or never-treated units as controls. The estimator for a specific pair $(g,t)$ is:
+\[
+\widehat{\text{ATT}}(g, t) = \mathbb{E}_n[Y_t - Y_{g-1} \mid G=g] - \mathbb{E}_n[Y_t - Y_{g-1} \mid C],
+\]
+where $C$ is the control group (either $G=\infty$ or $G > t$).
+These cohort-time estimates are then aggregated into summary measures using pre-specified weights. The aggregation can produce overall ATT (weighted by sample size), event-time effects (weighted by cohort size and pooled across cohorts at each event time $k$), cohort-specific effects (weighted over time for each cohort), or calendar-time effects (weighted over cohorts for each period).
+
+CS allows for conditional parallel trends by including covariates in the comparison. Propensity score weighting, inverse probability weighting, or doubly robust methods can adjust for covariate imbalances between treated and control units, making parallel trends more plausible. It also provides a rich set of aggregations and diagnostic plots, making it well suited for exploratory analysis and for settings where heterogeneity is expected and substantively interesting.
+
+CS has limitations. Computation can be slow with many cohort-time pairs (hundreds of combinations), and standard errors are often wide because each $\text{ATT}(g,t)$ is estimated on a subset of the data. When cohorts are small, estimates become noisy. CS also requires the researcher to specify which control group to use (never-treated, not-yet-treated, or both), and this choice can affect results when never-treated units differ systematically from eventually-treated units.
+
+\subsection*{\index{estimators!Sun--Abraham}Sun and Abraham}
+
+Sun and Abraham (hereafter SA) takes an interaction-weighted event-study approach. They estimate a dynamic specification interacting cohort indicators with event-time dummies:
+\[
+Y_{it} = \alpha_i + \beta_t + \sum_{g} \sum_{k \neq -1} \delta_{g,k} \mathbb{I}\{G_i=g\} \mathbb{I}\{t-G_i=k\} + \varepsilon_{it}.
+\]
+The coefficients $\delta_{g,k}$ estimate the cohort-specific event-time effects $\text{ATT}(g, g+k)$ using only clean controls (since the interaction terms saturate the model, preventing contamination from other treated cohorts). These are then aggregated using cohort-share weights:
+\[
+\hat{\theta}_k = \sum_g \frac{N_g}{N_{\text{treated}}} \hat{\delta}_{g,k}.
+\]
+By excluding already-treated units from the implicit comparison group and by allowing event-time effects to vary by cohort, SA avoids the negative weighting problems of TWFE. It produces event-study plots that are transparent and easy to interpret, making it a natural choice when the goal is to trace dynamic effects and to test for pre-trends.
+
+SA has limitations. The method requires specifying a reference period (typically $k=-1$), and results can be sensitive to this choice if pre-trends are present. When cohort sizes are imbalanced, the cohort-share weights can be dominated by large cohorts, obscuring effects for smaller cohorts. SA also requires sufficient variation in event-time exposure across cohorts; if all cohorts are observed for similar numbers of post-treatment periods, some event-time coefficients may be estimated imprecisely or not at all.
+
+\subsection*{de Chaisemartin and d'Haultf\oe uille}
+
+de Chaisemartin and d'Haultf\oe uille (hereafter dCdH) provides an alternative decomposition of the TWFE estimator, identifying which comparisons are ``forbidden'' (using already-treated units as controls) and which are valid. This method reports the fraction of the sample that contributes to forbidden comparisons and proposes alternative weighting schemes that exclude or downweight these comparisons. dCdH also offers extensive diagnostic tools, including tests for whether the sign of the treatment effect can be inferred despite heterogeneity and tools for assessing the robustness of conclusions to different weighting choices. This makes dCdH valuable for sensitivity analysis and for understanding the sources of discrepancies between TWFE and other estimators.
+
+dCdH has limitations. The method is primarily diagnostic rather than a complete estimation strategy; it excels at revealing problems with TWFE but the corrected estimators can be less efficient than CS or SA. The decomposition can be difficult to interpret when many cohorts and periods are involved, and the method assumes treatment is binary and absorbing (once treated, always treated).
+
+\subsection*{\index{estimators!Borusyak--Jaravel--Spiess}Borusyak, Jaravel, and Spiess}
+
+Borusyak, Jaravel, and Spiess (hereafter BJS) takes an \index{imputation}imputation-based approach. It first estimates untreated potential outcomes for all unit-period observations using only untreated observations (either pre-treatment observations for treated units or all observations for never-treated units). The estimation can use unit and time fixed effects, interactive fixed effects, or factor models. Treatment effects are then computed as the difference between observed outcomes and imputed untreated potential outcomes for treated observations, and aggregated using sample weights.
+
+BJS has a key advantage over CS: it pools information across cohort-time cells rather than estimating each $\text{ATT}(g,t)$ separately. This makes BJS more efficient when cohorts are small, producing tighter confidence intervals. BJS is particularly effective when the factor structure or the fixed effects model fits the untreated data well, and it can accommodate settings where the number of factors is large or where the panel is unbalanced.
+
+BJS has limitations. The imputation approach relies heavily on the outcome model being correctly specified; if the factor structure is misspecified or if the number of factors $R$ is chosen incorrectly, counterfactual imputation will be biased. The method requires a sufficiently long pre-treatment period to estimate factors and loadings reliably. BJS can also be computationally intensive for very large panels with interactive fixed effects, though the two-way fixed effects version scales well.
+
+\subsection*{Choosing Among Estimators}
+
+Choosing among these estimators requires matching the method to the data structure and research question. We provide decision rules rather than hedging.
+
+\textbf{Good starting point: Callaway--Sant'Anna.} CS is a sensible default when you have multiple cohorts, want flexibility in aggregation, and need both overall ATT and event-time effects. CS handles most marketing panel settings well and provides rich diagnostics. However, CS can be computationally slow with many cohort-time pairs and may produce wide confidence intervals when cohorts are small. For very large panels or small cohorts, consider BJS as an alternative starting point.
+
+\textbf{When to use Sun--Abraham.} Use SA when event-time effects $\theta_k$ are the primary estimand and you want a clean event-study plot. SA is particularly effective when cohorts are reasonably balanced in size and when the pre-treatment period is sufficient to assess pre-trends. SA integrates naturally with standard regression workflows.
+
+\textbf{When to use dCdH.} Use dCdH for diagnostics, not as your primary estimator. Run dCdH to understand what fraction of TWFE variation comes from forbidden comparisons. As discussed in Section~\ref{sec:twfe-pitfalls}, a useful rule of thumb is that if more than 20\% of TWFE weight comes from forbidden comparisons (already-treated vs newly treated), treat TWFE with suspicion and prefer CS or SA. If dCdH reveals that most TWFE weight comes from valid comparisons (treated vs never-treated or not-yet-treated), TWFE may be acceptable despite its theoretical problems.
+
+\textbf{When to use BJS.} Use BJS when parallel trends is implausible but a factor structure is credible -- for example, when treated and control units are subject to common industry shocks with differential exposure. BJS requires a sufficiently long pre-treatment period (at least 5-10 periods) to estimate factors reliably. Avoid BJS with short panels.
+
+\textbf{Decision rules by data structure.} If you have abundant never-treated units and a long pre-period, CS and SA will both work well. If you have no never-treated units (all units eventually adopt), you must rely on not-yet-treated comparisons, favouring CS with the not-yet-treated control option. If you have few cohorts (2-3), SA may struggle to estimate cohort-specific effects precisely. If the pre-treatment period is short (2-3 periods), pre-trend assessment is limited and factor models (BJS) are not feasible; rely on institutional knowledge and conditional parallel trends with covariates. If $N$ and $T$ are both large (thousands of units, dozens of periods), BJS with two-way fixed effects scales well; CS can become computationally slow.
+
+In practice, estimate multiple methods and check for agreement. If CS, SA, and BJS produce similar estimates, conclusions are robust. If estimates diverge, investigate the sources---likely differences in comparison groups, weighting, or factor structure assumptions. When divergence is large (e.g., different signs, or magnitudes differing by more than 50\%), the conclusions are fragile and should be reported as such. Present results from multiple methods transparently, explain which assumptions drive the differences, and let readers assess the credibility of each approach.
+
+\subsection*{Software Implementation}
+
+All four modern estimators have mature software implementations. In R, the \texttt{did} package implements Callaway--Sant'Anna with extensive options for control groups, covariates, and aggregations; use \texttt{att\_gt()} for cohort-time effects and \texttt{aggte()} for aggregations. The \texttt{fixest} package provides \texttt{sunab()} for Sun--Abraham event studies integrated with fast fixed effects estimation. The \texttt{did2s} package implements Gardner's two-stage imputation, closely related to BJS. For de Chaisemartin--d'Haultf\oe uille, the \texttt{DIDmultiplegt} package provides diagnostics and corrected estimators.
+
+In Stata, \texttt{csdid} implements Callaway--Sant'Anna, \texttt{eventstudyinteract} implements Sun--Abraham, \texttt{did\_multiplegt} implements dCdH, and \texttt{did\_imputation} implements BJS. Python users can access these methods through \texttt{pyfixest} (Sun--Abraham style) or dedicated packages; the ecosystem is less mature than R or Stata but developing rapidly.
+
+For practitioners, we recommend starting with the \texttt{did} package in R or \texttt{csdid} in Stata, as these provide the most complete implementation of modern methods with extensive documentation and diagnostic tools. Software implementations evolve; check package documentation for current syntax and options.
+
+Marketing applications often feature rich adoption patterns, with multiple cohorts adopting at different times and with long post-treatment periods that enable tracing dynamic effects. Sample sizes vary widely: thin panels with hundreds or thousands of stores and modest $T$ are common in retail, while fat panels with dozens of markets and many quarters or years arise in brand-level or category-level analyses. Modern estimators accommodate these structures, though computational constraints may arise with very large $N$ and $T$. Pre-period length matters for assessing pre-trends and for estimating factor structures. Adoption patterns matter for the effective sample size and for the precision of cohort-specific estimates. Interference risks shape whether SUTVA is plausible or whether spillover models (Chapter~\ref{ch:spillovers}) are required.
+
+Practical guidance for marketing practitioners includes starting with CS or SA, checking pre-trends using event-study plots, comparing estimates across methods to assess sensitivity, and reporting aggregated effects (overall ATT, event-time profiles, cohort-specific effects) that align with the business question. Transparency about the choice of comparison group (never-treated vs not-yet-treated), the aggregation weights, and the assumptions required for identification builds confidence in the credibility of the estimates. This enables readers to assess whether alternative choices would change conclusions.
+
+Table~\ref{tab:estimand-estimator-map} summarizes the mapping from estimands to recommended estimators and their key assumptions.
+
+\begin{table}[htbp] \small
+\centering
+\caption{Mapping from Estimands to Recommended Estimators and Assumptions}
+\label{tab:estimand-estimator-map}
+\begin{tabular}{p{4cm}p{5cm}p{5.5cm}}
+\toprule
+\textbf{Estimand} & \textbf{Recommended Estimator} & \textbf{Key Assumptions} \\
+\midrule
+Overall ATT (all treated units/periods) & Callaway--Sant'Anna, BJS & Parallel trends (unconditional or conditional), no anticipation, SUTVA \\
+\addlinespace
+Event-time effects $\theta_k$ & Sun--Abraham, Callaway--Sant'Anna event-time aggregation & Parallel trends across cohorts, no anticipation \\
+\addlinespace
+Cohort-specific effects $\tau_g$ & Callaway--Sant'Anna cohort aggregation & Parallel trends, sufficient pre-period for each cohort \\
+\addlinespace
+Calendar-time effects $\tau_t$ & Callaway--Sant'Anna calendar-time aggregation & Parallel trends, overlap in treated cohorts per period \\
+\addlinespace
+Sensitivity to TWFE & de Chaisemartin--d'Haultfœuille diagnostics & Assess fraction of forbidden comparisons, negative weights \\
+\addlinespace
+Factor structure (when standard parallel trends is implausible) & BJS with interactive fixed effects & Low-rank structure, sufficient untreated observations for factor estimation \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp] \small
+\centering
+\caption{Modern Staggered DID Estimators: Targets, Comparison Sets, and Weights}
+\label{tab:modern-estimators-summary}
+\begin{tabular}{p{3cm}p{4cm}p{4cm}p{4cm}}
+\toprule
+\textbf{Method} & \textbf{Primary estimand(s)} & \textbf{Comparison set $\mathcal{C}_{g,t}$} & \textbf{Weights $w^{(\mathrm{est})}_{g,t}$} \\
+\midrule
+Callaway--Sant'Anna (CS) & Overall ATT, event-time effects $\theta_k$, cohort- and calendar-time effects & Never-treated and/or not-yet-treated units, possibly reweighted by covariates & Non-negative, typically proportional to treated unit-periods or cohort sizes, user-chosen by aggregation \\
+Sun--Abraham (SA) & Event-time effects $\theta_k$ & Never-treated and not-yet-treated units via cohort-specific event-time regressions & Cohort-size weights when pooling cohort-specific event-time profiles \\
+de Chaisemartin--d'Haultf\oe uille (dCdH) & Decomposition and sign of overall TWFE effect & All 2$\times$2 comparisons; flags "forbidden" comparisons using already-treated units & Implicit TWFE weights; can be recomputed after dropping or downweighting forbidden comparisons \\
+Borusyak--Jaravel--Spiess (BJS) & Overall ATT and related aggregates & Untreated observations (pre-treatment for treated units and all periods for never-treated units) used to impute $Y_{it}(0)$ & Non-negative weights induced by the imputation model and sampling frequencies of treated unit-periods \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+These modern estimators represent a substantial advance over TWFE, providing credible estimates under heterogeneity while maintaining transparency about assumptions and aggregation choices. The next section develops event-study specifications that complement these estimators by tracing dynamic treatment paths.

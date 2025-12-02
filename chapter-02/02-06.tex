@@ -1,0 +1,47 @@
+\section{Crosswalk to Method Chapters}
+\label{sec:crosswalk}
+
+You have data and a causal question. Which chapter should you read next? This crosswalk maps your situation to the methods that can help, clarifying which estimators to deploy for different data structures and identification strategies.
+
+When the goal is to estimate the ATT or cohort-time effects $\text{ATT}(g, t)$ in a staggered adoption design with binary treatment, difference-in-differences estimators (Chapter~\ref{ch:did}) are the natural choice. Modern heterogeneity-robust estimators (Callaway and Sant'Anna, Sun and Abraham, and others) avoid the negative weighting problems of TWFE and provide transparent aggregations of $\text{ATT}(g, t)$ into summary statistics. Event-study specifications (Chapter~\ref{ch:event}) extend the logic by estimating effects as a function of event time $k$, enabling visualisation of pre-trends and dynamic adjustment paths. Both approaches rely on parallel trends assumptions, which can be assessed through pre-treatment diagnostics (Chapter~\ref{ch:design-diagnostics}) and subjected to sensitivity analysis.
+
+When treatment variation is more limited --- only one or a few units are treated --- synthetic control methods (Chapter~\ref{ch:sc}) construct counterfactuals by forming weighted combinations of control units that closely match pre-treatment outcomes. Synthetic control does not impose parallel trends in levels, instead using pre-treatment fit to justify the synthetic comparison. Inference relies on placebo tests and permutation methods that compare the estimated effect to the distribution of placebo effects in control units. Hybrid methods (Chapter~\ref{ch:generalized-sc}), particularly synthetic difference-in-differences (SDID), combine the strengths of synthetic control and difference-in-differences by weighting both units and time periods, often outperforming either method alone.
+
+An alternative relaxation of parallel trends comes from factor models and matrix completion methods. Interactive fixed effects models (Chapter~\ref{ch:factor}) posit that outcomes are driven by a small number of latent factors, and estimation proceeds via iterative least squares. Matrix completion methods (Chapter~\ref{ch:advanced-matrix}) extend this logic to settings with missing data, using nuclear norm regularisation to impute counterfactual outcomes. Factor methods are particularly valuable in marketing panels where category-level demand shocks, national trends, or platform-wide changes affect all units but with heterogeneous intensity.
+
+Beyond static treatment effects, dynamics and spillovers require specialised treatment. Chapter~\ref{ch:dynamics} develops distributed lag models, vector autoregressions, and structural dynamic panel methods that estimate how treatment effects unfold over time, accumulate through carryover, or decay through depreciation. Chapter~\ref{ch:spillovers} tackles interference, distinguishing direct effects from spillover effects and covering spatial econometric models, exposure mappings, and interference-robust experimental designs. Both chapters move beyond the static potential outcomes framework to embrace path-dependent outcomes and network interactions.
+
+Machine learning integration is the focus of Chapters~\ref{ch:ml-nuisance} and \ref{ch:high-dim}. Double machine learning (Chapter~\ref{ch:ml-nuisance}) uses flexible algorithms --- random forests, boosting, neural networks, and others --- to estimate nuisance functions such as propensity scores, outcome models, and factor loadings, while preserving valid inference on causal parameters through Neyman orthogonalisation and cross-fitting. Causal forests enable estimation of heterogeneous treatment effects, revealing which observable features moderate the treatment response. High-dimensional variable selection (Chapter~\ref{ch:high-dim}) employs lasso and related regularisation methods to control for many potential confounders without overfitting, and post-selection inference methods provide confidence intervals that account for the data-driven selection process.
+
+Inference and diagnostics are essential complements to estimation. Chapter~\ref{ch:inference} develops tools for uncertainty quantification, covering cluster-robust standard errors, wild bootstrap procedures, randomisation inference, conformal prediction intervals, and multiple testing adjustments when examining effects across many products, markets, or periods. Chapter~\ref{ch:design-diagnostics} provides a practical diagnostic workflow for pre-treatment covariate balance checks, placebo tests, leave-one-out robustness analyses, sensitivity analyses for violations of parallel trends, and specification curves that aggregate results across many defensible modelling choices. Chapter~\ref{ch:threats} catalogues threats to validity specific to marketing panels, including seasonality, platform algorithm changes, and measurement error. Together, these chapters emphasise that credible causal inference requires not just sophisticated estimation but also rigorous diagnostics and transparent acknowledgment of assumptions.
+
+Finally, continuous and multivalued treatments, nonlinear panel models, and dose-response estimation are covered in Chapter~\ref{ch:continuous}, extending the binary-treatment framework to settings with continuous intensity or discrete/censored outcomes.
+
+These methods are not mutually exclusive. An analysis might employ difference-in-differences as the primary specification, synthetic control as a robustness check, factor models to relax parallel trends, and machine learning to uncover heterogeneity. Table~\ref{tab:crosswalk} provides a starting point for method selection, but practitioners should consider multiple approaches when the data permit.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Crosswalk: Data Structures and Primary Methods}
+\label{tab:crosswalk}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Data Structure} & \textbf{Key Feature} & \textbf{Primary Methods} & \textbf{Key Requirement} \\
+\midrule
+Staggered adoption, binary & Variation in timing & DiD (Ch.~\ref{ch:did}), Event studies (Ch.~\ref{ch:event}) & Parallel trends \\
+\addlinespace
+Single/few treated units & Limited variation & Synthetic control (Ch.~\ref{ch:sc}), SDID (Ch.~\ref{ch:generalized-sc}) & Pre-treatment fit \\
+\addlinespace
+Common shocks, differential & Factor structure & IFE (Ch.~\ref{ch:factor}), Matrix completion (Ch.~\ref{ch:advanced-matrix}) & Low-rank structure \\
+\addlinespace
+Continuous treatment & Dose-response & DML (Ch.~\ref{ch:ml-nuisance}), High-dim controls (Ch.~\ref{ch:high-dim}), Continuous treatments (Ch.~\ref{ch:continuous}) & Conditional independence \\
+\addlinespace
+Spillovers present & SUTVA violated & Spillover models (Ch.~\ref{ch:spillovers}) & Network/geo structure \\
+\addlinespace
+Dynamic effects & Path dependence & Distributed lags (Ch.~\ref{ch:dynamics}), Event studies (Ch.~\ref{ch:event}) & Lag specification; event-time indexing \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+By mapping estimands to methods, this crosswalk clarifies that the choice of estimator is not arbitrary but follows logically from the structure of the data, the nature of the treatment assignment, and the assumptions one is willing to make. The goal is not to find a single "best" method but to deploy the method that aligns with the identifying variation and to subject the resulting estimates to a battery of diagnostics that probe their robustness. The running examples in the next section illustrate how these principles operate in practice.

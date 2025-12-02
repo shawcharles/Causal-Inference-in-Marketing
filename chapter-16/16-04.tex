@@ -1,0 +1,60 @@
+\section{Bootstrap and Resampling}
+\label{sec:bootstrap}
+\index{bootstrap|(}
+\index{wild cluster bootstrap}
+
+When the number of clusters is small (typically fewer than 50), asymptotic approximations can be poor. The wild cluster bootstrap provides a refinement by resampling the residuals while preserving the cluster structure. This is essential for geo-experiments (Section~\ref{sec:geo-experiments}) where the number of markets is often 10--40.
+
+\begin{definition}[Wild Cluster Bootstrap]\label{def:wild-cluster-bootstrap}
+The wild cluster bootstrap for testing $H_0: \tau = \tau_0$ proceeds in four steps:
+\begin{enumerate}
+    \item Estimate the restricted model under $H_0$ and obtain residuals $\hat{\varepsilon}_{it}$.
+    \item For $b = 1, \ldots, B$, draw independent weights $w_i^{(b)}$ (Rademacher or Webb).
+    \item Construct bootstrap residuals $\tilde{\varepsilon}_{it}^{(b)} = w_i^{(b)} \cdot \hat{\varepsilon}_{it}$ and outcomes $Y_{it}^{(b)} = \hat{Y}_{it}^{H_0} + \tilde{\varepsilon}_{it}^{(b)}$.
+    \item Re-estimate the unrestricted model to obtain $\hat{\tau}^{(b)}$ and compute the bootstrap t-statistic $t^{(b)}$.
+\end{enumerate}
+The bootstrap p-value is the proportion of bootstrap statistics exceeding the observed statistic: $\hat{p} = \frac{1}{B} \sum_{b=1}^B \mathbf{1}\{|t^{(b)}| \geq |t^{\text{obs}}|\}$.
+\end{definition}
+
+For extremely small numbers of clusters (fewer than 10), the choice of weights matters.
+
+\begin{definition}[Webb Six-Point Distribution]\label{def:webb-weights}
+Webb weights $w_i \in \{-\sqrt{3/2}, -1, -\sqrt{1/2}, \sqrt{1/2}, 1, \sqrt{3/2}\}$ with equal probabilities $1/6$ provide better finite-sample performance than Rademacher weights when the number of clusters is very small ($G < 10$). The weights satisfy $\mathbb{E}[w_i] = 0$, $\mathbb{E}[w_i^2] = 1$, and $\mathbb{E}[w_i^3] = 0$, matching moments with the standard normal.
+\end{definition}
+
+The theoretical justification for the bootstrap is its ability to provide a higher-order approximation to the finite-sample distribution.
+
+\begin{assumption}[Clustered Errors]\label{assump:inference-clustering}
+Errors are independent across clusters (e.g., markets or geo-regions) but may be arbitrarily correlated within a cluster over time. Cluster sizes may differ, and the number of clusters $G$ grows with the sample.
+\end{assumption}
+
+\begin{theorem}[Asymptotic Refinement]\label{thm:wild-bootstrap-validity}
+Under Assumption~\ref{assump:inference-clustering} and homoskedasticity within clusters, the wild cluster bootstrap provides asymptotic refinement:
+\begin{itemize}
+    \item The bootstrap distribution of $t^{(b)}$ consistently estimates the finite-sample distribution of $t^{\text{obs}}$.
+    \item Coverage error of bootstrap confidence intervals is $O(G^{-1})$ versus $O(G^{-1/2})$ for asymptotic intervals.
+    \item When $G \geq 10$, rejection rates are close to nominal levels $\alpha$.
+\end{itemize}
+For $G < 10$, randomisation inference is preferred (Section~\ref{sec:randomisation}).
+\end{theorem}
+
+In time series settings without clear cluster definitions, block bootstrapping captures serial dependence.
+
+\begin{definition}[Moving Block Bootstrap]\label{def:block-bootstrap}
+\index{block bootstrap}
+For time series with serial dependence, the moving block bootstrap captures correlation by resampling blocks of data. Choose a block length $\ell$ (typically $\ell \approx T^{1/3}$) and form overlapping blocks $B_j = (Y_j, \ldots, Y_{j+\ell-1})$. Draw blocks with replacement and concatenate them to form a bootstrap sample of length $T$.
+
+Block length trades bias (longer blocks capture more dependence) against variance (shorter blocks allow more resampling variability). Block bootstrap is particularly relevant for media mix modelling (Section~\ref{sec:mmm}) where weekly or monthly data exhibit strong serial correlation.
+\end{definition}
+
+\begin{remark}[Inference Method Selection]\label{rem:inference-method-selection}
+The choice of inference method depends on the number of clusters $G$:
+\begin{enumerate}
+\item \textbf{$G \geq 50$:} Cluster-robust standard errors (CRVE) are reliable.
+\item \textbf{$10 \leq G < 50$:} Wild cluster bootstrap provides asymptotic refinement.
+\item \textbf{$G < 10$:} Randomisation inference (Section~\ref{sec:randomisation}) provides exact p-values.
+\item \textbf{Time series without clusters:} Block bootstrap or HAC standard errors.
+\end{enumerate}
+For marketing applications with geographic units, $G$ is often in the 10--40 range, making the wild cluster bootstrap the default choice.
+\end{remark}
+\index{bootstrap|}

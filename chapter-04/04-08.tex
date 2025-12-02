@@ -1,0 +1,62 @@
+\section{Diagnostics and Design Considerations}
+\label{sec:did-diagnostics}
+
+Credible DiD analysis requires rigorous diagnostics that assess the plausibility of identifying assumptions, the sensitivity of conclusions to modelling choices, and the influence of individual observations or cohorts. This section outlines the core diagnostic workflow, with forward references to the detailed treatment in Chapter~\ref{ch:design-diagnostics}.
+
+\subsection*{Pre-Trend Assessments}
+
+Pre-trend assessments test whether treated and control units followed similar trajectories before treatment. Plot outcomes for treated and control groups over pre-treatment periods and visually inspect for divergence. Estimate an event-study specification with multiple pre-treatment leads and test whether the pre-treatment coefficients are jointly zero. If pre-trends are present, parallel trends is violated. Alternative identification strategies (conditioning on covariates, factor models, synthetic control) are then required. The absence of pre-trends does not prove that parallel trends holds in the post-treatment period, but it provides supportive evidence.
+
+\textbf{Worked Example: Joint Pre-Trend Test.} Consider a loyalty programme rollout with five pre-treatment periods. The event-study specification yields $\hat{\theta}_{-5} = 0.8$, $\hat{\theta}_{-4} = -0.3$, $\hat{\theta}_{-3} = 0.5$, $\hat{\theta}_{-2} = 0.2$, $\hat{\theta}_{-1} = 0$ (reference). Testing the joint null $H_0: \theta_{-5} = \theta_{-4} = \theta_{-3} = \theta_{-2} = 0$ using a Wald test with cluster-robust standard errors yields $\chi^2(4) = 4.92$, $p = 0.29$. We fail to reject the null of joint insignificance, supporting parallel trends. Had $p < 0.05$, we would conclude that pre-trends are present and investigate further. Note: use a Wald test with clustered standard errors rather than a standard F-test, which assumes homoskedasticity.
+
+\textbf{What If Pre-Trends Are Present?} When pre-trend tests reject, proceed systematically. First, check whether imbalance in observables explains the trend by conditioning on covariates and re-testing. Second, if conditioning fails, consider factor models (Chapter~\ref{ch:factor}) that accommodate differential trends via latent factors. Third, if only one treated unit or a single aggregate is available, synthetic control (Chapter~\ref{ch:sc}) may construct a better counterfactual. For borderline cases ($0.05 < p < 0.10$), sensitivity analysis using Rambachan--Roth bounds can quantify how much pre-trend violation could bias post-treatment estimates. Rambachan--Roth bounds ask: if pre-trends continued into the post-period at the same rate observed in the pre-period, how much would the estimated effect change? This provides a range of estimates under different assumptions about the persistence of pre-trends.
+
+\subsection*{Placebo Tests}
+
+Placebo-in-time tests apply the DiD logic to pre-treatment periods only, treating an earlier period as if it were the post-treatment period. For example, if treatment begins in period five and data are available from period one, a placebo test might treat period three as the "treatment" period and estimate the "effect" using periods one and two as pre-treatment and period three as post-treatment. If the placebo estimate is near zero, this supports parallel trends. If the placebo estimate is large and statistically significant, pre-trends are present.
+
+Placebo-in-units tests apply the DiD logic using never-treated or not-yet-treated units as placebo-treated units. Randomly assign a subset of never-treated units to a fictitious treatment group and estimate the DiD effect comparing these placebo-treated units to the remaining never-treated units. Repeat the random assignment many times (for example, 500 or 1000 iterations) to generate a distribution of placebo estimates. The actual treatment effect estimate should not be extreme relative to this distribution; if it falls within the middle 95\% of placebo estimates, the evidence for a true effect is weak. If placebo estimates are consistently non-zero even under random assignment, this suggests that the comparison between treated and never-treated units is confounded by differential trends unrelated to actual treatment.
+
+\subsection*{Covariate Balance and Overlap}
+
+Overlap and support checks assess whether treated and control units are comparable on observables. Plot covariate distributions for treated and control groups and check for imbalances. Compute standardised mean differences (SMDs) for key covariates. As a practical rule of thumb, values around or above 0.1--0.2 standard deviations warrant attention, with 0.2 often used as a simple benchmark. However, the appropriate threshold depends on context---specifically, on how strongly the covariate predicts outcomes. A 0.3 SMD on a covariate weakly related to outcomes may matter less than a 0.15 SMD on a covariate that strongly predicts outcomes. If imbalances are large, conditioning on covariates through regression adjustment, propensity score weighting, or matching may improve balance and make conditional parallel trends more plausible.
+
+\textbf{What If Covariate Balance Is Poor?} When SMDs exceed acceptable thresholds, proceed systematically. First, re-weight or match on covariates to improve balance, then re-estimate. Second, include covariates as controls in the outcome regression (conditional parallel trends). Third, if balance cannot be achieved, acknowledge that treated and control units differ on observables and that parallel trends is less plausible. Report both unadjusted and adjusted estimates to show how covariate adjustment affects conclusions.
+
+Covariate balance can also be assessed by regressing the treatment indicator on covariates and checking the $R^2$. A high $R^2$ indicates that treatment is strongly predicted by covariates, suggesting that unobserved confounders correlated with covariates may also predict treatment. Conversely, a low $R^2$ suggests that treatment assignment is weakly related to observables. However, a low $R^2$ does not mean treatment is "as good as random"---unobservables may still predict treatment even if observables do not. The $R^2$ diagnostic is suggestive, not definitive.
+
+\subsection*{Influence and Robustness}
+
+Influence and weight audits examine whether individual cohorts, periods, or observations exert undue influence on the estimates. Modern DiD estimators aggregate cohort-time effects with known weights, and these weights can be inspected to identify which comparisons contribute most to the overall estimate. If a single cohort or a single period dominates the aggregation, conclusions may be sensitive to the inclusion or exclusion of that cohort or period.
+
+Leave-one-cohort-out analyses re-estimate the effect excluding each cohort in turn and check whether estimates are stable. A useful threshold: if excluding any single cohort changes the point estimate by more than 25\% or flips the sign, the estimate is sensitive to that cohort. If excluding a single cohort changes statistical significance (e.g., from $p < 0.05$ to $p > 0.10$), the conclusion depends on that cohort. In either case, investigate why that cohort is influential---it may be an outlier, may have different characteristics, or may have experienced the treatment differently.
+
+Leave-one-period-out analyses check whether estimates are sensitive to the inclusion of specific periods. If a single period drives the result---for example, if excluding the first post-treatment period eliminates the estimated effect---this suggests that the effect is transient or that the period is an outlier. Robustness checks that vary the treatment window, exclude outliers, or trim the sample based on pre-treatment characteristics provide evidence on the stability of conclusions.
+
+\subsection*{Specification Curves}
+
+Specification curves aggregate estimates across many defensible modelling choices: different sets of control units (never-treated only vs never-treated and not-yet-treated), different covariate adjustments (no covariates vs rich controls), different fixed effects structures (unit and time vs unit, time, and unit-specific trends), different event-time windows (short vs long), different binning choices, and different estimators (CS vs SA vs BJS). Plot the distribution of estimates across specifications. If estimates cluster tightly, conclusions are robust to modelling choices. If estimates vary widely, the choice of specification matters.
+
+Not all specifications are equally credible. Weight the interpretation toward specifications that are most defensible on substantive grounds---for example, specifications that use the control group most similar to treated units, that include covariates known to predict outcomes, or that use estimators appropriate for the data structure. Report the full distribution but highlight the preferred specification and explain why it is preferred.
+
+Practical guidance for marketing applications: conduct pre-trend tests as a matter of course; report placebo estimates to bolster credibility; check covariate balance and adjust when necessary; inspect weights and conduct leave-one-out analyses to assess influence; and construct specification curves to demonstrate robustness.
+
+Transparent reporting of diagnostics builds confidence that conclusions are not artefacts of arbitrary choices and that the identifying assumptions are plausible.
+
+\begin{tcolorbox}[title=Box 4.1: Diagnostic Workflow for DiD Studies]
+A credible DiD analysis addresses several diagnostic concerns in sequence. Begin with pre-treatment trends: plot outcomes for treated and control groups over all pre-treatment periods and check for visual parallelism, then estimate an event-study specification with multiple pre-treatment leads and test whether leads are jointly insignificant using a Wald test with clustered standard errors. If pre-trends are present, condition on covariates and re-test, or consider factor models or synthetic control.
+
+Next, conduct placebo tests. Placebo-in-time assigns fictitious treatment in the pre-period; placebo-in-units randomly assigns never-treated units to a fictitious treatment group and repeats the analysis many times. Placebo estimates should be near zero; if they are not, the comparison between treated and control units is suspect.
+
+Assess covariate balance by computing standardised mean differences for key covariates. Differences around or above 0.1--0.2 standard deviations warrant attention, though the threshold depends on how strongly covariates predict outcomes. If balance is poor, re-weight, match, or include covariates as controls. Check overlap to ensure treated and control units span similar covariate ranges.
+
+Examine anticipation by inspecting whether pre-treatment leads trend toward the post-treatment effect. If anticipation is present, model it explicitly or normalise to an earlier reference period. Address potential SUTVA violations by planning buffer zones, defining clusters appropriately, or using explicit spillover models (Chapter~\ref{ch:spillovers}) when spillover is plausible.
+
+Conduct influence diagnostics: leave-one-cohort-out and leave-one-period-out analyses reveal whether estimates depend on specific cohorts or periods. If excluding any single cohort changes the estimate by more than 25\% or flips the sign, investigate why.
+
+Demonstrate specification robustness by estimating multiple methods (Callaway--Sant'Anna, Sun--Abraham, Borusyak--Jaravel--Spiess) and varying controls, windows, and binning. Report the distribution of estimates across specifications and highlight the preferred specification.
+
+For inference, cluster by unit at minimum; consider two-way clustering or wild bootstrap when the number of clusters is small; adjust for multiplicity when testing many event times or subgroups. Finally, report all diagnostics transparently, disclose deviations from any pre-analysis plan, and provide specification curves or sensitivity analyses.
+\end{tcolorbox}
+
+These diagnostic procedures provide evidence on the credibility of the identifying assumptions and the robustness of conclusions. The next section illustrates how these methods apply to common marketing applications.

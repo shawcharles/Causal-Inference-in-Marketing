@@ -1,0 +1,154 @@
+\section{Inference}
+\label{sec:factor-inference}
+
+Inference for factor models and matrix completion quantifies uncertainty in counterfactuals and treatment effect estimates. This section presents inference procedures including block and wild bootstrap, asymptotic approximations, and placebo-in-time and conformal-style intervals. Attention is paid to small-sample properties and serial dependence, with forward references to Chapter~\ref{ch:inference} for comprehensive coverage.
+
+\subsection*{Block Bootstrap}
+
+Bootstrap methods provide finite-sample inference by resampling the data and recomputing factor model estimates. Block bootstrap resamples blocks of consecutive time periods with replacement, preserving the autocorrelation structure within blocks.
+
+\paragraph{Algorithm.} Implement block bootstrap for factor model inference as follows:
+\begin{enumerate}
+\item \textbf{Choose block length:} Set block length $\ell$ to accommodate the autocorrelation structure. A common rule is $\ell = \lfloor 1.75 \cdot T^{1/3} \rfloor$. For marketing panels with quarterly data, blocks of 4 to 8 quarters (one to two years) are typical. For weekly data, blocks of 26 to 52 weeks.
+\item \textbf{Form blocks:} Partition the time periods into $\lceil T / \ell \rceil$ non-overlapping blocks: $\{1, \ldots, \ell\}, \{\ell+1, \ldots, 2\ell\}, \ldots$
+\item \textbf{Resample blocks:} Draw $\lceil T / \ell \rceil$ blocks with replacement. Concatenate to form a bootstrap sample of $T^* \geq T$ periods. Truncate to exactly $T$ if needed.
+\item \textbf{Re-estimate:} Estimate the factor model (loadings $\hat{\Lambda}^*$ and factors $\hat{\mathbf{F}}^*$) on the bootstrap sample.
+\item \textbf{Recompute treatment effects:} For each treated unit-period pair, compute $\hat{\tau}_{it}^* = Y_{it} - \hat{Y}_{it}^*(0)$.
+\item \textbf{Repeat:} Perform $B = 500$ to $1000$ bootstrap replications.
+\item \textbf{Construct intervals:} The 95 per cent confidence interval for $\tau$ is the 2.5th to 97.5th percentile of the bootstrap distribution $\{\hat{\tau}^{(b)}\}_{b=1}^B$.
+\end{enumerate}
+
+\paragraph{Resampling units vs time.} The procedure above resamples time blocks, preserving cross-sectional correlation within periods. An alternative is to resample units (clusters) with replacement, preserving temporal dependence within units. Choose based on the dependence structure: resample time if serial correlation dominates; resample units if cross-sectional correlation dominates.
+
+\subsection*{Wild Bootstrap}
+
+Wild bootstrap imposes random signs on residuals, recomputes outcomes, and re-estimates the factor model. It is particularly effective under heteroskedasticity or with small numbers of clusters.
+
+\paragraph{Algorithm.} Implement wild bootstrap as follows:
+\begin{enumerate}
+\item \textbf{Estimate residuals:} Compute $\hat{\varepsilon}_{it} = Y_{it} - \hat{\lambda}_i' \hat{f}_t$ from the estimated factor model.
+\item \textbf{Generate wild weights:} Draw weights $s_{it}$ independently. Common choices:
+\begin{itemize}
+\item \textbf{Rademacher:} $s_{it} \in \{-1, +1\}$ with equal probability.
+\item \textbf{Mammen:} $s_{it} = (1 - \sqrt{5})/2$ with probability $(1 + \sqrt{5})/(2\sqrt{5})$, else $s_{it} = (1 + \sqrt{5})/2$.
+\end{itemize}
+Rademacher is simpler; Mammen has better theoretical properties for small samples.
+\item \textbf{Construct bootstrap outcomes:} $Y_{it}^* = \hat{\lambda}_i' \hat{f}_t + s_{it} \hat{\varepsilon}_{it}$.
+\item \textbf{Re-estimate and recompute:} Estimate factors on $Y^*$ and compute bootstrap treatment effects.
+\item \textbf{Repeat and construct intervals:} As in block bootstrap, with $B = 500$ to $1000$ replications.
+\end{enumerate}
+
+\paragraph{Cluster wild bootstrap.} When units are clustered (e.g., stores within regions), draw $s_i$ at the unit level (all periods for unit $i$ share the same sign) to preserve cluster dependence. This is analogous to cluster-robust standard errors.
+
+\subsection*{Asymptotic Approximations}
+
+Asymptotic approximations provide analytical expressions for standard errors under regularity conditions. Following \citet{bai2003inferential}, the principal components estimator for factors and loadings is consistent and asymptotically normal as $N, T \to \infty$.
+
+\paragraph{Convergence rate.} Under strong factors (Assumption~\ref{assump:factor-strong}), the estimated factors converge at rate $\min(\sqrt{N}, \sqrt{T})$:
+\[
+\| \hat{f}_t - H f_t \| = O_p\left( \frac{1}{\sqrt{N}} + \frac{1}{\sqrt{T}} \right),
+\]
+where $H$ is a rotation matrix. Similarly for loadings:
+\[
+\| \hat{\lambda}_i - H^{-1'} \lambda_i \| = O_p\left( \frac{1}{\sqrt{N}} + \frac{1}{\sqrt{T}} \right).
+\]
+
+\paragraph{Asymptotic variance.} The asymptotic variance of the loadings depends on the idiosyncratic error covariance. For unit $i$:
+\[
+\sqrt{T}(\hat{\lambda}_i - H^{-1'} \lambda_i) \xrightarrow{d} N(0, \mathbf{V}_\lambda),
+\]
+where $\mathbf{V}_\lambda$ can be estimated from the sample covariance of residuals. Standard errors for treatment effects inherit these expressions through the delta method.
+
+\paragraph{When asymptotics fail.} Asymptotic approximations rely on large $N$ and $T$. In marketing panels with moderate dimensions (e.g., $N = 50$ units, $T = 20$ periods), asymptotic inference can be unreliable. Use bootstrap methods in such settings.
+
+\subsection*{Placebo-in-Time Tests}
+
+Placebo-in-time tests assess whether the factor model extrapolates well by applying the imputation procedure to pseudo-intervention dates in the pre-treatment period.
+
+\paragraph{Procedure.}
+\begin{enumerate}
+\item For each pseudo-intervention date $\tau \in \{R+1, R+2, \ldots, T_0 - h\}$, where $R$ is the number of factors and $h \geq 5$ is the minimum post-pseudo-treatment window:
+\item Estimate the factor model using only periods $t \leq \tau$.
+\item Impute counterfactuals for periods $t = \tau + 1, \ldots, T_0$.
+\item Compute pseudo-treatment effects: $\tilde{\tau}_{it}(\tau) = Y_{it} - \hat{Y}_{it}(0; \tau)$ for $t > \tau$.
+\item Aggregate into a pseudo-ATT for each $\tau$.
+\end{enumerate}
+
+\paragraph{Test statistic.} Compute the root mean squared pseudo-effect (RMSPE) for each $\tau$:
+\[
+\text{RMSPE}(\tau) = \sqrt{ \frac{1}{|\{i,t : t > \tau, t \leq T_0\}|} \sum_{i,t : t > \tau, t \leq T_0} \tilde{\tau}_{it}(\tau)^2 }.
+\]
+Plot the distribution of $\text{RMSPE}(\tau)$ across pseudo-dates. Compare the post-treatment $\text{RMSPE}$ (using actual treatment date) to this distribution. If the post-treatment RMSPE is an outlier (e.g., above the 95th percentile of pseudo-RMSPEs), this provides evidence of a treatment effect.
+
+\paragraph{Interpretation.} If pseudo-effects are near zero, the factor model extrapolates well, supporting the stability assumption. If pseudo-effects are large, the factor model does not extrapolate reliably, and post-treatment estimates may be biased.
+
+\subsection*{Conformal Intervals}
+
+Conformal-style intervals provide prediction intervals for counterfactual outcomes by leveraging the distribution of residuals from the factor model fit.
+
+\paragraph{Construction.} For each treated unit-period pair $(i, t)$:
+\begin{enumerate}
+\item Compute residuals $\hat{\varepsilon}_{js}$ for all untreated cells $(j, s) \in \Omega$.
+\item Compute the $(1 - \alpha/2)$ quantile of absolute residuals: $q_{1-\alpha/2} = \text{Quantile}_{1-\alpha/2}(|\hat{\varepsilon}_{js}|)$.
+\item Construct the prediction interval:
+\[
+\text{PI}_{it}^{1-\alpha} = \left[ \hat{Y}_{it}(0) - q_{1-\alpha/2}, \; \hat{Y}_{it}(0) + q_{1-\alpha/2} \right].
+\]
+\item If $Y_{it} \notin \text{PI}_{it}^{1-\alpha}$, reject the null of no treatment effect at level $\alpha$.
+\end{enumerate}
+
+\paragraph{Exchangeability assumption.} Conformal intervals achieve nominal coverage under the assumption that post-treatment residuals are exchangeable with pre-treatment residuals. This holds if the factor structure is stable (Assumption~\ref{assump:factor-stability}) and the treatment effect is additive. Violations of stability (e.g., factor breaks at treatment) or non-additive effects (e.g., treatment changes the loading) can distort coverage.
+
+\paragraph{Intervals for ATT.} To construct intervals for the aggregate ATT, apply conformal calibration to the average residual. Let $\bar{\varepsilon} = \frac{1}{|\Omega|} \sum_{(j,s) \in \Omega} \hat{\varepsilon}_{js}$. The standard error of the ATT can be approximated using the variance of residuals, scaled by the number of treated cells.
+
+\subsection*{Small-Sample Considerations}
+
+Small-sample and serial dependence considerations are critical in marketing panels.
+
+\paragraph{Few clusters.} When $N < 50$ or $T < 20$, asymptotic approximations are unreliable. Use wild bootstrap with cluster-level weights (draw $s_i$ at the unit level) to preserve cluster dependence.
+
+\paragraph{Serial dependence.} When outcomes exhibit strong autocorrelation, use block bootstrap with block length accommodating the dependence structure. Alternatively, compute HAC (heteroskedasticity and autocorrelation consistent) standard errors. Chapter~\ref{ch:inference} covers these methods comprehensively.
+
+\paragraph{Reporting.} Always report: (1) the method used for inference (bootstrap type, block length, number of replications); (2) 95 per cent confidence intervals for the ATT and key event-time effects; (3) placebo-test results (RMSPE distribution, p-value for actual treatment); (4) any sensitivity checks (varying block length, rank, or sample).
+
+\subsection*{Software Implementation}
+
+Several packages implement these inference procedures:
+
+\paragraph{R packages.}
+\begin{itemize}
+\item \texttt{gsynth}: Parametric bootstrap and placebo-in-time tests for generalised synthetic control.
+\item \texttt{fect}: Block and wild bootstrap for factor-based treatment effect estimation.
+\item \texttt{boot}: General bootstrap utilities; can be combined with custom factor estimation.
+\end{itemize}
+
+\paragraph{Python.}
+\begin{itemize}
+\item \texttt{arch}: Bootstrap methods including block and wild bootstrap.
+\item Custom implementations using \texttt{numpy}/\texttt{scipy} for factor estimation and resampling.
+\end{itemize}
+
+\subsection*{Summary Table}
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Inference Methods for Factor Models}
+\label{tab:factor-inference}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Method} & \textbf{Assumption} & \textbf{When to Use} & \textbf{Software} \\
+\midrule
+Block Bootstrap & Serial dependence preserved & Autocorrelated outcomes; moderate $N$, $T$ & \texttt{fect}, \texttt{boot} \\
+\addlinespace
+Wild Bootstrap & Heteroskedasticity robust & Small clusters; heteroskedastic errors & \texttt{fect}, \texttt{arch} \\
+\addlinespace
+Asymptotic & Large $N$, $T$ & $N, T > 100$; quick approximation & \texttt{gsynth} (SE) \\
+\addlinespace
+Placebo-in-Time & Stability testable & Assess model validity & \texttt{gsynth}, \texttt{fect} \\
+\addlinespace
+Conformal & Exchangeability & Prediction intervals for cells & Custom \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}

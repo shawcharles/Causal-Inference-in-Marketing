@@ -1,0 +1,207 @@
+\section{Potential Outcomes and Dynamic Estimands}
+\label{sec:dynamics-estimands}
+
+Dynamic treatment effects require careful specification of the estimand: what causal quantity is being estimated? This section formalises path-dependent potential outcomes, defines event-time effects and distributed-lag impulse responses, and introduces summary metrics including the long-run multiplier and the half-life.
+
+Clear estimand definitions are essential because different estimands require different identification assumptions and estimation methods, and because policy-relevant questions (How long do effects last? What is the cumulative impact?) map to specific estimands. For intuition and marketing motivation, see Section~\ref{sec:dynamics-motivation}.
+
+\subsection*{Path-Dependent Potential Outcomes}
+
+Path-dependent potential outcomes extend the standard potential outcomes framework to allow outcomes at time $t$ to depend on the full history of treatment assignments.
+
+\begin{definition}[Treatment Path]\label{def:treatment-path}
+For unit $i$ observed over periods $t = 1, \ldots, T$, define:
+\begin{enumerate}[(i)]
+    \item The \textbf{contemporaneous treatment} $W_{it} \in \{0, 1\}$ (or $W_{it} \in \mathcal{W} \subseteq \mathbb{R}$ for continuous treatments);
+    \item The \textbf{treatment history} up to period $t$: $\underline{W}_{it} = (W_{i1}, W_{i2}, \ldots, W_{it}) \in \{0,1\}^t$;
+    \item The \textbf{full treatment path}: $\underline{W}_i = (W_{i1}, \ldots, W_{iT}) \in \{0,1\}^T$;
+    \item The \textbf{adoption time} for absorbing treatments: $G_i = \min\{t : W_{it} = 1\}$, with $G_i = \infty$ for never-treated units.
+\end{enumerate}
+\end{definition}
+
+\begin{definition}[Path-Dependent Potential Outcomes]\label{def:path-po}
+The potential outcome $Y_{it}(\underline{w})$ is the outcome that unit $i$ would exhibit in period $t$ under treatment path $\underline{w} = (w_1, \ldots, w_T) \in \{0,1\}^T$. The observed outcome satisfies:
+\[
+Y_{it} = Y_{it}(\underline{W}_i),
+\]
+where $\underline{W}_i$ is the realised treatment path.
+\end{definition}
+
+\paragraph{Note on cardinality.} With $T$ periods and binary treatment, each unit-period has $2^T$ potential outcomes—one for each possible treatment path. For a panel with $T = 52$ weeks, this is $2^{52} \approx 4.5 \times 10^{15}$ potential outcomes per unit-period. This exponential cardinality explains why restrictions (absorbing treatment, no anticipation, lag truncation) are essential for identification.
+
+\begin{definition}[Canonical Treatment Paths]\label{def:canonical-paths}
+Define the following canonical paths:
+\begin{enumerate}[(i)]
+    \item \textbf{Never-treated path:} $\underline{w}^{\text{never}} = (0, 0, \ldots, 0) \in \{0\}^T$;
+    \item \textbf{Always-treated path:} $\underline{w}^{\text{always}} = (1, 1, \ldots, 1) \in \{1\}^T$;
+    \item \textbf{Adoption-at-$g$ path:} $\underline{w}^{\text{adopt}}(g) = (\underbrace{0, \ldots, 0}_{g-1}, \underbrace{1, \ldots, 1}_{T-g+1})$, switching from 0 to 1 at period $g$.
+\end{enumerate}
+The untreated potential outcome is $Y_{it}(0) \equiv Y_{it}(\underline{w}^{\text{never}})$, and the treated potential outcome under adoption at $g$ is $Y_{it}^g \equiv Y_{it}(\underline{w}^{\text{adopt}}(g))$.
+\end{definition}
+
+\subsection*{Event-Time Effects}
+
+Event-time effects $\theta_k$ average treatment effects across units at a fixed lag $k$ relative to treatment adoption.
+
+\begin{definition}[Event-Time Effects]\label{def:event-time-effects}
+For cohort $g$ (units first treated in period $g$) and event time $k = t - g$ (periods relative to adoption):
+\begin{enumerate}[(i)]
+    \item The \textbf{cohort-specific event-time effect} is:
+    \[
+    \theta_k(g) = \mathbb{E}\left[Y_{i,g+k}(\underline{w}^{\text{adopt}}(g)) - Y_{i,g+k}(\underline{w}^{\text{never}}) \,\big|\, G_i = g\right];
+    \]
+    \item The \textbf{aggregate event-time effect} is:
+    \[
+    \theta_k = \sum_{g \in \mathcal{G}_k} \omega_g^k \, \theta_k(g),
+    \]
+    where $\mathcal{G}_k = \{g : 1 \leq g \leq T - k\}$ is the set of cohorts observed at event time $k$, and $\omega_g^k$ are cohort weights satisfying $\sum_g \omega_g^k = 1$.
+\end{enumerate}
+\end{definition}
+
+\paragraph{Interpretation.} Event-time effects trace the dynamic trajectory of treatment responses. For advertising: $\theta_0$ is the immediate effect when the campaign airs, $\theta_1$ is the one-period-ahead effect (carryover), $\theta_2$ is the two-period-ahead effect, etc. Plotting $\theta_k$ against $k$ visualises whether effects build (ramp-up), peak and decay (carryover), or exhibit non-monotonic patterns (wear-in then wear-out).
+
+\subsection*{Distributed-Lag Impulse Responses}
+
+Distributed-lag impulse responses provide an alternative representation of dynamics.
+
+\begin{definition}[Distributed-Lag Impulse Response]\label{def:impulse-response}
+Consider a linear distributed-lag model:
+\[
+Y_{it} = \sum_{s=0}^{\bar{L}} \beta_s W_{i,t-s} + \alpha_i + \gamma_t + \varepsilon_{it},
+\]
+where $W_{it} \in \mathbb{R}$ is treatment intensity, $\bar{L}$ is the maximum lag, $\alpha_i$ are unit fixed effects, $\gamma_t$ are time fixed effects, and $\varepsilon_{it}$ are idiosyncratic errors.
+\begin{enumerate}[(i)]
+    \item The \textbf{impulse response function} is the sequence $\{\beta_s\}_{s=0}^{\bar{L}}$;
+    \item The \textbf{contemporaneous effect} is $\beta_0$;
+    \item The \textbf{cumulative effect at horizon $h$} is $\sum_{s=0}^h \beta_s$.
+\end{enumerate}
+\end{definition}
+
+\paragraph{Interpretation.} The impulse response captures the total effect of a transient treatment shock (a pulse lasting one period). A TV campaign airing for one week generates sales in the campaign week ($\beta_0$) and incremental sales in subsequent weeks ($\beta_1, \beta_2, \ldots$) as consumers respond with lags.
+
+\subsection*{Long-Run Multiplier}
+
+\begin{definition}[Long-Run Multiplier]\label{def:lrm}
+The long-run multiplier (LRM) is the cumulative effect of a permanent unit increase in treatment:
+\begin{enumerate}[(i)]
+    \item For distributed-lag models: $\text{LRM} = \sum_{s=0}^{\bar{L}} \beta_s$;
+    \item For event-time effects with absorbing binary treatment: $\text{LRM} = \theta_{\bar{K}}$ (the effect at the longest observed lag, since $\theta_k$ is already cumulative);
+    \item Under geometric decay with rate $\delta \in (0,1)$: $\text{LRM} = \frac{\beta_0}{1 - \delta}$ as $\bar{L} \to \infty$.
+\end{enumerate}
+The LRM exists and is finite if the impulse response is absolutely summable: $\sum_{s=0}^\infty |\beta_s| < \infty$.
+\end{definition}
+
+\paragraph{Intuition for summability.} The absolute summability condition ensures that effects decay fast enough that the cumulative sum converges. Geometric decay with $\delta < 1$ satisfies this (the sum is a convergent geometric series). Polynomial decay $\beta_s \propto s^{-\alpha}$ requires $\alpha > 1$.
+
+\subsection*{Half-Life}
+
+\begin{definition}[Half-Life]\label{def:half-life}
+The half-life $h^*$ is the time required for the treatment effect to decay to half its initial value:
+\begin{enumerate}[(i)]
+    \item For geometric decay $\beta_s = \beta_0 \delta^s$:
+    \[
+    h^* = \frac{\log(0.5)}{\log(\delta)} = \frac{\log 2}{-\log \delta};
+    \]
+    \item For general impulse responses, two definitions are common:
+    \begin{itemize}
+        \item \textbf{Effect half-life:} $h^*$ solves $\beta_{h^*} = \beta_0 / 2$ (time until instantaneous effect halves);
+        \item \textbf{Cumulative half-life:} $h^*$ solves $\sum_{s=0}^{h^*} \beta_s = \text{LRM}/2$ (time until half the total effect has occurred).
+    \end{itemize}
+\end{enumerate}
+The half-life is inversely related to the decay rate: faster decay (smaller $\delta$) implies shorter half-life.
+\end{definition}
+
+\begin{tcolorbox}[colback=orange!5!white,colframe=orange!50!black,title=Example: Computing LRM and Half-Life]
+\textbf{Setting:} Weekly advertising campaign with estimated impulse response $\beta_s = 100 \times 0.7^s$ (geometric decay with $\delta = 0.7$ and $\beta_0 = 100$ units of incremental sales).
+
+\textbf{Long-run multiplier:}
+\[
+\text{LRM} = \frac{\beta_0}{1 - \delta} = \frac{100}{1 - 0.7} = \frac{100}{0.3} = 333.3 \text{ units.}
+\]
+Interpretation: A one-week campaign generates 333 units of cumulative incremental sales over all time.
+
+\textbf{Half-life:}
+\[
+h^* = \frac{\log 2}{-\log 0.7} = \frac{0.693}{0.357} = 1.94 \text{ weeks.}
+\]
+Interpretation: Effects decay to half their initial magnitude in approximately 2 weeks.
+
+\textbf{Policy implication:} With a 2-week half-life, weekly pulsing maintains awareness better than monthly pulsing. If LRM = 333 and cost-per-campaign = \$10,000, the cost-per-incremental-unit is \$30.
+\end{tcolorbox}
+
+\subsection*{Correspondence Between Event-Time and Impulse Response}
+
+\begin{proposition}[Correspondence between Event-Time and Impulse Response]\label{prop:correspondence}
+Under the following conditions:
+\begin{enumerate}[(i)]
+    \item Treatment is binary and absorbing (once adopted, remains on);
+    \item Effects are additively separable across lags;
+    \item Parallel trends holds at each event time,
+\end{enumerate}
+the event-time effects $\theta_k$ and impulse responses $\beta_s$ are related by:
+\[
+\theta_k = \sum_{s=0}^k \beta_s \quad \Leftrightarrow \quad \beta_k = \theta_k - \theta_{k-1},
+\]
+with the convention $\theta_{-1} = 0$. The event-time effect is the cumulative impulse response, and the impulse response is the first difference of event-time effects.
+\end{proposition}
+
+This correspondence enables analysts to move between event-study designs (which estimate $\theta_k$) and distributed-lag models (which estimate $\beta_s$).
+
+\subsection*{Summary of Estimands}
+
+Table~\ref{tab:dynamic-estimands} summarises the key dynamic estimands.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Summary of Dynamic Estimands}
+\label{tab:dynamic-estimands}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Estimand} & \textbf{Formula} & \textbf{Interpretation} \\
+\midrule
+Event-time effect $\theta_k$ & $\mathbb{E}[Y_{i,g+k}^g - Y_{i,g+k}(0) \mid G_i = g]$ & Effect $k$ periods after adoption \\
+\addlinespace
+Impulse response $\beta_s$ & $\partial Y_t / \partial W_{t-s}$ & Effect of lag-$s$ treatment shock \\
+\addlinespace
+Long-run multiplier & $\sum_{s=0}^{\bar{L}} \beta_s$ or $\theta_{\bar{K}}$ & Cumulative effect over all lags \\
+\addlinespace
+Half-life $h^*$ & $\log 2 / (-\log \delta)$ & Time to decay to 50\% \\
+\addlinespace
+Cumulative effect at $h$ & $\sum_{s=0}^h \beta_s$ & Total effect through horizon $h$ \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{Practical Guidance}
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Practical Guidance: Defining Dynamic Estimands]
+\textbf{Pre-specify the event-time window:}
+\begin{itemize}
+\item Base on substantive knowledge about expected effect duration.
+\item Advertising: 0--12 weeks. Loyalty programmes: 0--8 quarters.
+\item Report all lags within the window; bin distant lags when support is sparse.
+\end{itemize}
+
+\textbf{Define the long-run multiplier carefully:}
+\begin{itemize}
+\item For event-time effects (cumulative): $\text{LRM} = \hat{\theta}_{\bar{K}}$ (the effect at the longest observed lag).
+\item For impulse responses (incremental): $\text{LRM} = \sum_{s=0}^{\bar{L}} \hat{\beta}_s$.
+\item If geometric decay is plausible, extrapolate using $\text{LRM} = \hat{\beta}_0 / (1 - \hat{\delta})$.
+\end{itemize}
+
+\textbf{Estimate half-life with uncertainty:}
+\begin{itemize}
+\item Compute impulse responses: $\hat{\beta}_k = \hat{\theta}_k - \hat{\theta}_{k-1}$.
+\item Fit geometric decay $\hat{\beta}_k = \hat{\beta}_0 \hat{\delta}^k$ to the impulse response profile.
+\item Compute $\hat{h}^* = \log 2 / (-\log \hat{\delta})$ and report uncertainty using delta method or bootstrap.
+\end{itemize}
+
+\textbf{Report both event-time and impulse response:}
+\begin{itemize}
+\item Event-time effects $\hat{\theta}_k$ for direct interpretation.
+\item Impulse responses $\hat{\beta}_k = \hat{\theta}_k - \hat{\theta}_{k-1}$ to assess lag structure.
+\item Use the correspondence to check internal consistency.
+\end{itemize}
+\end{tcolorbox}

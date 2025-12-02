@@ -1,0 +1,29 @@
+\section{Assumptions}
+\label{sec:continuous-assumptions}
+
+The core assumptions for these methods should be familiar. They are technical, but each should be motivated by the substantive design of your study.
+
+\begin{assumption}[SUTVA and exposure mapping for continuous doses]
+\label{assump:cont-sutva}
+Potential outcomes depend on own intensity through an exposure mapping, with no unmodelled interference from others' intensities. When spillovers are plausible, define exposure to neighbours and use the spillover framework in Chapter~\ref{ch:spillovers}.
+\end{assumption}
+
+\begin{assumption}[Unconfoundedness for continuous treatments]
+\label{assump:cont-unconf}
+For all $d\in\mathcal{D}$, $Y_{it}(d)\perp D_{it}\mid X_{it},\alpha_i,\gamma_t$. The GPS $r(d\mid X_{it},\alpha_i,\gamma_t)$ is well defined and correctly specified when used, or paired with a correct outcome model in a doubly robust construction \citet{pearl2009causality}.
+\end{assumption}
+
+\begin{assumption}[Overlap and support in dose]
+\label{assump:cont-overlap}
+There exists $\underline{r}>0$ such that $r(d\mid X_{it},\alpha_i,\tau_t)\ge \underline{r}$ over the reported dose grid and relevant subgroups. Trimming and support reporting accompany estimation when tails are sparse.
+\end{assumption}
+
+\begin{assumption}[Parallel trends with intensity]
+\label{assump:cont-pt}
+In first differences or after removing flexible time effects, untreated outcome trends are independent of intensity. Event-time designs with intensity respect the cohort structure of Chapter~\ref{ch:event} and the aggregation cautions in modern panel frameworks \citet{arkhangelsky2024causal}.
+\end{assumption}
+
+\begin{assumption}[Factor or IV alternatives]
+\label{assump:cont-alt}
+When identification uses factors or instruments, rank and relevance conditions hold at a high level, and exclusion restrictions are justified by design. Factor structures approximate untreated outcomes as low rank per Chapter~\ref{ch:factor}.
+\end{assumption}

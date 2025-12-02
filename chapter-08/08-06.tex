@@ -1,0 +1,130 @@
+\section{Tuning and Implementation}
+\label{sec:factor-tuning}
+
+Implementing factor models and matrix completion in marketing panels requires choosing the pre-treatment window, curating the control sample, selecting the rank or regularisation penalty, and deciding on pre-processing steps. This section provides practical guidance on these choices, with attention to the trade-offs between bias, variance, and interpretability.
+
+\subsection*{Pre-Treatment Period Length}
+
+Pre-treatment period length is a key determinant of factor model performance. Longer pre-treatment periods provide more information to estimate loadings and factors, improving the accuracy of the low-rank approximation and the stability of estimates.
+
+\paragraph{Rule of thumb.} The pre-treatment period should satisfy $T_0 \geq 5R$, where $R$ is the number of factors. This provides sufficient degrees of freedom to identify the factor structure. In marketing panels with weekly data, two to three years (100 to 150 weeks) are typically adequate for five to ten factors. With monthly data, three to five years (36 to 60 months) provide similar coverage.
+
+\paragraph{Concrete example.} Consider a retail panel with $N = 100$ stores and $T = 104$ weeks (two years). If diagnostics suggest $R = 5$ factors, the minimum pre-treatment period is $T_0 \geq 25$ weeks. With a treatment occurring at week 52, the 51 pre-treatment weeks provide comfortable margin. If treatment occurs at week 20, only 19 pre-treatment periods are available---insufficient for five factors. Consider reducing $R$ to 3 or using regularisation.
+
+\paragraph{Short pre-treatment periods.} With fewer than ten pre-treatment observations, factor models are difficult to estimate reliably. Regularisation (nuclear-norm penalties as in Section~\ref{sec:factor-matrix}, or ridge penalties on loadings) stabilises estimates. Alternatively, consider simpler methods (two-way fixed effects, synthetic control) that impose more structure.
+
+\subsection*{Donor Diversity and Curation}
+
+Donor diversity---the range of characteristics represented in the control sample---determines whether treated units' loadings can be interpolated from control loadings or whether extrapolation is required.
+
+\paragraph{Diverse controls.} Controls should span the space of possible loadings. Plot control characteristics (size, region, demographics) against outcome levels or trends. Assess whether treated units lie within the range of controls or are outliers. Diverse controls enable accurate imputation even when treated units differ from any single control.
+
+\paragraph{Screening criteria.} Following the principles in Chapter~\ref{ch:sc} and Chapter~\ref{ch:generalized-sc}:
+\begin{enumerate}
+\item Exclude units that received treatment themselves.
+\item Exclude units contaminated by spillovers from treated units. Define buffer zones (e.g., stores within 10 miles of treated stores) and exclude donors within the buffer (Chapter~\ref{ch:spillovers}).
+\item Exclude units that are fundamentally incomparable (e.g., flagship stores when treated units are convenience stores).
+\end{enumerate}
+Document donor selection criteria and provide summary statistics comparing donors to treated units.
+
+\subsection*{Seasonality Controls}
+
+Seasonality can be handled explicitly or implicitly.
+
+\paragraph{Explicit controls.} Include seasonal dummies (month, quarter, day-of-week indicators) or trigonometric functions (sines and cosines at seasonal frequencies) as regressors. Explicit controls remove additive seasonal effects that are identical across units, reducing the required number of factors.
+
+\paragraph{Implicit controls.} Allow factors to capture seasonal patterns, accommodating seasonality with heterogeneous intensities across units. If some stores experience stronger holiday spikes than others, a seasonal factor with heterogeneous loadings captures this.
+
+\paragraph{Recommendation.} Combine explicit and implicit controls: include seasonal dummies in the outcome regression and estimate factors from the residuals. This works well when seasonality is strong and well-understood (Section~\ref{sec:factor-ife}).
+
+\subsection*{Demeaning and Detrending}
+
+Pre-processing choices affect interpretation and performance. Section~\ref{sec:factor-ife} established that estimation typically proceeds on demeaned data, with fixed effects recovered after factor estimation.
+
+\paragraph{Demeaning.} Subtract unit means (row means) to remove level differences: the demeaned outcome is $\tilde{Y}_{it} = Y_{it} - \bar{Y}_{i\cdot}$. This ensures factors capture co-movement in deviations from unit-specific levels. For two-way demeaning, also subtract time means: $\tilde{Y}_{it} = Y_{it} - \bar{Y}_{i\cdot} - \bar{Y}_{\cdot t} + \bar{Y}_{\cdot\cdot}$.
+
+\paragraph{Detrending.} Remove unit-specific linear trends by regressing outcomes on a time trend for each unit and working with residuals. This is appropriate when outcomes have deterministic trends that are not of substantive interest. First differencing ($\Delta Y_{it} = Y_{it} - Y_{i,t-1}$) removes unit-specific levels and focuses on period-to-period movements.
+
+\paragraph{Recommendation.} Two-way demeaning is the default. Detrending is appropriate when outcomes have strong deterministic trends. Avoid detrending when trends are part of the causal effect of interest.
+
+\subsection*{Rank Selection for IFE}
+
+Rank selection balances fit and parsimony. Too few factors underfit systematic structure; too many overfit noise.
+
+\paragraph{Information criteria.} Following \citet{bai2002determining}, the panel-specific criteria are:
+\[
+\text{IC}_1(R) = \log(\text{MSE}(R)) + R \left( \frac{N + T}{NT} \right) \log\left( \frac{NT}{N+T} \right),
+\]
+\[
+\text{IC}_2(R) = \log(\text{MSE}(R)) + R \left( \frac{N + T}{NT} \right) \log(\min(N, T)),
+\]
+where $\text{MSE}(R)$ is the mean squared residual with rank $R$. Compute both criteria for $R = 1, 2, \ldots, R_{\max}$ (typically $R_{\max} = 10$) and select the $R$ minimising the chosen criterion. IC2 is more conservative (selects fewer factors).
+
+\paragraph{Eigenvalue gaps.} Plot the eigenvalues of $\mathbf{Y}'\mathbf{Y}/T$ in decreasing order (scree plot). Select $R$ at the ``elbow'' where eigenvalues drop sharply. The eigenvalue ratio test (maximise $\mu_R / \mu_{R+1}$) formalises this.
+
+\paragraph{Cross-validation.} Split the pre-treatment period into training (first 80 per cent of periods) and validation (last 20 per cent). Estimate factors on the training set for each candidate $R$. Compute out-of-sample prediction error on the validation set. Select $R$ minimising validation error. This guards against overfitting (Section~\ref{sec:factor-ife}).
+
+\subsection*{Penalty Selection for Matrix Completion}
+
+For matrix completion (Section~\ref{sec:factor-matrix}), the regularisation parameter $\lambda$ controls the effective rank.
+
+\paragraph{Grid search.} Define a grid of $\lambda$ values relative to the largest singular value $\sigma_1$ of the demeaned outcome matrix: $\lambda \in \{0.01, 0.05, 0.1, 0.2, 0.5, 1\} \times \sigma_1$. Solve the nuclear-norm problem for each $\lambda$.
+
+\paragraph{Cross-validation.} Partition the observed cells $\Omega$ into training (80 per cent) and validation (20 per cent). For each $\lambda$, estimate on the training cells and compute prediction error on validation cells. Select $\lambda$ minimising validation error. Plot the validation curve and select at the minimum or at the ``elbow'' where error flattens.
+
+\paragraph{Effective rank.} After solving for the optimal $\lambda$, count the number of singular values above a threshold (e.g., $0.01 \times \sigma_1$). This gives the effective rank selected by the nuclear-norm penalty.
+
+\subsection*{Guarding Against Overfitting}
+
+Residual inspection and stability checks guard against overfitting.
+
+\paragraph{Residual diagnostics.} Plot residuals (observed minus fitted) over time and across units. Check for autocorrelation, heteroskedasticity, and outliers. If residuals exhibit strong patterns, the model underfits; additional factors or covariates may be needed. If residuals are white noise, the model captures the systematic structure.
+
+\paragraph{Stability checks.} Re-estimate the factor model on subsets of the data (early vs late pre-treatment periods, different subsets of controls). If estimated factors and loadings vary widely across subsets, the factor structure is weak or the rank is misspecified.
+
+\paragraph{Rolling windows.} Estimate the factor model on a rolling window of pre-treatment periods (e.g., the most recent 52 weeks). Track how factors evolve over time. Compute the correlation between the first factor at time $t$ and the first factor at time $t - 12$. Correlations above 0.9 indicate stable factors. Correlations below 0.7 suggest factor instability; consider whether structural breaks are present.
+
+\subsection*{Software Implementation}
+
+Several packages implement these tuning procedures:
+
+\paragraph{R packages.}
+\begin{itemize}
+\item \texttt{gsynth}: IFE estimation with cross-validation for rank selection. Implements the generalised synthetic control method of \citet{xu2017generalized}.
+\item \texttt{fect}: Factor-based methods for causal panel analysis, including IFE and matrix completion. Handles staggered adoption.
+\item \texttt{MCPanel}: Matrix completion for causal panels. Cross-validation for $\lambda$ selection.
+\item \texttt{softImpute}: General matrix completion with nuclear-norm regularisation. Useful for preprocessing before causal analysis.
+\end{itemize}
+
+\paragraph{Python.}
+\begin{itemize}
+\item \texttt{fancyimpute}: Matrix completion methods including SoftImpute.
+\item \texttt{surprise}: Recommendation-system matrix completion, adaptable for panel analysis.
+\end{itemize}
+
+\subsection*{Summary Table}
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Tuning Choices for Factor Models and Matrix Completion}
+\label{tab:factor-tuning}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Choice} & \textbf{Default/Rule} & \textbf{Diagnostic} & \textbf{Software} \\
+\midrule
+Pre-treatment length & $T_0 \geq 5R$ & Sensitivity to $T_0$ & --- \\
+\addlinespace
+Rank $R$ (IFE) & IC2 minimum & Scree plot; CV & \texttt{gsynth}, \texttt{fect} \\
+\addlinespace
+Penalty $\lambda$ (MC) & CV on observed cells & Validation curve & \texttt{MCPanel}, \texttt{softImpute} \\
+\addlinespace
+Demeaning & Two-way & Factor interpretability & --- \\
+\addlinespace
+Seasonality & Explicit + implicit & Residual seasonality & --- \\
+\addlinespace
+Donor selection & Exclude spillover zone & Balance diagnostics & --- \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}

@@ -1,0 +1,50 @@
+\section{Identification}
+\label{sec:continuous-identification}
+
+We can identify dose-response functions through several complementary strategies: unconfoundedness with the generalised propensity score, parallel trends adapted to continuous treatments, and factor models or instrumental variables when selection on unobservables is a concern.
+
+\subsection*{Identification via Unconfoundedness}
+
+The first approach assumes unconfoundedness, where the treatment intensity is as good as random after conditioning on observables and fixed effects. This approach relies on the generalised propensity score (GPS).
+
+\begin{definition}[Generalised Propensity Score]\label{def:gps}
+The Generalised Propensity Score (GPS) is the conditional density of treatment given covariates and fixed effects:
+\[
+r(d \mid X, \alpha, \gamma) = f(D_{it} = d \mid X_{it}, \alpha_i, \gamma_t),
+\]
+where $f(\cdot | \cdot)$ denotes the conditional probability density function. The GPS generalises the binary propensity score $e(X) = P(W = 1 | X)$ to continuous treatments.
+\end{definition}
+
+\begin{proposition}[GPS Balancing]\label{prop:gps-balance}
+Under Assumption~\ref{assump:cont-unconf} (unconfoundedness), the GPS has the balancing property: within strata defined by the GPS value $r$, treatment assignment is independent of covariates:
+\[
+D_{it} \perp\!\!\!\perp X_{it} \mid r(D_{it} \mid X_{it}).
+\]
+Equivalently, for any function $g(X)$:
+\[
+\mathbb{E}[g(X_{it}) \mid D_{it} = d, r(d \mid X_{it}) = r] = \mathbb{E}[g(X_{it}) \mid r(d \mid X_{it}) = r].
+\]
+This property enables covariate balance assessment via GPS stratification.
+\end{proposition}
+
+\begin{theorem}[GPS Identification]\label{thm:gps-identification}
+Under Assumptions~\ref{assump:cont-unconf} (unconfoundedness) and~\ref{assump:cont-overlap} (overlap), the ADRF is identified by:
+\[
+\mu(d) = \mathbb{E}\left[ \mathbb{E}[Y_{it} \mid D_{it} = d, r(d \mid X_{it})] \right].
+\]
+Equivalently, using inverse probability weighting:
+\[
+\mu(d) = \mathbb{E}\left[ \frac{Y_{it} \cdot K_h(D_{it} - d)}{r(D_{it} \mid X_{it})} \right] \Big/ \mathbb{E}\left[ \frac{K_h(D_{it} - d)}{r(D_{it} \mid X_{it})} \right],
+\]
+where $K_h(\cdot)$ is a kernel with bandwidth $h$. The identification relies on the GPS to adjust for confounding across the continuous dose distribution.
+\end{theorem}
+
+\subsection*{Identification via Parallel Trends}
+
+The second approach adapts the parallel trends assumption from Chapter~\ref{ch:did} to the continuous setting. Identification comes from comparing changes in outcomes across units with different treatment intensities, assuming their trends would have been parallel in the absence of treatment differences. This strategy is particularly useful when treatment intensity varies over time within units, allowing a difference-in-differences logic to apply to continuous doses.
+
+\subsection*{Identification via Factors or Instruments}
+
+When unconfoundedness is doubtful, we can turn to the factor models of Chapter~\ref{ch:factor} or to instrumental variables. Factor models absorb unobserved common shocks that might confound the dose-outcome relationship.
+
+A valid instrument provides an exogenous source of variation in treatment intensity, enabling identification even when selection on unobservables is present. As always, we must be clear about which assumptions we are relying on and provide diagnostics to support those assumptions.

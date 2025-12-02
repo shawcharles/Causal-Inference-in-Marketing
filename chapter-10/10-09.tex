@@ -1,0 +1,198 @@
+\section{Workflow Checklist}
+\label{sec:dynamics-workflow}
+
+This section provides a compact, reproducible protocol for conducting dynamic treatment effect analyses in marketing panels. The workflow integrates design, estimation, diagnostics, inference, and reporting.
+
+For estimation methods, see Section~\ref{sec:dynamics-estimation}. For identification, see Section~\ref{sec:dynamics-identification}. For diagnostics, see Section~\ref{sec:dynamics-diagnostics}. For inference, see Section~\ref{sec:dynamics-inference}.
+
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Box 10.2: Dynamic Effects Workflow Summary]
+\small
+\textbf{1. Define estimand:} Event-time effects, impulse responses, LRM, or half-life. Pre-specify window based on domain knowledge.
+
+\textbf{2. Map support:} Plot treated and control units for each lag; bin sparse tails.
+
+\textbf{3. Select estimator:} Event study (discrete), distributed-lag (continuous), or dynamic DiD (staggered).
+
+\textbf{4. Run pre-trend checks:} Estimate leads; interpret significant leads as anticipation or design violations.
+
+\textbf{5. Report dynamic profile:} Event-time plot with uniform confidence bands; LRM and half-life with bootstrap or delta-method SE.
+
+\textbf{6. Inference:} Cluster-robust SE; joint tests; multiple testing adjustments.
+
+\textbf{7. Diagnostics:} Follow protocol in Section~\ref{sec:dynamics-diagnostics}; placebo tests; sensitivity checks.
+\end{tcolorbox}
+
+\subsection*{Step 1: Define the Dynamic Estimand}
+
+Clarify the substantive question and define the target estimand:
+\begin{itemize}
+\item \textbf{Event-time effects $\theta_k$:} Average effect at each lag relative to treatment adoption.
+\item \textbf{Impulse responses $\beta_s$:} Marginal effect of treatment intensity at each lag.
+\item \textbf{Long-run multiplier:} Cumulative effect over all lags.
+\item \textbf{Half-life:} Time required for effects to decay to half.
+\end{itemize}
+
+Pre-specify the event-time window based on substantive knowledge about expected effect duration. Document the estimand, window, and rationale.
+
+\subsection*{Step 2: Map Event-Time Support}
+
+For each lag $k$, compute the number of treated and control observations:
+\begin{enumerate}
+\item Plot support per event time.
+\item Flag lags where support is sparse ($< 10$ observations).
+\item Decide whether to bin distant lags or restrict the window.
+\item Document binning choices and rationale.
+\item Conduct sensitivity analyses varying bin thresholds.
+\end{enumerate}
+
+\subsection*{Step 3: Select the Estimator}
+
+Choose based on data structure and identification assumptions:
+\begin{itemize}
+\item \textbf{Event studies:} Discrete treatment; common or staggered adoption.
+\item \textbf{Distributed-lag models:} Continuous treatment intensity; carryover expected.
+\item \textbf{Dynamic DiD:} Staggered adoption; heterogeneity-robust estimates required.
+\item \textbf{Continuous dose-response:} Treatment intensity varies; high-dimensional confounders.
+\end{itemize}
+
+Justify choice based on data structure and estimand. See Section~\ref{sec:dynamics-estimation}.
+
+\subsection*{Step 4: Specify Leads, Lags, and Bins}
+
+\begin{itemize}
+\item \textbf{Lead window:} Lags $k < 0$ for pre-trend tests. Include at least 3--5 leads.
+\item \textbf{Lag window:} Lags $k \geq 0$ for post-treatment effects.
+\item \textbf{Reference category:} Typically $k = -1$ for event studies.
+\item \textbf{Maximum lag $\bar{L}$:} For distributed-lag models, based on substantive knowledge or cross-validation.
+\end{itemize}
+
+Document the window, reference category, and rationale.
+
+\subsection*{Step 5: Run Anticipation and Pre-Trend Checks}
+
+\begin{enumerate}
+\item Estimate the specification including leads ($k < 0$).
+\item Plot lead coefficients with confidence intervals.
+\item Conduct joint F-test that all lead coefficients are zero.
+\item If F-test does not reject, parallel trends is supported.
+\item If F-test rejects, diagnose: differential trends, anticipation, or confounders.
+\item Consider covariate adjustment, factor models, or alternative controls.
+\end{enumerate}
+
+Report pre-trend test result and any adjustments. See Section~\ref{sec:dynamics-anticipation}.
+
+\subsection*{Step 6: Choose Inference Procedure}
+
+\begin{itemize}
+\item \textbf{Cluster-robust SE:} By unit when serial dependence is strong.
+\item \textbf{Two-way clustering:} By unit and time when common shocks are plausible.
+\item \textbf{HAC (Newey-West):} When serial dependence decays with lag.
+\item \textbf{Wild cluster bootstrap:} When $N < 30$ clusters.
+\end{itemize}
+
+Document choice and rationale. Report number of clusters and bootstrap replications. See Section~\ref{sec:dynamics-inference}.
+
+\subsection*{Step 7: Report Dynamic Paths and Summaries}
+
+\textbf{For event studies:}
+\begin{itemize}
+\item Report $\hat{\theta}_k$ for all lags with confidence intervals.
+\item Plot event-time profile marking reference category.
+\item Report $\widehat{\text{LRM}} = \hat{\theta}_{\bar{K}}$ (the effect at the longest lag, since event-time effects are cumulative) with CI.
+\end{itemize}
+
+\textbf{For distributed-lag models:}
+\begin{itemize}
+\item Report impulse response $\hat{\beta}_s$ with confidence intervals.
+\item Report $\widehat{\text{LRM}} = \sum_s \hat{\beta}_s$.
+\item Report half-life with CI.
+\end{itemize}
+
+Discuss substantive interpretation of dynamic profile, LRM, and half-life.
+
+\subsection*{Step 8: Conduct Sensitivity Analyses}
+
+\begin{itemize}
+\item \textbf{Window:} Compare full vs restricted window.
+\item \textbf{Binning:} Compare different bin thresholds.
+\item \textbf{Lag length:} Compare $\bar{L} = 4, 6, 8, 10$.
+\item \textbf{Functional form:} Compare geometric, polynomial, and flexible lags.
+\item \textbf{Control group:} Compare never-treated vs not-yet-treated.
+\end{itemize}
+
+Report results for multiple specifications. Discuss most plausible based on diagnostics.
+
+\subsection*{Step 9: Document Assumptions and Threats}
+
+\textbf{State assumptions:} Parallel trends, no anticipation, overlap. Provide evidence (pre-trend tests, support plots, balance checks).
+
+\textbf{Discuss threats:}
+\begin{itemize}
+\item Pre-trends (differential trends unrelated to treatment).
+\item Anticipation (forward-looking behaviour).
+\item Spillovers (contamination of control units).
+\item Structural breaks (regime shifts at intervention).
+\item Sparse support (unstable estimates at distant lags).
+\end{itemize}
+
+\textbf{Provide replication materials:} Data, scripts, software versions.
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Box 10.3: Dynamic Effects Checklist]
+\textbf{1. Define Estimand:} Specify $\theta_k$, $\beta_s$, LRM, or half-life. Pre-specify window.
+
+\textbf{2. Map Support:} Plot treated/control per event time. Flag sparse lags. Bin or restrict.
+
+\textbf{3. Select Estimator:} Event study, distributed-lag, or dynamic DiD. Justify choice.
+
+\textbf{4. Specify Leads/Lags:} Define windows. Specify reference category. Document rationale.
+
+\textbf{5. Pre-Trend Checks:} Estimate leads. Plot with CIs. Joint F-test. Diagnose if rejected.
+
+\textbf{6. Choose Inference:} Cluster-robust, two-way, HAC, or wild bootstrap. Document choice.
+
+\textbf{7. Report Paths:} Plot event-time or impulse response. Report LRM and half-life with SE.
+
+\textbf{8. Sensitivity:} Vary window, binning, lag length, functional form, control group.
+
+\textbf{9. Document:} State assumptions. Discuss threats. Provide replication materials.
+\end{tcolorbox}
+
+\subsection*{Summary Tables and Figures}
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Estimand–Estimator Mapping for Dynamic Treatment Effects}
+\label{tab:dynamics-methods}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Estimand} & \textbf{Data Structure} & \textbf{Estimator} & \textbf{Reference} \\
+\midrule
+Event-time effects $\theta_k$ & Binary treatment; staggered adoption & Heterogeneity-robust event study & Chapter~\ref{ch:did}, \ref{ch:event} \\
+\addlinespace
+Impulse responses $\beta_s$ & Continuous intensity; panel variation & Geometric ad-stock, Almon, flexible lags & This chapter \\
+\addlinespace
+Long-run multiplier & Binary or continuous; sufficient lags & $\theta_{\bar{K}}$ (event-time) or $\sum_s \beta_s$ (impulse); delta method & This chapter \\
+\addlinespace
+Half-life & Decaying effects; geometric structure & $\log 2 / (-\log \delta)$ & This chapter \\
+\addlinespace
+Dose-response $\mu(w, k)$ & Continuous; high-dimensional confounders & DML for panels & Chapter~\ref{ch:ml-nuisance}, \ref{ch:continuous} \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\textwidth]{images/fig_dynamics_event.pdf}
+\caption{Event-Time Path with Ramp-Up Pattern. The figure shows illustrative event-time effects $\hat{\theta}_k$ with 95\% confidence intervals. Pre-treatment leads ($k < -1$) are near zero, supporting parallel trends. Post-treatment effects show a gradual ramp-up, stabilising at approximately 10\% after three periods. The vertical dashed line marks the reference category ($k = -1$).}
+\label{fig:dynamics-event}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\textwidth]{images/fig_dynamics_impulse.pdf}
+\caption{Impulse Response under Geometric Ad-Stock. The figure shows the impulse response $\hat{\beta}_s = \hat{\beta}_0 \hat{\delta}^s$ with geometric decay ($\delta = 0.75$). The contemporaneous effect is $\beta_0 = 10\%$. The half-life (time to decay to $\beta_0/2$) is approximately 2.4 periods. The long-run multiplier (shaded area) is $\text{LRM} = \beta_0/(1-\delta) = 40\%$.}
+\label{fig:dynamics-impulse}
+\end{figure}
+\index{dynamic treatment effects|)}

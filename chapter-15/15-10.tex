@@ -1,0 +1,10 @@
+\section{Diagnostics: A Practical Playbook}
+\label{sec:diagnostics-playbook}
+
+A comprehensive diagnostic workflow, as detailed in Chapter~\ref{ch:design-diagnostics}, is our best defence. We must anticipate threats and test our assumptions before finalising any estimates. This includes running pre-trend tests, checking for covariate balance and overlap, and assessing the stability of our estimates.
+
+Leave-one-out diagnostics by unit, time, or cohort identify influential observations and test robustness to single units or periods. Donor weight stability in synthetic control and synthetic difference-in-differences (Chapter~\ref{ch:sc}, Chapter~\ref{ch:generalized-sc}) ensures that no single donor dominates and that results are not fragile to donor-pool composition.
+
+Support-by-$k$ checks in event studies verify that each relative event-time bin has sufficient sample size. Changepoint scans and seasonality checks detect structural breaks and calendar confounding.
+
+The diagnostic playbook in Chapter~\ref{ch:design-diagnostics} provides templates for visual and formal checks. Running diagnostics ex ante, documenting them in a pre-analysis plan, and reporting their results alongside main estimates supports transparent inference and credibility \citet{angrist2010credibility}.

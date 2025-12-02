@@ -1,0 +1,49 @@
+
+\section{Inference}
+\label{sec:dml-inference}
+
+Inference for DML estimators must account for clustering induced by panel dependence, for the randomness introduced by sample splitting, and for multiplicity when estimating effects for many subgroups or event times. This section builds on the variance estimator in Proposition~\ref{prop:variance-dml} and extends to small-sample adjustments, split randomness, and multiplicity corrections.
+
+\subsection*{Influence Functions and Clustering}
+
+The doubly robust score $\psi^{\text{ATT}}(Z_{it}; \tau, \eta)$ from Definition~\ref{def:dr-score} serves as the influence function for the ATT estimator. Each observation's score quantifies its contribution to the treatment effect estimate. The cluster-robust variance estimator (Proposition~\ref{prop:variance-dml}) aggregates scores within units before squaring:
+\[
+\hat{V} = \frac{1}{N} \sum_{i=1}^N \left( \sum_{t=1}^T \psi^{\text{ATT}}(Z_{it}; \hat{\tau}, \hat{\eta}^{(-k(i))}) \right)^2.
+\]
+The inner sum aggregates the influence function within unit $i$, respecting serial dependence. The outer sum aggregates across units. This structure ensures that standard errors are valid when errors are correlated within units.
+
+Two-way clustering (by unit and time) extends this approach by summing squared aggregates over both dimensions. Chapter~\ref{ch:inference} provides the full theory.
+
+\subsection*{Small-Sample Adjustments}
+
+Small-sample adjustments improve finite-sample performance when the number of clusters is small (fewer than 30 units). Degrees-of-freedom corrections multiply the variance estimate by $N / (N - p)$, where $N$ is the number of clusters and $p$ is the number of parameters.
+
+Wild cluster bootstrap provides an alternative that avoids asymptotic approximations. The procedure multiplies cluster-level scores by random signs (Rademacher weights), recomputes the treatment effect estimate, and repeats many times to build a bootstrap distribution. Chapter~\ref{ch:inference} provides detailed coverage of wild bootstrap variants and guidance on when to use them.
+
+\subsection*{Sample-Splitting Randomness}
+
+If folds are created randomly, different partitions produce different nuisance estimates and different treatment effect estimates. To account for this randomness, repeat the DML procedure with multiple random splits (e.g., $R = 10$ or 20), compute the estimate for each split, and average:
+\[
+\hat{\tau}_{\text{avg}} = \frac{1}{R} \sum_{r=1}^R \hat{\tau}_r.
+\]
+The variance combines within-split and between-split components:
+\[
+\widehat{\text{Var}}(\hat{\tau}_{\text{avg}}) = \frac{1}{R^2} \sum_{r=1}^R \widehat{\text{Var}}(\hat{\tau}_r) + \frac{1}{R(R-1)} \sum_{r=1}^R (\hat{\tau}_r - \hat{\tau}_{\text{avg}})^2.
+\]
+The first term is the average within-split variance. The second term captures the randomness across splits.
+
+Alternatively, $K$-fold aggregated scores average the influence functions across folds, producing a single estimate and variance that account for the fold structure without requiring repeated splits.
+
+\subsection*{Multiplicity Adjustments}
+
+When estimating effects for many subgroups or event times, multiplicity adjustments prevent false discoveries. If an analyst estimates CATEs for 10 subgroups and tests each at the 5 per cent level, the expected number of false rejections is $10 \times 0.05 = 0.5$ even if all effects are zero.
+
+Several corrections are available. Bonferroni correction divides the significance level by the number of tests (e.g., $0.05 / 10 = 0.005$), controlling the family-wise error rate at the cost of reduced power. False discovery rate (FDR) control using the Benjamini-Hochberg procedure offers a less conservative alternative, controlling the expected proportion of false discoveries among rejections. Romano-Wolf stepdown procedures exploit the correlation structure of test statistics to improve power while controlling the family-wise error rate.
+
+Practical guidance: report unadjusted p-values for each subgroup alongside a joint test (F-test or chi-squared) that all subgroup effects are equal. Use the joint test as primary evidence for heterogeneity. If the joint test rejects, interpret individual subgroup effects as exploratory.
+
+\subsection*{Connection to Panel Inference Frameworks}
+
+DML inference extends design-based inference frameworks by incorporating ML-estimated nuisances while preserving the clustering and aggregation structures of DiD, event studies, and synthetic control. The influence function provides a unified framework for computing standard errors across all DML estimators—average effects, CATEs, and dose-response functions.
+
+The connection to staggered adoption (Chapter~\ref{ch:did}) is direct: DML estimates of $\text{ATT}(g, t)$ use the same aggregation weights and inference procedures as design-based staggered DiD, but with ML-estimated nuisances replacing parametric trend adjustments. Chapter~\ref{ch:inference} develops the full theory of panel inference, including the variance estimators surveyed by \citet{arkhangelsky2024causal}.

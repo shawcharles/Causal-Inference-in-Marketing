@@ -1,0 +1,38 @@
+\section{Structural Breaks and Nonstationarity}
+\label{sec:structural-breaks}
+
+Marketing panels often rely on data from platforms that constantly evolve, creating structural breaks that threaten stationarity. For a practical diagnostic workflow and decision tree for handling nonstationarity, see Appendix~\ref{app:stationarity-panels}.
+
+\begin{definition}[Parameter Stability]\label{def:structural-stability}
+A panel model exhibits structural stability if the parameters $\theta_t = (\tau_t, \beta_t, \sigma_t^2)$ are constant over the estimation window:
+\[
+\theta_t = \theta \quad \text{for all } t \in \{1, \ldots, T\}.
+\]
+A structural break at time $t^*$ occurs if:
+\[
+\theta_t = \begin{cases} \theta^{(1)} & t < t^* \\ \theta^{(2)} & t \geq t^* \end{cases}, \quad \theta^{(1)} \neq \theta^{(2)}.
+\]
+The break magnitude is $\|\theta^{(2)} - \theta^{(1)}\|$.
+\end{definition}
+
+\begin{definition}[Chow Test Statistic]\label{def:chow-test}
+For candidate break point $t^*$, the Chow test statistic is:
+\[
+F_{t^*} = \frac{(SSR_{\text{pooled}} - SSR_{\text{split}}) / k}{SSR_{\text{split}} / (NT - 2k)},
+\]
+where $SSR_{\text{pooled}}$ is the sum of squared residuals from the pooled model, $SSR_{\text{split}} = SSR_1 + SSR_2$ is the sum from separate regressions before and after $t^*$, and $k$ is the number of parameters. Under the null of no break, $F_{t^*} \sim F(k, NT - 2k)$.
+\end{definition}
+
+\begin{proposition}[Sup-F Test]\label{prop:sup-f}
+When the break point $t^*$ is unknown, the sup-F statistic is:
+\[
+\sup F = \max_{t^* \in [\underline{t}, \bar{t}]} F_{t^*},
+\]
+where $[\underline{t}, \bar{t}]$ excludes boundary regions with insufficient observations. Critical values are from Andrews (1993) or obtained via bootstrap. Rejection indicates a structural break exists somewhere in the sample.
+\end{proposition}
+
+\subsection*{Platform Policy Changes}
+
+Platform changes---such as an algorithm update or a new user interface---create structural breaks. An algorithm update can alter who sees an ad, creating confounding. A change in how conversions are measured can break the comparability of data over time.
+
+We can detect these breaks using changepoint methods (Definition~\ref{def:chow-test}) and mitigate them by estimating effects on stable sub-periods or using external data as negative controls. We must also distinguish the causal effects we seek from platform-reported metrics, which may not have a clear counterfactual interpretation \citet{pearl2009causality}.

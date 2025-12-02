@@ -1,0 +1,121 @@
+\section{Workflow Checklist}
+\label{sec:hybrid-workflow}
+
+This section provides a compact, reproducible protocol for conducting hybrid method analyses in marketing panels. The workflow integrates design, tuning, diagnostics, inference, and reporting into an iterative process. Each step references the section where details are provided, enabling readers to navigate between the summary and the full treatment.
+
+\subsection*{Step 1: Define the Estimand and Cohorts}
+
+Clarify the substantive question and define the target estimand (Section~\ref{sec:hybrid-motivation}). For a single treated unit, the estimand is the average treatment effect on the treated (ATT). For multiple treated units with common adoption, the estimand may be the overall ATT or unit-specific effects. For staggered adoption, define cohorts by adoption time and specify whether the goal is cohort-specific effects, event-time profiles, or calendar-time effects. The aggregation scheme (Section~\ref{sec:hybrid-multiple}) determines which estimand is produced. Pre-specifying the estimand disciplines the analysis and prevents post-hoc specification searches.
+
+\subsection*{Step 2: Curate the Donor Pool}
+
+Assemble the donor pool by excluding treated units, units contaminated by spillovers, and units incomparable to treated units (Section~\ref{sec:hybrid-tuning}). Document selection criteria based on institutional knowledge: same region, size category, or operational characteristics. If spillovers are plausible, define buffer zones and exclude donors within the buffer. For staggered adoption, the donor pool may include not-yet-treated units in addition to never-treated units; track how the pool shrinks as more cohorts adopt.
+
+Report the final donor pool size and compare donor means to treated unit means. If donors differ systematically from treated units on important characteristics, this informs method choice: ASCM may be needed to correct imbalances that SC cannot address.
+
+\subsection*{Step 3: Choose the Hybrid Method}
+
+Select the hybrid method based on the decision framework in Section~\ref{sec:hybrid-when}. Use ASCM when the treated unit lies near but not within the donor convex hull, when pre-treatment fit is imperfect, or when covariates are critical for identification. Use ridge SC when the donor pool is large, the pre-treatment period is short, or weight stability is a priority. Use SDID when treated units differ on pre-treatment trends, when common time shocks affect units differentially, or when staggered adoption is present. Use TROP when interactive fixed effects are suspected and the sample is moderate (at least 20 units and 20 periods).
+
+Justify the choice based on the data structure and identification assumptions. If uncertain, estimate multiple methods and compare results—convergence supports robustness.
+
+\subsection*{Step 4: Select Predictors and Penalties}
+
+Define the predictor set for weighting (Section~\ref{sec:hybrid-tuning}), including pre-treatment outcomes spanning the full window or a representative subset, and key covariates such as time-invariant or pre-treatment characteristics. For ASCM, define the covariate set for augmentation, which may overlap with weighting covariates or include additional variables.
+
+Choose penalty parameters using cross-validation on the pre-treatment period. For ridge SC, search over $\eta \in \{0.001, 0.01, 0.1, 1, 10, 100\}$ and select the value minimising validation RMSPE. For ASCM, regularise the augmentation model using ridge or lasso. For SDID, no manual tuning is required (the algorithm includes built-in regularisation). For TROP, use staged cross-validation over three parameters.
+
+Pre-specify predictor sets and tuning procedures before seeing post-treatment outcomes. This disciplines the analysis and guards against specification searches.
+
+\subsection*{Step 5: Assess Pre-Treatment Fit and Balance}
+
+Estimate the hybrid method and compute pre-treatment RMSPE (Section~\ref{sec:hybrid-diagnostics}). Compare to standard SC, SDID, and DID to assess whether the hybrid improves fit. A useful threshold is RMSPE less than 5 to 10 per cent of outcome SD; improvement of at least 20 per cent over SC justifies the added complexity.
+
+Compute covariate balance metrics (SMDs) and report balance tables. Flag covariates with SMD greater than 0.2. Compute weight dispersion ($N_{\text{eff}}$) and identify donors with large weights. For SDID, also compute $T_{\text{eff}}$ to assess time weight concentration.
+
+If pre-fit is poor (RMSPE exceeds 15 per cent of SD) or balance is weak (any SMD exceeds 0.3), revisit the donor pool, the predictor set, or the tuning parameters. This step is iterative: diagnostics inform refinements until acceptable fit is achieved or limitations are acknowledged.
+
+Figure~\ref{fig:hybrid-fit} illustrates the fit comparison. Panel A shows the treated unit alongside SC and ASCM counterfactuals, demonstrating that ASCM achieves tighter pre-treatment fit. Panel B displays gap trajectories with confidence intervals, enabling visual assessment of treatment effects.
+
+\subsection*{Step 6: Conduct Placebos and Sensitivity Analyses}
+
+Run in-space placebos by applying the hybrid method to each donor as if treated, computing placebo gaps, and ranking the treated unit's RMSPE ratio (Section~\ref{sec:hybrid-inference}). Run in-time placebos by applying the method at pseudo-intervention dates in the pre-treatment period, verifying that pseudo effects are near zero.
+
+Conduct leave-one-donor-out and leave-one-period-out sensitivity analyses, reporting the range of treatment effect estimates. If a single donor or period changes the estimate by more than 20 per cent, investigate and report this influence. Plot residuals over time and inspect for trends, seasonality, or outliers.
+
+Figure~\ref{fig:hybrid-sdid} shows SDID weight distributions. Panel A displays unit weights, identifying donors with large influence. Panel B displays time weights, showing which pre-treatment periods receive emphasis.
+
+\subsection*{Step 7: Compute Inference}
+
+Choose inference procedures based on sample size (Section~\ref{sec:hybrid-inference}). Use in-space placebos and RMSPE ratios for rank-based p-values when the donor pool is modest (10 to 50 donors). Use wild bootstrap for confidence intervals when treated units or cohorts are few (fewer than 30). Use conformal inference for prediction intervals on counterfactual outcomes.
+
+Report multiple inference procedures and discuss their agreement. If testing multiple periods, cohorts, or outcomes, report unadjusted p-values alongside joint tests. Interpret results in light of consistency and magnitude across tests, not just binary significance.
+
+\subsection*{Step 8: Report Aggregates with Sensitivity}
+
+Aggregate unit-specific or cohort-time-specific estimates into overall ATT, event-time effects, or calendar-time effects using pre-specified weights (Section~\ref{sec:hybrid-multiple}). Report aggregation weights explicitly. Conduct sensitivity analyses varying the weights to assess robustness.
+
+For staggered adoption, report event-time profiles with confidence intervals, marking the omitted event time and noting which cohorts contribute to each coefficient. For multiple treated units with common adoption, report unit-specific estimates alongside the aggregate and discuss heterogeneity.
+
+Figure~\ref{fig:hybrid-ridge} illustrates the ridge regularisation path. Panel A shows how donor weights evolve with the penalty parameter, enabling the analyst to assess sensitivity to regularisation. Panel B shows $N_{\text{eff}}$ as a function of $\eta$, with the cross-validation-optimal choice marked.
+
+\subsection*{Step 9: Document Assumptions and Provide Replication Materials}
+
+Articulate the identification assumptions: no anticipation, limited interference, pre/post stability, and overlap. Provide evidence that these are plausible. Discuss threats to validity (poor fit, contamination, structural breaks, spillovers) and the robustness of conclusions.
+
+If the analysis deviates from the pre-specified plan, document deviations and provide justification. Provide replication materials: cleaned data (or simulated data if proprietary), analysis scripts, and documentation of software versions. This enables readers to verify results and conduct alternative analyses.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/fig_hybrid_fit.pdf}
+\caption{Pre-Treatment Fit Comparison: SC vs ASCM with Gap Trajectories}
+\label{fig:hybrid-fit}
+\small
+\textit{Note}: Panel A shows the treated unit (solid blue line), standard synthetic control (dashed purple line), and augmented synthetic control (dotted orange line) over pre-treatment and post-treatment periods. The vertical line marks the intervention time. ASCM fits the pre-treatment trajectory more closely than standard SC. Panel B displays gaps (treated minus synthetic) over time with 95\% confidence intervals. The shaded regions distinguish pre-treatment (blue) and post-treatment (red) periods.
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/fig_hybrid_sdid.pdf}
+\caption{SDID Unit and Time Weights Distribution}
+\label{fig:hybrid-sdid}
+\small
+\textit{Note}: Panel A shows SDID unit weights $\hat{w}_j$ across donor units, sorted by magnitude. Red bars indicate donors with weights exceeding 0.1. The dashed line shows the uniform weight ($1/N_0$). The effective number of donors $N_{\text{eff}}$ quantifies concentration. Panel B shows time weights $\hat{\lambda}_t$ for pre-treatment periods. SDID down-weights volatile periods, focusing on stable periods. The effective number of periods $T_{\text{eff}}$ measures dispersion.
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/fig_hybrid_ridge.pdf}
+\caption{Ridge Path of Donor Weights and Weight Dispersion}
+\label{fig:hybrid-ridge}
+\small
+\textit{Note}: Panel A displays the ridge regularisation path, showing how donor weights $\hat{w}_j$ evolve as $\eta$ increases (log scale). Each line represents one donor. As $\eta$ increases, weights shrink toward uniform (red dashed line). The orange vertical line marks the cross-validation-optimal $\eta$. Panel B shows $N_{\text{eff}}$ as a function of $\eta$. Low $\eta$ produces sparse weights; high $\eta$ produces diffuse weights. The CV-optimal choice achieves moderate dispersion.
+\end{figure}
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Hybrid Method Summary: Assumptions, Diagnostics, and Use-Cases}
+\label{tab:hybrid-methods}
+\begin{tabularx}{\textwidth}{Y Y Y Y Y}
+\toprule
+\textbf{Method} & \textbf{Key Assumptions} & \textbf{Tuning} & \textbf{Diagnostic Thresholds} & \textbf{Use-Cases} \\
+\midrule
+Standard SC & Convex hull; no anticipation; stability & Predictor set & RMSPE $< 5\%$ SD; $N_{\text{eff}} > 3$ & Single unit; long pre-period; good match \\
+\addlinespace
+ASCM & Doubly robust; no anticipation; stability & Predictors; covariates; $\eta$ & RMSPE $< 10\%$ SD; SMD $< 0.2$ & Near but not in hull; short pre-period \\
+\addlinespace
+Ridge SC & Approximate matching; stability & Ridge $\eta$ (CV) & RMSPE $< 10\%$ SD; $N_{\text{eff}} \in [5,15]$ & Large donor pool; weight stability \\
+\addlinespace
+SDID & Weighted parallel trends; overlap & Built-in & RMSPE $< 10\%$ SD; $T_{\text{eff}} > 3$ & Staggered; differential trends \\
+\addlinespace
+TROP & Low-rank factors; triply robust & $\lambda_{\text{unit}}$; $\lambda_{\text{time}}$; $\lambda_{nn}$ (CV) & CV error stable; params not extreme & IFE; moderate sample ($>20 \times 20$) \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{Summary}
+
+By following this workflow, practitioners can conduct hybrid method analyses that are transparent, rigorous, and aligned with modern best practices. The workflow integrates design-based reasoning, careful donor curation, method selection, tuning, diagnostics, inference, and sensitivity analysis. Each step references earlier sections for details, enabling readers to navigate between the summary and the full treatment. The result is causal evidence that withstands scrutiny and informs strategic decisions with confidence.
+\index{augmented synthetic control|)}

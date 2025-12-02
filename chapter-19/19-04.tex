@@ -1,0 +1,89 @@
+\section{Transformations and Aggregation}
+\label{sec:transformations}
+
+Raw data rarely arrive in a form suitable for causal analysis. This section covers the transformations required to align time, aggregate appropriately, handle outliers, and construct exposure variables. Each transformation involves trade-offs that affect the validity and interpretation of causal estimates.
+
+\subsection*{Time and Calendar Alignment}
+
+Time and calendar alignment prevent mechanical confounding. ISO weeks start on Monday and span seven days, while fiscal weeks may start on different days or vary in length. Misalignment between treatment timing (which follows business calendars) and outcome measurement (which follows ISO weeks) introduces bias when weeks straddle treatment dates.
+
+\paragraph{Seasonality controls.} Week-of-year or month fixed effects absorb regular patterns. Flexible splines or interactions better capture non-linear trends. Event calendars document holidays, product launches, and competitor actions, allowing pre-specified exclusions or robustness checks around confounding events.
+
+\paragraph{Look-ahead bias.} Arises when aggregating forward (for example, using week $t+1$ outcomes in week $t$ predictors). This must be prevented via strict temporal ordering in ETL pipelines.
+
+\subsection*{Temporal Aggregation and Data Intervals}
+
+The choice of time interval for aggregation involves a trade-off. As \citet{tellis2006optimal} show, the optimal interval is the 'unit exposure time'—the smallest window in which the treatment occurs only once. For TV advertising, this might be a day or a week. For digital, it could be an hour.
+
+Overly disaggregate data introduce noise and disaggregation bias. If outcomes are measured at intervals shorter than the causal lag, estimates conflate immediate effects with measurement error. Overly aggregate data obscure short-run dynamics and create aggregation bias. If outcomes are averaged over windows longer than the decay period, carryover effects are understated and long-run multipliers are biased downward. The choice depends on the substantive question, the treatment schedule, and the outcome's temporal structure.
+
+Marketing panels often span multiple time scales. Weekly sales data may be appropriate for television advertising campaigns that air on consistent schedules. Daily data may be required for promotions that vary day-to-day. Hourly data may be necessary for digital advertising with real-time bidding and dynamic creative optimisation. The analyst must balance the desire for granularity against the reality that more frequent data amplify measurement error, increase computational burden, and complicate inference under serial dependence.
+
+\subsection*{Quality Signals from the Crowd}
+
+User-generated content (UGC) provides granular signals about perceived product and brand quality at scale. Text and ratings can be transformed into topic and sentiment measures via supervised and unsupervised methods such as LDA and modern embeddings. These measures inform market response models, dynamic panels, and financial-market links. Quality is multi-faceted. An integrative framework clarifies processes and states that underpin measurable quality constructs \citet{golder2012quality}. Strategic brand analysis of chatter demonstrates how to map UGC into actionable metrics for decision-making \citet{tirunillai2014mining}. Social media events can spill over across brands, amplifying or dampening signals and requiring designs that account for interference \citet{borah2016halo}.
+\subsection*{Measurement Paradoxes in Digital Marketing}
+
+The following boxes formalise three paradoxes that arise when platform metrics diverge from causal effects.
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 19.2: The Content Paradox]
+\textbf{Setting.} Brands are urged to ``act like media companies'' and publish ever more content across social platforms. Let $C_{bt}$ denote the number of organic posts (or content units) published by brand $b$ in period $t$, and let $A_{bt}$ be the resulting effective exposure (for example, viewable impressions across users) after algorithmic filtering. Outcomes $Y_{bt}$ include visits, sign-ups, and sales.
+
+Organic reach has declined even as $C_{bt}$ has risen: most posts receive few or no impressions, and engagement is highly skewed. Consumers say they value authenticity and relevance, but ranking algorithms may amplify sensational or polarising material. The raw volume of content $C_{bt}$ is therefore a poor proxy for causal impact.
+
+\textbf{Paradox and dose--response.} From a causal perspective, content volume or exposure is a continuous treatment. The relevant estimand is a dose--response curve $m(a) = \mathbb{E}[Y_{bt}(a)]$ mapping effective exposure $a$ to expected outcomes. The \emph{content paradox} is that increasing $C_{bt}$ beyond a modest level often leaves $A_{bt}$ and $Y_{bt}$ unchanged: additional posts are unseen, ignored, or shown to users who were already at saturation. Marginal effects $m(a+\Delta a) - m(a)$ are frequently near zero.
+
+\textbf{Measurement implications.} Estimating $m(a)$ requires designs that separate content decisions from distribution and demand. Randomising posting volume, timing, or format within brands; exploiting exogenous shocks to ranking algorithms; or using geo-experiments on content-heavy vs content-light strategies all create variation in $A_{bt}$ that can be linked to $Y_{bt}$. Continuous-treatment methods from Chapter~\ref{ch:continuous} and dynamic designs from Chapters~\ref{ch:event} and~\ref{ch:dynamics} then recover dose--response functions. Rather than counting posts or headline engagement metrics, brands should report the range of exposure where marginal causal returns are positive and recognise that most incremental content lies beyond that range.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 19.3: The Trust Paradox]
+\textbf{Setting.} Surveys routinely report that only a small minority of consumers say they trust advertising or influencers, yet ad markets and influencer campaigns move billions in sales. Let $E_{it}$ denote exposure of consumer (or segment) $i$ to an ad or influencer campaign at time $t$, $T_{it}$ a stated trust score from surveys or brand trackers, and $Y_{it}$ a revealed-preference outcome such as clicks, purchases, or CLV.
+
+Stated trust and behaviour often diverge. Survey responses reflect norms, self-presentation, and coarse beliefs (``I don't trust ads''), while behaviour reflects marginal trade-offs in context (prices, availability, attention). A credible measurement strategy must treat $T_{it}$ and $Y_{it}$ as distinct outcomes rather than assuming that stated trust is a sufficient statistic for how persuasion works.
+
+\textbf{Paradox and latent trust.} One way to formalise the trust paradox is via a latent trust stock $U_{it}$ that evolves with exposure,
+\[
+  U_{it} = \phi U_{i,t-1} + \kappa E_{it} + v_{it},
+\]
+and affects both stated and revealed outcomes:
+\[
+  T_{it} = g(U_{it}) + \xi_{it}, \qquad Y_{it} = h(U_{it}, E_{it}, X_{it}) + \varepsilon_{it}.
+\]
+Here $T_{it}$ is a noisy, distorted measurement of $U_{it}$ (subject to social-desirability and survey biases), while $Y_{it}$ captures how $U_{it}$ and current exposure $E_{it}$ translate into behaviour. The trust paradox arises when experiments or quasi-experiments show large causal effects of $E_{it}$ on $Y_{it}$ but small or even negative effects on $T_{it}$.
+
+\textbf{Measurement implications.} Randomised ad or influencer campaigns that collect both survey trust and behavioural outcomes allow separate estimation of $E \to T$ and $E \to Y$. Mediation analysis and dynamic panel models can then quantify how much of the behavioural effect flows through changes in trust versus alternative channels (salience, price sensitivity, social proof). In practice, revealed-preference outcomes $Y_{it}$ anchor ROI and CLV, while stated trust $T_{it}$ is best treated as a complementary diagnostic. Design-faithful measurement acknowledges that consumers may say one thing and do another, and structures empirical work to learn from both rather than privileging surveys by default.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 19.4: The Personalisation Paradox]
+\textbf{Setting.} Platforms encourage ever finer targeting: lookalike audiences, propensity scores, dynamic creative, and per-user bids. Let $S_{it}$ be a targeting score or predicted conversion probability for user $i$ at time $t$, and let $D_{it}$ denote personalised treatment intensity (for example, number of tailored ads or discount depth). Outcomes $Y_{it}$ include conversions, revenue, or CLV.
+
+Consumers report that they value relevance but dislike feeling ``tracked''. At low levels of $D_{it}$, personalisation can be helpful; at high levels or with sensitive features, it can feel creepy, trigger avoidance, or invite regulatory risk. The personalisation paradox is that the very data and models that enable high relevance also increase the risk that marginal treatment becomes intrusive or legally constrained.
+
+\textbf{Dose--response and constraints.} From Chapter~\ref{ch:continuous}, we can treat $D_{it}$ as a continuous dose and estimate $m(d) = \mathbb{E}[Y_{it}(d)]$ over the support of observed intensities, subject to privacy and fairness constraints. Empirically, $m(d)$ may be increasing and concave over low doses, then flatten or decline when users are over-targeted or when discounts train deal-seeking.
+
+\textbf{Measurement implications.} Randomised experiments on targeting intensity (for example, high vs medium personalization) and policy changes to data access (for example, removal of third-party cookies) provide variation to recover $m(d)$ and to quantify how privacy constraints shift optimal intensity. Rather than maximising predicted response at the individual level, firms should report ranges of $d$ with positive marginal causal returns that also satisfy regulatory and reputational constraints, recognising that the apparent gains from ever-finer personalization in observational data may not survive causal and policy-aware analysis.
+\end{tcolorbox}
+
+\subsection*{UGC Quality Signal Validity}
+
+Design-faithful measurement aligns UGC-derived quality indices with econometric estimands. Sampling and selection affect representativeness as vocal users differ from the broader customer base. Platform policy changes (filtering, de-duplication, bot mitigation) induce breaks. Manipulation and gaming risk bias.
+
+\paragraph{Validation requirements.} Validity requires external benchmarks (audits, satisfaction indices), pre-specified dictionaries or models, and sensitivity to alternative text pipelines. When quality signals form part of identification (as instruments or controls), document exclusion restrictions and run placebos. Event-study designs can test market reactions to discrete quality shocks. VARs can trace dynamic feedback from quality to sales and stock returns.
+
+\subsection*{Robustness Transformations}
+
+Robustness checks often require transforming raw signals to handle outliers, zero-inflation, and sparse cells.
+
+\paragraph{Winsorisation.} Replaces extreme values with percentile thresholds (such as the 1st and 99th percentiles) to dampen sensitivity to outliers, trading a small amount of bias for significant gains in stability.
+
+\paragraph{Two-part models.} The zero-inflation common in conversion data—where most users do nothing—often necessitates two-part models that separate the likelihood of an event from its magnitude.
+
+\paragraph{Minimum cell thresholds.} To protect privacy and ensure stability, apply minimum cell thresholds, pooling or excluding sparse segments such as DMAs with few treated stores. Transparency demands that we document these thresholds and test how sensitive our estimates are to alternative choices.
+
+\subsection*{Exposure Construction for Continuous Treatments}
+
+Exposure construction maps raw impressions, reach, and frequency to dose variables aligned with estimands in Chapter~\ref{ch:continuous}.
+
+\paragraph{Key metrics.} Reach counts unique users exposed. Frequency averages impressions per exposed user. Viewability adjusts impressions for whether ads were displayed in-view. Frequency caps truncate dose at thresholds set by platforms.
+
+\paragraph{Dose variable choices.} Mapping these to dose requires choices: use raw impressions, capped impressions, or viewability-adjusted impressions? Each choice affects overlap, support, and the interpretation of marginal effects. Document the choice and report sensitivity to alternatives.

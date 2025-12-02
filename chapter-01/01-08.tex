@@ -1,0 +1,51 @@
+\section{Why Marketing Panel Data is Different}
+\label{sec:why-marketing}
+
+A reasonable question for any reader of this monograph is: \textit{Why do we need a specialised book on panel data for marketing?} Excellent textbooks already exist for biostatistics, financial econometrics, and labour economics. Can the marketing analyst not simply adopt the tools of the clinical trial or the asset pricing model?
+
+The answer is that marketing data differs structurally from standard medical and financial data in ways that often break standard estimators. While marketing shares some DNA with \textbf{modern epidemiology} (observational studies of contagion and policy), it is distinct from the randomised clinical trials that dominate biostatistics. The same features that make marketing data rich---strategic behaviour, social connectivity, and high-frequency measurement---introduce specific violations of the assumptions that underpin traditional methods. Four structural differences define the challenge.
+
+\subsection*{1. The Targeting Bias (Endogeneity by Design)}
+In clinical trials, treatment is randomised. In labour economics, treatment (e.g., a minimum wage hike) is often exogenous to the individual worker. In marketing, treatment is \textbf{strategic and endogenous}. Firms actively target advertising, coupons, and sales calls to customers who are \textit{most likely to buy} (retargeting) or \textit{most likely to churn} (retention).
+
+Standard estimators like simple Difference-in-Differences (DID) do not just yield biased estimates in this setting; they often get the sign wrong. A naive analysis of a retargeting campaign will show that treated users purchase at vastly higher rates than control users. This is not the effect of the ad; it is the cause of the targeting. Disentangling the \textit{targeting policy} from the \textit{treatment effect} requires methods that go beyond controlling for fixed attributes, such as Negative Controls, Double Machine Learning (Chapter~\ref{ch:ml-nuisance}), and Synthetic Control methods that match on pre-treatment trajectories (Chapter~\ref{ch:sc}).
+
+\subsection*{2. Interference is the Norm, Not the Exception}
+The Stable Unit Treatment Value Assumption (SUTVA)---that one unit's outcome depends only on its own treatment---is a reasonable approximation in clinical trials (my taking aspirin does not cure your headache). In marketing, it is routinely violated, much like in infectious disease epidemiology. Social interference arises when a customer's purchase makes their friends more likely to buy the same product through network effects and contagion. Spatial interference occurs when a television ad in one designated market area spills over into adjacent DMAs. Competitive interference emerges when one firm's price cut prompts competitors to respond, altering the equilibrium outcome for everyone. Standard panel methods that assume independence between units will fail to identify the true effect. Marketing analytics requires Spatial Error Models, Network Interference designs, and cluster-randomised experiments (Chapter~\ref{ch:spillovers}) to account for the fact that the "control group" is constantly contaminated by the "treatment group."
+
+\subsection*{3. The "Fat and Long" Data Structure}
+Clinical datasets typically feature small $N$ and short $T$ (100 patients observed 3 times). Financial datasets feature small $N$ and very long $T$ (500 stocks observed daily for 20 years). Marketing data is unique: we often observe \textbf{massive $N$ and moderate $T$}. A retailer may track 10 million customers over 52 weeks. Moreover, the data is \textbf{sparse}: most customers do not buy in most weeks.
+
+This structure renders traditional time-series methods (GARCH, Cointegration) and traditional biostatistical methods (Mixed Models) computationally infeasible or statistically inefficient. It is, however, the ideal structure for \textbf{Matrix Completion} and \textbf{Factor Models} (Chapters~\ref{ch:factor} and \ref{ch:advanced-matrix}). These methods leverage the low-rank structure of consumer behaviour---the fact that millions of diverse customers share a small number of underlying latent preferences---to impute counterfactuals with high precision.
+
+\subsection*{4. Complex Dynamics: Adstock and Wear-out}
+Financial markets are often modelled as efficient, incorporating new information instantly. Marketing effects, by contrast, exhibit complex lag structures. An ad seen today may influence a purchase next week (Adstock/Memory), but seeing the same ad ten times may reduce its effectiveness (Wear-out/Non-monotonicity). Habit formation creates state dependence, where past purchases influence future probability of purchase.
+
+Disentangling \textit{incremental lift} from \textit{carryover effects} requires Distributed Lag Models and Event Studies (Chapters~\ref{ch:event} and \ref{ch:dynamics}) that are specifically tuned to the "stock and flow" nature of marketing goodwill.
+
+Table~\ref{tab:domain-comparison} summarises these structural distinctions. While we draw inspiration from epidemiology for interference and observational inference, the combination of strategic targeting and massive sparse matrices makes marketing analytics a distinct methodological field.
+
+\begin{table}[t]
+\centering
+\begin{tighttable}
+\caption{Structural Differences Across Domains}
+\label{tab:domain-comparison}
+\begin{tabularx}{\textwidth}{lXXX}
+\toprule
+\textbf{Feature} & \textbf{Clinical / Biostats} & \textbf{Financial Econometrics} & \textbf{Marketing Analytics} \\
+\midrule
+\textbf{Primary Goal} & Efficacy / Safety & Risk / Forecasting & \textbf{Incrementality / ROAS} \\
+\addlinespace
+\textbf{Assignment} & Randomised (RCT) & Systemic / Exogenous & \textbf{Strategic (Targeting)} \\
+\addlinespace
+\textbf{Interference} & Rare (except Vaccines) & Market-wide Equilibrium & \textbf{High (Social / Spatial)} \\
+\addlinespace
+\textbf{Data Shape} & Small $N$, Short $T$ & Small $N$, Long $T$ & \textbf{Large $N$, Moderate $T$} \\
+\addlinespace
+\textbf{Sparsity} & Low (Complete records) & Low (Continuous trading) & \textbf{High (Infrequent purchase)} \\
+\addlinespace
+\textbf{Key Method} & Survival / Mixed Models & Time Series / GARCH & \textbf{Synthetic Control / Matrix Factorization} \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}

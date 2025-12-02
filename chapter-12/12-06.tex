@@ -1,0 +1,56 @@
+
+\section{Policy Learning}
+\label{sec:dml-policy}
+
+Estimating heterogeneous treatment effects is only the first step. The ultimate goal is to use these estimates to make better decisions: which customers should receive the promotion, which stores should adopt the loyalty programme, which users should see the advertisement. Policy learning formalises this decision problem and provides methods to learn optimal targeting rules from data.
+
+Consider a retailer deciding which customers to target with a discount coupon. The coupon costs \$5 to send and administer. If a customer's expected incremental purchase from receiving the coupon exceeds \$5, targeting that customer is profitable. Policy learning estimates this targeting rule from the CATE estimates developed in Section~\ref{sec:dml-hte}.
+
+\begin{definition}[Policy and Value Function]\label{def:policy-value}
+A treatment policy is a mapping $\pi: \mathcal{X} \to \{0, 1\}$ assigning treatment based on pre-treatment covariates. The value of policy $\pi$ is the expected outcome under that policy:
+\[
+V(\pi) = \mathbb{E}[Y_i(\pi(X_i))].
+\]
+Expanding using potential outcomes, $V(\pi) = \mathbb{E}[Y_i(1)\pi(X_i) + Y_i(0)(1-\pi(X_i))]$, which simplifies to:
+\[
+V(\pi) = \mathbb{E}[\tau(X_i) \pi(X_i)] + \mathbb{E}[Y_i(0)].
+\]
+The welfare gain relative to treating no one is:
+\[
+W(\pi) = V(\pi) - V(0) = \mathbb{E}[\tau(X_i) \pi(X_i)].
+\]
+With treatment cost $c$ per unit, the net welfare is:
+\[
+W_c(\pi) = \mathbb{E}[(\tau(X_i) - c) \pi(X_i)].
+\]
+\end{definition}
+
+\begin{proposition}[Optimal Targeting Rule]\label{prop:optimal-policy}
+The welfare-maximising policy with cost $c$ is the threshold rule:
+\[
+\pi^*(x) = \mathbf{1}\{\tau(x) > c\}.
+\]
+The estimated optimal policy substitutes CATE estimates:
+\[
+\hat{\pi}(x) = \mathbf{1}\{\hat{\tau}(x) > c\}.
+\]
+\end{proposition}
+
+The threshold rule has an intuitive interpretation: treat unit $i$ if and only if the expected benefit $\tau(X_i)$ exceeds the cost $c$. In the coupon example, send the coupon to customers whose expected incremental purchase exceeds \$5.
+
+Regret measures how much welfare the estimated policy sacrifices relative to the oracle policy that knows the true CATE. Under consistency of $\hat{\tau}(x)$, the regret $W_c(\pi^*) - W_c(\hat{\pi}) \xrightarrow{p} 0$. However, this convergence requires more than pointwise consistency. If the distribution of $\tau(X_i)$ has substantial mass near the threshold $c$, small estimation errors in $\hat{\tau}(x)$ can flip many treatment decisions, leading to non-negligible regret even when $\hat{\tau}(x)$ is close to $\tau(x)$ pointwise. Uniform consistency of $\hat{\tau}(x)$ or margin conditions that bound the density of $\tau(X_i)$ near $c$ provide the additional structure needed for regret bounds.
+
+Before deploying a learned policy, we want to estimate its value. A doubly robust estimator combines outcome regression and propensity weighting to provide consistent estimates even when one component is misspecified.
+
+\begin{proposition}[Doubly Robust Policy Value Estimator]\label{prop:dr-policy-value}
+Let $\mu_1(x) = \mathbb{E}[Y|W=1, X=x]$ and $\mu_0(x) = \mathbb{E}[Y|W=0, X=x]$ denote the outcome regressions under treatment and control. A doubly robust estimator of the policy value $V(\pi)$ is:
+\[
+\hat{V}(\pi) = \frac{1}{N} \sum_{i=1}^N \left[\frac{\pi(X_i) W_i (Y_i - \hat{\mu}_1(X_i))}{\hat{e}(X_i)} - \frac{(1-\pi(X_i))(1-W_i)(Y_i - \hat{\mu}_0(X_i))}{1 - \hat{e}(X_i)} + \pi(X_i)\hat{\mu}_1(X_i) + (1-\pi(X_i))\hat{\mu}_0(X_i)\right].
+\]
+The welfare gain $W(\pi) = V(\pi) - V(0)$ is estimated by $\hat{W}(\pi) = \hat{V}(\pi) - \hat{V}(0)$, where $\hat{V}(0)$ sets $\pi \equiv 0$. Under the conditions of Theorem~\ref{thm:dml-asymptotic}, $\hat{V}(\pi)$ is consistent and asymptotically normal, enabling confidence intervals for policy value.
+\end{proposition}
+
+The doubly robust structure mirrors the ATT score from Section~\ref{sec:dml-orthogonal}. The first two terms correct for imbalance between the policy $\pi$ and the observed treatment assignment $W_i$. The last two terms provide the outcome regression prediction. If either the propensity score $\hat{e}$ or the outcome regressions $\hat{\mu}_0, \hat{\mu}_1$ are correctly specified, the estimator is consistent.
+
+\paragraph{Practical considerations.}
+In marketing applications, the cost $c$ often includes more than direct expenses. A coupon's cost includes printing, postage, and the margin erosion from customers who would have purchased anyway. The threshold rule $\pi^*(x) = \mathbf{1}\{\tau(x) > c\}$ treats all costs as known and constant. When costs vary across units or are uncertain, the policy problem becomes more complex, potentially requiring constrained optimisation or robust decision rules. Budget constraints (``target at most 10\% of customers'') replace the simple threshold with a quantile cutoff on estimated CATEs. Capacity constraints (``each store can handle at most 50 new loyalty members per week'') require sequential or batched allocation. These extensions are beyond our scope but follow naturally from the framework developed here.

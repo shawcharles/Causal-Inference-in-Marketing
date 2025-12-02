@@ -1,0 +1,201 @@
+\section{Media Mix Modelling with Causal Foundations}
+\label{sec:mmm}
+
+Media Mix Modelling (MMM) uses time-series econometrics to estimate the effectiveness of various marketing channels. Traditional MMM often suffers from spurious correlation due to omitted seasonality or promotions. A causal MMM approach integrates structural assumptions and experimental priors.
+
+\begin{remark}[MMM in the Two-Dimensional Taxonomy]\label{rem:mmm-taxonomy}
+MMM is the canonical case that spans both dimensions of the taxonomy in Section~\ref{sec:taxonomy}. On the identification axis, MMM faces \emph{endogeneity}: budgets respond to anticipated sales, creating simultaneity bias. On the temporal axis, MMM involves \emph{dynamic effects}: advertising builds brand equity stocks that decay slowly, requiring adstock and saturation modelling. The identification strategy must address endogeneity (via experimental calibration or instruments); the estimator must accommodate dynamics (via distributed lags and state-space structures). Conflating these dimensions---using a dynamic model without addressing endogeneity, or addressing endogeneity with a static estimator---yields unreliable results.
+\end{remark}
+
+\subsection*{Adstock and Saturation}
+
+We model the delayed effect of advertising using Adstock transformations.
+
+\begin{definition}[Geometric Adstock]\label{def:adstock-mmm}
+The adstock for channel $c$ at time $t$ is given by:
+\[
+A_{ct} = X_{ct} + \lambda_c A_{c,t-1}, \quad \lambda_c \in [0,1),
+\]
+where $X_{ct}$ is the spend and $\lambda_c$ is the carryover rate. The half-life of the adstock is $h_c = -\log(2)/\log(\lambda_c)$ periods.
+\end{definition}
+
+We also model diminishing returns using saturation functions.
+
+\begin{definition}[Hill Saturation Function]\label{def:hill-saturation}
+The Hill function maps adstock $A$ to response $f(A)$:
+\[
+f(A) = \frac{A^\alpha}{K^\alpha + A^\alpha},
+\]
+where $K > 0$ is the half-saturation point (the adstock level at which response reaches 50\% of maximum) and $\alpha > 0$ controls the steepness. When $\alpha > 1$, the curve is S-shaped with an inflection point; when $\alpha = 1$, it reduces to the Michaelis-Menten form.
+\end{definition}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\textwidth]{images/fig_adstock_saturation.pdf}
+\caption{Media transformation functions. Left panel: Geometric adstock decay showing how an impulse of spend dissipates over time. Right panel: Hill saturation curve mapping adstock to incremental sales, illustrating diminishing returns.}
+\label{fig:adstock-saturation}
+\end{figure}
+
+\subsection*{Identification and Calibration}
+
+MMM coefficients have causal interpretation only under strong assumptions about the data-generating process.
+
+\begin{assumption}[Exogeneity of Media Spend]\label{assump:mmm-exogeneity}
+Conditional on controls (seasonality, promotions, competitor activity), media spend $X_{ct}$ is uncorrelated with the error term:
+\[
+\mathbb{E}[\varepsilon_t | X_{1t}, \ldots, X_{Ct}, Z_t] = 0,
+\]
+where $Z_t$ collects control variables.
+\end{assumption}
+
+This assumption is violated when spend responds to anticipated demand (e.g., increasing TV ads before Christmas because sales are expected to rise anyway). Two strategies address this. First, \emph{experimental calibration} uses lift estimates from geo-experiments (Section~\ref{sec:geo-experiments}) to set Bayesian priors for MMM coefficients, constraining the model to be consistent with known causal effects. Second, \emph{instrumental variables} exploit exogenous variation in media costs---political ad pre-emptions, weather-driven outdoor ad effectiveness, or supply-side cost shocks---as instruments for spend (see Remark~\ref{rem:iv-scope} for scope limitations on IV in marketing).
+
+Calibration is the preferred approach when experimental estimates are available. The geo-experiment provides a point estimate $\hat{\tau}_c$ for channel $c$; the MMM prior is centred on this estimate with variance reflecting experimental uncertainty. Note that geo-experiment estimates include carryover effects if the post-period is sufficiently long (Remark~\ref{rem:geo-carryover}); for calibration consistency, the post-period window in the experiment should align with the adstock decay assumptions in the MMM.
+
+\subsection*{Bayesian Estimation and the Small-Sample Problem}
+
+MMM operates in a statistical regime fundamentally different from panel econometrics. A typical MMM dataset comprises weekly observations over two to five years, yielding $T \approx 100$--$250$ periods. With ten media channels, each requiring adstock ($\lambda_c$), saturation ($K_c$, $\alpha_c$), and coefficient ($\beta_c$) parameters, plus seasonality, trend, and controls, the analyst faces 40--60 parameters. Degrees of freedom are thin, multicollinearity between channels is endemic, and frequentist asymptotics provide poor guidance.
+
+This small-$T$ problem has three consequences. First, maximum likelihood estimates of adstock decay and saturation curvature are weakly identified; the likelihood surface is flat, producing point estimates that are unstable across specifications. Second, standard errors derived from the Fisher information matrix understate true uncertainty. Third, overfitting is the default: high in-sample $R^2$ coexists with poor out-of-sample prediction.
+
+Bayesian methods address these pathologies not as a philosophical preference but as a practical necessity. Priors regularise weakly identified parameters, posterior distributions propagate uncertainty to downstream decisions, and hierarchical structures allow partial pooling across channels.
+
+\begin{definition}[Bayesian MMM Specification]\label{def:bayesian-mmm}
+Let $Y_t$ denote the outcome (sales, conversions) in period $t$, and let $A_{ct}$ be the adstocked and saturated media input for channel $c$. The observation equation is
+\[
+Y_t = \mu + \sum_{c=1}^{C} \beta_c \, f_c(A_{ct}; K_c, \alpha_c) + Z_t'\gamma + \varepsilon_t, \quad \varepsilon_t \sim \mathcal{N}(0, \sigma^2),
+\]
+where $f_c(\cdot)$ is the Hill saturation function (Definition~\ref{def:hill-saturation}) and $Z_t$ collects controls. The prior structure is:
+\begin{align*}
+\lambda_c &\sim \text{Beta}(a_\lambda, b_\lambda), \\
+\log K_c &\sim \mathcal{N}(\mu_K, \sigma_K^2), \\
+\alpha_c &\sim \text{Gamma}(a_\alpha, b_\alpha), \\
+\beta_c &\sim \mathcal{N}(\mu_{\beta,c}, \sigma_{\beta,c}^2).
+\end{align*}
+Hyperparameters encode domain knowledge: for television, $\lambda_c$ priors centre on half-lives of two to six weeks; for paid search, half-lives near one week. The saturation half-point $K_c$ is scaled relative to observed spend ranges.
+\end{definition}
+
+The prior on $\beta_c$ deserves special attention. When experimental estimates are available, they provide a principled basis for prior specification.
+
+\begin{definition}[Experimental Calibration as Prior Elicitation]\label{def:experimental-prior}
+Suppose a geo-experiment (Section~\ref{sec:geo-experiments}) yields an unbiased estimate $\hat{\tau}_c$ for the incremental effect of channel $c$, with standard error $\text{SE}(\hat{\tau}_c)$. The calibrated prior for $\beta_c$ is
+\[
+\beta_c \sim \mathcal{N}\bigl(\hat{\tau}_c, \, \text{SE}(\hat{\tau}_c)^2 + \sigma_{\text{drift}}^2\bigr),
+\]
+where $\sigma_{\text{drift}}^2$ accounts for potential drift between the experimental period and the MMM estimation window. This prior centres the coefficient on the experimentally identified effect while allowing the time-series data to update beliefs within the bounds of experimental uncertainty.
+\end{definition}
+
+Calibration converts MMM from an exercise in curve-fitting to a synthesis of experimental and observational evidence. Without calibration, MMM coefficients reflect correlation patterns that may be confounded; with calibration, the posterior is anchored to causal estimates and deviations from the anchor are penalised.
+
+Posterior inference proceeds via Markov chain Monte Carlo or variational methods. Modern probabilistic programming frameworks (Stan, PyMC, NumPyro) handle the nonlinear saturation and adstock transformations efficiently. The output is a joint posterior over all parameters, from which the analyst extracts:
+
+\begin{enumerate}
+\item \textbf{Marginal response curves with uncertainty bands.} For each channel, the posterior predictive distribution over $f_c(A_{ct})$ quantifies how response varies with spend, including parameter uncertainty.
+
+\item \textbf{Return on investment distributions.} Channel-level ROI is a derived quantity; the posterior provides a full distribution, not a point estimate, enabling statements such as ``there is a 90\% probability that TV ROI exceeds 1.5.''
+
+\item \textbf{Budget optimisation under uncertainty.} Optimal allocation depends on the shape of response curves. Bayesian decision theory integrates over posterior uncertainty, producing allocations that are robust to parameter risk.
+\end{enumerate}
+
+\paragraph{What Bayesian methods do not solve.} Regularisation and uncertainty quantification do not remedy identification failures. If media spend is endogenous---planned to coincide with anticipated demand---the posterior will be centred on a biased value, and no amount of prior information corrects this unless the prior itself encodes the true causal effect. Bayesian MMM is credible only when combined with experimental calibration or instrumental variable strategies that address confounding at the design level. The ``causal'' in causal MMM derives from the identification strategy, not from the estimation framework.
+
+\begin{remark}[Hierarchical Priors Across Channels]
+When the number of channels is large, hierarchical priors improve estimation for channels with limited temporal variation. Let $\beta_c \sim \mathcal{N}(\bar{\beta}, \tau^2)$, where $\bar{\beta}$ and $\tau^2$ are themselves given hyperpriors. Partial pooling shrinks noisy channel estimates toward the population mean, reducing mean squared error at the cost of introducing controlled bias. This is particularly valuable for long-tail digital channels with sporadic spend.
+\end{remark}
+
+\subsection*{Diagnostic Checklist for MMM}
+
+MMM requires careful validation before coefficients can be trusted for budget allocation.
+
+\begin{remark}[Input Data Quality and Platform Opacity]\label{rem:mmm-data-quality}
+MMM reliability depends on input data quality. Platform-reported spend may not reflect true exposure: viewability issues, modelled reach, and opaque allocation algorithms (Remark~\ref{rem:privacy-opacity}) introduce measurement error. When digital channels dominate the media mix, consider: (i) using first-party spend data where available; (ii) treating platform-reported metrics as noisy proxies with appropriate uncertainty; (iii) anchoring digital channel coefficients more heavily to experimental calibration. Garbage in, garbage out applies with particular force to MMM.
+\end{remark}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.6: MMM Diagnostic Checklist]
+\textbf{1. In-sample fit:} Report $R^2$ and MAPE. Poor fit suggests missing variables or misspecified dynamics.
+
+\textbf{2. Out-of-sample validation:} Hold out the final 10--20\% of periods. Compare predicted vs. actual sales. Large errors indicate overfitting or structural breaks.
+
+\textbf{3. Coefficient plausibility:} Check that elasticities are in plausible ranges. TV elasticities above 0.3 or negative elasticities for major channels warrant scrutiny.
+
+\textbf{4. Experimental calibration:} Compare MMM-implied lift to geo-experiment lift for channels with experimental estimates. Discrepancies exceeding 50\% suggest confounding.
+
+\textbf{5. Adstock and saturation stability:} Re-estimate with alternative $\lambda_c$ and $K_c$ values. Large sensitivity indicates weak identification of dynamics.
+
+\textbf{6. Residual diagnostics:} Check for autocorrelation (Durbin-Watson, Ljung-Box) and heteroskedasticity. Correlated residuals bias standard errors.
+
+\textbf{7. Counterfactual reasonableness:} Simulate a 50\% budget cut for each channel. Do the implied sales declines match business intuition and experimental evidence?
+\end{tcolorbox}
+
+\subsection*{Case Study: Brand Equity as a Dynamic Stock}
+
+Brand equity can be formalised as a stock variable that accumulates past marketing investment and decays slowly over time. Returning to a commodity category such as baked beans with multiple brands $b = 1, \ldots, B$, stores $s = 1, \ldots, S$, and weeks $t = 1, \ldots, T$, let $B_{bt}$ denote an (observed or latent) brand equity index for brand $b$ at time $t$. This index may be proxied by a brand tracking score (awareness or consideration) or treated as an unobserved state in a state-space model.
+
+Advertising contributes to $B_{bt}$ through an adstocked input. Let $X_{bt}$ be weekly advertising spend for brand $b$ and $A_{bt}$ its geometric adstock, as in the previous subsection:
+\[
+  A_{bt} = X_{bt} + \lambda_b A_{b,t-1}, \quad \lambda_b \in [0,1).
+\]
+We then specify a simple brand-stock evolution equation
+\[
+  B_{bt} = \rho_b B_{b,t-1} + \kappa_b A_{bt} + u_{bt}, \quad |\rho_b| < 1,
+\]
+where $\rho_b$ governs the persistence of brand equity, $\kappa_b$ translates adstock into brand stock increments, and $u_{bt}$ captures other shocks (earned media, competitor actions).
+
+Brand equity in turn shifts demand and willingness to pay. Let $Q_{bst}$ denote quantity sold and $P_{bst}$ price for brand $b$ in store $s$ and week $t$. A demand equation that links sales to price, brand equity, and controls is
+\[
+  \log Q_{bst} = \alpha_s + \gamma_t + \delta_b + \beta_p \log P_{bst} + \theta B_{bt} + X_{bst}' \eta + \varepsilon_{bst},
+\]
+where $\alpha_s$ and $\gamma_t$ are store and week fixed effects, $\delta_b$ is a time-invariant brand intercept, and $X_{bst}$ collects short-run drivers such as promotions and displays. The coefficient $\theta$ measures how a unit increase in brand equity shifts log sales holding price fixed. Combining the stock and demand equations, a one-period pulse in adstock $A_{bt}$ has a long-run effect on brand equity of $\kappa_b / (1 - \rho_b)$ and a corresponding long-run effect on log sales of $\theta \kappa_b / (1 - \rho_b)$.
+
+Under standard discrete-choice foundations, the brand equity index can be interpreted as a component of mean utility. Holding covariates fixed, the implied long-run brand premium—the price increase that leaves expected demand unchanged after a permanent increase in $B_{bt}$—solves approximately
+\[
+  \beta_p \log\left(1 + \frac{\Delta p_{b}}{p_{bst}}\right) \approx - \theta \frac{\kappa_b}{1 - \rho_b},
+\]
+linking dynamic advertising investment to a steady-state willingness-to-pay premium. In practice, parameters $(\lambda_b, \rho_b, \kappa_b, \theta, \beta_p)$ can be estimated using panel data on prices, quantities, and advertising, with experimental or quasi-experimental variation in spend anchoring $\kappa_b$ and $\theta$. This case study treats brand equity not as a vague intangible but as a measurable stock that mediates between marketing actions and long-run pricing power. The static demand-based brand premium model in Chapter~\ref{ch:high-dim}, Section~\ref{sec:hd-marketing}, can be viewed as taking $B_{bt}$ as given and inferring the implied willingness-to-pay premium at a point in time.
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.7: The Brand vs Performance Paradox in Budget Allocation]
+\textbf{Setting.} Extend the brand-stock model to include a short-lived performance channel $P$ (for example, paid search or retargeting). Let $A^B_t$ and $A^P_t$ denote adstocked brand and performance spend for a focal brand, and let $B_t$ be the brand equity stock evolving as
+\[
+  B_t = \rho B_{t-1} + \kappa A^B_t + u_t,
+\]
+while log demand follows
+\[
+  \log Q_t = \alpha + \beta_P A^P_t + \theta B_t + X_t' \eta + \varepsilon_t.
+\]
+The performance channel $A^P_t$ generates strong contemporaneous response $\beta_P$ but little persistence, whereas brand spend $A^B_t$ feeds into the stock $B_t$ and, via $\theta$, into long-run sales and willingness to pay.
+
+\textbf{Estimated dynamics.} Suppose MMM and dynamic panel estimates imply:
+\begin{itemize}
+\item Short-run elasticity of performance spend: $\beta_P = 0.12$, with long-run multiplier $\text{LRM}_P \approx 1.1$ (little carryover).
+\item Short-run elasticity of brand spend via $B_t$: small on impact, but long-run multiplier $\text{LRM}_B \approx 3.5$ once $B_t$ reaches steady state.
+\end{itemize}
+
+\textbf{Budget experiment.} With a fixed budget $M$ per period, compare two steady-state policies:
+\begin{itemize}
+\item \emph{Performance-heavy}: $0.8M$ to $A^P_t$, $0.2M$ to $A^B_t$. High immediate sales response, but modest contribution to $B_t$ and to the long-run brand premium $\Delta p_b$.
+\item \emph{Brand-heavy}: $0.2M$ to $A^P_t$, $0.8M$ to $A^B_t$. Lower short-run incremental sales, but much higher steady-state $B_t$ and thus higher long-run revenue and pricing power.
+\end{itemize}
+Evaluated over a one-week or one-month horizon, the performance-heavy mix can exhibit superior ROI because $\beta_P$ dominates. Evaluated over a one-year horizon, the brand-heavy mix can dominate once the contribution of $B_t$ to both quantity and the brand premium $\Delta p_b$ is accounted for.
+
+\textbf{Measurement implication.} The \emph{brand vs performance paradox} arises when MMM or attribution focuses on short-run conversions or revenue and ignores the stock $B_t$ and induced price premiums. Embedding brand equity as a state variable in MMM, and reporting both short-run and long-run elasticities and multipliers by channel, allows budget decisions to balance immediate ROI against the slower accumulation of brand value.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.8: Joe Sixpack and Lifetime Brand Exposure]
+\textbf{Setting.} Consider Joe Sixpack choosing beer in a supermarket. Any given Budweiser ad this week has a small immediate effect on his purchase probability, but the \emph{cumulative} effect of years of Budweiser advertising makes him more likely to choose Bud over store brands. In the brand-stock model, Joe's latent predisposition is summarised by a brand equity stock $B_t$ that evolves as
+\[
+  B_t = \rho B_{t-1} + \kappa A_t + u_t,
+\]
+where $A_t$ is adstocked Budweiser exposure in Joe's market, $\rho$ is the persistence of brand equity, and $\kappa$ translates advertising into increments in $B_t$. Joe's purchase probability in week $t$ depends on $B_t$ through the demand equation
+\[
+  \log s_t = \alpha + \beta_p \log P_t + \theta B_t + X_t'\eta + \varepsilon_t,
+\]
+where $s_t$ is Budweiser's share, $P_t$ is price, and $X_t$ collects promotions and competition.
+
+\textbf{Lifetime effects in the model.} Under a roughly constant advertising schedule $A_t = \bar{A}$, the brand stock converges to a steady state $B^* = \kappa \bar{A} / (1 - \rho)$. A brand that has advertised heavily for decades maintains a high $\bar{A}$ and thus a high steady-state $B^*$; a brand that has advertised sparingly has a lower $\bar{A}$ and $B^*$. The \emph{lifetime} effect of Budweiser advertising on Joe's choice is captured by the difference in steady states:
+\[
+  \Delta B^* = \frac{\kappa}{1 - \rho}(\bar{A}^{\text{Bud}} - \bar{A}^{\text{baseline}}),
+\]
+and the corresponding long-run shift in log choice probability is $\theta \Delta B^*$. Even if any single week's ad has a tiny impact, the discounted sum of exposures over Joe's life is encoded in $B_t$.
+
+\textbf{Measurement strategies.} In practice we do not observe individual lifetime exposure, but we can estimate $(\rho, \kappa, \theta)$ using panel data on advertising, brand tracking, and sales at the market or cohort level. Long panels or historical variation in advertising intensity across regions allow us to approximate how markets with decades of heavy Budweiser advertising differ in baseline share from markets with weaker histories, holding current spend fixed. Combined with the steady-state formula, this provides an operational measure of Joe Sixpack's long-run advertising exposure and its contribution to brand choice.
+\end{tcolorbox}

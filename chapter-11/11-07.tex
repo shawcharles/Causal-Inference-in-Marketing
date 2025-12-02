@@ -1,0 +1,131 @@
+
+\section{Diagnostics for Detecting Interference}
+\label{sec:spillovers-diagnostics}
+
+Detecting interference requires diagnostic tests that assess whether SUTVA is violated. We present three approaches: balance tests on exposure, placebo tests on untreated units, and sensitivity analyses. For exposure mappings, see Section~\ref{sec:exposure-mappings}. For partial interference, see Section~\ref{sec:partial-interference}. For general design diagnostics, see Chapter~\ref{ch:design-diagnostics}.
+
+\subsection*{Overview of Diagnostic Approaches}
+
+Table~\ref{tab:spillover-diagnostics} summarises the three diagnostic approaches.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Diagnostic Tests for Interference}
+\label{tab:spillover-diagnostics}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Test} & \textbf{Null Hypothesis} & \textbf{Data Required} & \textbf{Limitation} \\
+\midrule
+Exposure balance & $\mathbb{E}[E_{it} | W_{it} = 1] = \mathbb{E}[E_{it} | W_{it} = 0]$ & Pre-treatment exposure & Confounded by network structure \\
+\addlinespace
+Placebo on untreated & $\mathbb{E}[Y_{it} | W_{it} = 0, E_{it}] = \mathbb{E}[Y_{it} | W_{it} = 0]$ & Outcomes for untreated; exposure variation & Requires exposure variation among controls \\
+\addlinespace
+Sensitivity analysis & Estimates stable across specifications & Multiple exposure mappings & No formal test; judgment required \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{Balance Tests on Exposure}
+
+If treatment assignment is random and independent across units, exposure should be balanced across treated and untreated units. Imbalance in exposure suggests that treatment assignment is correlated with network or geographic structure, which may confound spillover estimates.
+
+\begin{proposition}[Exposure Balance Test]\label{prop:exposure-balance}
+Under random treatment assignment independent of the interference structure, exposure should be balanced across treatment groups:
+\[
+H_0: \mathbb{E}[E_{it} | W_{it} = 1] = \mathbb{E}[E_{it} | W_{it} = 0].
+\]
+The test statistic is:
+\[
+T_{\text{balance}} = \frac{\bar{E}_{1} - \bar{E}_{0}}{\sqrt{\hat{\sigma}^2_E (1/n_1 + 1/n_0)}},
+\]
+where $\bar{E}_{1}$ and $\bar{E}_{0}$ are mean exposures for treated and untreated units, $n_1$ and $n_0$ are the sample sizes, and $\hat{\sigma}^2_E$ is the pooled variance. Under $H_0$, $T_{\text{balance}} \xrightarrow{d} \mathcal{N}(0, 1)$.
+\end{proposition}
+
+Balance tests should be conducted on pre-treatment exposure (computed using pre-treatment network or geographic structure). Post-treatment exposure may be endogenous if treatment affects network formation or geographic sorting.
+
+For example, if treated users befriend each other, post-treatment network exposure will be higher for treated users, but this does not indicate a violation of random assignment.
+
+\subsection*{Placebo Tests on Untreated Units}
+
+If spillovers are present, untreated units with high exposure should have different outcomes than untreated units with low exposure. We can test this by comparing outcomes of untreated units across exposure levels.
+
+\begin{proposition}[Placebo Test on Untreated Units]\label{prop:placebo-spillover}
+Under the null of no spillovers (SUTVA holds), exposure should not predict outcomes among untreated units:
+\[
+H_0: \mathbb{E}[Y_{it} | W_{it} = 0, E_{it} = e] = \mathbb{E}[Y_{it} | W_{it} = 0] \text{ for all } e.
+\]
+Regressing $Y_{it}$ on $E_{it}$ among untreated units:
+\[
+Y_{it} = \alpha + \delta E_{it} + \varepsilon_{it}, \quad \text{for } \{(i,t) : W_{it} = 0\},
+\]
+and testing $H_0: \delta = 0$ provides a placebo test. Rejection indicates spillovers; failure to reject is consistent with (but does not prove) SUTVA.
+\end{proposition}
+
+This test requires variation in exposure among untreated units. If all untreated units have the same exposure (for example, in a cluster-randomised trial where control clusters have zero exposure), the test is not informative. Partial treatment within clusters (where some units are treated and others are untreated) generates variation in exposure among untreated units.
+
+\subsection*{Sensitivity Analyses}
+
+Spillover estimates depend on the specification of the exposure mapping. Sensitivity analyses assess how estimates change when we vary the exposure mapping.
+
+For geographic spillovers, we vary the distance decay function (inverse distance, inverse squared distance, exponential decay) and the distance threshold (spillovers within 5 km, 10 km, 20 km). For network spillovers, we vary the definition of neighbours (direct connections, connections within two steps, connections within three steps).
+
+If estimates are stable across specifications, this suggests that the results are robust to the choice of exposure mapping. If estimates vary widely, this indicates sensitivity to functional form. In such cases, we should report results for multiple specifications and discuss the economic reasoning for each.
+
+Another sensitivity analysis examines the impact of excluding units with extreme exposure. Units with very high or very low exposure may be outliers that drive the results. We can re-estimate spillover effects after excluding the top and bottom 5 per cent of the exposure distribution. If results are similar, this suggests that outliers are not driving the findings.
+
+\paragraph{Common sensitivity specifications.} Table~\ref{tab:sensitivity-specs} lists common variations.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Sensitivity Specifications for Spillover Analysis}
+\label{tab:sensitivity-specs}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Spillover Type} & \textbf{Parameter} & \textbf{Common Variations} \\
+\midrule
+Geographic & Distance decay & Inverse, inverse squared, exponential \\
+\addlinespace
+Geographic & Distance threshold & 5 km, 10 km, 20 km \\
+\addlinespace
+Network & Neighbour definition & Direct (1-hop), 2-hop, 3-hop \\
+\addlinespace
+Network & Normalisation & Count, fraction, weighted by strength \\
+\addlinespace
+Both & Outlier exclusion & Trim 5\%, 10\% of exposure distribution \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Diagnostic Workflow for Interference]
+\textbf{Step 1: Balance check.}
+\begin{itemize}
+\item[$\square$] Compute pre-treatment exposure for all units.
+\item[$\square$] Test whether exposure is balanced across treatment groups.
+\item[$\square$] If imbalanced, consider stratification or matching on exposure.
+\end{itemize}
+
+\textbf{Step 2: Placebo test.}
+\begin{itemize}
+\item[$\square$] Among untreated units, regress outcome on exposure.
+\item[$\square$] If $\delta \neq 0$, spillovers are present; estimate spillover effects.
+\item[$\square$] If $\delta = 0$, consistent with SUTVA (but not conclusive).
+\end{itemize}
+
+\textbf{Step 3: Sensitivity analysis.}
+\begin{itemize}
+\item[$\square$] Re-estimate with alternative distance/network specifications.
+\item[$\square$] Re-estimate after trimming extreme exposures.
+\item[$\square$] Report range of estimates; discuss economic reasoning.
+\end{itemize}
+
+\textbf{Step 4: Report.}
+\begin{itemize}
+\item[$\square$] Document exposure mapping used and alternatives considered.
+\item[$\square$] Report balance and placebo test results.
+\item[$\square$] Discuss implications for interpretation if SUTVA violated.
+\end{itemize}
+\end{tcolorbox}

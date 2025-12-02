@@ -1,0 +1,70 @@
+\section{Assignment Mechanisms in Panels and Target Estimands}
+\label{sec:assignment-estimands}
+
+The assignment mechanism---how units receive treatment across periods---sits at the centre of design-based inference.
+
+The assignment mechanism determines which estimand is appropriate, which estimator aligns with the identifying variation, and which assumptions you must defend. We classify five canonical mechanisms and map them to methods in later chapters: block designs (often randomised experiments), staggered adoption, single treated unit, single treated period, and continuous treatment designs (typically quasi-experiments). Spillover structures, which cut across all these mechanisms, require separate treatment because they fundamentally alter the estimand and identification strategy.
+
+\subsection{Block Designs}
+
+Block designs assign treatment to a set of units at a common starting time, with all treated units remaining treated for the duration of the observation period. For example, a retailer launches a loyalty programme in 100 stores in quarter one, and those stores continue to offer the programme through quarter twelve, while 400 control stores never receive the programme. Treatment is indicated by
+\[ W_{it} = D_i \cdot \mathbb{I}\{t \geq t_0\}, \]
+where $D_i \in \{0, 1\}$ denotes treatment group membership. The treatment switches on at time $t_0$ for the treated group ($D_i=1$) and remains zero for the control group ($D_i=0$).
+
+Block designs correspond naturally to the canonical two-group, two-period difference-in-differences setting. The estimand is the Average Treatment Effect on the Treated (ATT), defined as
+\[ \tau_{\text{ATT}} = \mathbb{E}[Y_{it}(1) - Y_{it}(0) \mid D_i=1, \, t \geq t_0]. \]
+Identification relies on the parallel trends assumption: in the absence of treatment, the treated and control groups would have experienced similar trends in outcomes. Under parallel trends, the difference-in-differences estimator --- comparing the change in outcomes for treated units to the change in outcomes for control units --- recovers the ATT.
+
+Block designs are the workhorse of randomised experiments in marketing. Geo-experiments that randomise treatment across markets, store-level experiments that assign new pricing strategies to randomly selected stores, and platform A/B tests that allocate users to treatment and control groups all produce block designs. When treatment is randomised, parallel trends holds in expectation conditional on the randomisation strata, though finite-sample imbalance can still occur. Inference is straightforward provided that we account for clustering and potential spillovers. Chapter~\ref{ch:did} develops the standard difference-in-differences estimator and its variants for block designs, and Chapter~\ref{ch:design-diagnostics} provides diagnostics to assess the plausibility of parallel trends in observational block designs.
+
+If treatment timing varies across units rather than being applied simultaneously, staggered adoption designs emerge.
+
+\subsection{Staggered Adoption Designs}
+
+Staggered adoption designs feature units adopting treatment at different times. Define $G_i \in \{1, \dots, T\} \cup \{\infty\}$ as the adoption time (cohort) for unit $i$, with $G_i = \infty$ for units that never adopt during the observation period. Some units adopt in period $g = 2$, others in period $g = 5$, others in period $g = 8$, and some never adopt. Treatment status is absorbing:
+\[ W_{it} = \mathbb{I}\{t \geq G_i\}. \]
+The absorbing treatment assumption rules out treatment reversal, which is violated in some marketing settings where stores drop loyalty programmes or campaigns end. Extensions that handle non-absorbing treatment exist but require additional assumptions about treatment history effects.
+Staggered adoption is common in marketing. A retailer rolls out a loyalty programme in batches, with operational capacity or strategic priorities determining the timing of rollout to different store groups. A brand launches advertising campaigns sequentially across markets, with budget constraints or market readiness driving the staggered launch. A platform enters cities over time, with city size, regulatory environment, or competitive conditions influencing entry order. The variation in adoption timing creates rich opportunities for identification: units that have not yet adopted serve as controls for units that adopt early, and within-cohort comparisons over time trace dynamic effects.
+
+The appropriate estimand in staggered adoption designs is the cohort-time effect $\text{ATT}(g, t)$, the average treatment effect for units in cohort $g$ in calendar period $t \geq g$:
+\[ \text{ATT}(g, t) = \mathbb{E}[Y_{it}(g) - Y_{it}(\infty) \mid G_i = g, \, t \geq g]. \]
+This estimand is defined only for post-treatment periods ($t \geq g$); in pre-treatment periods, the effect is zero by definition under no anticipation.
+Aggregating $\text{ATT}(g, t)$ across cohorts and time produces summary measures such as the overall ATT or event-time effects $\theta_k$ that trace the treatment effect as a function of time since adoption. Modern heterogeneity-robust estimators (Callaway--Sant'Anna, Sun--Abraham, and others) construct clean comparisons between treated units and not-yet-treated or never-treated control units, avoiding the negative weighting problems that plague traditional two-way fixed effects regressions when treatment effects are heterogeneous (Chapter~\ref{ch:did}). Event-study specifications extend the analysis to visualise pre-trends and estimate dynamic effects (Chapter~\ref{ch:event}).
+
+Identification in staggered adoption designs relies on a parallel trends assumption across cohorts: units adopting at different times would have followed similar trajectories in the absence of treatment, possibly after conditioning on covariates. This assumption is inherently untestable because we never observe all counterfactuals, but pre-treatment diagnostics provide indirect evidence. If outcomes for different cohorts evolve similarly in pre-treatment periods, the parallel trends assumption is more plausible. If pre-trends diverge, the parallel trends assumption becomes less plausible, and alternative identification strategies such as factor models (Chapters~\ref{ch:factor} and \ref{ch:advanced-matrix}) or synthetic control (Chapter~\ref{ch:sc}) may be required.
+
+When only one unit receives treatment, synthetic control methods provide a natural approach.
+
+\subsection{Single Treated Unit Designs}
+
+Single treated unit designs feature one unit receiving treatment while all others serve as controls. A platform launches in a single test market while comparable markets remain untreated. A brand introduces a new product in one region before national rollout. A retailer implements a major store redesign in a flagship location. Finding exact matches among control units is typically impossible when the treated unit has unique characteristics.
+
+The synthetic control method (Chapter~\ref{ch:sc}) is designed for single treated unit designs. Rather than assuming that any single control unit provides a valid counterfactual, synthetic control constructs a weighted combination of control units such that the synthetic unit's pre-treatment outcomes closely match the treated unit's pre-treatment outcomes. The post-treatment difference between the actual treated unit and the synthetic control estimates the causal effect for that specific unit in each post-treatment period. This is a unit-specific effect, not a population ATT: the estimand has high internal validity for the treated unit but limited external validity for generalising to other units. Inference relies on placebo tests: applying the same synthetic control procedure to each control unit (as if it had been treated) generates a distribution of placebo effects to which the actual effect is compared (Chapter~\ref{ch:inference}).
+
+Hybrid methods (Chapter~\ref{ch:generalized-sc}), particularly synthetic difference-in-differences (SDID), combine the strengths of synthetic control and difference-in-differences by weighting both units and time periods to improve pre-treatment fit and leverage parallel trends where they hold. These methods are especially valuable when the single treated unit is embedded in a panel with multiple pre-treatment and post-treatment periods, allowing both cross-sectional and time-series variation to inform the counterfactual.
+
+\subsection{Single Treated Period Designs}
+
+Single treated period designs involve a common shock affecting all units in a single period. A regulatory change, a major advertising campaign, a pandemic, or a technological disruption creates a discrete event at time $t_0$ that shifts outcomes for all units. Treatment is $W_{it} = \mathbb{I}\{t \geq t_0\}$, with no variation across units in treatment timing.
+
+Use event-study specifications (Chapter~\ref{ch:event}) for single treated period designs. Estimating separate coefficients for each period before and after the shock traces the dynamic response. Pre-treatment periods test for anticipation effects and provide evidence on whether the parallel trends assumption holds. Post-treatment periods estimate how effects accumulate or dissipate over time.
+
+Identification in single treated period designs requires that the shock is exogenous or that it is as-good-as-random conditional on observables. If all units are affected simultaneously, cross-sectional variation in exposure intensity or in characteristics that moderate the effect provides identifying variation. For example, if a policy change affects all firms but compliance costs vary by firm size, then comparing outcomes for large and small firms before and after the change (a difference-in-differences with continuous treatment intensity; Chapter~\ref{ch:continuous}) can identify the effect.
+
+Many marketing interventions involve continuous rather than binary treatment.
+
+\subsection{Continuous Treatment Designs}
+
+In many marketing applications, treatment is not binary but varies continuously. Advertising expenditure, promotional discount depth, loyalty programme reward generosity, and pricing all take continuous values. The potential outcomes framework extends naturally: $Y_{it}(w)$ denotes the potential outcome under treatment intensity $w \in \mathcal{W} \subseteq \mathbb{R}$, and the conditional dose-response function
+\[ \mu(w \mid x) = \mathbb{E}[Y_{it}(w) \mid X_{it} = x] \]
+describes how expected outcomes vary with treatment intensity conditional on covariates. The unconditional dose-response averages over the covariate distribution.
+
+Continuous treatment designs require two key assumptions. First, conditional independence: treatment intensity is independent of potential outcomes conditional on covariates and fixed effects. This is a strong assumption, asserting that all confounders that jointly affect treatment intensity and outcomes are observed and controlled. Second, positivity: all treatment levels in the support must have positive probability conditional on covariates. Positivity is often violated in practice---for example, no stores may have zero advertising spend---which limits the range of treatment intensities for which causal effects can be identified. Panel structures make conditional independence more plausible by controlling for time-invariant confounders through unit fixed effects and for common shocks through time fixed effects, reducing the set of potential unobserved confounders to time-varying unit-specific factors. High-dimensional controls (Chapter~\ref{ch:high-dim}) and double machine learning (Chapter~\ref{ch:ml-nuisance}) provide flexible approaches to conditioning on many covariates without overfitting. When treatment intensity varies smoothly over time and space, factor models (Chapters~\ref{ch:factor} and \ref{ch:advanced-matrix}) can capture common demand shocks, allowing identification from unit-specific deviations.
+
+\subsection{SUTVA and Spillover Concerns}
+
+The stable unit treatment value assumption (SUTVA), introduced in Chapter~\ref{ch:frameworks}, asserts that potential outcomes for one unit do not depend on the treatment assignments of other units. SUTVA is routinely violated in marketing through spillovers, network effects, and competitive interactions. A loyalty programme offered to customers in one store may generate word-of-mouth that influences nearby stores. Advertising in one market may spill over to adjacent markets through media overlap or migration. One firm's pricing decision may trigger competitive responses that alter outcomes for rival firms.
+
+Design-based reasoning requires anticipating these violations at the design stage rather than assuming they are negligible. Cluster-randomised designs internalise spillovers within clusters while maintaining independence across clusters. Buffer zones separate treated and control geographies to limit spatial spillovers. Exposure mappings specify the network or geographic structure through which spillovers propagate, enabling joint estimation of direct and spillover effects. Chapter~\ref{ch:spillovers} develops these methods in detail, but the key insight is that interference should shape the design: the choice of clusters, the placement of buffers, and the measurement of exposure should all be informed by substantive knowledge of the spillover mechanisms.
+
+These assignment mechanisms represent the building blocks of panel study designs in marketing. In practice, designs often combine elements from multiple categories---a geo-experiment with staggered rollout, a single treated period with continuous treatment intensity, or a block design with spillover concerns. The key is to match the design to the substantive question, anticipate threats to validity, and select estimators that align with the identifying variation. The following section examines geo-experiments in detail, illustrating how these design principles operate in practice.

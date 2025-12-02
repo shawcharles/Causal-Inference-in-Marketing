@@ -1,0 +1,90 @@
+\section{Tuning and Implementation}
+\label{sec:hd-tuning}
+
+Implementing regularisation requires careful choices about cross-fitting, hyperparameter tuning, and practical details like standardisation. This section provides guidance on these choices, balancing predictive accuracy with the demands of causal identification.
+
+\begin{proposition}[Penalty Choice under Independence]\label{prop:penalty-independent}
+Under independent errors with variance $\sigma^2$, the penalty
+\[
+\lambda = 2\sigma \sqrt{\frac{2\log(2p/\alpha)}{NT}}
+\]
+ensures that $\lambda \geq 2\|\tilde{\mathbf{X}}'\varepsilon/(NT)\|_\infty$ with probability at least $1 - \alpha$. This choice bounds the estimation error and enables support recovery under the restricted eigenvalue condition.
+\end{proposition}
+
+\begin{proposition}[Penalty under Clustering]\label{prop:penalty-cluster}
+Under clustering with $G$ clusters, the effective sample size for inference is $G$ rather than $NT$. The penalty is adjusted to:
+\[
+\lambda = 2\sigma \sqrt{\frac{2\log(2p/\alpha)}{G}} \cdot \sqrt{\frac{1}{T}\sum_{t=1}^T \rho_t},
+\]
+where $\rho_t$ is the within-cluster correlation at lag $t$. For strong serial dependence ($\rho_t$ close to 1), the penalty inflates substantially. In practice, blocked cross-validation with unit-level folds provides a data-driven penalty that automatically accounts for dependence.
+\end{proposition}
+
+\subsection*{Blocking and Cross-Fitting}
+
+Blocking and cross-fitting to respect dependence partition the data into folds that avoid temporal leakage and that account for clustering.
+
+\paragraph{Unit-level blocking.} This partitions units into $K$ folds (typically $K = 5$ or $K = 10$), trains the lasso on $K-1$ folds of units (using all time periods for those units), and validates on the held-out fold of units. This strategy is appropriate when the number of units $N$ is large and when dependence is primarily within units over time (serial correlation).
+
+For example, in a panel of 500 stores observed over 52 weeks, unit-level blocking creates five folds of 100 stores each, trains the lasso on 400 stores (all 52 weeks), and validates on the 100 held-out stores. This ensures that observations from the same store are not split across training and validation sets, respecting within-store dependence.
+
+\paragraph{Time-level blocking.} This partitions periods into $K$ folds, trains the lasso on $K-1$ folds of periods (using all units within those periods), and validates on the held-out fold of periods. This strategy is appropriate when the number of periods $T$ is large and when dependence is primarily across units within periods (cross-sectional correlation or common shocks).
+
+For example, in a panel of 50 DMAs observed over 100 weeks, time-level blocking creates five folds of 20 weeks each, trains the lasso on 80 weeks (all 50 DMAs), and validates on the 20 held-out weeks. This ensures that observations from the same week are not split across training and validation sets, respecting within-period dependence.
+
+\paragraph{Two-dimensional blocking.} This partitions both units and periods into $K_1 \times K_2$ blocks, trains the lasso on blocks excluding the target block in both dimensions, and validates on the target block. This strategy is appropriate when dependence is strong in both dimensions, but it is computationally expensive (requiring $(K_1 \times K_2)$ model fits) and reduces the effective validation set size (the target block contains only $(N / K_1) \times (T / K_2)$ observations).
+
+For most marketing panels, unit-level blocking suffices because within-unit dependence (serial correlation) dominates within-period dependence.
+
+\subsection*{Avoiding Temporal Leakage}
+
+Avoiding temporal leakage ensures that the lasso is trained only on data that precede the validation observations in time, preventing forward-looking bias. For staggered adoption, leakage occurs when post-treatment observations for treated units are used to train the lasso that selects controls for pre-treatment or early-treatment periods.
+
+The solution is to restrict training data for each cohort $g$ and period $t$ to pre-treatment periods ($s < g$) for cohort $g$ units and to not-yet-treated or never-treated units as comparisons up to period $t$. This aligns with the temporal logic of DiD and event-study identification (Chapters~\ref{ch:did} and~\ref{ch:event}) and with the cross-fitting logic of DML (Chapter~\ref{ch:ml-nuisance}), ensuring that selected controls provide valid counterfactuals.
+
+\subsection*{Hyperparameter Tuning}
+
+Hyperparameter tuning balances parsimony (selecting few controls) and fit (minimising prediction error). The tuning parameter $\lambda$ (the penalty strength) controls the trade-off: large $\lambda$ produces sparse models (few controls, high bias, low variance), small $\lambda$ produces dense models (many controls, low bias, high variance). The optimal $\lambda$ minimises out-of-sample prediction error, assessed via cross-validation.
+
+For each $\lambda$ in a grid (typically 50 to 100 values spaced logarithmically from $\lambda_{\max}$ to $\lambda_{\min}$), train the lasso on training folds, validate on held-out folds, compute the validation error (mean squared error), and select the $\lambda$ that minimises the average validation error across folds.
+
+Two common choices are $\lambda_{\text{min}}$ (the penalty that minimises validation error) and $\lambda_{1\text{se}}$ (the largest penalty within one standard error of the minimum, producing a sparser model with comparable fit). The $\lambda_{1\text{se}}$ rule is preferred for causal inference when prediction accuracy is comparable, because parsimony improves interpretability and reduces sensitivity to specification choices.
+
+\subsection*{Stability Paths}
+
+Blocked cross-validation versus stability paths clarifies the trade-off between prediction accuracy and selection stability. Blocked cross-validation optimises $\lambda$ to minimise prediction error on held-out data, accounting for dependence.
+
+Stability paths plot the selected controls as a function of $\lambda$, showing which controls enter the model as the penalty decreases. A stable control enters early (at large $\lambda$) and remains in the model as $\lambda$ decreases, indicating that it is a strong predictor. An unstable control enters late (at small $\lambda$) and exits as $\lambda$ increases slightly, indicating that its selection is sensitive to the penalty and to sample variation.
+
+Reporting stability paths alongside cross-validation errors provides evidence on which controls are robustly selected and which are marginal, enabling analysts to focus on stable controls (reducing sensitivity to penalty choice) or to include marginal controls (improving fit at the cost of stability).
+
+\subsection*{Model Parsimony and Interpretability}
+
+Model parsimony and interpretability justify preferring simpler models when prediction accuracy is comparable. Marketing practitioners value models that are easy to communicate (few controls, clear rationale for inclusion) and that align with domain knowledge (selected controls are plausible confounders based on theory or prior evidence).
+
+The $\lambda_{1\text{se}}$ rule formalises this preference by trading a small increase in prediction error (within one standard error of the minimum) for a sparser model. Alternatively, analysts can impose ex ante restrictions on the control set (for example, including only demographics, seasonality, and competitor actions, excluding noisy or endogenous controls) and apply regularisation within the restricted set, ensuring that selected models are interpretable and aligned with identification requirements.
+
+\subsection*{Prediction versus Identification}
+
+Prediction versus identification tension, discussed by \citet{breiman2001statistical}, arises when optimising for prediction accuracy conflicts with identification requirements. Prediction accuracy favours including all controls that reduce validation error, regardless of causal interpretation (colliders, mediators, post-treatment variables). Identification credibility requires excluding controls that induce bias (colliders, mediators) or that conflict with the design (post-treatment variables in DiD, already-treated units in event studies).
+
+The solution is to constrain the control set to pre-treatment, plausibly exogenous covariates before regularisation, ensuring that the lasso selects only among controls that respect identification. Transparent reporting of which controls are candidates for selection and which are excluded ex ante builds confidence that regularisation serves identification.
+
+\subsection*{Practical Penalty Grids}
+
+Practical penalty grids use logarithmic spacing to cover a wide range of penalties efficiently. Start with $\lambda_{\max}$, the smallest penalty that shrinks all coefficients to zero, computed as $\lambda_{\max} = \max_j | \tilde{X}_j' \tilde{Y} | / (NT)$, where $\tilde{X}_j$ and $\tilde{Y}$ are within-transformed controls and outcomes.
+
+Set $\lambda_{\min} = 0.01 \lambda_{\max}$ or $\lambda_{\min} = 0.001 \lambda_{\max}$ (depending on whether sparsity is expected to be strong or weak). Generate a grid of $L$ penalties (typically $L = 50$ or $L = 100$) spaced logarithmically between $\lambda_{\max}$ and $\lambda_{\min}$: $\lambda_{\ell} = \lambda_{\max} \exp((\ell - 1) \log(\lambda_{\min} / \lambda_{\max}) / (L - 1))$ for $\ell = 1, \ldots, L$.
+
+This grid covers the full range from the null model (all coefficients zero) to a nearly saturated model (many coefficients nonzero), enabling the cross-validation curve to identify the optimal penalty.
+
+\subsection*{Standardisation and Scaling}
+
+Standardisation and scaling ensure that penalties are applied uniformly across controls with different measurement scales. Before regularisation, standardise each control $X_{jt}$ by dividing by its within-cluster standard deviation: $\tilde{X}_{jt} \to \tilde{X}_{jt} / \hat{\sigma}_j$, where $\hat{\sigma}_j^2 = \sum_i (\sum_t \tilde{X}_{ijt})^2 / G$ is the between-cluster variance (summing within units, then squaring, then averaging across units).
+
+This ensures that all controls have the same scale (variance one), so that the penalty $\lambda |\beta_j|$ has the same effect on all coefficients. After regularisation, transform coefficients back to the original scale for interpretation: $\beta_j \to \beta_j / \hat{\sigma}_j$. Standardisation also improves numerical stability and convergence of lasso algorithms.
+
+\subsection*{Handling Interactions and Lags}
+
+Handling interactions and lags requires care to respect hierarchical structure and to avoid collinearity. For interactions $W_{it} \times X_{jt}$ (effect modification), include the main effects $W_{it}$ and $X_{jt}$ without penalisation (they are part of the causal model) and apply group lasso to the interactions (selecting all interactions with a given $X_j$ jointly).
+
+For lags $X_{j,t-1}, X_{j,t-2}, \ldots$ (distributed effects), apply group lasso to select all lags of $X_j$ jointly, or apply hierarchical lasso to enforce that lower-order lags are included before higher-order lags. Transparent reporting of which interactions and lags are selected, and which are excluded, enables readers to assess whether the selected model aligns with domain knowledge about effect modification and dynamics.

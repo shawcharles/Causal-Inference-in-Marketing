@@ -1,0 +1,122 @@
+\section{Common Pitfalls and Anti-Patterns}
+\label{sec:pitfalls}
+
+This section catalogues common errors that undermine causal credibility in marketing analytics. These pitfalls recur across organisations and domains; recognising them is the first step to avoiding them.
+
+\begin{remark}[Pitfalls and the Taxonomy]\label{rem:pitfalls-taxonomy}
+The pitfalls below map to the identification threats in Section~\ref{sec:taxonomy}:
+\begin{enumerate}
+\item \textbf{Confounding pitfalls}: Selection into treatment, survivorship bias, unobserved heterogeneity.
+\item \textbf{Endogeneity pitfalls}: Simultaneity (ROAS without counterfactual), algorithmic targeting, budget responding to sales.
+\item \textbf{Interference pitfalls}: Ignoring spillovers, cannibalisation, competitive externalities.
+\item \textbf{Temporal pitfalls}: Short-run optimisation ignoring long-run brand effects, carryover, habit formation.
+\end{enumerate}
+Recognising which threat applies guides both diagnosis and remedy.
+\end{remark}
+
+\subsection*{Conceptual Pitfalls}
+
+These errors reflect fundamental misunderstandings about causality.
+
+\paragraph{Attribution is not causality.} Last-click attribution, multi-touch models, and data-driven attribution are all descriptive allocations of credit. They do not answer the counterfactual question: what would have happened without this touchpoint? Only incrementality tests with valid counterfactuals provide causal estimates. See Section~\ref{sec:digital-attribution} for causal approaches to attribution.
+
+\paragraph{ROAS is not a causal metric.} Return on Ad Spend divides revenue by spend but ignores the baseline. If a customer would have purchased anyway, the "return" is illusory. Incremental ROAS (iROAS) corrects this by subtracting the counterfactual revenue (Definition~\ref{def:iroas}).
+
+\paragraph{Platform metrics without counterfactuals.} Engagement metrics such as clicks, views, and impressions measure activity but not effect. A campaign with high click-through rate may simply be well-targeted to users who would have converted regardless. Without a control group, these metrics are not causal.
+
+\paragraph{Confusing prediction with identification.} A machine learning model that predicts sales well does not identify the causal effect of marketing. Predictive accuracy on held-out data is not the same as unbiased estimation of treatment effects. Causal inference requires assumptions about the data-generating process, not just out-of-sample fit.
+
+\paragraph{Platform opacity as latent confounding.} Many advertisers now see only aggregate data from platforms that has been processed by opaque algorithms. Audience-finding algorithms, automated bidding, and modelled conversions create unquantifiable confounding: the platform's black-box optimisation affects both treatment assignment and measured outcomes. When the data you receive has already been filtered through an algorithm you cannot inspect, standard identification strategies may fail silently. See Remark~\ref{rem:privacy-opacity} for implications and mitigations.
+
+\subsection*{Design Pitfalls}
+
+These errors arise from flawed experimental or quasi-experimental designs.
+
+\paragraph{Ignoring interference.} In platform settings, treating one user affects others. Standard A/B tests will show a lift for the treatment group, but if that lift comes from cannibalising the control group, the total platform effect is zero or negative. Switchback and cluster designs are essential (Section~\ref{sec:platform-experiments}).
+
+\paragraph{Selection into treatment.} Comparing loyalty members to non-members, or ad-exposed users to unexposed users, confounds the treatment effect with the selection effect. High-value customers select into programmes and are targeted by algorithms. Design-based identification is required (Section~\ref{sec:loyalty-valuation}, Section~\ref{sec:clv-acquisition}).
+
+\paragraph{Survivorship bias.} Analysing only customers who remained active ignores those who churned. If treatment affects retention, conditioning on survival biases the estimated effect on spending. Use intention-to-treat analysis or model attrition explicitly.
+
+\paragraph{Short-run optimisation ignoring long-run effects.} Optimising for immediate conversions may cannibalise brand equity. Performance marketing shows strong short-run ROI; brand marketing shows weak short-run ROI but builds the stock that sustains long-run demand. This reflects the \emph{temporal structure} dimension of the taxonomy: static estimators miss dynamic effects. Evaluate over appropriate time horizons (Section~\ref{sec:mmm}).
+
+\subsection*{Analysis Pitfalls}
+
+These errors occur during estimation and inference.
+
+\paragraph{p-hacking and the garden of forking paths.} Running many specifications and reporting only the significant ones inflates false positive rates. Pre-registration, specification curves, and honest reporting of all analyses are essential safeguards (Section~\ref{sec:synthesis-reporting}).
+
+\paragraph{Simpson's paradox.} An effect that appears positive in aggregate may be negative within every segment (or vice versa). Always check whether aggregate effects mask heterogeneity. Report segment-level effects when relevant.
+
+\paragraph{Ignoring multiple testing.} Running 20 hypothesis tests at $\alpha = 0.05$ yields one false positive on average. Use family-wise error rate (FWER) or false discovery rate (FDR) corrections when testing multiple outcomes or subgroups (Chapter~\ref{ch:inference}).
+
+\paragraph{Treating point estimates as truth.} A point estimate of 8\% lift with a 95\% CI of [-2\%, 18\%] is not "an 8\% effect"—it is "an effect that could plausibly be zero or as high as 18\%." Always communicate uncertainty.
+
+\subsection*{Assumption Violations by Domain}
+
+Table~\ref{tab:assumption-violations} summarises the key assumption violations and their mitigations across marketing domains. Each row links to the relevant section for detailed guidance.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Assumption violations and mitigations by marketing domain}
+\label{tab:assumption-violations}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Domain} & \textbf{Key Assumption} & \textbf{Common Violation} & \textbf{Mitigation} \\
+\midrule
+Geo-experiment (Section~\ref{sec:geo-experiments}) & Parallel trends & Regional shocks, seasonality & Matching, SDID, sensitivity \\
+Digital attribution (Section~\ref{sec:digital-attribution}) & Exogenous variation & Algorithmic targeting & Natural experiments, IV \\
+Media mix (Section~\ref{sec:mmm}) & No simultaneity & Budget responds to sales & Bayesian priors, calibration \\
+Loyalty programme (Section~\ref{sec:loyalty-valuation}) & No anticipation & Customer gaming thresholds & Donut RDD, staggered DiD \\
+Price elasticity (Section~\ref{sec:price-elasticity}) & Exclusion restriction & Demand-correlated costs & Alternative IVs, bounds \\
+Dynamic pricing (Section~\ref{sec:dynamic-pricing}) & Instrument validity & Algorithmic endogeneity & RDD at thresholds \\
+Subscription/paywall (Section~\ref{sec:paywall-effects}) & Local randomisation & User manipulation & McCrary test, A/B \\
+Platform experiment (Section~\ref{sec:platform-experiments}) & Limited carryover & Habit formation & Longer washout, buffers \\
+Platform experiment (Section~\ref{sec:platform-experiments}) & SUTVA & Interference, cannibalisation & Switchback, cluster RCT \\
+CLV attribution (Section~\ref{sec:clv-acquisition}) & Selection on observables & Unobserved heterogeneity & Sensitivity, IV \\
+Ranking (Section~\ref{sec:ranking-algorithms}) & Random position & Relevance confounding & Position randomisation \\
+Seller intervention (Section~\ref{sec:seller-interventions}) & Limited spillover & Competitive externalities & Market-level RCT \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\subsection*{The Anti-Pattern Checklist}
+
+Before finalising any causal analysis, verify that you have avoided these anti-patterns.
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.20: Anti-Pattern Checklist]
+\textbf{Conceptual:}
+\begin{itemize}
+    \item Did you define a causal estimand, not just a descriptive metric?
+    \item Did you specify the counterfactual explicitly?
+    \item Did you distinguish prediction from causal identification?
+\end{itemize}
+
+\textbf{Design:}
+\begin{itemize}
+    \item Did you account for interference if units interact?
+    \item Did you address selection into treatment?
+    \item Did you consider survivorship bias?
+    \item Did you evaluate over an appropriate time horizon?
+\end{itemize}
+
+\textbf{Analysis:}
+\begin{itemize}
+    \item Did you pre-register the primary specification?
+    \item Did you correct for multiple testing if applicable?
+    \item Did you report uncertainty, not just point estimates?
+    \item Did you check for Simpson's paradox in subgroups?
+\end{itemize}
+
+\textbf{Reporting:}
+\begin{itemize}
+    \item Did you report all pre-registered analyses, including nulls?
+    \item Did you disclose failed diagnostics?
+    \item Did you acknowledge limitations and external validity concerns?
+\end{itemize}
+\end{tcolorbox}
+
+By avoiding these pitfalls and adhering to the protocols in this chapter, marketing analysts can produce evidence that meets the standards of credible causal inference. The goal is not to claim effects that do not exist but to identify effects that do—and to be honest when the evidence is inconclusive.
+\index{marketing applications|)}

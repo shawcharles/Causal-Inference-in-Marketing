@@ -1,0 +1,196 @@
+\section{Identification and Assumptions}
+\label{sec:sc-identification}
+
+This section provides the formal identification theory for synthetic control methods. We state the identification assumptions precisely, prove the main identification result, establish rate conditions for consistency, and introduce the partial identification framework of Synthetic Parallel Trends. The factor model and bias decomposition from Sections~\ref{sec:sc-motivation} and \ref{sec:sc-construction} provide the foundation; here we add the formal theorems.
+
+\subsection*{Identification Assumptions}
+
+We state the core assumptions required for identification. The notation follows Sections~\ref{sec:sc-motivation} and \ref{sec:sc-construction}: unit 1 is treated at time $T_0 + 1$, $\mathcal{J}$ is the donor pool, and outcomes follow the factor model $Y_{it}(0) = \delta_t + \boldsymbol{\lambda}_t' \boldsymbol{\mu}_i + \varepsilon_{it}$.
+
+\begin{assumption}[\index{no anticipation}No Anticipation]
+\label{assump:sc-no-anticipation}
+The treated unit's potential outcomes in the pre-treatment period are not affected by the anticipation of future treatment:
+\[
+Y_{1t} = Y_{1t}(0) \quad \text{for all } t \leq T_0.
+\]
+\end{assumption}
+
+No anticipation asserts that the treated unit does not alter its behaviour in advance of treatment. If anticipation is present, pre-treatment outcomes reflect both the baseline untreated trajectory and the anticipatory response. Matching the treated unit to donors in the pre-treatment period then does not identify the baseline trajectory. In marketing, anticipation is common: a flagship market may stockpile inventory before a campaign launch, customers may delay buying in anticipation of a loyalty programme, or competitors may adjust behaviour in advance of platform entry. Diagnostics include checking whether the synthetic control fits better in early versus late pre-treatment periods.
+
+\begin{assumption}[\index{no interference}No Interference]
+\label{assump:sc-no-interference}
+The treatment applied to the treated unit does not affect the outcomes of donor units:
+\[
+Y_{jt} = Y_{jt}(0) \quad \text{for all } j \in \mathcal{J}, \, t > T_0.
+\]
+\end{assumption}
+
+No interference, a component of \index{SUTVA}SUTVA (Chapter~\ref{ch:frameworks}), asserts that donor outcomes are unaffected by the treated unit's treatment. If treatment spills over to donors (through competitive effects, customer migration, or supply chain linkages), contaminated donors bias the counterfactual. Design-based solutions include excluding likely spillover targets (nearby markets, direct competitors, network neighbours) and creating buffer zones. Spillovers can be tested via placebo effects for donor units (Section~\ref{sec:sc-inference}).
+
+\begin{assumption}[Factor Model Structure]
+\label{assump:sc-factor}
+Untreated potential outcomes follow the factor model:
+\[
+Y_{it}(0) = \delta_t + \boldsymbol{\lambda}_t' \boldsymbol{\mu}_i + \varepsilon_{it},
+\]
+where $\delta_t$ is a common time effect, $\boldsymbol{\lambda}_t \in \mathbb{R}^r$ are time-varying factors, $\boldsymbol{\mu}_i \in \mathbb{R}^r$ are unit-specific factor loadings, and $\varepsilon_{it}$ are idiosyncratic errors with $\mathbb{E}[\varepsilon_{it}] = 0$ and $\mathbb{E}[\varepsilon_{it}^2] = \sigma^2 < \infty$.
+\end{assumption}
+
+The factor model nests additive fixed effects ($r = 1$, $\lambda_t = 1$), linear time trends ($r = 2$), and general interactive fixed effects. See Chapter~\ref{ch:factor} for estimation and diagnostics.
+
+\begin{assumption}[Convex Hull Condition]
+\label{assump:sc-hull}
+The treated unit's factor loadings lie within the convex hull of the donor loadings:
+\[
+\boldsymbol{\mu}_1 \in \text{conv}\{\boldsymbol{\mu}_j : j \in \mathcal{J}\}.
+\]
+\end{assumption}
+
+The convex hull condition ensures that weights $\mathbf{w}^*$ with $w_j^* \geq 0$ and $\sum_j w_j^* = 1$ can satisfy the identification condition $\sum_j w_j^* \boldsymbol{\mu}_j = \boldsymbol{\mu}_1$. When this condition fails, no convex combination of donors can match the treated unit's factor loadings, and the synthetic control is biased (Section~\ref{sec:sc-motivation}, Equation~\ref{eq:sc-bias}).
+
+\subsection*{Main Identification Theorem}
+
+We now state the main identification result formally.
+
+\begin{theorem}[Identification of Treatment Effect]
+\label{thm:sc-identification}
+Under Assumptions~\ref{assump:sc-no-anticipation}--\ref{assump:sc-hull}, if there exist weights $\mathbf{w}^* = (w_2^*, \ldots, w_{N+1}^*)'$ satisfying:
+\begin{enumerate}
+\item[(i)] Convexity: $w_j^* \geq 0$ for all $j \in \mathcal{J}$ and $\sum_{j \in \mathcal{J}} w_j^* = 1$
+\item[(ii)] Factor loading match: $\sum_{j \in \mathcal{J}} w_j^* \boldsymbol{\mu}_j = \boldsymbol{\mu}_1$
+\end{enumerate}
+then the synthetic control estimator $\hat{\tau}_{1t} = Y_{1t} - \sum_{j \in \mathcal{J}} w_j^* Y_{jt}$ identifies the treatment effect:
+\[
+\mathbb{E}[\hat{\tau}_{1t}] = \tau_{1t} \quad \text{for all } t > T_0.
+\]
+\end{theorem}
+
+\begin{proof}
+For $t > T_0$, we have $Y_{1t} = Y_{1t}(1) = Y_{1t}(0) + \tau_{1t}$ (by definition of the treatment effect). Under Assumption~\ref{assump:sc-no-interference}, $Y_{jt} = Y_{jt}(0)$ for all $j \in \mathcal{J}$. Thus:
+\begin{align*}
+\hat{\tau}_{1t} &= Y_{1t} - \sum_{j \in \mathcal{J}} w_j^* Y_{jt} \\
+&= Y_{1t}(0) + \tau_{1t} - \sum_{j \in \mathcal{J}} w_j^* Y_{jt}(0) \\
+&= \tau_{1t} + \underbrace{\left[ Y_{1t}(0) - \sum_{j \in \mathcal{J}} w_j^* Y_{jt}(0) \right]}_{\text{counterfactual error}}.
+\end{align*}
+Under Assumption~\ref{assump:sc-factor}, expand the counterfactual error:
+\begin{align*}
+Y_{1t}(0) - \sum_{j} w_j^* Y_{jt}(0) &= \left( \delta_t + \boldsymbol{\lambda}_t' \boldsymbol{\mu}_1 + \varepsilon_{1t} \right) - \sum_{j} w_j^* \left( \delta_t + \boldsymbol{\lambda}_t' \boldsymbol{\mu}_j + \varepsilon_{jt} \right) \\
+&= \delta_t \left( 1 - \sum_j w_j^* \right) + \boldsymbol{\lambda}_t' \left( \boldsymbol{\mu}_1 - \sum_j w_j^* \boldsymbol{\mu}_j \right) + \varepsilon_{1t} - \sum_j w_j^* \varepsilon_{jt} \\
+&= \boldsymbol{\lambda}_t' \underbrace{\left( \boldsymbol{\mu}_1 - \sum_j w_j^* \boldsymbol{\mu}_j \right)}_{= 0 \text{ by (ii)}} + \varepsilon_{1t} - \sum_j w_j^* \varepsilon_{jt} \\
+&= \varepsilon_{1t} - \sum_j w_j^* \varepsilon_{jt}.
+\end{align*}
+The first term vanishes by the adding-up constraint (i). The second term vanishes by the factor loading match (ii). Taking expectations:
+\[
+\mathbb{E}[\hat{\tau}_{1t}] = \tau_{1t} + \mathbb{E}[\varepsilon_{1t}] - \sum_j w_j^* \mathbb{E}[\varepsilon_{jt}] = \tau_{1t},
+\]
+since $\mathbb{E}[\varepsilon_{it}] = 0$ by Assumption~\ref{assump:sc-factor}.
+\end{proof}
+
+\textbf{Remark.} The theorem establishes unbiasedness under known factor loadings. In practice, factor loadings are unobserved, and weights are estimated from pre-treatment data. The next subsection addresses consistency when weights are estimated.
+
+\subsection*{Consistency and Rate Conditions}
+
+When weights are estimated from pre-treatment data, we need rate conditions ensuring that estimated weights converge to the identification-satisfying weights.
+
+\begin{theorem}[Consistency of Estimated Synthetic Control]
+\label{thm:sc-consistency}
+Under Assumptions~\ref{assump:sc-no-anticipation}--\ref{assump:sc-hull}, suppose:
+\begin{enumerate}
+\item[(i)] The factor model has $r$ factors with $\text{rank}(\boldsymbol{\Lambda}) = r$, where $\boldsymbol{\Lambda} = (\boldsymbol{\lambda}_1, \ldots, \boldsymbol{\lambda}_{T_0})' \in \mathbb{R}^{T_0 \times r}$
+\item[(ii)] $T_0 \geq r$ (more pre-treatment periods than factors)
+\item[(iii)] Idiosyncratic errors satisfy $\mathbb{E}[\varepsilon_{it}^2] \leq \sigma^2 < \infty$
+\end{enumerate}
+Then the synthetic control estimator with estimated weights $\hat{\mathbf{w}}$ satisfies:
+\[
+\hat{\tau}_{1t} - \tau_{1t} = O_p\left( \frac{1}{\sqrt{T_0}} \right) + O_p\left( \frac{1}{N} \right) \quad \text{as } T_0, N \to \infty.
+\]
+\end{theorem}
+
+\textit{Sketch of argument.} The error decomposes into two terms: (a) factor loading estimation error, which decreases as $T_0 \to \infty$ because more pre-treatment periods provide more information to identify the factor structure; and (b) weight approximation error, which decreases as $N \to \infty$ because a larger donor pool provides better coverage of the factor loading space. The formal proof follows \citet[Proposition 1]{abadie2010synthetic} and \citet[Theorem 1]{ferman2021synthetic}. See Chapter~\ref{ch:factor} for the factor model estimation theory.
+
+\textbf{Practical Implications.}
+\begin{itemize}
+\item More pre-treatment periods improve estimation by providing more information about factor loadings
+\item Larger donor pools improve estimation by providing better coverage of the factor loading space
+\item The rate condition suggests $T_0 \gtrsim r$ is necessary; in practice, $T_0 \geq 2r$ is often recommended
+\item When $T_0$ is small relative to the noise level, pre-treatment fit may be achieved by matching noise rather than factor loadings
+\end{itemize}
+
+\subsection*{Bias When Identification Fails}
+
+When the convex hull condition (Assumption~\ref{assump:sc-hull}) fails or weights are imperfectly estimated, the bias decomposition from Section~\ref{sec:sc-motivation} applies:
+\begin{equation}
+\text{Bias}(\hat{\tau}_{1t}) = \mathbb{E}[\hat{\tau}_{1t} - \tau_{1t}] = \boldsymbol{\lambda}_t' \boldsymbol{\Delta}_\mu,
+\label{eq:sc-bias-redux}
+\end{equation}
+where $\boldsymbol{\Delta}_\mu = \boldsymbol{\mu}_1 - \sum_j w_j^* \boldsymbol{\mu}_j$ is the factor loading mismatch.
+
+\textbf{Corollary (Bias Bound).} If $\|\boldsymbol{\Delta}_\mu\| \leq \delta$ and $\|\boldsymbol{\lambda}_t\| \leq L$ for all $t > T_0$, then:
+\[
+|\text{Bias}(\hat{\tau}_{1t})| \leq L \cdot \delta.
+\]
+The bias is bounded by the product of the factor loading mismatch and the factor magnitude. This motivates diagnostics that assess pre-treatment fit quality (Section~\ref{sec:sc-diagnostics}).
+
+\subsection*{Synthetic Parallel Trends and Partial Identification}
+
+The framework of \index{Synthetic Parallel Trends}Synthetic Parallel Trends \citet{liu2025synthetic} provides a unifying perspective that encompasses difference-in-differences, synthetic control, and related methods. Rather than assuming a specific weighting scheme identifies the counterfactual, it works with the \textit{identified set} of all counterfactuals consistent with the pre-treatment data.
+
+\textbf{Definition (Admissible Weight Set).} The set of admissible weights is:
+\begin{equation}
+\mathcal{W} = \left\{ \mathbf{w} \in \mathbb{R}^N : w_j \geq 0, \; \sum_j w_j = 1, \; \left\| \mathbf{Y}_1^{\text{pre}} - \mathbf{Y}_{\mathcal{J}}^{\text{pre}} \mathbf{w} \right\| \leq \epsilon \right\},
+\label{eq:admissible-weights}
+\end{equation}
+where $\epsilon \geq 0$ is a tolerance for pre-treatment fit.
+
+When $\epsilon = 0$, $\mathcal{W}$ contains all convex weights that perfectly match pre-treatment outcomes. When $\epsilon > 0$, $\mathcal{W}$ includes weights that approximately match within tolerance $\epsilon$.
+
+\textbf{Definition (\index{identified set}Identified Set).} The identified set for the treatment effect at time $t > T_0$ is:
+\begin{equation}
+\mathcal{I}_t = \left\{ \tau : \tau = Y_{1t} - \mathbf{Y}_{\mathcal{J},t}' \mathbf{w} \text{ for some } \mathbf{w} \in \mathcal{W} \right\}.
+\label{eq:identified-set}
+\end{equation}
+
+When $\mathcal{W}$ is non-empty and convex (which it is under the definition above), the identified set $\mathcal{I}_t$ is an interval $[\underline{\tau}_t, \overline{\tau}_t]$.
+
+\begin{theorem}[Bounds on Treatment Effect]
+\label{thm:sc-bounds}
+Under Assumptions~\ref{assump:sc-no-anticipation}--\ref{assump:sc-factor}, if $\mathcal{W} \neq \emptyset$, the identified set $\mathcal{I}_t$ is a closed interval with bounds:
+\begin{align}
+\underline{\tau}_t &= Y_{1t} - \max_{\mathbf{w} \in \mathcal{W}} \mathbf{Y}_{\mathcal{J},t}' \mathbf{w}, \label{eq:lower-bound} \\
+\overline{\tau}_t &= Y_{1t} - \min_{\mathbf{w} \in \mathcal{W}} \mathbf{Y}_{\mathcal{J},t}' \mathbf{w}. \label{eq:upper-bound}
+\end{align}
+If the convex hull condition (Assumption~\ref{assump:sc-hull}) holds and $T_0 \geq r$, then $\mathcal{I}_t$ collapses to a point: $\underline{\tau}_t = \overline{\tau}_t = \tau_{1t}$.
+\end{theorem}
+
+\textit{Sketch of argument.} The bounds are linear programmes over the convex set $\mathcal{W}$. The minimum and maximum of a linear function over a convex set are attained at extreme points. When identification conditions hold, the admissible set contains a unique weight vector (up to observational equivalence), and the bounds coincide.
+
+\textbf{Interpretation.} When different estimators (DiD, SC, SDID) yield different treatment effect estimates, they are selecting different weights from $\mathcal{W}$. Under Synthetic Parallel Trends, all weights in $\mathcal{W}$ are equally admissible, and the analyst reports bounds $[\underline{\tau}_t, \overline{\tau}_t]$ rather than privileging one estimator.
+
+\textbf{Marketing Example.} A retailer runs a television campaign in one flagship DMA with twenty potential control DMAs. DiD (uniform weights) estimates a lift of 4\%. SC (optimised convex weights matching pre-treatment outcomes) estimates 12\%. Both show good pre-treatment fit. Under Synthetic Parallel Trends, the analyst computes bounds over all admissible weights and reports $[5\%, 11\%]$. The DiD estimate lies near the lower bound, SC near the upper, and the analyst concludes that the campaign almost certainly increased sales but that the precise magnitude depends on the weighting scheme.
+
+\subsection*{Threats to Identification}
+
+Several conditions can undermine the identification assumptions:
+
+\textbf{Poor Pre-Treatment Fit.} If $\text{RMSPE}_{\text{pre}}$ is large, the synthetic control may not approximate the counterfactual. This indicates either (a) the treated unit lies outside the convex hull, or (b) the pre-treatment period is too short to identify the factor structure. Options include expanding the donor pool, extending the pre-treatment period, or using augmented methods that relax convexity (Section~\ref{sec:sc-extensions}).
+
+\textbf{Anticipation.} If the treated unit adjusts behaviour before $T_0$, pre-treatment outcomes reflect anticipatory effects. The synthetic control then matches the anticipation-contaminated trajectory, not the baseline. Diagnostics: check whether fit is better in early versus late pre-treatment periods. Solutions: truncate the pre-treatment period to exclude anticipation, or redefine the estimand to include anticipation.
+
+\textbf{Spillovers.} If treatment affects donor outcomes, the counterfactual is contaminated. Diagnostics: check placebo effects for donors (Section~\ref{sec:sc-inference}). Solutions: exclude likely spillover targets, create buffer zones, or model spillovers explicitly (Chapter~\ref{ch:spillovers}).
+
+\textbf{Structural Breaks.} If the factor structure shifts at or after treatment (due to macroeconomic shocks, regulatory changes, or competitive disruption), the pre-treatment weights may not apply post-treatment. Diagnostics: check whether donor trajectories remain stable post-treatment. Solutions: restrict the post-treatment window, include time-varying factors, or use methods robust to structural change.
+
+\textbf{Model Selection.} As discussed in Sections~\ref{sec:sc-motivation} and \ref{sec:sc-construction}, the choice of predictors, donor pool, and estimation approach affects results. Pre-specification and sensitivity analysis mitigate specification search concerns.
+
+\subsection*{Summary}
+
+Identification in synthetic control requires:
+\begin{enumerate}
+\item No anticipation (Assumption~\ref{assump:sc-no-anticipation})
+\item No interference (Assumption~\ref{assump:sc-no-interference})
+\item Factor model structure (Assumption~\ref{assump:sc-factor})
+\item Convex hull condition (Assumption~\ref{assump:sc-hull})
+\item Sufficient pre-treatment periods ($T_0 \geq r$)
+\end{enumerate}
+
+Under these conditions, Theorem~\ref{thm:sc-identification} establishes unbiasedness and Theorem~\ref{thm:sc-consistency} establishes consistency. When point identification fails, Theorem~\ref{thm:sc-bounds} provides bounds under Synthetic Parallel Trends. The next section addresses inference and uncertainty quantification.

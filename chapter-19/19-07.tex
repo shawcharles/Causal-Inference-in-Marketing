@@ -1,0 +1,103 @@
+\section{Missing Data and Measurement Error}
+\label{sec:missing-measurement}
+
+Missing data and measurement error are pervasive in marketing panels. Both threaten the validity of causal estimates, but through different mechanisms. Missing data reduce sample size and may introduce selection bias; measurement error attenuates estimates or introduces spurious correlations. This section provides a framework for diagnosing and addressing both problems.
+
+\subsection*{Missing Data Mechanisms}
+
+The appropriate remedy for missing data depends on the mechanism generating missingness.
+
+\paragraph{Missing completely at random (MCAR).} Missingness is unrelated to observed or unobserved variables. Complete-case analysis is unbiased but loses precision. Example: random server failures that drop some impressions.
+
+\paragraph{Missing at random (MAR).} Missingness depends on observed covariates but not on the missing values themselves, conditional on observables. Multiple imputation or inverse-probability weighting can mitigate bias provided the model for missingness is correctly specified. Example: users with older devices are less likely to have tracking enabled, but device type is observed.
+
+\paragraph{Missing not at random (MNAR).} Missingness depends on unobserved factors or on the missing values themselves. Bias is unavoidable without strong assumptions such as exclusion restrictions or instruments. Example: privacy-conscious users who block tracking are also less likely to convert—both the outcome and the missingness are driven by an unobserved privacy preference.
+
+\paragraph{Diagnosing the mechanism.} Compare observed characteristics of complete vs. incomplete cases. If they differ substantially, MCAR is implausible. Test whether missingness predicts outcomes among complete cases; if so, MAR may be violated.
+
+\subsection*{Panel-Specific Missing Data Patterns}
+
+Panels exhibit structured missingness patterns that require tailored approaches.
+
+\paragraph{Attrition.} Units drop out of the panel over time. If attrition correlates with treatment or outcomes, estimates are biased. Intention-to-treat (ITT) analysis includes all randomised units regardless of attrition; per-protocol analysis conditions on completion and may be biased.
+
+\paragraph{Staggered entry.} Units enter the panel at different times, creating unbalanced panels. Early entrants have longer pre-treatment histories; late entrants may differ systematically.
+
+\paragraph{Intermittent missingness.} Units appear, disappear, and reappear. Common in platform data where users are active sporadically.
+
+\paragraph{Structured missingness for causal inference.} In DiD and synthetic control, treated units' post-treatment counterfactual outcomes are fundamentally missing—this is the causal inference problem itself. Matrix completion and factor models (Chapter~\ref{ch:factor}) impute missing entries via low-rank approximations, exploiting the panel structure.
+
+\paragraph{Design-consistent imputation.} Imputation must respect the identification strategy:
+\begin{itemize}
+    \item For DiD: impute treated outcomes using pre-treatment trends.
+    \item For synthetic control: impute using weighted donor outcomes.
+    \item For factor models: impute using estimated latent factors.
+\end{itemize}
+Imputing with post-treatment information or treatment-correlated covariates violates identification assumptions.
+
+\subsection*{Measurement Error Types}
+
+Measurement error biases estimates when it is non-classical or differential.
+
+\paragraph{Classical measurement error.} Error is independent of true values and other variables. In the outcome, classical error increases variance but does not bias point estimates. In the treatment, classical error attenuates estimates toward zero.
+
+\paragraph{Non-classical measurement error.} Error is correlated with true values, treatment, or outcomes. Bias direction depends on the correlation structure. Example: viewability is lower for ads shown to less engaged users, who also have lower conversion rates—viewability error is correlated with outcomes.
+
+\paragraph{Differential measurement error.} Error magnitudes differ between treated and control groups. Example: attribution windows capture more conversions for treated users if treatment increases purchase timing, creating spurious lift.
+
+\subsection*{Measurement Error by Data Type}
+
+Different marketing data sources exhibit characteristic measurement errors.
+
+\paragraph{Impression data:}
+\begin{itemize}
+    \item \textbf{Viewability:} Ads served but not viewed (30–70\% of impressions may be non-viewable).
+    \item \textbf{Bot traffic:} Non-human views inflate counts (5–20\% of traffic).
+    \item \textbf{Fraud:} Invalid clicks and impressions (varies by channel).
+\end{itemize}
+
+\paragraph{Conversion data:}
+\begin{itemize}
+    \item \textbf{Attribution window mismatch:} Windows misalign with true causal lags.
+    \item \textbf{Last-click bias:} Ignores earlier exposures in the conversion path.
+    \item \textbf{Cross-device gaps:} Conversions on unlinked devices are missed.
+\end{itemize}
+
+\paragraph{Sales data:}
+\begin{itemize}
+    \item \textbf{Scanner coverage gaps:} Not all retailers report.
+    \item \textbf{Stockouts:} Zero sales when product unavailable (not zero demand).
+    \item \textbf{Aggregation:} Data aggregated to protect retailer identity.
+\end{itemize}
+
+\subsection*{Remedies for Measurement Error}
+
+\paragraph{Validation studies.} Use audits, surveys, or external benchmarks to estimate error magnitudes. Compare platform-reported conversions to CRM data; compare impression counts to viewability audits.
+
+\paragraph{Instrumental variables.} If an instrument is available that is correlated with the true treatment but not with the measurement error, IV estimation recovers consistent estimates (see the instrumental-variables sections in Chapter~\ref{ch:inference}).
+
+\paragraph{Partial identification.} When error magnitudes are unknown, accept that the estimand is set-valued and report bounds rather than point estimates. Manski bounds provide worst-case intervals.
+
+\paragraph{Sensitivity analysis.} Specify the range of error magnitudes consistent with substantive conclusions (Chapter~\ref{ch:inference}, Chapter~\ref{ch:design-diagnostics}). Report how large measurement error would need to be to overturn the finding.
+
+\subsection*{Missing Data and Measurement Error Checklist}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 19.7: Missing Data and Measurement Error Checklist]
+\textbf{For missing data:}
+\begin{itemize}
+    \item What is the missing rate for key variables? Is it differential by treatment status?
+    \item Is missingness plausibly MCAR, MAR, or MNAR? What evidence supports this?
+    \item Have you compared characteristics of complete vs. incomplete cases?
+    \item Does your imputation method respect the identification strategy?
+    \item Have you reported ITT estimates alongside per-protocol estimates?
+\end{itemize}
+
+\textbf{For measurement error:}
+\begin{itemize}
+    \item What are the known sources of measurement error in your data?
+    \item Is error likely classical, non-classical, or differential?
+    \item Have you validated platform metrics against external data?
+    \item Have you conducted sensitivity analysis for plausible error magnitudes?
+    \item If error is substantial, have you reported bounds rather than point estimates?
+\end{itemize}
+\end{tcolorbox}

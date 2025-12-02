@@ -1,0 +1,109 @@
+\section{Loyalty Programme Valuation}
+\label{sec:loyalty-valuation}
+
+Loyalty programmes create a classic selection problem. Members typically spend more than non-members, but this difference is a combination of the treatment effect (the programme) and the selection effect (high-spenders join). Naive comparisons of member vs. non-member spending confound these two effects.
+
+\begin{remark}[Loyalty Programmes in the Taxonomy]\label{rem:loyalty-taxonomy}
+In the taxonomy of Section~\ref{sec:taxonomy}, loyalty programme valuation is primarily a \emph{confounding} problem: high-value customers self-select into programmes and higher tiers. The identification challenge is severing the link between potential outcomes and enrolment. Secondary considerations include dynamics---programme effects may grow with tenure as habits form, or decay as initial excitement fades---and interference if member benefits affect non-member behaviour (e.g., crowding at redemption counters).
+\end{remark}
+
+\subsection*{Estimand: Programme Incremental Value}
+
+We seek to estimate the causal effect of programme participation on customer spending.
+
+\begin{definition}[Programme Incremental Value]\label{def:programme-value}
+Let $Y_{it}$ be spending by customer $i$ in period $t$, and let $W_i = 1$ if the customer is enrolled in the programme. The Programme ATT is:
+\[
+\tau_{\text{prog}} = \mathbb{E}[Y_{it}(1) - Y_{it}(0) | W_i = 1],
+\]
+which captures the net effect of enrolment, behaviour change, and any discounts or rewards received.
+\end{definition}
+
+For tier upgrades within a programme, the estimand is the incremental effect of the higher tier:
+\[
+\tau_{\text{tier}} = \mathbb{E}[Y_{it}(\text{Gold}) - Y_{it}(\text{Silver}) | \text{upgraded to Gold}].
+\]
+
+These estimands are static: they compare spending in a given period under alternative membership states. In practice, programme effects often vary with tenure. Early-period effects may reflect novelty and experimentation; later-period effects may reflect habit formation or fatigue. When tenure effects are important, the analyst should estimate $\tau(k) = \mathbb{E}[Y_{i,t+k}(1) - Y_{i,t+k}(0) | W_i = 1]$ for $k = 0, 1, 2, \ldots$ to trace the impulse response, linking to the dynamic treatment effects framework in Chapter~\ref{ch:dynamics}. The cumulative effect over the customer lifetime connects to CLV attribution (Section~\ref{sec:clv-acquisition}).
+
+\subsection*{Identification Strategy 1: Staggered Rollout}
+
+If the programme is introduced in waves across stores or regions, we can use staggered difference-in-differences (Chapter~\ref{ch:did}). The treatment is at the store level (programme availability), but outcomes are measured at the customer level. This multi-level structure requires care: customer composition may differ across stores, and customers may shop at multiple locations.
+
+\begin{assumption}[Parallel Trends for Programme Rollout]\label{assump:loyalty-pt}
+In the absence of programme introduction, customer spending trends would be parallel across store cohorts. Let $Y_{ist}$ denote spending by customer $i$ at store $s$ in period $t$, and let $G_s$ be the rollout cohort for store $s$. Then:
+\[
+\mathbb{E}[Y_{ist}(0) - Y_{is,t-1}(0) | G_s = g] = \mathbb{E}[Y_{ist}(0) - Y_{is,t-1}(0) | G_s = g'], \quad \forall g, g'.
+\]
+\end{assumption}
+
+Under this assumption, customers at not-yet-treated stores serve as valid controls for customers at newly treated stores. Use heterogeneity-robust estimators (e.g., Callaway-Sant'Anna, Sun-Abraham) to avoid negative weighting when treatment effects vary across cohorts. Include customer fixed effects to control for time-invariant individual heterogeneity.
+
+\subsection*{Identification Strategy 2: Tier Threshold RDD}
+
+For tier upgrades, regression discontinuity exploits the sharp threshold rule.
+
+\begin{assumption}[Continuity of Potential Outcomes at Threshold]\label{assump:loyalty-rdd}
+Potential outcomes are continuous functions of qualifying spend at the threshold $c$:
+\[
+\lim_{x \downarrow c} \mathbb{E}[Y_i(0) | X_i = x] = \lim_{x \uparrow c} \mathbb{E}[Y_i(0) | X_i = x],
+\]
+where $X_i$ is qualifying spend. Since treatment jumps discontinuously at $c$ (Gold status for $X_i \geq c$, Silver otherwise), any discontinuity in observed outcomes $\mathbb{E}[Y_i | X_i = x]$ at $c$ is attributable to the treatment.
+\end{assumption}
+
+This assumption fails if customers manipulate their spending to just exceed the threshold in ways correlated with potential outcomes.
+
+\begin{remark}[Manipulation vs.\ Rational Bunching]\label{rem:bunching}
+In loyalty programmes, customers can observe their progress toward thresholds and may rationally time purchases to qualify. This \emph{bunching} is not manipulation in the sense of fraud---it is the intended programme design. Bunching invalidates RDD only if it is \emph{selective}: if customers who bunch have different potential outcomes than those who do not. The McCrary density test detects bunching but cannot distinguish selective from non-selective bunching. Covariate balance at the threshold provides additional evidence: if observable characteristics are continuous at $c$ despite bunching, selective manipulation is less likely.
+\end{remark}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{images/fig_loyalty_rdd.pdf}
+\caption{Regression Discontinuity Design for loyalty tier valuation}
+\label{fig:loyalty-rdd}
+\small\textit{Average future spend plotted against qualifying spend, with a discontinuity at the \$500 threshold for Gold status. The vertical jump at the threshold represents the causal effect of Gold status on subsequent spending. Bandwidth selection follows Imbens-Kalyanaraman optimal bandwidth. Manipulation testing shows no bunching at the threshold.}
+\end{figure}
+
+\subsection*{Estimation}
+
+For staggered rollout, apply the estimators from Chapter~\ref{ch:did}. Aggregate cohort-time effects into an overall programme ATT using appropriate weights.
+For RDD, estimate the local average treatment effect at the threshold using local polynomial regression:
+\[
+\hat{\tau}_{\text{RDD}} = \lim_{x \downarrow c} \hat{\mathbb{E}}[Y_i | X_i = x] - \lim_{x \uparrow c} \hat{\mathbb{E}}[Y_i | X_i = x].
+\]
+Use the Imbens-Kalyanaraman or Calonico-Cattaneo-Titiunik bandwidth selectors. Report estimates for multiple bandwidths as a robustness check.
+
+\subsection*{Diagnostic Checklist}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.9: Loyalty Programme Diagnostic Checklist]
+\textbf{For Staggered Rollout:}
+\begin{itemize}
+    \item Pre-trend test: Joint F-test on pre-treatment event-time coefficients.
+    \item Balance: Compare store characteristics across rollout waves.
+    \item Support: Verify adequate observations in each cohort-time cell.
+    \item Heterogeneity: Report cohort-specific effects; check for effect dynamics.
+\end{itemize}
+
+\textbf{For Tier Threshold RDD:}
+\begin{itemize}
+    \item Manipulation test: McCrary density test for bunching at threshold.
+    \item Covariate balance: Compare demographics and prior behaviour at threshold.
+    \item Bandwidth sensitivity: Report estimates for 0.5×, 1×, and 2× optimal bandwidth.
+    \item Placebo thresholds: Test for discontinuities at non-threshold values.
+\end{itemize}
+\end{tcolorbox}
+
+\subsection*{Case Study: Retail Loyalty Tier Upgrade}
+
+We illustrate the RDD approach with a hypothetical retail loyalty programme. The numbers are illustrative and do not represent real data.
+
+\paragraph{Setting.} A retailer's loyalty programme awards Gold status to customers spending \$500 or more in a calendar year. Gold members receive 5\% cashback (vs. 2\% for Silver). We estimate the causal effect of Gold status on next-year spending.
+
+\paragraph{Data.} 50,000 customers with qualifying spend between \$400 and \$600. Outcome is total spend in the following year.
+
+\paragraph{Results.} The RDD estimate at the \$500 threshold is \$142 (SE = \$38, $p < 0.01$). Customers who just qualified for Gold spent \$142 more in the following year than customers who just missed the threshold.
+
+\paragraph{Diagnostics.} The McCrary test shows no significant bunching at \$500 ($p = 0.34$), suggesting limited manipulation. Covariate balance at the threshold is good: age, tenure, and prior-year spend show no discontinuities. The estimate is stable across bandwidths: \$128 (half bandwidth), \$142 (optimal), \$151 (double bandwidth).
+
+\paragraph{Interpretation.} The \$142 incremental spend exceeds the incremental cashback cost (approximately \$15 = 3\% × \$500), yielding a positive programme ROI at the margin. However, this is a local effect at the threshold; extrapolation to all Gold members requires additional assumptions about effect heterogeneity.

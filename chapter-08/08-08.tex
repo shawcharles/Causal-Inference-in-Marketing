@@ -1,0 +1,164 @@
+\section{Diagnostics and Robustness}
+\label{sec:factor-diagnostics}
+
+Credible factor model analysis requires rigorous diagnostics that assess the quality of the factor structure, the stability of estimates, and the sensitivity to rank selection and specification choices. This section outlines the core diagnostic workflow, with forward references to Chapter~\ref{ch:design-diagnostics} for a comprehensive protocol. For complementary inference and design tools when using SC/SDID instead of factor-based identification, see Chapter~\ref{ch:sc} and Chapter~\ref{ch:generalized-sc}.
+
+\subsection*{Pre-Treatment Reconstruction Error}
+
+Pre-treatment reconstruction error quantifies how well the factor model fits the untreated cells. Compute the mean squared error (MSE) of the factor model fit on the pre-treatment period:
+\[
+\text{MSE}_{\text{pre}} = \frac{1}{N T_0} \sum_{i=1}^N \sum_{t=1}^{T_0} (Y_{it} - \hat{\lambda}_i' \hat{f}_t)^2.
+\]
+A small MSE indicates that the factor model captures the systematic structure well. Compare MSE to the variance of outcomes to compute the proportion of variance explained:
+\[
+R^2 = 1 - \frac{\text{MSE}_{\text{pre}}}{\text{Var}(Y)}.
+\]
+
+\paragraph{Interpretation.} An $R^2$ above 0.8 indicates that factors explain most of the variation; the low-rank assumption is well-supported. An $R^2$ between 0.5 and 0.8 is moderate; factors capture some structure but idiosyncratic variation is substantial. An $R^2$ below 0.5 indicates weak factor structure; consider whether the low-rank assumption is appropriate or whether additional factors are needed.
+
+\paragraph{Context matters.} In marketing panels with inherently noisy outcomes (e.g., daily store-level sales), $R^2 = 0.6$ may be acceptable. In panels with smooth aggregated data (e.g., monthly regional averages), $R^2 > 0.9$ is expected.
+
+\subsection*{Factor Stability Across Subsets}
+
+Factor stability across subsets assesses whether estimated factors are robust to changes in the estimation sample.
+
+\paragraph{Procedure.}
+\begin{enumerate}
+\item Partition the pre-treatment period into early and late subsets (e.g., first half and second half).
+\item Estimate the factor model on each subset separately.
+\item Compare the estimated factors. For each factor $r$, compute the correlation between $\hat{f}_{t,r}^{\text{early}}$ and $\hat{f}_{t,r}^{\text{late}}$ over the overlapping periods.
+\end{enumerate}
+
+\paragraph{Interpretation.} Correlation above 0.9 indicates strong alignment: factors are stable. Correlation between 0.7 and 0.9 indicates moderate alignment: some instability but likely acceptable. Correlation below 0.7 indicates weak alignment: factors are not stable, and extrapolation to post-treatment may be unreliable. Report correlations for all factors and flag any with low correlation.
+
+\subsection*{Residual Diagnostics}
+
+Residual diagnostics assess whether idiosyncratic errors $\varepsilon_{it}$ are well-behaved or exhibit patterns suggesting model misspecification.
+
+\paragraph{Procedure.} Compute residuals $\hat{\varepsilon}_{it} = Y_{it} - \hat{\lambda}_i' \hat{f}_t$. Plot residuals over time for a sample of units. Inspect for:
+
+\paragraph{Autocorrelation.} If residuals exhibit strong autocorrelation (e.g., positive residuals followed by positive residuals), the factor model underfits temporal dynamics. Consider additional factors or autoregressive components.
+
+\paragraph{Heteroskedasticity.} If residual variance increases over time or differs across units, use robust standard errors or wild bootstrap for inference (Section~\ref{sec:factor-inference}).
+
+\paragraph{Outliers.} Large outliers may indicate data errors, extreme events, or model misspecification. Conduct sensitivity analyses excluding outliers.
+
+\paragraph{Seasonality.} Plot residuals by month or quarter. If residuals are systematically high in December and low in February, seasonality remains unexplained. Add seasonal controls or additional factors.
+
+Figure~\ref{fig:factor-validation} illustrates typical residual diagnostic plots, showing time-series patterns, cross-sectional distributions, and autocorrelation functions.
+
+\subsection*{Placebo-in-Time Diagnostics}
+
+Placebo-in-time tests (Section~\ref{sec:factor-inference}) provide a diagnostic for model extrapolation quality. If the factor model imputes pre-treatment outcomes accurately when treating pseudo-intervention dates as if they were the true treatment date, this supports the stability assumption. Large pseudo-treatment effects indicate poor extrapolation.
+
+\paragraph{Diagnostic use.} Compute the root mean squared pseudo-effect (RMSPE) across multiple pseudo-intervention dates. If the actual post-treatment RMSPE is similar to the pseudo-RMSPEs, the treatment effect is not distinguishable from model noise. If the actual RMSPE is much larger (e.g., above the 95th percentile of pseudo-RMSPEs), this provides evidence of a genuine treatment effect.
+
+\subsection*{Sensitivity to Rank Selection}
+
+Sensitivity to rank or penalty selection assesses whether conclusions depend on the choice of the number of factors $R$ or the regularisation parameter $\lambda$ (for matrix completion).
+
+\paragraph{Procedure.}
+\begin{enumerate}
+\item Estimate the factor model for a range of ranks: $R \in \{3, 5, 7, 10\}$.
+\item Compute treatment effect estimates for each rank.
+\item Plot estimates against rank.
+\end{enumerate}
+
+\paragraph{Interpretation.} If estimates are stable across ranks (varying by less than 10\%), conclusions are robust to rank selection. If estimates vary widely (e.g., by more than 20\%), the choice of rank matters substantially. Report results for multiple ranks and discuss which rank is most plausible based on information criteria, cross-validation, and economic reasoning (Section~\ref{sec:factor-tuning}).
+
+\subsection*{Leave-One-Out Sensitivity}
+
+Leave-one-out sensitivity analyses assess the influence of individual units or time periods on factor estimates.
+
+\paragraph{Leave-one-unit-out.} For each unit $i$, re-estimate the factor model excluding unit $i$. Compute the change in treatment effect estimates. If excluding a single unit changes estimates by more than 10\%, that unit is influential. Report which units are influential and discuss whether their influence is substantively meaningful.
+
+\paragraph{Leave-one-period-out.} For each time period $t$, re-estimate the factor model excluding period $t$. Assess the change in factor estimates. Influential periods may indicate structural breaks or outlier events.
+
+\paragraph{Reporting.} Report the range or distribution of estimates across leave-one-out specifications. A narrow range indicates robustness; a wide range indicates sensitivity.
+
+\subsection*{Cross-Method Comparison}
+
+Comparison to synthetic control and SDID outputs provides a cross-method diagnostic.
+
+\paragraph{Procedure.}
+\begin{enumerate}
+\item Estimate treatment effects using IFE (this chapter).
+\item Estimate treatment effects using SC (Chapter~\ref{ch:sc}).
+\item Estimate treatment effects using SDID (Chapter~\ref{ch:generalized-sc}).
+\item Compare the three estimates.
+\end{enumerate}
+
+\paragraph{Interpretation.} If all three methods produce similar estimates, conclusions are robust to modelling assumptions. If methods disagree, investigate the source:
+\begin{itemize}
+\item Are the IFE-imputed counterfactuals similar to SC-weighted counterfactuals?
+\item Is the low-rank structure supported, or is IFE overfitting?
+\item Does SC have good pre-treatment fit, or is the treated unit outside the convex hull?
+\end{itemize}
+Reporting all three estimates and discussing agreement or disagreement builds a cumulative case for causal conclusions.
+
+\subsection*{Diagnostic Workflow Checklist}
+
+The design-diagnostics workflow, detailed in Chapter~\ref{ch:design-diagnostics}, integrates the diagnostics above into a comprehensive protocol:
+
+\begin{enumerate}
+\item Compute pre-treatment MSE and $R^2$. Report the proportion of variance explained.
+\item Assess factor stability by comparing estimates on early vs late pre-treatment subsets.
+\item Plot residuals and check for autocorrelation, heteroskedasticity, outliers, and seasonality.
+\item Conduct placebo-in-time tests. Report RMSPE distribution and p-value for actual treatment.
+\item Vary the rank from $R = 3$ to $R = 10$. Report sensitivity of estimates to rank.
+\item Conduct leave-one-out analyses. Report influential units or periods.
+\item Compare IFE estimates to SC and SDID. Discuss agreement or disagreement.
+\end{enumerate}
+
+Transparent reporting of diagnostics builds confidence that the factor model provides credible counterfactuals and that conclusions are robust to specification choices.
+
+\subsection*{Software Implementation}
+
+Several packages implement these diagnostics:
+
+\paragraph{R packages.}
+\begin{itemize}
+\item \texttt{gsynth}: Pre-treatment fit, placebo tests, factor extraction diagnostics.
+\item \texttt{fect}: Residual diagnostics, cross-validation for rank, leave-one-out analysis.
+\item \texttt{Synth}: SC diagnostics for comparison.
+\end{itemize}
+
+\paragraph{Custom diagnostics.} For diagnostics not built into packages (e.g., factor stability correlations, cross-method comparison), implement using the factor estimation outputs and standard plotting functions.
+
+\subsection*{Diagnostic Summary Table}
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Diagnostic Checklist for Factor Models}
+\label{tab:factor-diagnostics}
+\begin{tabularx}{\textwidth}{Y Y Y Y}
+\toprule
+\textbf{Diagnostic} & \textbf{Metric} & \textbf{Threshold} & \textbf{Interpretation} \\
+\midrule
+Pre-treatment fit & $R^2$ & $> 0.8$ good; $< 0.5$ weak & Low-rank assumption validity \\
+\addlinespace
+Factor stability & Correlation (early vs late) & $> 0.9$ stable; $< 0.7$ unstable & Extrapolation reliability \\
+\addlinespace
+Residual patterns & Autocorrelation, seasonality & Near zero & Model specification \\
+\addlinespace
+Placebo-in-time & RMSPE percentile & $< 95\%$: no effect; $> 95\%$: effect & Treatment effect evidence \\
+\addlinespace
+Rank sensitivity & ATT range across $R$ & $< 10\%$ variation: robust & Robustness to rank \\
+\addlinespace
+Leave-one-out & ATT change per unit & $< 10\%$ change: robust & Influential observations \\
+\addlinespace
+Cross-method & IFE vs SC vs SDID & Agreement & Robustness to method \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.9\textwidth]{images/fig_factor_validation.pdf}
+\caption{Factor Model Diagnostic Plots}
+\label{fig:factor-validation}
+\small
+\textit{Note}: Panel (a) shows residuals over time for selected units, revealing autocorrelation patterns. Panel (b) shows the distribution of residuals across units, checking for outliers. Panel (c) shows the scree plot of eigenvalues with the selected rank marked. Panel (d) compares factor estimates from early vs late pre-treatment periods, assessing stability.
+\end{figure}

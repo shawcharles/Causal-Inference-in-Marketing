@@ -1,0 +1,32 @@
+\section{Mosaic Permutation Tests}
+\label{sec:mosaic}
+\index{mosaic permutation|(}
+\index{local exchangeability}
+
+Cluster-robust inference assumes independence across clusters (e.g., states). In marketing, spatial spillovers often violate this assumption: demand shocks propagate across geographic boundaries, and platform interventions spill over to adjacent markets (Section~\ref{sec:platform-experiments}, Section~\ref{sec:seller-interventions}). \citet{spector2025mosaic} introduce \textbf{Mosaic Permutation Tests}, which relax the independence assumption to \textit{local exchangeability}.
+
+\begin{definition}[Local Exchangeability]\label{def:local-exchangeability}
+Data satisfy local exchangeability if the joint distribution is invariant to swapping "adjacent" blocks (e.g., time $t$ and $t+1$, or neighbour $i$ and neighbour $j$), even if distant blocks are dependent.
+\end{definition}
+
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Procedure: Mosaic Permutation]
+To test $H_0: \tau = 0$ without assuming full independence:
+\begin{enumerate}
+    \item \textbf{Define Resolution:} Divide the panel into a grid (mosaic) of small blocks (e.g., unit-time tiles).
+    \item \textbf{Restricted Permutation:} Permute residuals $\hat{\varepsilon}_{it}$ only within their local neighbourhood (e.g., swap $(i,t)$ with $(i, t+1)$).
+    \item \textbf{Test Statistic:} Compute the test statistic $T^*$ on the locally permuted data.
+    \item \textbf{Inference:} Reject $H_0$ if the observed $T$ falls in the tails of the mosaic permutation distribution.
+\end{enumerate}
+This yields exact finite-sample validity under local exchangeability and asymptotic validity under weaker conditions than cluster-robust errors. It is the recommended approach for spatial panels where ``clusters'' are arbitrary boundaries.
+\end{tcolorbox}
+
+\begin{remark}[When to Use Mosaic Permutation]\label{rem:mosaic-when}
+Mosaic permutation is preferred over cluster-robust standard errors when:
+\begin{enumerate}
+\item \textbf{Cluster boundaries are arbitrary.} Geographic clusters (DMAs, postcodes) rarely align with economic boundaries; spillovers cross borders.
+\item \textbf{Few clusters.} With fewer than 20--30 clusters, cluster-robust errors are unreliable; mosaic permutation provides exact inference.
+\item \textbf{Spatial or temporal dependence.} When adjacent units or time periods are correlated (e.g., geo-experiments with regional spillovers), local exchangeability is more plausible than full independence.
+\end{enumerate}
+For geo-experiments (Section~\ref{sec:geo-experiments}) and transport network analyses (Section~\ref{sec:dynamic-pricing}), mosaic permutation often provides more credible inference than naive clustering.
+\end{remark}
+\index{mosaic permutation|}

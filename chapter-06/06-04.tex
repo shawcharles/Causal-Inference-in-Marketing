@@ -1,0 +1,228 @@
+\section{Inference for Synthetic Control}
+\label{sec:sc-inference}
+
+Inference for synthetic control methods quantifies uncertainty in treatment effect estimates and assesses whether the observed post-treatment gap is unusually large. This section presents inference procedures with attention to the theoretical foundations from Sections~\ref{sec:sc-motivation}--\ref{sec:sc-identification}. We cover permutation-based inference, conformal inference, analytical variance estimation, and inference for bounds under Synthetic Parallel Trends.
+
+\subsection*{The Inference Challenge}
+
+Traditional asymptotic inference (standard errors and normal approximations) is not directly applicable to synthetic control because:
+\begin{enumerate}
+\item The number of treated units is small (often one)
+\item The synthetic control weights depend on the data in complex ways
+\item The estimation error has both factor loading and idiosyncratic components
+\end{enumerate}
+
+Design-based and conformal inference provide alternatives that respect these features and produce valid inference without large-sample approximations.
+
+\subsection*{Permutation-Based Inference}
+
+The classical approach to SC inference uses \index{permutation test}permutation tests based on \index{placebo test!in-space}in-space placebos. We test the sharp null hypothesis of no treatment effect for any unit:
+\begin{equation}
+H_0: Y_{it}(1) = Y_{it}(0) \quad \text{for all } i, \, t > T_0.
+\label{eq:sharp-null}
+\end{equation}
+
+Under $H_0$, treatment assignment is exchangeable among units. The observed post-treatment gap for the treated unit is one realisation from the distribution of gaps that would occur under random assignment.
+
+\textbf{In-Space Placebos.} For each donor $j \in \mathcal{J}$:
+\begin{enumerate}
+\item Treat donor $j$ as if it received treatment at $T_0 + 1$
+\item Construct a synthetic control for $j$ using remaining donors
+\item Compute the post-treatment gap: $\hat{\tau}_{jt}^{\text{placebo}} = Y_{jt} - \hat{Y}_{jt}^{\text{syn}}$ for $t > T_0$
+\end{enumerate}
+
+The distribution of placebo gaps $\{\hat{\tau}_{jt}^{\text{placebo}} : j \in \mathcal{J}\}$ provides the reference distribution.
+
+\textbf{\index{RMSPE}RMSPE Ratios.} Define the post-treatment RMSPE for unit $i$ as:
+\begin{equation}
+\text{RMSPE}_{i,\text{post}} = \sqrt{\frac{1}{T - T_0} \sum_{t=T_0+1}^{T} \hat{\tau}_{it}^2},
+\label{eq:rmspe-post}
+\end{equation}
+and the RMSPE ratio as:
+\begin{equation}
+R_i = \frac{\text{RMSPE}_{i,\text{post}}}{\text{RMSPE}_{i,\text{pre}}}.
+\label{eq:rmspe-ratio}
+\end{equation}
+The ratio normalises the post-treatment gap by the pre-treatment fit quality, making gaps comparable across units with different pre-treatment fit.
+
+\textbf{Rank-Based P-Values.} Let $r$ denote the rank of the treated unit's RMSPE ratio among all $N+1$ units (treated plus donors). For an \textit{upper-tail test} (testing whether the treated unit's gap is unusually large):
+\begin{equation}
+p_{\text{upper}} = \frac{N + 2 - r}{N + 1}.
+\label{eq:p-upper}
+\end{equation}
+For a \textit{two-sided test}:
+\begin{equation}
+p_{\text{two-sided}} = \frac{2 \cdot \min(r, N + 2 - r)}{N + 1}.
+\label{eq:p-two-sided}
+\end{equation}
+
+If the treated unit has the largest RMSPE ratio ($r = N+1$), the upper-tail p-value is $p = 1/(N+1)$. With $N = 19$ donors, the smallest achievable p-value is 0.05.
+
+\textbf{Limitations of Permutation Inference.}
+\begin{itemize}
+\item \textit{Resolution}: With small $N$, p-values are coarse. With $N = 10$, the smallest p-value is $1/11 \approx 0.09$.
+\item \textit{Exchangeability}: The sharp null assumes treatment could have been assigned to any unit. In observational settings, this may not hold.
+\item \textit{Heterogeneous fit quality}: If some placebos have much worse pre-treatment fit than the treated unit, they are not comparable benchmarks.
+\end{itemize}
+
+\begin{quote}
+\textbf{Remark (On Excluding Poor-Fit Placebos).} A common practice is to exclude placebo units with poor pre-treatment fit from the reference distribution. This is problematic: excluding based on RMSPE$_{\text{pre}}$ is selection on a post-randomisation variable, which can invalidate the permutation distribution. The proper approach is either (a) use RMSPE ratios, which account for differential fit; or (b) use conformal inference, which does not require exchangeability.
+\end{quote}
+
+\subsection*{Conformal Inference}
+
+\index{conformal inference}Conformal inference \citet{chernozhukov2021exact} provides a modern alternative that:
+\begin{itemize}
+\item Does not require the sharp null of no effect for any unit
+\item Does not require exchangeability of treatment assignment
+\item Produces valid confidence intervals even with heterogeneous placebo gaps
+\item Accommodates serial correlation in errors
+\end{itemize}
+
+\textbf{The Conformal Approach.} Rather than testing the sharp null, conformal inference tests the null that the treated unit's counterfactual follows the same distribution as the donors' outcomes, after adjusting for the synthetic control fit.
+
+Define the residual for unit $i$ at time $t$ as:
+\begin{equation}
+e_{it} = Y_{it} - \hat{Y}_{it}^{\text{syn}}.
+\label{eq:conformal-residual}
+\end{equation}
+In the pre-treatment period, these residuals reflect fit quality. Under the null of no treatment effect, the post-treatment residuals for the treated unit should be ``exchangeable'' with pre-treatment residuals in a distributional sense.
+
+\textbf{Conformal P-Value.} For testing $H_0: \tau_{1t} = \tau_0$ at time $t$:
+\begin{enumerate}
+\item Compute the adjusted outcome: $\tilde{Y}_{1t} = Y_{1t} - \tau_0$
+\item Compute the residual: $\tilde{e}_{1t} = \tilde{Y}_{1t} - \hat{Y}_{1t}^{\text{syn}}$
+\item Compare $|\tilde{e}_{1t}|$ to the distribution of $|e_{1s}|$ for $s \leq T_0$
+\item The conformal p-value is the fraction of pre-treatment residuals with $|e_{1s}| \geq |\tilde{e}_{1t}|$
+\end{enumerate}
+
+\textbf{Conformal Confidence Interval.} Invert the test to obtain a $(1-\alpha)$ confidence interval:
+\begin{equation}
+CI_{1-\alpha}(\tau_{1t}) = \left\{ \tau_0 : p(\tau_0) \geq \alpha \right\}.
+\label{eq:conformal-ci}
+\end{equation}
+This interval contains all values $\tau_0$ that cannot be rejected at level $\alpha$.
+
+\textbf{Practical Implementation.} Conformal inference is implemented in the \texttt{scpi} package (R, Stata, Python) developed by Cattaneo, Feng, and Titiunik. Key features:
+\begin{itemize}
+\item Accounts for estimation uncertainty in weights
+\item Accommodates serial correlation via block structures
+\item Provides both pointwise and uniform confidence bands
+\end{itemize}
+
+\subsection*{Analytical Variance Estimation}
+
+Under the factor model (Assumption~\ref{assump:sc-factor}), the variance of the SC estimator can be decomposed analytically. Following \citet[Proposition 2]{abadie2010synthetic}:
+
+\begin{equation}
+\text{Var}(\hat{\tau}_{1t}) = \sigma^2 \left( 1 + \sum_{j \in \mathcal{J}} (w_j^*)^2 \right) + \boldsymbol{\lambda}_t' \, \text{Var}(\hat{\boldsymbol{\Delta}}_\mu) \, \boldsymbol{\lambda}_t,
+\label{eq:sc-variance}
+\end{equation}
+where:
+\begin{itemize}
+\item $\sigma^2 = \text{Var}(\varepsilon_{it})$ is the idiosyncratic error variance
+\item $\sum_j (w_j^*)^2$ is the ``effective sample size'' adjustment (Herfindahl index of weights)
+\item $\boldsymbol{\lambda}_t$ is the factor vector at time $t$
+\item $\text{Var}(\hat{\boldsymbol{\Delta}}_\mu)$ is the variance of the factor loading mismatch estimator
+\end{itemize}
+
+\textbf{Interpretation.}
+\begin{enumerate}
+\item The first term reflects variance from idiosyncratic shocks. Sparse weights (few donors with large weights) increase this term.
+\item The second term reflects uncertainty in factor loading estimation. This decreases as $T_0 \to \infty$.
+\end{enumerate}
+
+In practice, $\sigma^2$ is estimated from pre-treatment residuals and the factor loading variance is estimated via bootstrap or analytical methods. See the \texttt{scpi} package for implementation.
+
+\subsection*{In-Time Placebos}
+
+In-time placebos assess stability by applying the SC method with pseudo-intervention dates in the pre-treatment period.
+
+\textbf{Procedure.} Choose a pseudo-intervention date $T_0^* < T_0$:
+\begin{enumerate}
+\item Use periods $1, \ldots, T_0^*$ as the pseudo pre-treatment window
+\item Construct synthetic control weights using this window
+\item Compute pseudo-gaps for periods $T_0^* + 1, \ldots, T_0$
+\end{enumerate}
+
+If pseudo-gaps are near zero, this supports stability: the synthetic control continues to track the treated unit even outside the fitting window. Large pseudo-gaps suggest the synthetic control overfits the pre-treatment period or that the factor structure is unstable.
+
+\textbf{Diagnostic Interpretation.} In-time placebos are diagnostics, not formal tests. They provide evidence on whether the synthetic control is a stable counterfactual, but they cannot definitively validate the method.
+
+\subsection*{Confidence Intervals by Test Inversion}
+
+Confidence intervals can be constructed by inverting the permutation or conformal test.
+
+\textbf{Procedure.} For a $(1-\alpha)$ confidence interval for $\tau_{1t}$:
+\begin{enumerate}
+\item For each candidate value $\tau_0$, compute the adjusted outcome $\tilde{Y}_{1t} = Y_{1t} - \tau_0$
+\item Test the null $H_0: \tau_{1t} = \tau_0$ using permutation or conformal methods
+\item Include $\tau_0$ in the confidence interval if the p-value exceeds $\alpha$
+\end{enumerate}
+
+\begin{equation}
+CI_{1-\alpha} = \left\{ \tau_0 : p(\tau_0) \geq \alpha \right\}.
+\label{eq:ci-inversion}
+\end{equation}
+
+In practice, search over a grid of $\tau_0$ values to find the interval endpoints.
+
+\subsection*{Inference for Bounds under Synthetic Parallel Trends}
+
+Section~\ref{sec:sc-identification} introduced the identified set $\mathcal{I}_t = [\underline{\tau}_t, \overline{\tau}_t]$ under Synthetic Parallel Trends. When point identification fails, we need inference for these bounds.
+
+\textbf{Confidence Set for Identified Set.} A $(1-\alpha)$ confidence set for the identified set is:
+\begin{equation}
+CS_{1-\alpha} = \left[ \underline{\tau}_t - c_\alpha \cdot \hat{\sigma}_{\underline{\tau}}, \; \overline{\tau}_t + c_\alpha \cdot \hat{\sigma}_{\overline{\tau}} \right],
+\label{eq:bounds-ci}
+\end{equation}
+where $c_\alpha$ is the critical value (for example, 1.96 for 95\%) and $\hat{\sigma}_{\underline{\tau}}, \hat{\sigma}_{\overline{\tau}}$ are standard errors for the bounds.
+
+\textbf{Interpretation.} The confidence set covers the true identified set with probability $1-\alpha$. If the bounds are tight ($\underline{\tau}_t \approx \overline{\tau}_t$), this approaches a standard confidence interval. If the bounds are wide, the confidence set reflects both estimation uncertainty and identification uncertainty.
+
+\textbf{Reporting Practice.} When DiD and SC give different estimates, report:
+\begin{enumerate}
+\item Point estimates from each method
+\item The identified set bounds $[\underline{\tau}_t, \overline{\tau}_t]$
+\item Confidence set for the identified set
+\item Discussion of which method is more credible given the context
+\end{enumerate}
+
+\subsection*{Multiple Testing}
+
+Testing many post-treatment periods or outcomes raises multiple testing concerns.
+
+\textbf{Pointwise vs Uniform Inference.}
+\begin{itemize}
+\item \textit{Pointwise}: Test each period separately at level $\alpha$. Simple but inflates family-wise error.
+\item \textit{Uniform}: Control error across all periods simultaneously. Bonferroni (conservative) or sup-t bands (tighter).
+\end{itemize}
+
+\textbf{Recommendation.} For SC with many post-treatment periods:
+\begin{itemize}
+\item Report both pointwise and uniform confidence bands
+\item Focus on cumulative or average effects rather than period-by-period tests
+\item Use sup-t bands from conformal inference when available
+\end{itemize}
+
+See Chapter~\ref{ch:inference} for the general multiplicity framework.
+
+\subsection*{Practical Guidance}
+
+\begin{enumerate}
+\item \textbf{Always conduct in-space placebos}: Plot the treated unit's gap alongside all placebo gaps. Visual comparison is powerful.
+
+\item \textbf{Report RMSPE ratios, not raw gaps}: Ratios account for differential pre-treatment fit.
+
+\item \textbf{Use conformal inference for formal inference}: Conformal methods provide valid confidence intervals without strong assumptions.
+
+\item \textbf{Conduct in-time placebos}: Assess stability of the synthetic control.
+
+\item \textbf{Report confidence intervals, not just p-values}: Intervals convey both significance and magnitude.
+
+\item \textbf{For bounds, report the identified set}: When point identification is uncertain, report $[\underline{\tau}_t, \overline{\tau}_t]$ with confidence sets.
+
+\item \textbf{Be cautious about excluding placebos}: If you must exclude, use RMSPE ratios or conformal inference.
+\end{enumerate}
+
+Inference for synthetic control is design-based and transparent. By combining permutation tests, conformal inference, and bounds analysis, practitioners quantify uncertainty without relying on large-sample approximations. The next section develops diagnostic procedures for assessing synthetic control quality.
