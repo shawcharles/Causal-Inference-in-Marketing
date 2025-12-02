@@ -1,10 +1,12 @@
 ---
-layout: page
-title: Chapters
+layout: single
+title: "Table of Contents"
 permalink: /chapters/
+toc: true
+toc_label: "Parts"
+toc_icon: "book"
+toc_sticky: true
 ---
-
-# Table of Contents
 
 ## Part I — Foundations
 

@@ -1,22 +1,66 @@
+# Site settings
 title: "Causal Inference in Marketing"
-description: "Panel Data and Machine Learning Methods — A Practitioner's Guide"
-author: "Charles Shaw"
-baseurl: "/Causal-Inference-in-Marketing"
+subtitle: "Panel Data and Machine Learning Methods"
+name: "Charles Shaw"
+description: "A rigorous, practitioner-oriented guide to causal inference for marketing analysts and applied econometricians."
 url: "https://shawcharles.github.io"
-theme: minima
+baseurl: "/Causal-Inference-in-Marketing"
+repository: "shawcharles/Causal-Inference-in-Marketing"
 
-# Social links (optional - update as needed)
-github_username: shawcharles
+# Theme
+remote_theme: "mmistakes/minimal-mistakes@4.24.0"
+minimal_mistakes_skin: "air"  # Options: air, aqua, contrast, dark, dirt, neon, mint, plum, sunrise
 
 # Build settings
 markdown: kramdown
 highlighter: rouge
 
+# Plugins
+plugins:
+  - jekyll-remote-theme
+  - jekyll-seo-tag
+  - jekyll-sitemap
+  - jekyll-feed
+
+# Author profile (appears in sidebar)
+author:
+  name: "Charles Shaw"
+  bio: "Researcher and practitioner at the intersection of causal inference, machine learning, and marketing analytics."
+  location: "Global"
+  links:
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/shawcharles"
+
+# Site defaults
+defaults:
+  - scope:
+      path: ""
+      type: pages
+    values:
+      layout: single
+      author_profile: true
+      toc: true
+      toc_sticky: true
+
+# Navigation
+header:
+  overlay_color: "#1a1a2e"
+  
+navigation:
+  - title: "Home"
+    url: /
+  - title: "Chapters"
+    url: /chapters/
+  - title: "About"
+    url: /about/
+  - title: "Citation"
+    url: /citation/
+
 # Exclude from processing
 exclude:
   - "*.tex"
   - "*.bib"
-  - "*.pdf"
   - chapter-*/
   - appendix/
   - author/
@@ -26,10 +70,7 @@ exclude:
   - scripts/
   - style/
   - book.pdf
-
-# Navigation
-header_pages:
-  - index.md
-  - chapters.md
-  - about.md
-  - citation.md
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor

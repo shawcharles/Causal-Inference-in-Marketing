@@ -1,10 +1,13 @@
 ---
-layout: page
-title: About
+layout: single
+title: "About"
 permalink: /about/
+toc: true
+toc_label: "On This Page"
+toc_sticky: true
 ---
 
-# About the Author
+## About the Author
 
 **Charles Shaw** is a researcher and practitioner working at the intersection of causal inference, machine learning, and marketing analytics.
 
@@ -14,7 +17,7 @@ The goal of this book is to provide a rigorous yet practical guide that bridges 
 
 ---
 
-# About This Project
+## About This Project
 
 This is a **community review edition** of the manuscript. The text is substantially complete but remains under active refinement.
 
@@ -33,7 +36,7 @@ This is a **community review edition** of the manuscript. The text is substantia
 
 ---
 
-# Acknowledgements
+## Acknowledgements
 
 This work builds on the foundations laid by researchers in causal inference, econometrics, and machine learning. Particular thanks to the authors whose methods are central to this book, including (but not limited to) work by Arkhangelsky, Athey, Callaway, Chernozhukov, Imbens, Sant'Anna, Sun, and Wager.
 
@@ -41,6 +44,6 @@ Thanks also to early readers who provided feedback on draft chapters.
 
 ---
 
-# Contact
+## Contact
 
 For questions about the book or collaboration inquiries, please [open an issue on GitHub](https://github.com/shawcharles/Causal-Inference-in-Marketing/issues) or reach out via the repository.

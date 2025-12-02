@@ -1,0 +1,12 @@
+# Main navigation
+main:
+  - title: "Home"
+    url: /
+  - title: "Chapters"
+    url: /chapters/
+  - title: "About"
+    url: /about/
+  - title: "Cite"
+    url: /citation/
+  - title: "GitHub"
+    url: https://github.com/shawcharles/Causal-Inference-in-Marketing

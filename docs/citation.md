@@ -1,10 +1,11 @@
 ---
-layout: page
-title: Citation
+layout: single
+title: "How to Cite"
 permalink: /citation/
+toc: true
+toc_label: "Formats"
+toc_sticky: true
 ---
-
-# How to Cite This Work
 
 If you use this book in your research or teaching, please cite it as:
 
