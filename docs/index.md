@@ -1,12 +1,16 @@
 ---
-layout: page
+layout: default
 title: "Causal Inference in Marketing"
 ---
 
-> **Panel Data and Machine Learning Methods** — A rigorous, practitioner-oriented guide for marketing analysts and applied econometricians.
+# Causal Inference in Marketing
 
-[📄 Download PDF](https://github.com/shawcharles/Causal-Inference-in-Marketing/raw/main/book.pdf){: .btn .btn-primary }
-[📖 View on GitHub](https://github.com/shawcharles/Causal-Inference-in-Marketing){: .btn }
+## Panel Data and Machine Learning Methods
+
+> A rigorous, practitioner-oriented guide for marketing analysts and applied econometricians.
+
+[📄 Download PDF](https://github.com/shawcharles/Causal-Inference-in-Marketing/raw/main/book.pdf) ·
+[📖 View on GitHub](https://github.com/shawcharles/Causal-Inference-in-Marketing)
 
 ---
 
