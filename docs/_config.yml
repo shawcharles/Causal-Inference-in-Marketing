@@ -1,0 +1,35 @@
+title: "Causal Inference in Marketing"
+description: "Panel Data and Machine Learning Methods — A Practitioner's Guide"
+author: "Charles Shaw"
+baseurl: "/Causal-Inference-in-Marketing"
+url: "https://shawcharles.github.io"
+theme: minima
+
+# Social links (optional - update as needed)
+github_username: shawcharles
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+
+# Exclude from processing
+exclude:
+  - "*.tex"
+  - "*.bib"
+  - "*.pdf"
+  - chapter-*/
+  - appendix/
+  - author/
+  - images/
+  - memory-bank/
+  - papers/
+  - scripts/
+  - style/
+  - book.pdf
+
+# Navigation
+header_pages:
+  - index.md
+  - chapters.md
+  - about.md
+  - citation.md

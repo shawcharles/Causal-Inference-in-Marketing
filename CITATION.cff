@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this book, please cite it as below."
+type: book
+title: "Causal Inference in Marketing: Panel Data and Machine Learning"
+authors:
+  - family-names: "Shaw"
+    given-names: "Charles"
+year: 2025
+version: "Community Review Edition"
+license: CC-BY-NC-SA-4.0
+url: "https://github.com/shawcharles/Causal-Inference-in-Marketing"
+repository-code: "https://github.com/shawcharles/Causal-Inference-in-Marketing"
+abstract: >-
+  A rigorous, practitioner-oriented guide to causal inference for marketing 
+  analysts and applied econometricians. Covers Difference-in-Differences, 
+  Synthetic Control, Factor Models, Matrix Completion, and Double Machine 
+  Learning methods for panel data structures common in marketing applications.
+keywords:
+  - causal inference
+  - marketing analytics
+  - panel data
+  - difference-in-differences
+  - synthetic control
+  - machine learning
+  - econometrics
