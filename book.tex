@@ -1,0 +1,449 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% book.tex
+%
+% Root file for the chapters of your "monograph".
+% Use this file as a template for your own input.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Document class and options
+%\documentclass[graybox, envcountchap, sectrefs]{svmono}
+\documentclass[graybox, envcountchap]{svmono}
+% Options:
+%   graybox:   Adds gray boxes around certain elements
+%   envcountchap: Resets counter for environments in each chapter
+%   sectrefs:  Enables section references
+
+\usepackage[
+    %a4paper,
+    left=2.5cm,
+    right=2.5cm,
+    top=2.5cm,
+    bottom=2.5cm,
+    headheight=14.5pt, % To avoid "headheight too small" warnings if you use a header
+    includeheadfoot,  % Include header and footer in the margin calculations
+]{geometry}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Packages
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Fonts (using default Computer Modern fonts)
+%\usepackage{mathptmx}       % Adobe Times Roman for math (alternative)
+%\usepackage{helvet}        % Helvetica font (alternative)
+%\usepackage{courier}       % Courier font (alternative)
+%\usepackage{newtxtext}      % Times Roman as the basic font
+%\usepackage{newtxmath}      % Times Roman for math
+
+% Utilities
+\usepackage{pgf}
+\setcounter{tocdepth}{1}
+\usepackage{tikz} % Required for drawing custom shapes
+\usetikzlibrary{shapes,arrows,automata}
+
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc}
+\usepackage{lmodern}
+\usepackage{type1cm}         % Scalable Computer Modern fonts
+\usepackage{makeidx}         % Enables index generation
+\usepackage{graphicx}       % Standard LaTeX graphics tool for including figure files
+\usepackage{multicol}        % Enables multi-column layouts (e.g., for the index)
+\usepackage[bottom]{footmisc} % Places footnotes at the bottom of the page
+\usepackage{booktabs} 
+\usepackage{tabularx,ragged2e}
+\newcolumntype{Y}{>{\RaggedRight\arraybackslash}X}
+\usepackage{amsmath,amssymb}
+\usepackage{tcolorbox}
+\usepackage{tocloft}
+\usepackage{centernot}
+\usepackage{enumerate}
+\usepackage[T1]{fontenc}
+\usepackage[shortlabels]{enumitem}
+
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+\providecommand{\mathds}[1]{\mathbb{#1}}
+\newcommand\dsone{\mathds{1}}
+\newcommand{\istar}{i^*}
+\newcommand{\tstar}{t^*}
+
+
+\setlength{\cftsecnumwidth}{3em}
+\setlength{\cftsubsecnumwidth}{3em}
+\setlength{\cftfignumwidth}{3em}
+\setlength{\cfttabnumwidth}{3em}
+
+% Bibliography
+
+\usepackage{natbib}
+% Consistent table styling
+\newenvironment{tighttable}{\small\setlength{\tabcolsep}{5pt}\renewcommand{\arraystretch}{1.1}}{}
+
+
+\newtheorem{thm}{Theorem}
+
+\newtheorem{thrm}[thm]{Theorem:}
+\newtheorem{ex}[thm]{Example:}
+\newtheorem{pr}[thm]{Problem:}
+\newtheorem{lem}[thm]{Lemma:}
+\newtheorem{nota}[thm]{Notation:}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Document settings
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Index
+\makeindex                   % Enables the generation of an index
+                             % Use the style 'svind.ist' with your makeindex program
+% Graphics path
+\graphicspath{{./}{images/}} % Specifies paths to search for graphics files
+\usepackage{setspace}
+\setstretch{1.15}
+
+\newtheorem{assumption}[theorem]{Assumption}
+\usepackage[hidelinks]{hyperref}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Document begins here
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\author{Charles Shaw}
+\title{Causal Inference in Marketing}
+\subtitle{Panel Data and Machine Learning}
+%\subtitle{Draft manuscript}
+\maketitle
+
+\frontmatter%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\include{author/dedication}
+%\include{author/about}
+\include{author/preface}
+%\include{author/acknowledgement}
+
+\tableofcontents
+\newpage
+\listoftables
+\newpage
+\listoffigures
+\newpage
+
+%\include{author/acronym}
+
+
+\mainmatter%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\part{Foundations}
+% Chapter 1
+\include{chapter-01/01-00}
+\include{chapter-01/01-01}
+\include{chapter-01/01-02}
+\include{chapter-01/01-03}
+\include{chapter-01/01-04}
+\include{chapter-01/01-05}
+\include{chapter-01/01-06}
+\include{chapter-01/01-07}
+\include{chapter-01/01-08}
+\include{chapter-01/01-09}
+% Chapter 2
+\include{chapter-02/02-00}
+\include{chapter-02/02-01}
+\include{chapter-02/02-02}
+\include{chapter-02/02-03}
+\include{chapter-02/02-04}
+\include{chapter-02/02-05}
+\include{chapter-02/02-06}
+\include{chapter-02/02-07}
+\include{chapter-02/02-08}
+% Chapter 3
+\include{chapter-03/03-00}
+\include{chapter-03/03-01}
+\include{chapter-03/03-02}
+\include{chapter-03/03-03}
+\include{chapter-03/03-04}
+\include{chapter-03/03-05}
+\include{chapter-03/03-06}
+\include{chapter-03/03-07}
+\include{chapter-03/03-08}
+\include{chapter-03/03-09}
+\include{chapter-03/03-10}
+\include{chapter-03/03-11}
+\include{chapter-03/03-12}
+%\include{chapters/interlude-design-vs-structural}
+
+\part{Differences-in-Differences and Event Studies}
+% Chapter 4
+\include{chapter-04/04-00}
+\include{chapter-04/04-01}
+\include{chapter-04/04-02}
+\include{chapter-04/04-03}
+\include{chapter-04/04-04}
+\include{chapter-04/04-05}
+\include{chapter-04/04-06}
+\include{chapter-04/04-07}
+\include{chapter-04/04-08}
+\include{chapter-04/04-09}
+\include{chapter-04/04-10}
+% Chapter 5
+\include{chapter-05/05-00}
+\include{chapter-05/05-01}
+\include{chapter-05/05-02}
+\include{chapter-05/05-03}
+\include{chapter-05/05-04}
+\include{chapter-05/05-05}
+\include{chapter-05/05-06}
+\include{chapter-05/05-07}
+\include{chapter-05/05-08}
+\include{chapter-05/05-09}
+\include{chapter-05/05-10}
+\include{chapter-05/05-11}
+
+\part{Synthetic Controls and Hybrid Methods}
+% Chapter 6
+\include{chapter-06/06-00}
+\include{chapter-06/06-01}
+\include{chapter-06/06-02}
+\include{chapter-06/06-03}
+\include{chapter-06/06-04}
+\include{chapter-06/06-05}
+\include{chapter-06/06-06}
+\include{chapter-06/06-07}
+\include{chapter-06/06-08}
+\include{chapter-06/06-09}
+\include{chapter-06/06-10}
+% Chapter 7
+\include{chapter-07/07-00}
+\include{chapter-07/07-01}
+\include{chapter-07/07-02}
+\include{chapter-07/07-03}
+\include{chapter-07/07-04}
+\include{chapter-07/07-05}
+\include{chapter-07/07-06}
+\include{chapter-07/07-07}
+\include{chapter-07/07-08}
+\include{chapter-07/07-09}
+\include{chapter-07/07-10}
+\include{chapter-07/07-11}
+\include{chapter-07/07-12}
+
+\part{Factor Models and Matrix Methods}
+% Chapter 8
+\include{chapter-08/08-00}
+\include{chapter-08/08-01}
+\include{chapter-08/08-02}
+\include{chapter-08/08-03}
+\include{chapter-08/08-04}
+\include{chapter-08/08-05}
+\include{chapter-08/08-06}
+\include{chapter-08/08-07}
+\include{chapter-08/08-08}
+\include{chapter-08/08-09}
+\include{chapter-08/08-10}
+% Chapter 9
+\include{chapter-09/09-00}
+\include{chapter-09/09-01}
+\include{chapter-09/09-02}
+\include{chapter-09/09-03}
+\include{chapter-09/09-04}
+\include{chapter-09/09-05}
+\include{chapter-09/09-06}
+\include{chapter-09/09-07}
+\include{chapter-09/09-08}
+\include{chapter-09/09-09}
+\include{chapter-09/09-10}
+\include{chapter-09/09-11}
+\include{chapter-09/09-12}
+
+\part{Dynamics, Heterogeneity, and Spillovers}
+% Chapter 10
+\include{chapter-10/10-00}
+\include{chapter-10/10-01}
+\include{chapter-10/10-02}
+\include{chapter-10/10-03}
+\include{chapter-10/10-04}
+\include{chapter-10/10-05}
+\include{chapter-10/10-06}
+\include{chapter-10/10-07}
+\include{chapter-10/10-08}
+\include{chapter-10/10-09}
+% Chapter 11
+\include{chapter-11/11-00}
+\include{chapter-11/11-01}
+\include{chapter-11/11-02}
+\include{chapter-11/11-03}
+\include{chapter-11/11-04}
+\include{chapter-11/11-05}
+\include{chapter-11/11-06}
+\include{chapter-11/11-07}
+\include{chapter-11/11-08}
+\include{chapter-11/11-09}
+
+\part{Machine Learning and High-Dimensional Methods}
+% Chapter 12
+\include{chapter-12/12-00}
+\include{chapter-12/12-01}
+\include{chapter-12/12-02}
+\include{chapter-12/12-03}
+\include{chapter-12/12-04}
+\include{chapter-12/12-05}
+\include{chapter-12/12-06}
+\include{chapter-12/12-07}
+\include{chapter-12/12-08}
+\include{chapter-12/12-09}
+\include{chapter-12/12-10}
+\include{chapter-12/12-11}
+\include{chapter-12/12-12}
+\include{chapter-12/12-13}
+% Chapter 13
+\include{chapter-13/13-00}
+\include{chapter-13/13-01}
+\include{chapter-13/13-02}
+\include{chapter-13/13-03}
+\include{chapter-13/13-04}
+\include{chapter-13/13-05}
+\include{chapter-13/13-06}
+\include{chapter-13/13-07}
+\include{chapter-13/13-08}
+\include{chapter-13/13-09}
+\include{chapter-13/13-10}
+\include{chapter-13/13-11}
+\include{chapter-13/13-12}
+% Chapter 14
+\include{chapter-14/14-00}
+\include{chapter-14/14-01}
+\include{chapter-14/14-02}
+\include{chapter-14/14-03}
+\include{chapter-14/14-04}
+\include{chapter-14/14-05}
+\include{chapter-14/14-06}
+\include{chapter-14/14-07}
+\include{chapter-14/14-08}
+\include{chapter-14/14-09}
+\include{chapter-14/14-10}
+\include{chapter-14/14-11}
+\include{chapter-14/14-12}
+\include{chapter-14/14-13}
+
+\part{Validity, Inference, and Diagnostics}
+% Chapter 15
+\include{chapter-15/15-00}
+\include{chapter-15/15-01}
+\include{chapter-15/15-02}
+\include{chapter-15/15-03}
+\include{chapter-15/15-04}
+\include{chapter-15/15-05}
+\include{chapter-15/15-06}
+\include{chapter-15/15-07}
+\include{chapter-15/15-08}
+\include{chapter-15/15-09}
+\include{chapter-15/15-10}
+\include{chapter-15/15-11}
+\include{chapter-15/15-12}
+\include{chapter-15/15-13}
+\include{chapter-15/15-14}
+% Chapter 16
+\include{chapter-16/16-00}
+\include{chapter-16/16-01}
+\include{chapter-16/16-02}
+\include{chapter-16/16-03}
+\include{chapter-16/16-04}
+\include{chapter-16/16-05}
+\include{chapter-16/16-06}
+\include{chapter-16/16-07}
+\include{chapter-16/16-08}
+\include{chapter-16/16-09}
+\include{chapter-16/16-10}
+\include{chapter-16/16-11}
+% Chapter 17
+\include{chapter-17/17-00}
+\include{chapter-17/17-01}
+\include{chapter-17/17-02}
+\include{chapter-17/17-03}
+\include{chapter-17/17-04}
+\include{chapter-17/17-05}
+\include{chapter-17/17-06}
+\include{chapter-17/17-07}
+\include{chapter-17/17-08}
+\include{chapter-17/17-09}
+\include{chapter-17/17-10}
+\include{chapter-17/17-11}
+\include{chapter-17/17-12}
+\include{chapter-17/17-13}
+
+\part{Applications and Future Directions}
+% Chapter 18
+\include{chapter-18/18-00}
+\include{chapter-18/18-01}
+\include{chapter-18/18-02}
+\include{chapter-18/18-03}
+\include{chapter-18/18-04}
+\include{chapter-18/18-05}
+\include{chapter-18/18-06}
+\include{chapter-18/18-07}
+\include{chapter-18/18-08}
+\include{chapter-18/18-09}
+\include{chapter-18/18-10}
+\include{chapter-18/18-11}
+\include{chapter-18/18-12}
+\include{chapter-18/18-13}
+\include{chapter-18/18-14}
+\include{chapter-18/18-15}
+\include{chapter-18/18-16}
+% Chapter 19
+\include{chapter-19/19-00}
+\include{chapter-19/19-01}
+\include{chapter-19/19-02}
+\include{chapter-19/19-03}
+\include{chapter-19/19-04}
+\include{chapter-19/19-05}
+\include{chapter-19/19-06}
+\include{chapter-19/19-07}
+\include{chapter-19/19-08}
+\include{chapter-19/19-09}
+\include{chapter-19/19-10}
+\include{chapter-19/19-11}
+% Chapter 20
+\include{chapter-20/20-00}
+\include{chapter-20/20-01}
+\include{chapter-20/20-02}
+\include{chapter-20/20-03}
+\include{chapter-20/20-04}
+\include{chapter-20/20-05}
+\include{chapter-20/20-06}
+\include{chapter-20/20-07}
+\include{chapter-20/20-08}
+\include{chapter-20/20-09}
+\include{chapter-20/20-10}
+\include{chapter-20/20-11}
+\include{chapter-20/20-12}
+\include{chapter-20/20-13}
+\include{chapter-20/20-14}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Appendices
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\appendix
+\part{Appendices}
+\include{appendix/appendix-01-time-series}
+\include{appendix/appendix-02-stationarity-panels}
+
+\backmatter
+
+%\printbibliography
+\cleardoublepage
+
+%\renewcommand{\bibname}{References} % to change "Bibliography" to "References"
+\bibliography{references}
+\bibliographystyle{plainnat}
+
+
+
+
+%\include{author/appendix}
+
+\backmatter%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\include{author/glossary}
+%\include{author/solutions}
+\printindex
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
