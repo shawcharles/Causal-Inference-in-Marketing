@@ -27,7 +27,7 @@ plugins:
   - jekyll-sitemap
 
 # Chirpy theme settings
-theme_mode: light  # Options: light, dark
+theme_mode: dark  # Options: light, dark
 avatar: ""  # Add path to author image if desired
 toc: true
 
