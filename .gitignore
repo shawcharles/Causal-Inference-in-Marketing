@@ -13,7 +13,7 @@
 *.fls
 *.fdb_latexmk
 *.synctex.gz
-*.pdf
+
 
 # Editor files
 .vscode/
