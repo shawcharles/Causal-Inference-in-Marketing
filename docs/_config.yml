@@ -6,7 +6,7 @@ url: "https://shawcharles.github.io"
 baseurl: "/Causal-Inference-in-Marketing"
 
 # Theme
-remote_theme: "cotes2020/jekyll-theme-chirpy@7.2.4"
+theme: jekyll-theme-chirpy
 
 # Build settings
 lang: en
@@ -20,10 +20,11 @@ social:
 
 # Plugins
 plugins:
-  - jekyll-remote-theme
+  - jekyll-paginate
+  - jekyll-redirect-from
   - jekyll-seo-tag
+  - jekyll-archives
   - jekyll-sitemap
-  - jekyll-feed
 
 # Chirpy theme settings
 theme_mode: light  # Options: light, dark
