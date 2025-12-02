@@ -21,6 +21,7 @@ plugins:
   - jekyll-seo-tag
   - jekyll-sitemap
   - jekyll-feed
+  - jekyll-include-cache
 
 # Author profile (appears in sidebar)
 author:
