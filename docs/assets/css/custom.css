@@ -1,0 +1,19 @@
+.btn-view-on-github {
+    color: #ffffff !important; 
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.card {
+    background-color: #202020;
+    padding: 1rem;
+    border-radius: 0.25rem;
+}
+
+.card h3 {
+    margin-top: 0;
+}
