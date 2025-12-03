@@ -1,0 +1,55 @@
+\section{Identification: Assumptions and Design Implications}
+\label{sec:event-identification}
+
+Causal identification of event-time effects $\theta_k$ requires assumptions about how treated and control units would have evolved in the absence of treatment. This section articulates the identification assumptions for event studies, discusses their testable implications, and clarifies when alternative identification strategies are required.
+
+\subsection*{Parallel Trends}
+
+The parallel trends assumption for event studies asserts that, in the absence of treatment, treated units would have followed the same trajectory as control units in event time. Formally, for all event times $k$ and for all cohorts $g$,
+\[
+\mathbb{E}[Y_{i, g+k}(\infty) - Y_{i, g-1}(\infty) \mid G_i = g] = \mathbb{E}[Y_{i, g+k}(\infty) - Y_{i, g-1}(\infty) \mid G_i \in \text{controls}],
+\]
+where the controls are either never-treated units ($G_i = \infty$) or not-yet-treated units ($G_i > g + k$). This assumption extends the canonical parallel trends assumption (Chapter~\ref{ch:did}) to the event-time setting, asserting that the change in untreated potential outcomes from the baseline period $g - 1$ to any event time $k$ is the same for treated and control units. The choice of $g-1$ as the baseline corresponds to the convention of omitting $k = -1$ in the regression; alternative baseline choices (for example, the average of all pre-treatment periods) would modify the formula accordingly but leave the substantive content unchanged.
+
+\begin{assumption}[Parallel Trends in Event Time]
+\label{assump:parallel-trends-event}
+In the absence of treatment, the expected change in outcomes from the baseline period $g-1$ to any future period $g+k$ is the same for the treated cohort $g$ and the control group. Formally, for all treated cohorts $g$ and event times $k$:
+\[
+\mathbb{E}[Y_{i, g+k}(\infty) - Y_{i, g-1}(\infty) \mid G_i = g] = \mathbb{E}[Y_{i, g+k}(\infty) - Y_{i, g-1}(\infty) \mid G_i \in \mathcal{C}_g],
+\]
+where $\mathcal{C}_g$ denotes the valid control group for cohort $g$ (for example, never-treated or not-yet-treated units).
+\end{assumption}
+
+Conditional parallel trends weakens this assumption by allowing for covariate-dependent trends. After conditioning on covariates $X_i$, treated and control units follow similar event-time trajectories. This is a weaker assumption than unconditional parallel trends and is often more plausible in observational settings where treatment assignment depends on observables. Diagnostic checks for conditional parallel trends include covariate balance assessments (Chapter~\ref{ch:design-diagnostics}) and propensity score overlap checks. If covariate imbalances are large, propensity score weighting, regression adjustment, or matching can restore balance. This makes conditional parallel trends more credible.
+
+\textbf{Correct specification required.} Conditional parallel trends assumes the conditioning set is correctly specified. If important confounders are omitted from $X_i$, the assumption fails even after conditioning. There is no test for whether the conditioning set is complete; the analyst must rely on substantive knowledge to identify plausible confounders and conduct sensitivity analysis to assess how conclusions would change if additional confounders were present.
+
+\subsection*{No Anticipation and Pre-Trend Tests}
+
+The no anticipation assumption, introduced in Chapter~\ref{ch:frameworks}, asserts that potential outcomes in period $t$ do not depend on treatment assignments in future periods $s > t$. In event-time terms, no anticipation means that $Y_{it}(0) = Y_{it}(d)$ for all treatment paths $d$ when $t < G_i$: pre-treatment outcomes are the same regardless of when (or whether) treatment eventually occurs. This implies that pre-treatment coefficients $\theta_k$ for $k < 0$ should be zero if treated units do not adjust behaviour in advance of treatment. Non-zero pre-treatment coefficients signal anticipation or pre-existing trends that violate parallel trends.
+
+Testing for anticipation using pre-treatment leads is a central diagnostic in event studies. Estimate the event-study regression including multiple pre-treatment event times ($k < -1$), and test whether the pre-treatment coefficients are jointly zero using a Wald test with cluster-robust standard errors (a standard $F$-test assumes homoskedasticity and is inappropriate when errors are clustered). If pre-treatment coefficients are statistically indistinguishable from zero, this supports parallel trends and no anticipation. If pre-treatment coefficients are non-zero, this indicates either anticipation (units respond to expected future treatment) or pre-existing differential trends (treated and control units were diverging even before treatment).
+
+\textbf{Anticipation vs. pre-trends cannot be distinguished statistically.} Both anticipation and pre-trends produce non-zero pre-treatment coefficients, and no statistical test can distinguish them. Distinguishing anticipation from pre-trends requires substantive knowledge about the intervention. If the intervention was announced in advance and units could plausibly respond (for example, customers delaying purchases before a loyalty programme launch), anticipation is likely. If the intervention was unannounced or unexpected, pre-trends are more likely. This distinction matters for interpretation: anticipation may be a real causal effect of the announcement (and thus part of the total effect), while pre-trends indicate a violation of parallel trends that biases the estimated effect.
+
+Pre-trend tests have limited power, especially with few pre-periods. Absence of detectable pre-trends increases plausibility but does not prove parallel trends. Combine statistical tests with institutional knowledge, balance checks, and sensitivity analyses (varying control sets, windows, and specifications).
+
+\subsection*{SUTVA and Spillovers}
+
+The stable unit treatment value assumption (SUTVA), also introduced in Chapter~\ref{ch:frameworks}, asserts that potential outcomes for unit $i$ do not depend on the treatment assignments of other units. SUTVA is routinely violated in marketing through spillovers, network effects, and competitive interactions. In the event-time context, spillovers can distort both pre-treatment and post-treatment coefficients. If treated units spill over to control units before treatment (for example, if an impending loyalty programme generates word-of-mouth that reaches control customers), pre-treatment coefficients may be non-zero not because of anticipation by treated units but because of contamination of control units. If spillovers occur after treatment, post-treatment coefficients conflate direct effects with spillover effects.
+
+Design-based solutions to spillovers include defining clusters that internalise spillovers, creating buffer zones that separate treated and control units, and estimating explicit spillover models (Chapter~\ref{ch:spillovers}). In the event-time context, spatial or network leads and lags can be included to estimate how treatment in one unit affects outcomes in neighbouring units at different event times. These extensions are discussed in Section~\ref{sec:event-extensions}.
+
+\subsection*{Factor Structure Relaxations}
+
+Factor structure relaxations provide an alternative when parallel trends in levels is implausible but units face common shocks with differential exposure. Interactive fixed effects and matrix methods (Chapters~\ref{ch:factor}, \ref{ch:advanced-matrix}) decompose untreated outcomes into latent factors and unit-specific loadings. In event time, the key nuance is stability: factors and loadings must remain valid over the event-time window so that $\theta_k$ does not mix structural change with treatment response. Estimation and diagnostics live in Chapters~\ref{ch:factor} and \ref{ch:advanced-matrix}; here we only flag the event-time requirement.
+
+When using factor models, ensure event-time stability. If treatment coincides with a shift in factor structure, imputed counterfactuals are invalid and $\theta_k$ conflates dynamics with structural change. For example, if a platform launches a loyalty programme at the same time it changes its recommendation algorithm, the factor structure governing customer behaviour may shift, and factor-based counterfactuals will be invalid. Use fit and stability checks from Chapters~\ref{ch:factor} and \ref{ch:advanced-matrix}, and conduct sensitivity analysis by varying the number of factors or the estimation window.
+
+\subsection*{Diagnostic Best Practices}
+
+Limits of pre-trend tests and good practice for interpretation merit emphasis. Pre-trend tests have finite power, meaning that they can fail to detect pre-trends even when they exist. As a rough heuristic, pre-trend tests can typically detect trends of magnitude comparable to the estimated post-treatment effects with reasonable power, but they have low power to detect smaller trends. The actual power depends on the variance of the outcome, the sample size, the number of pre-treatment periods, and the clustering structure; simulation-based power analysis (Section~\ref{sec:power-mde}) can provide more precise guidance for a specific setting. This means that a non-significant pre-trend test provides reassurance only if the magnitudes of the pre-treatment coefficients are small relative to the post-treatment coefficients. If pre-treatment coefficients are large in magnitude but statistically insignificant (due to wide confidence intervals), the evidence for parallel trends is weak.
+
+Good practice combines pre-trend tests with multiple diagnostic approaches. Plot the full event-time profile to visually inspect for pre-trends. Conduct placebo tests using pre-treatment data only. Check covariate balance. Estimate cohort-specific profiles to assess whether pre-trends are consistent across cohorts. Conduct sensitivity analyses that vary the pre-treatment window or the control group. The goal is not to prove that parallel trends holds---which is impossible---but to build a cumulative case that parallel trends is plausible and that conclusions are robust to plausible violations.
+
+State assumptions, show diagnostics, and report sensitivity. Use pre-treatment leads for anticipation checks, exposure models for SUTVA risks, and factor-fit diagnostics when relaxing parallel trends. The next section covers best practices for graphical presentation.

@@ -7,7 +7,7 @@ Causal identification of event-time effects $\theta_k$ requires assumptions abou
 
 The parallel trends assumption for event studies asserts that, in the absence of treatment, treated units would have followed the same trajectory as control units in event time. Formally, for all event times $k$ and for all cohorts $g$,
 \[
-\mathbb{E}[Y_{i, g+k}(0) - Y_{i, g-1}(0) \mid G_i = g] = \mathbb{E}[Y_{i, g+k}(0) - Y_{i, g-1}(0) \mid G_i \in \text{controls}],
+\mathbb{E}[Y_{i, g+k}(\infty) - Y_{i, g-1}(\infty) \mid G_i = g] = \mathbb{E}[Y_{i, g+k}(\infty) - Y_{i, g-1}(\infty) \mid G_i \in \text{controls}],
 \]
 where the controls are either never-treated units ($G_i = \infty$) or not-yet-treated units ($G_i > g + k$). This assumption extends the canonical parallel trends assumption (Chapter~\ref{ch:did}) to the event-time setting, asserting that the change in untreated potential outcomes from the baseline period $g - 1$ to any event time $k$ is the same for treated and control units. The choice of $g-1$ as the baseline corresponds to the convention of omitting $k = -1$ in the regression; alternative baseline choices (for example, the average of all pre-treatment periods) would modify the formula accordingly but leave the substantive content unchanged.
 
@@ -15,7 +15,7 @@ where the controls are either never-treated units ($G_i = \infty$) or not-yet-tr
 \label{assump:parallel-trends-event}
 In the absence of treatment, the expected change in outcomes from the baseline period $g-1$ to any future period $g+k$ is the same for the treated cohort $g$ and the control group. Formally, for all treated cohorts $g$ and event times $k$:
 \[
-\mathbb{E}[Y_{i, g+k}(0) - Y_{i, g-1}(0) \mid G_i = g] = \mathbb{E}[Y_{i, g+k}(0) - Y_{i, g-1}(0) \mid G_i \in \mathcal{C}_g],
+\mathbb{E}[Y_{i, g+k}(\infty) - Y_{i, g-1}(\infty) \mid G_i = g] = \mathbb{E}[Y_{i, g+k}(\infty) - Y_{i, g-1}(\infty) \mid G_i \in \mathcal{C}_g],
 \]
 where $\mathcal{C}_g$ denotes the valid control group for cohort $g$ (for example, never-treated or not-yet-treated units).
 \end{assumption}

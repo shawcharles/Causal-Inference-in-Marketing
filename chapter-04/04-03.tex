@@ -3,13 +3,13 @@
 
 A retailer rolls out a loyalty programme to different regions over two years. What assumptions are needed to identify the causal effect? And when might those assumptions fail? This section articulates the identification assumptions for staggered adoption, discusses their plausibility in marketing settings, and clarifies when alternative strategies are required.
 
-Identification of cohort-time effects $\text{ATT}(g, t)$ requires assumptions about how treated and control units would have evolved in the absence of treatment and about which units can serve as valid controls for which cohorts and periods. Two types of control units are available in staggered designs: \index{never-treated}\textit{never-treated} units ($G_i = \infty$) that remain untreated throughout the observation window, and \index{not-yet-treated}\textit{not-yet-treated} units ($G_i > t$) that will eventually be treated but have not yet adopted in period $t$. The distinction matters: never-treated units provide a stable control group but may be systematically different from treated units, while not-yet-treated units are more similar to treated units but may exhibit anticipation effects as their adoption date approaches. Figure~\ref{fig:staggered-grid} illustrates the cohort-time structure and event-time alignment in staggered designs.
+Identification of cohort-time effects $\tau(g, t)$ requires assumptions about how treated and control units would have evolved in the absence of treatment and about which units can serve as valid controls for which cohorts and periods. Two types of control units are available in staggered designs: \index{never-treated}\textit{never-treated} units ($G_i = \infty$) that remain untreated throughout the observation window, and \index{not-yet-treated}\textit{not-yet-treated} units ($G_i > t$) that will eventually be treated but have not yet adopted in period $t$. The distinction matters: never-treated units provide a stable control group but may be systematically different from treated units, while not-yet-treated units are more similar to treated units but may exhibit anticipation effects as their adoption date approaches. Figure~\ref{fig:staggered-grid} illustrates the cohort-time structure and event-time alignment in staggered designs.
 
 \subsection*{Parallel Trends for Staggered Designs}
 
 The parallel trends assumption for staggered adoption asserts that units adopting at different times would have followed similar trajectories in the absence of treatment. Formally, for all cohorts $g$ and $g'$ and all periods $t$ where neither cohort is yet treated ($t < g$ and $t < g'$),
 \[
-\mathbb{E}[Y_{it}(0) - Y_{i,t-1}(0) \mid G_i = g] = \mathbb{E}[Y_{it}(0) - Y_{i,t-1}(0) \mid G_i = g'].
+\mathbb{E}[Y_{it}(\infty) - Y_{i,t-1}(\infty) \mid G_i = g] = \mathbb{E}[Y_{it}(\infty) - Y_{i,t-1}(\infty) \mid G_i = g'].
 \]
 This assumption extends the canonical parallel trends assumption to multiple cohorts. It does not require that cohorts have the same levels or growth rates in pre-treatment periods, only that the period-to-period changes would have been the same across cohorts absent treatment. Crucially, this assumption must hold across \textit{all} cohort pairs, not just between treated and never-treated units. If early adopters (cohort $g=2$) would have grown faster than late adopters (cohort $g=6$) absent treatment, then using cohort $g=6$ as a control for cohort $g=2$ introduces bias even if both cohorts have parallel trends with never-treated units.
 
@@ -18,10 +18,10 @@ A stronger version of parallel trends asserts that treated cohorts and never-tre
 \label{assump:strong-parallel-trends}
 For all $t=2,\dots,T$ and all cohorts $g$:
 \[
-\mathbb{E}[Y_{it}(0) - Y_{i,t-1}(0) \mid G_i = g] = \mathbb{E}[Y_{it}(0) - Y_{i,t-1}(0) \mid G_i = \infty].
+\mathbb{E}[Y_{it}(\infty) - Y_{i,t-1}(\infty) \mid G_i = g] = \mathbb{E}[Y_{it}(\infty) - Y_{i,t-1}(\infty) \mid G_i = \infty].
 \]
 \end{assumption}
-This assumption is sufficient for identifying $\text{ATT}(g, t)$ by comparing cohort $g$ to never-treated units in period $t$. In marketing settings, strong parallel trends is often implausible: never-treated units may be systematically different from treated units. Stores that never receive a loyalty programme may be in declining markets, have different management, or face different competitive pressures. The assumption that they would have followed the same trajectory as treated stores requires justification. Modern heterogeneity-robust estimators can use not-yet-treated units as controls, which requires only that cohorts would have followed similar trends up to the point at which the later cohort adopts treatment---a weaker and often more credible assumption.
+This assumption is sufficient for identifying $\tau(g, t)$ by comparing cohort $g$ to never-treated units in period $t$. In marketing settings, strong parallel trends is often implausible: never-treated units may be systematically different from treated units. Stores that never receive a loyalty programme may be in declining markets, have different management, or face different competitive pressures. The assumption that they would have followed the same trajectory as treated stores requires justification. Modern heterogeneity-robust estimators can use not-yet-treated units as controls, which requires only that cohorts would have followed similar trends up to the point at which the later cohort adopts treatment---a weaker and often more credible assumption.
 
 \subsection*{Overlap and Support}
 
@@ -49,7 +49,7 @@ Design-based solutions to spillovers include defining clusters that internalise 
 
 Factor structure relaxations provide an alternative when standard parallel trends is implausible but units are subject to common time-varying shocks with differential exposure. Interactive fixed effects models (Chapters~\ref{ch:factor}, \ref{ch:advanced-matrix}) posit that untreated potential outcomes can be decomposed as
 \[
-Y_{it}(0) = \sum_{r=1}^R \lambda_{ir} f_{tr} + \varepsilon_{it},
+Y_{it}(\infty) = \sum_{r=1}^R \lambda_{ir} f_{tr} + \varepsilon_{it},
 \]
 where $R$ is the number of latent factors, $f_{tr}$ are factors common to all units in period $t$, and $\lambda_{ir}$ are unit-specific loadings that capture differential exposure to each factor. This low-rank representation can absorb unit and time fixed effects into the factors and accommodates differential trends driven by common shocks---macroeconomic conditions, industry demand shifts, platform algorithm changes---without requiring that period-to-period changes are identical across units. Identification relies on a low-rank assumption: $R$ is small relative to the minimum of $N$ and $T$, so that the factors and loadings can be estimated from the untreated observations and used to impute counterfactual outcomes for treated observations.
 

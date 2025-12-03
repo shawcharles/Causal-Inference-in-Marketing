@@ -1,0 +1,166 @@
+\section{Event-Time Metrics for Marketing Decisions}
+\label{sec:event-marketing}
+
+Chapter~\ref{ch:did} (Section~\ref{sec:did-marketing}) presents detailed case studies of marketing applications for difference-in-differences and staggered adoption designs. This section focuses on what event-study analysis specifically adds: quantitative metrics that translate the event-time profile $\theta_k$ into actionable marketing decisions.
+
+\subsection*{Testing for Anticipation}
+
+Anticipation occurs when units adjust behaviour before treatment begins, typically because the intervention is announced in advance. In marketing, anticipation is common: \index{advertising}advertising campaigns are announced ahead of launch, \index{loyalty programme}loyalty programmes have pre-enrolment periods, and pricing changes may be leaked or inferred by customers.
+
+\textbf{Detection.} Pre-treatment coefficients $\theta_{-2}, \theta_{-1}$ (with $\theta_{-1}$ typically normalised to zero, so focus on $\theta_{-2}, \theta_{-3}, \ldots$) reveal anticipation. If pre-treatment coefficients are non-zero, either anticipation or pre-trends are present.
+
+\textbf{Distinguishing Anticipation from Pre-Trends.} Anticipation produces pre-treatment coefficients that are negative (customers delay purchases until the promotion begins) or positive (customers stockpile in advance of price increases), with the pattern typically appearing close to treatment ($k = -1, -2$) and not at distant horizons. Pre-trends, by contrast, produce pre-treatment coefficients that show a systematic trend (upward or downward) extending back several periods, suggesting that treated and control units were already diverging before treatment. As noted in Section~\ref{sec:event-identification}, this distinction cannot be made statistically---it requires substantive knowledge about the intervention.
+
+\textbf{Marketing Examples.}
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{Context} & \textbf{Pattern} & \textbf{Interpretation} \\
+\midrule
+Campaign announcement & $\theta_{-1} < 0$ & Customers delay buying until campaign starts \\
+Loyalty pre-enrolment & $\theta_{-1} > 0$ & Early adopters sign up before official launch \\
+Price increase rumours & $\theta_{-1} > 0$ & Stockpiling before price rises \\
+Seasonal promotion timing & $\theta_{-2}, \theta_{-1} \approx 0$ & No anticipation; timing not predictable \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Decision Implication.} If anticipation is detected, the immediate effect $\theta_0$ may understate the total effect (if customers pulled forward purchases) or overstate it (if customers delayed purchases until treatment). Report the cumulative effect $\sum_{k=-L}^{K} \theta_k$ over the full window to capture total impact including anticipation.
+
+\subsection*{Measuring Ramp-Up Rate}
+
+Ramp-up occurs when treatment effects grow over event time, typically because customer behaviour changes gradually (enrolment, habit formation, network effects).
+
+\textbf{Metrics.}
+\begin{itemize}
+\item \textit{Average per-period growth}: $\bar{g} = (\theta_K - \theta_0) / K$, where $K$ is the last event time in the window. Measures how much the effect grows per period on average.
+\item \textit{Time-to-maturity}: The event time $k^*$ at which $\theta_k$ stabilises (i.e., $|\theta_{k+1} - \theta_k| < \epsilon$ for subsequent periods). Indicates when the programme reaches steady state.
+\item \textit{Effect multiplier}: $\theta_K / \theta_0$, the ratio of the long-run effect to the immediate effect. Indicates how much the effect grows from launch to maturity.
+\end{itemize}
+
+\textbf{Worked Example: Loyalty Programme Ramp-Up.} Suppose a loyalty programme yields the following event-time profile (in £ thousands additional sales per \index{store}store per quarter):
+\begin{center}
+\begin{tabular}{lcccccc}
+\toprule
+Event time $k$ & 0 & 1 & 2 & 3 & 4 & 5 \\
+$\hat{\theta}_k$ & 3.2 & 5.8 & 8.1 & 9.4 & 10.0 & 10.2 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{itemize}
+\item Average per-period growth: $(10.2 - 3.2) / 5 = 1.4$ (£1,400 per quarter)
+\item Time-to-maturity: $k^* \approx 4$ (effect stabilises between $k=4$ and $k=5$)
+\item Effect multiplier: $10.2 / 3.2 = 3.2$ (long-run effect is 3.2× the immediate effect)
+\end{itemize}
+
+\textbf{Decision Implication.} If the effect multiplier is large, short-run evaluations understate long-run benefits. A manager evaluating the programme at $k=0$ would see only £3,200 additional sales; waiting until maturity reveals £10,200. Set ROI evaluation timelines to $k \geq k^*$, not immediately post-launch.
+
+\subsection*{Estimating Decay Half-Life}
+
+Decay occurs when treatment effects diminish over event time, typically because customer attention fades, competitors respond, or promotional effects are transitory.
+
+\textbf{Metrics.}
+\begin{itemize}
+\item \textit{Half-life}: The event time $k_{1/2}$ at which the effect falls to half its peak value, i.e., $\theta_{k_{1/2}} = \theta_{\text{peak}} / 2$. Shorter half-lives indicate faster decay.
+\item \textit{Decay rate}: If effects decay exponentially, $\theta_k = \theta_0 \exp(-\lambda k)$, then $\lambda = -\log(\theta_1 / \theta_0)$ and half-life is $k_{1/2} = \log(2) / \lambda$.
+\item \textit{Persistence ratio}: $\theta_K / \theta_{\text{peak}}$, where $K$ is the end of the window. Values near 1 indicate persistence; values near 0 indicate transitory effects.
+\end{itemize}
+
+\textbf{Worked Example: Advertising Campaign Decay.} Suppose a TV campaign yields the following profile (in percentage points sales lift):
+\begin{center}
+\begin{tabular}{lccccccc}
+\toprule
+Event time $k$ & 0 & 1 & 2 & 3 & 4 & 5 & 6 \\
+$\hat{\theta}_k$ & 8.2 & 6.1 & 4.5 & 3.4 & 2.5 & 1.9 & 1.4 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{itemize}
+\item Peak effect: $\theta_0 = 8.2$
+\item Half-life: $\theta_k = 4.1$ occurs between $k=2$ and $k=3$; by interpolation, $k_{1/2} \approx 2.3$ periods
+\item Persistence ratio: $1.4 / 8.2 = 0.17$ (only 17\% of peak effect remains at $k=6$)
+\end{itemize}
+
+\textbf{Decision Implication.} Short half-lives indicate that sustained investment is required to maintain brand salience. If $k_{1/2} = 2.3$ quarters, advertising effects largely dissipate within one year. Budget accordingly: one-time campaigns produce transitory effects; sustained presence requires ongoing investment.
+
+\subsection*{Cumulative Effects and ROI}
+
+The cumulative effect aggregates event-time coefficients over a window, providing a single summary of total impact.
+
+\textbf{Formula.}
+\[
+\text{Cumulative effect} = \sum_{k=0}^{K} \theta_k.
+\]
+This sum aggregates the event-time effects over the post-treatment window. If the goal is to express the cumulative effect in outcome units (for example, total additional sales over the window), multiply by the number of units and periods as appropriate. For ROI calculations:
+\[
+\text{ROI} = \frac{\text{Cumulative effect} \times \text{Scale factor} - \text{Cost}}{\text{Cost}},
+\]
+where the scale factor converts the cumulative effect into monetary terms (for example, multiplying by the number of treated units and the value per unit of outcome).
+
+\textbf{Comparing Interventions.} Two interventions with the same immediate effect $\theta_0$ can have very different cumulative effects depending on their dynamics. A ramp-up profile produces high cumulative effects if ramp-up is fast and the long-run effect is large. A decay profile produces lower cumulative effects if decay is fast. A hysteresis profile produces the highest cumulative effects if the effect persists indefinitely.
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Box 5.2: The Brand vs Performance Paradox]
+\textbf{Setting.} A retailer considers two ways to boost category revenue over the next year using the same budget per store:
+\begin{itemize}
+\item \textit{Performance campaign (deep discounts)}: high-frequency discount promotions that generate immediate sales spikes but little persistence.
+\item \textit{Brand-building campaign}: sustained advertising that strengthens brand equity and shifts preferences gradually.
+\end{itemize}
+
+Suppose event-time effects (in thousands of additional sales per store per quarter) from an event-study analysis are:
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+& $k=0$ & $k=1$ & $k=2$ & $k=3$ \\
+\midrule
+Performance (discount) & 8.0 & 2.0 & 0.5 & $-1.0$ \\
+Brand-building & 1.0 & 3.0 & 5.0 & 6.0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The discount campaign has a much larger immediate effect ($\theta_0 = 8.0$) than the brand-building campaign ($\theta_0 = 1.0$), but their dynamics differ sharply.
+
+\textbf{Dynamic metrics.} For the discount campaign, the cumulative effect through $k=3$ is
+\[
+\sum_{k=0}^3 \theta_k^{\text{disc}} = 8.0 + 2.0 + 0.5 - 1.0 = 9.5,
+\]
+with an effect multiplier of $9.5 / 8.0 \approx 1.2$. Most value arrives immediately, and negative effects from customer stockpiling or deal-seeking erode gains.
+
+For the brand-building campaign, the cumulative effect through $k=3$ is
+\[
+\sum_{k=0}^3 \theta_k^{\text{brand}} = 1.0 + 3.0 + 5.0 + 6.0 = 15.0,
+\]
+with an effect multiplier of $15.0 / 1.0 = 15$. Evaluated only at $k=0$, the brand campaign appears weak; evaluated at maturity, it dominates on total incremental revenue and feeds into longer-run CLV and brand equity.
+
+\textbf{Measurement implication.} The \emph{brand vs performance paradox} is that short-run ROI evaluated at $k=0$ favours the performance campaign, while long-run cumulative ROI and CLV favour brand-building. Event-time metrics (effect multipliers, cumulative effects) make this trade-off explicit and highlight the need to align evaluation horizons with strategic objectives.
+\end{tcolorbox}
+
+\subsection*{Summary: Event-Time Metrics Decision Guide}
+
+\begin{table}[htbp]\small
+\centering
+\caption{Event-Time Metrics and Marketing Decisions}
+\label{tab:event-metrics-guide}
+\begin{tabular}{p{3cm}p{4cm}p{5cm}}
+\toprule
+\textbf{Metric} & \textbf{How to Compute} & \textbf{Marketing Decision} \\
+\midrule
+Anticipation & $\theta_{-2}, \theta_{-3} \neq 0$ & Timing of announcements; adjust $\theta_0$ interpretation \\
+\addlinespace
+Ramp-up rate & $(\theta_K - \theta_0) / K$ & Patience during rollout; don't evaluate too early \\
+\addlinespace
+Time-to-maturity & $k^*$ where $|\theta_{k+1} - \theta_k| < \epsilon$ & When to assess ROI; operational support duration \\
+\addlinespace
+Effect multiplier & $\theta_K / \theta_0$ & Short-run vs long-run value; communication to stakeholders \\
+\addlinespace
+Half-life & $k$ where $\theta_k = \theta_{\text{peak}}/2$ & Campaign frequency; need for sustained investment \\
+\addlinespace
+Persistence ratio & $\theta_K / \theta_{\text{peak}}$ & One-time vs repeated interventions \\
+\addlinespace
+Cumulative effect & $\sum_k \theta_k$ & Total impact; ROI numerator \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+These metrics transform the event-time profile from a visual diagnostic into quantitative inputs for marketing decisions. Report the profile alongside these summary metrics to communicate both the dynamic trajectory and its business implications.

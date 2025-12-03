@@ -13,10 +13,10 @@ If treatment is adopted at different times across units and treatment effects ar
 
 \subsection{Staggered Adoption With Heterogeneity}
 
-If treatment effects are heterogeneous across cohorts or over time---as is typical in marketing---the standard TWFE estimator can be biased. Modern heterogeneity-robust estimators (Chapter~\ref{ch:did}) target the cohort-time effects $\text{ATT}(g,t)$ directly.
+If treatment effects are heterogeneous across cohorts or over time---as is typical in marketing---the standard TWFE estimator can be biased. Modern heterogeneity-robust estimators (Chapter~\ref{ch:did}) target the cohort-time effects $\tau(g,t)$ directly.
 
-These methods proceed in two steps. First, estimate $\text{ATT}(g,t)$ for each cohort $g$ and period $t$ using appropriate control groups such as not-yet-treated units. Second, aggregate these elementary effects using user-specified weights $\omega_{g,t}$ that are typically non-negative and sum to one:
-\[ \tau_{\text{summary}} = \sum_{g,t} \omega_{g,t} \, \widehat{\text{ATT}}(g,t). \]
+These methods proceed in two steps. First, estimate $\tau(g,t)$ for each cohort $g$ and period $t$ using appropriate control groups such as not-yet-treated units. Second, aggregate these elementary effects using user-specified weights $\omega_{g,t}$ that are typically non-negative and sum to one:
+\[ \tau_{\text{summary}} = \sum_{g,t} \omega_{g,t} \, \widehat{\tau}(g,t). \]
 Common aggregations include the simple ATT (weighted by cohort size), event-study coefficients $\theta_k$ (aggregating by relative time $k = t-g$), or calendar-time effects. This explicit aggregation avoids the opaque and potentially negative weighting inherent in the static TWFE specification.
 
 \subsection{Single Treated Unit or Few Treated Units}

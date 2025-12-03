@@ -7,9 +7,9 @@ A retailer rolls out a loyalty programme to different regions over two years. So
 
 When no never-treated units exist---as happens when programmes eventually roll out everywhere---identification relies entirely on not-yet-treated units as controls. This raises additional concerns: anticipation effects may contaminate not-yet-treated outcomes if units change behaviour in expectation of future treatment, and selection into timing may correlate with potential outcomes. We return to these issues in Section~\ref{sec:staggered-identification}.
 
-Modern DiD methods address this complexity by defining estimands that respect heterogeneity and by aggregating those estimands in transparent, interpretable ways. The fundamental building block is the \index{ATT(g,t)|see{group-time effects}}cohort-time effect $\text{ATT}(g, t)$, the average treatment effect for units in adoption cohort $g$ in calendar period $t$, conditional on $t \geq g$ (so that cohort $g$ is treated in period $t$). These estimands extend the staggered-adoption setup and assignment-mechanism taxonomy introduced in Chapter~\ref{ch:frameworks} and Section~\ref{sec:assignment-estimands}. Formally,
+Modern DiD methods address this complexity by defining estimands that respect heterogeneity and by aggregating those estimands in transparent, interpretable ways. The fundamental building block is the \index{ATT(g,t)|see{group-time effects}}cohort-time effect $\tau(g, t)$, the average treatment effect for units in adoption cohort $g$ in calendar period $t$, conditional on $t \geq g$ (so that cohort $g$ is treated in period $t$). These estimands extend the staggered-adoption setup and assignment-mechanism taxonomy introduced in Chapter~\ref{ch:frameworks} and Section~\ref{sec:core-estimands}. Formally,
 \[
-\text{ATT}(g, t) = \mathbb{E}[Y_{it}(g) - Y_{it}(\infty) \mid G_i = g, \, t \geq g],
+\tau(g, t) = \mathbb{E}[Y_{it}(g) - Y_{it}(\infty) \mid G_i = g, \, t \geq g],
 \]
 where $G_i$ is the adoption time for unit $i$. This estimand allows treatment effects to vary freely across cohorts and across calendar periods. A unit adopting in quarter two may experience a different effect in quarter three than a unit adopting in quarter four experiences in quarter five, either because the units differ in characteristics or because macroeconomic conditions, competitive landscapes, or other time-varying factors differ across periods.
 
@@ -44,31 +44,31 @@ The effect one quarter post-adoption ($\theta_1$) averages only cohorts $g=2$ an
 \]
 This weighted aggregation ensures that each cohort contributes to event-time effects in proportion to its size, but only for event times it has experienced. Note that these are point estimates; in practice, each $\theta_k$ comes with sampling uncertainty. The apparent increase from $\theta_0 = 6.1$ to $\theta_1 = 9.3$ could reflect genuine effect growth, or it could be noise. Confidence intervals (discussed in Chapter~\ref{ch:inference}) are essential for distinguishing real dynamics from sampling variation.
 
-Aggregating $\text{ATT}(g, t)$ across cohorts and time produces summary measures tailored to different policy questions. The overall ATT for ever-treated units is a weighted average of cohort-time effects:
+Aggregating $\tau(g, t)$ across cohorts and time produces summary measures tailored to different policy questions. The overall ATT for ever-treated units is a weighted average of cohort-time effects:
 \[
-\text{ATT} = \sum_g \sum_{t \geq g} w_{gt} \, \text{ATT}(g, t),
+\text{ATT} = \sum_g \sum_{t \geq g} w_{gt} \, \tau(g, t),
 \]
-where the weights $w_{gt}$ reflect the relative sample sizes or other aggregation priorities (for example, weighting by treated unit-periods, by cohort size, or by importance to the business). Different weighting schemes can produce different overall estimates even when the underlying $\text{ATT}(g, t)$ are the same, so transparency about weights is essential. The weights are not merely an aggregation convenience---they define the target population. Weighting by cohort size estimates the effect for the average treated unit. Weighting by treated unit-periods estimates the effect for the average treated unit-period. These are different estimands with different policy implications, and the choice should be driven by the business question.
+where the weights $w_{gt}$ reflect the relative sample sizes or other aggregation priorities (for example, weighting by treated unit-periods, by cohort size, or by importance to the business). Different weighting schemes can produce different overall estimates even when the underlying $\tau(g, t)$ are the same, so transparency about weights is essential. The weights are not merely an aggregation convenience---they define the target population. Weighting by cohort size estimates the effect for the average treated unit. Weighting by treated unit-periods estimates the effect for the average treated unit-period. These are different estimands with different policy implications, and the choice should be driven by the business question.
 
 Event-time aggregation pools cohort-time effects by time since adoption rather than by calendar time. Define event time $k = t - G_i$ as the number of periods since unit $i$ adopted treatment. The event-time effect $\theta_k$ is the average effect $k$ periods post-adoption, pooled across cohorts:
 \[
-\theta_k = \sum_g w_g \, \text{ATT}(g, g + k),
+\theta_k = \sum_g w_g \, \tau(g, g + k),
 \]
 where $w_g$ are cohort weights (typically proportional to cohort size). Event-time effects are natural when the goal is to trace the dynamic evolution of the treatment response. How does the effect grow or decay over time? Does the effect take multiple periods to fully materialise, as might occur with habit formation in a loyalty programme? Does the effect dissipate quickly, as might occur with a temporary promotion? The sequence $\{\theta_k\}_{k=0}^{K}$ answers these questions by estimating the effect at each event time $k$ relative to a baseline (typically $k = -1$, the period immediately before adoption).
 
-\textbf{Composition bias in event-time effects.} Because different cohorts contribute to different event times, the composition of units changes across $k$. If cohort $g=2$ experiences systematically larger effects than cohort $g=6$, and cohort $g=2$ contributes to all event times $k \geq 0$ while cohort $g=6$ contributes only to $k=0$, then the event-time profile $\{\theta_k\}$ conflates treatment effect dynamics with cohort composition. This composition bias means that an upward-sloping event-time profile could reflect either growing effects over time or simply that early-adopting cohorts (which dominate later event times) have larger effects. To diagnose composition bias, decompose event-time effects by cohort and inspect cohort-specific event-time profiles. If cohort-specific profiles have the same shape (same slopes across event times) but different intercepts, the aggregate profile reflects composition, not dynamics. If the shapes differ---some cohorts show growing effects while others show decay---heterogeneity in dynamics is present, and the aggregate profile masks important variation.
+\paragraph{Composition Bias in Event-time Effects} Because different cohorts contribute to different event times, the composition of units changes across $k$. If cohort $g=2$ experiences systematically larger effects than cohort $g=6$, and cohort $g=2$ contributes to all event times $k \geq 0$ while cohort $g=6$ contributes only to $k=0$, then the event-time profile $\{\theta_k\}$ conflates treatment effect dynamics with cohort composition. This composition bias means that an upward-sloping event-time profile could reflect either growing effects over time or simply that early-adopting cohorts (which dominate later event times) have larger effects. To diagnose composition bias, decompose event-time effects by cohort and inspect cohort-specific event-time profiles. If cohort-specific profiles have the same shape (same slopes across event times) but different intercepts, the aggregate profile reflects composition, not dynamics. If the shapes differ---some cohorts show growing effects while others show decay---heterogeneity in dynamics is present, and the aggregate profile masks important variation.
 
 We use $\theta$ for event-time effects and $\tau$ for calendar-time and cohort-specific effects to distinguish the different aggregation schemes.
 
 Calendar-time aggregation pools cohort-time effects by calendar period rather than by event time:
 \[
-\tau_t = \sum_{g \leq t} \omega_{gt} \, \text{ATT}(g, t),
+\tau_t = \sum_{g \leq t} \omega_{gt} \, \tau(g, t),
 \]
 where the sum is over cohorts that are treated in period $t$ and $\omega_{gt}$ are calendar-time weights (which may differ from the overall ATT weights $w_{gt}$). Calendar-time effects are natural when the goal is to estimate the contemporaneous impact of the programme in specific periods, accounting for macroeconomic conditions, seasonal effects, or other time-specific factors. For example, if a loyalty programme is rolled out over two years and the goal is to estimate the total sales impact in each quarter, calendar-time aggregation provides the answer by summing effects across all treated units in each quarter.
 
 Cohort-specific aggregations pool over time for a single cohort:
 \[
-\tau_g = \sum_{t \geq g} \nu_{t|g} \, \text{ATT}(g, t),
+\tau_g = \sum_{t \geq g} \nu_{t|g} \, \tau(g, t),
 \]
 where $\nu_{t|g}$ are time weights within cohort $g$ (often uniform or proportional to the number of observations). These are useful for assessing whether early adopters experience different effects than late adopters, which can inform decisions about targeting or rollout strategy. If early adopters (who may be larger, more profitable, or in more competitive markets) experience larger effects, then prioritising early rollout to similar units makes business sense. If late adopters experience larger effects (perhaps because they learn from early adopters or because market conditions improve), then patience may pay off.
 

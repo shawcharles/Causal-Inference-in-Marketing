@@ -9,19 +9,22 @@ This section defines the estimands that make these choices precise. We build on 
 
 The average treatment effect (ATE) is the expected difference between potential outcomes under treatment and control, averaged over all units and periods:
 \[
-\text{ATE} = \mathbb{E}\big[Y_{it}(1) - Y_{it}(0)\big].
+\text{ATE} = \mathbb{E}_{i,t}\big[Y_{it}(1) - Y_{it}(0)\big],
 \]
+where the expectation is taken over the joint distribution of units $i$ and periods $t$ in the population.
 The ATE answers: what would be the average gain if we could treat all units in all periods, compared to treating none? In a randomised experiment where every customer receives an email promotion, the ATE tells us the average lift in purchases across all customers. But in most marketing contexts, the ATE is of limited practical interest. Firms cannot treat all units --- budgets constrain advertising reach, competitive dynamics preclude universal rollout, and regulatory considerations may limit intervention scope.
 
 The average treatment effect on the treated (ATT) focuses on units and periods that actually receive treatment:
 \[
-\text{ATT} = \mathbb{E}\big[Y_{it}(1) - Y_{it}(0) \mid W_{it} = 1\big].
+\text{ATT} = \mathbb{E}_{i,t}\big[Y_{it}(1) - Y_{it}(0) \mid W_{it} = 1\big].
 \]
 The ATT answers a different question: among units that were treated, what was the average causal effect? For the loyalty programme, the ATT tells us: among stores that adopted the programme, how much did sales increase relative to what they would have been without the programme? This ties directly to ROI calculations. If the ATT is £10,000 per store per quarter and the programme costs £3,000 per store per quarter, the programme pays for itself.
 
 \subsection{Cohort-Time Effects in Staggered Adoption}
 
-Modern staggered adoption designs motivate a further refinement. When units adopt treatment at different times $G_i \in \{1, \dots, T\}$, we define potential outcomes indexed by adoption time, $Y_{it}(a)$, denoting the outcome for unit $i$ in period $t$ if it had adopted treatment at time $a$. The realised outcome is $Y_{it} = Y_{it}(G_i)$.
+Modern staggered adoption designs motivate a further refinement. When units adopt treatment at different times $G_i \in \{1, \dots, T\} \cup \{\infty\}$, we move from binary potential outcomes to adoption-time indexing. When treatment is \textbf{absorbing}---once a unit adopts, it remains treated forever---the binary potential outcomes $Y_{it}(0), Y_{it}(1)$ can be re-indexed by adoption time $a$. The potential outcome $Y_{it}(a)$ denotes the outcome for unit $i$ in period $t$ if it had first adopted treatment at time $a$, corresponding to the treatment path that is zero before $a$ and one from $a$ onward. Never-treated units have $G_i = \infty$, and $Y_{it}(\infty)$ denotes the potential outcome under perpetual non-treatment. The realised outcome is $Y_{it} = Y_{it}(G_i)$.
+
+This adoption-time notation connects to the path-dependent framework of Section~\ref{sec:potential-outcomes-panels}: $Y_{it}(a)$ is shorthand for $Y_{it}(\underline{w}^t)$ where $\underline{w}^t = (0, \ldots, 0, 1, \ldots, 1)$ with the switch from zero to one occurring at period $a$.
 
 We define the cohort-time average treatment effect on the treated, $\tau(g, t)$, as the effect for cohort $g$ in calendar period $t$:
 \[
@@ -33,7 +36,7 @@ Aggregating $\tau(g, t)$ produces summary measures:
 \[
 \tau^{\text{ATT}} = \sum_{g} \sum_{t \geq g} w_{gt} \, \tau(g, t),
 \]
-where weights $w_{gt}$ reflect relative sample sizes. Chapter~\ref{ch:did} discusses why traditional two-way fixed effects regressions fail to recover this convex combination when effects are heterogeneous.
+where weights $w_{gt} \geq 0$ satisfy $\sum_g \sum_{t \geq g} w_{gt} = 1$, so that $\tau^{\text{ATT}}$ is a convex combination of cohort-time effects. Common choices set $w_{gt}$ proportional to cohort size $n_g$ or to the number of treated observations in cell $(g, t)$. Chapter~\ref{ch:did} discusses why traditional two-way fixed effects regressions fail to recover this convex combination when effects are heterogeneous.
 
 \subsection{Event-Time Effects and Dynamics}
 
@@ -48,10 +51,12 @@ The sequence $\{\theta_k\}$ for $k \ge 0$ captures dynamic treatment effects (e.
 The estimands above allow treatment effects to vary by cohort, calendar time, and event time. But they do not require that current outcomes depend on past treatments. When dynamics are not the focus, we invoke the following restriction to simplify the analysis.
 
 \begin{assumption}[No Dynamic Effects]
+\label{assump:no-dynamics}
 The potential outcome depends only on the current treatment status:
 \[
-Y_{it}(\underline{w}^t) = Y_{it}(w_{it}).
+Y_{it}(\underline{w}^t) = Y_{it}(w_t),
 \]
+where $w_t$ denotes the $t$-th element of the treatment path $\underline{w}^t = (w_1, \ldots, w_t)$.
 \end{assumption}
 
 This assumption rules out carryover and feedback. It says that a store's sales today depend only on whether the loyalty programme is active today, not on how long the store has been in the programme. While restrictive, this assumption simplifies identification arguments for designs like difference-in-differences. When dynamics are central --- as they typically are for advertising, where exposures in previous weeks contribute to current purchases --- we relax this assumption and estimate the full impulse response function (Chapter~\ref{ch:dynamics}).
@@ -88,9 +93,9 @@ ATE & $\mathbb{E}[Y_{it}(1) - Y_{it}(0)]$ & Average effect if all units treated 
 \addlinespace
 ATT & $\mathbb{E}[Y_{it}(1) - Y_{it}(0) \mid W_{it}=1]$ & Average effect on treated units & Policy evaluation; ROI calculations \\
 \addlinespace
-ATT(g,t) & $\mathbb{E}[Y_{it}(g) - Y_{it}(\infty) \mid G_i=g]$ & Effect for cohort $g$ in period $t$ & Staggered rollouts; heterogeneity \\
+$\tau(g,t)$ & $\mathbb{E}[Y_{it}(g) - Y_{it}(\infty) \mid G_i=g]$ & Effect for cohort $g$ in period $t$ & Staggered rollouts; heterogeneity \\
 \addlinespace
-$\theta_k$ (Event-time) & $\mathbb{E}[Y_{i,G_i+k}(g) - Y_{i,G_i+k}(\infty) \mid G_i=g]$ & Effect $k$ periods post-adoption & Dynamic effects; pre-trends tests \\
+$\theta_k$ (Event-time) & $\mathbb{E}[Y_{i,G_i+k}(G_i) - Y_{i,G_i+k}(\infty) \mid G_i < \infty]$ & Effect $k$ periods post-adoption (aggregated) & Dynamic effects; pre-trends tests \\
 \addlinespace
 Long-run multiplier & $\frac{\sum_{k=0}^K \theta_k}{\theta_0}$ & Cumulative vs immediate effect & Carryover; habit formation \\
 \bottomrule

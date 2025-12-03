@@ -3,13 +3,13 @@
 
 You have data and a causal question. Which chapter should you read next? This crosswalk maps your situation to the methods that can help, clarifying which estimators to deploy for different data structures and identification strategies.
 
-When the goal is to estimate the ATT or cohort-time effects $\text{ATT}(g, t)$ in a staggered adoption design with binary treatment, difference-in-differences estimators (Chapter~\ref{ch:did}) are the natural choice. Modern heterogeneity-robust estimators (Callaway and Sant'Anna, Sun and Abraham, and others) avoid the negative weighting problems of TWFE and provide transparent aggregations of $\text{ATT}(g, t)$ into summary statistics. Event-study specifications (Chapter~\ref{ch:event}) extend the logic by estimating effects as a function of event time $k$, enabling visualisation of pre-trends and dynamic adjustment paths. Both approaches rely on parallel trends assumptions, which can be assessed through pre-treatment diagnostics (Chapter~\ref{ch:design-diagnostics}) and subjected to sensitivity analysis.
+When the goal is to estimate the ATT or cohort-time effects $\tau(g, t)$ in a staggered adoption design with binary treatment, difference-in-differences estimators (Chapter~\ref{ch:did}) are the natural choice. Modern heterogeneity-robust estimators (Callaway and Sant'Anna, Sun and Abraham, and others) avoid the negative weighting problems of TWFE and provide transparent aggregations of $\tau(g, t)$ into summary statistics. Event-study specifications (Chapter~\ref{ch:event}) extend the logic by estimating effects as a function of event time $k$, enabling visualisation of pre-trends and dynamic adjustment paths. Both approaches rely on parallel trends (Assumption~\ref{assump:parallel-trends}), which can be assessed through pre-treatment diagnostics (Chapter~\ref{ch:design-diagnostics}) and subjected to sensitivity analysis.
 
 When treatment variation is more limited --- only one or a few units are treated --- synthetic control methods (Chapter~\ref{ch:sc}) construct counterfactuals by forming weighted combinations of control units that closely match pre-treatment outcomes. Synthetic control does not impose parallel trends in levels, instead using pre-treatment fit to justify the synthetic comparison. Inference relies on placebo tests and permutation methods that compare the estimated effect to the distribution of placebo effects in control units. Hybrid methods (Chapter~\ref{ch:generalized-sc}), particularly synthetic difference-in-differences (SDID), combine the strengths of synthetic control and difference-in-differences by weighting both units and time periods, often outperforming either method alone.
 
 An alternative relaxation of parallel trends comes from factor models and matrix completion methods. Interactive fixed effects models (Chapter~\ref{ch:factor}) posit that outcomes are driven by a small number of latent factors, and estimation proceeds via iterative least squares. Matrix completion methods (Chapter~\ref{ch:advanced-matrix}) extend this logic to settings with missing data, using nuclear norm regularisation to impute counterfactual outcomes. Factor methods are particularly valuable in marketing panels where category-level demand shocks, national trends, or platform-wide changes affect all units but with heterogeneous intensity.
 
-Beyond static treatment effects, dynamics and spillovers require specialised treatment. Chapter~\ref{ch:dynamics} develops distributed lag models, vector autoregressions, and structural dynamic panel methods that estimate how treatment effects unfold over time, accumulate through carryover, or decay through depreciation. Chapter~\ref{ch:spillovers} tackles interference, distinguishing direct effects from spillover effects and covering spatial econometric models, exposure mappings, and interference-robust experimental designs. Both chapters move beyond the static potential outcomes framework to embrace path-dependent outcomes and network interactions.
+Beyond static treatment effects, dynamics and spillovers require specialised treatment. When the No Dynamic Effects assumption (Assumption~\ref{assump:no-dynamics}) fails, Chapter~\ref{ch:dynamics} develops distributed lag models, vector autoregressions, and structural dynamic panel methods that estimate how treatment effects unfold over time, accumulate through carryover, or decay through depreciation. When SUTVA (Assumption~\ref{assump:sutva}) is violated, Chapter~\ref{ch:spillovers} tackles interference, distinguishing direct effects from spillover effects and covering spatial econometric models, exposure mappings, and interference-robust experimental designs. Both chapters move beyond the static potential outcomes framework to embrace path-dependent outcomes and network interactions.
 
 Machine learning integration is the focus of Chapters~\ref{ch:ml-nuisance} and \ref{ch:high-dim}. Double machine learning (Chapter~\ref{ch:ml-nuisance}) uses flexible algorithms --- random forests, boosting, neural networks, and others --- to estimate nuisance functions such as propensity scores, outcome models, and factor loadings, while preserving valid inference on causal parameters through Neyman orthogonalisation and cross-fitting. Causal forests enable estimation of heterogeneous treatment effects, revealing which observable features moderate the treatment response. High-dimensional variable selection (Chapter~\ref{ch:high-dim}) employs lasso and related regularisation methods to control for many potential confounders without overfitting, and post-selection inference methods provide confidence intervals that account for the data-driven selection process.
 
@@ -28,17 +28,19 @@ These methods are not mutually exclusive. An analysis might employ difference-in
 \toprule
 \textbf{Data Structure} & \textbf{Key Feature} & \textbf{Primary Methods} & \textbf{Key Requirement} \\
 \midrule
-Staggered adoption, binary & Variation in timing & DiD (Ch.~\ref{ch:did}), Event studies (Ch.~\ref{ch:event}) & Parallel trends \\
+Randomised experiment & Random assignment & Geo-experiments, A/B tests (Ch.~\ref{ch:design-overview}) & SUTVA (Assump.~\ref{assump:sutva}), no attrition \\
 \addlinespace
-Single/few treated units & Limited variation & Synthetic control (Ch.~\ref{ch:sc}), SDID (Ch.~\ref{ch:generalized-sc}) & Pre-treatment fit \\
+Staggered adoption, binary & Variation in timing & DiD (Ch.~\ref{ch:did}), Event studies (Ch.~\ref{ch:event}) & Parallel trends (Assump.~\ref{assump:parallel-trends}) \\
+\addlinespace
+Single/few treated units & Limited variation & Synthetic control (Ch.~\ref{ch:sc}), SDID (Ch.~\ref{ch:generalized-sc}) & Pre-treatment fit (factor structure or convex hull) \\
 \addlinespace
 Common shocks, differential & Factor structure & IFE (Ch.~\ref{ch:factor}), Matrix completion (Ch.~\ref{ch:advanced-matrix}) & Low-rank structure \\
 \addlinespace
-Continuous treatment & Dose-response & DML (Ch.~\ref{ch:ml-nuisance}), High-dim controls (Ch.~\ref{ch:high-dim}), Continuous treatments (Ch.~\ref{ch:continuous}) & Conditional independence \\
+Continuous treatment & Dose-response & DML (Ch.~\ref{ch:ml-nuisance}), High-dim controls (Ch.~\ref{ch:high-dim}), Continuous treatments (Ch.~\ref{ch:continuous}) & Unconfoundedness (Assump.~\ref{assump:unconfoundedness-continuous}) \\
 \addlinespace
-Spillovers present & SUTVA violated & Spillover models (Ch.~\ref{ch:spillovers}) & Network/geo structure \\
+Spillovers present & SUTVA (Assump.~\ref{assump:sutva}) violated & Spillover models (Ch.~\ref{ch:spillovers}) & Network/geo structure \\
 \addlinespace
-Dynamic effects & Path dependence & Distributed lags (Ch.~\ref{ch:dynamics}), Event studies (Ch.~\ref{ch:event}) & Lag specification; event-time indexing \\
+Dynamic effects & No Dynamic Effects (Assump.~\ref{assump:no-dynamics}) fails & Distributed lags (Ch.~\ref{ch:dynamics}), Event studies (Ch.~\ref{ch:event}) & Lag specification; event-time indexing \\
 \bottomrule
 \end{tabularx}
 \end{tighttable}

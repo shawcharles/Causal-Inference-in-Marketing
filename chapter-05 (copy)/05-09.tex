@@ -1,0 +1,93 @@
+\section{Extensions and Special Cases}
+\label{sec:event-extensions}
+
+Event studies extend beyond binary treatment to settings with continuous intensities, interference across units, and nonlinear outcomes. This section provides worked examples and practical guidance for each extension, with forward references to detailed treatments in later chapters.
+
+\subsection*{Continuous and Multivalued Treatments}
+
+Continuous or multivalued treatments in event time arise when treatment intensity varies across units or over time. Advertising expenditure, promotional discount depth, loyalty programme reward generosity, and pricing all take continuous values. The event-time framework extends by defining $\theta_k(w)$ as the effect of treatment intensity $w$ at event time $k$.
+
+Intensity-based event studies regress outcomes on event-time indicators interacted with treatment intensity:
+\[
+Y_{it} = \alpha_i + \beta_t + \sum_{k \neq -1} \theta_k \mathbb{I}\{t - G_i = k\} \times W_{i} + \varepsilon_{it},
+\]
+where $W_{i}$ is the treatment intensity for unit $i$ (fixed at adoption). The coefficients $\theta_k$ estimate the effect of a unit change in treatment intensity at event time $k$. When intensity varies over time within units, use $W_{it}$ instead, but identification becomes more demanding. This specification assumes a linear dose-response: the effect of intensity is proportional at each event time. When diminishing returns or threshold effects are expected, use flexible specifications (intensity bins, splines, or the dose-response methods in Chapter~\ref{ch:continuous}).
+
+\textbf{Worked Example: Loyalty Programme with Tiered Rewards.} A retailer offers three reward tiers: 2\%, 5\%, and 10\% cashback. Stores are assigned to tiers based on customer demographics. The event-study estimates $\theta_k \times W_i$ for each tier over $k = 0, \ldots, 4$:
+
+\begin{center}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Tier} & $\hat{\theta}_0 \times W$ & $\hat{\theta}_1 \times W$ & $\hat{\theta}_2 \times W$ & $\hat{\theta}_3 \times W$ & $\hat{\theta}_4 \times W$ \\
+\midrule
+2\% cashback & 0.0 & 2.1 & 3.8 & 4.2 & 4.5 \\
+5\% cashback & 0.0 & 4.8 & 8.2 & 9.1 & 9.8 \\
+10\% cashback & 0.0 & 8.5 & 14.3 & 15.2 & 15.8 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Effects are in £ thousands additional quarterly sales per store. Two patterns emerge: (1) effects grow over event time as customers enrol and develop habits; (2) effects scale with intensity but exhibit diminishing returns---doubling from 5\% to 10\% does not double the effect. This suggests saturation at higher reward levels. Chapter~\ref{ch:continuous} develops dose-response methods; Chapter~\ref{ch:dynamics} covers distributed lag models for intensity-dependent dynamics.
+
+\textbf{Key Identification Assumption.} Conditional independence requires that intensity assignment is as-good-as-random conditional on covariates and fixed effects. If high-intensity stores are systematically different (for example, higher baseline sales), the estimates conflate treatment intensity effects with selection effects. This assumption is often violated in marketing: firms typically assign higher intensity to units where they expect larger effects (for example, higher discounts to price-sensitive segments or more advertising to high-potential markets). Check balance on pre-treatment characteristics across intensity levels, and consider instrumental variables or regression discontinuity designs when selection on intensity is severe.
+
+\subsection*{Interference and Spillovers}
+
+Event studies with interference estimate how treatment in one unit affects outcomes in neighbouring units at different event times. The specification includes spatial leads and lags:
+\[
+Y_{it} = \alpha_i + \beta_t + \sum_{k \geq 0} \theta_k^{\text{direct}} \mathbb{I}\{t - G_i = k\} + \sum_{k \geq 0} \theta_k^{\text{spillover}} S_{it}(k) + \varepsilon_{it},
+\]
+where $S_{it}(k) = \sum_{j \in N(i)} \mathbb{I}\{G_j \leq t, \, t - G_j = k\}$ counts treated neighbours at event time $k$. The restriction $G_j \leq t$ ensures that only already-treated neighbours contribute to spillovers---not-yet-treated neighbours remain in the control comparison. This specification assumes no anticipation spillovers: if neighbours anticipate treatment and adjust behaviour before their own adoption, pre-treatment coefficients for the focal unit may be contaminated.
+
+\textbf{Worked Example: Store Network Spillovers.} Store A is treated in Q3; Store B (a neighbouring store) is never treated. After Store A's treatment, at $k = 0$ (Q3) Store B experiences spillover from Store A at $S_{B,Q3}(0) = 1$, and at $k = 1$ (Q4) Store B experiences spillover at $S_{B,Q4}(1) = 1$. Store A's direct effect is $\theta_k^{\text{direct}}$; Store B's spillover effect is $\theta_k^{\text{spillover}}$.
+
+\noindent Estimated effects might show $\theta_0^{\text{direct}} = 8.2$ (immediate lift for treated store) and $\theta_0^{\text{spillover}} = -1.4$ (nearby control stores lose customers to the treated store). Negative spillovers indicate business stealing; positive spillovers indicate demand creation or word-of-mouth.
+
+\textbf{Critical Assumption.} The exposure mapping $N(i)$ must be specified ex ante. In marketing, ``neighbours'' may be geographic (stores within 10km), network-based (customers who share social connections), or competitive (stores in the same category). The choice affects interpretation. If the exposure mapping is misspecified, spillover estimates are biased. Chapter~\ref{ch:spillovers} develops these methods in detail.
+
+\subsection*{Nonlinear Outcomes and Log Transformations}
+
+Event studies can be estimated on transformed outcomes when the outcome distribution is non-normal. Log transformations are common for sales data (always positive, right-skewed).
+
+\textbf{Semi-Elasticity Interpretation.} When estimating on log outcomes:
+\[
+\log Y_{it} = \alpha_i + \beta_t + \sum_{k \neq -1} \theta_k \mathbb{I}\{t - G_i = k\} + \varepsilon_{it},
+\]
+the coefficient $\theta_k$ approximates the percentage change in $Y$ at event time $k$. For $\theta_k = 0.08$, the interpretation is approximately an 8\% increase in sales. For larger effects, use $(\exp(\theta_k) - 1) \times 100\%$ for the exact percentage change.
+
+\textbf{Jensen's Inequality Caveat.} When converting log-scale predictions back to levels, $\exp(\mathbb{E}[\log Y]) \neq \mathbb{E}[Y]$. This matters for forecasting aggregate outcomes. If the goal is prediction rather than causal identification, apply a smearing adjustment: $\hat{Y} = \exp(\hat{\theta}_k) \times \frac{1}{n}\sum_i \exp(\hat{\varepsilon}_i)$.
+
+\textbf{When to Use Log vs Levels.} Use log transformations for sales, revenue, and expenditure---outcomes that are positive, right-skewed, and where multiplicative effects are plausible. Use levels for profit (which can be negative), customer counts (small integers where percentage changes are less meaningful), and indices (already normalised). Consider the inverse hyperbolic sine (IHS) transformation when the outcome includes zeros: IHS handles zeros gracefully and approximates the log for large values, though interpretation requires care.
+
+\subsection*{Smoothing: Bias-Variance Tradeoff}
+
+Smoothing event-time profiles---by imposing polynomial, spline, or parametric structure on $\theta_k$---reduces variance but introduces bias if the true profile does not match the imposed structure.
+
+\textbf{When Smoothing Is Appropriate.} Smoothing is appropriate for prediction and forecasting: if the goal is to extrapolate effects beyond the observed window, smoothing provides out-of-sample predictions that fully flexible estimates cannot. Smoothing can also aid presentation: a smoothed curve can communicate the overall trajectory to non-technical audiences, provided the underlying flexible estimates are also reported.
+
+\textbf{When Smoothing Is Inappropriate.} Smoothing is inappropriate for causal identification: the credibility of causal claims rests on the unsmoothed estimates, and pre-trend tests in particular require flexible pre-treatment coefficients---smoothing them defeats the purpose. Smoothing is also inappropriate when testing for dynamics: if the question is whether effects decay, ramp up, or exhibit non-monotonic patterns, imposing smoothness assumes the answer.
+
+\textbf{Best Practice.} Report flexible (unsmoothed) estimates as the primary specification. If smoothing aids interpretation, overlay a smoothed fit on the event-study plot and clearly label it as such. Never report only smoothed estimates without the underlying flexible coefficients.
+
+\subsection*{Summary: When to Use Each Extension}
+
+\begin{table}[htbp]\small
+\centering
+\caption{Event-Study Extensions Decision Guide}
+\label{tab:event-extensions-guide}
+\begin{tabular}{p{3.5cm}p{4cm}p{4cm}p{2.5cm}}
+\toprule
+\textbf{Extension} & \textbf{When to Use} & \textbf{Key Assumption} & \textbf{Reference} \\
+\midrule
+Continuous treatment & Ad spend, discount depth, reward rates & Conditional independence of intensity & Ch~\ref{ch:continuous} \\
+\addlinespace
+Interference/spillovers & Geo-experiments, store networks, platforms & Exposure mapping correctly specified & Ch~\ref{ch:spillovers} \\
+\addlinespace
+Log transformation & Sales, revenue (positive, right-skewed) & Multiplicative effects plausible & --- \\
+\addlinespace
+Smoothing & Forecasting, presentation & True profile is smooth & Use with caution \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Extensions to continuous treatments, interference, and nonlinear outcomes broaden the applicability of event studies beyond the canonical setting. The key is to maintain the design-based philosophy: specify estimands clearly, articulate identification assumptions transparently, estimate flexibly without imposing unnecessary structure, and report results in a way that enables readers to assess credibility and robustness.

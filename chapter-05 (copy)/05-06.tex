@@ -1,0 +1,58 @@
+\section{Graphical Presentation and Interpretation}
+\label{sec:event-graphs}
+
+Event-study plots are the primary vehicle for communicating causal narratives in panel data. A well-designed plot conveys the dynamic evolution of treatment effects, the credibility of the identification strategy, and the policy relevance of the findings at a glance. This section provides best practices for plotting event-time effects and for interpreting the resulting graphs in marketing applications.
+
+\subsection*{Plot Design}
+
+The basic event-study plot displays point estimates $\hat{\theta}_k$ on the vertical axis and event time $k$ on the horizontal axis, with confidence intervals (typically 95\%) around each point estimate. A vertical line at $k = 0$ marks the treatment period, dividing the plot into pre-treatment (left of the line) and post-treatment (right of the line) regions. The omitted bin (typically $k = -1$) is marked explicitly, often with a hollow marker or a different colour, to remind readers that this event time is normalised to zero by construction.
+
+Point estimates should be connected by lines to guide the eye and to emphasise the dynamic trajectory. However, the lines should not be interpreted as interpolating the effect at non-integer event times unless the underlying estimator supports such interpolation (for example, if effects are modelled parametrically). Confidence intervals should be displayed as shaded bands or error bars, making it clear whether effects at different event times are statistically distinguishable from zero or from each other. Standard practice is to display pointwise 95\% confidence intervals, which test whether each individual $\theta_k$ differs from zero. However, pointwise intervals do not account for multiplicity: when examining many event times simultaneously, the probability of at least one false rejection exceeds 5\%. For example, with 10 independent tests at the 5\% level, the probability of at least one false rejection is $1 - 0.95^{10} \approx 40\%$. Event-time coefficients are not independent, but the multiplicity problem remains.
+
+\textbf{Joint and Uniform Confidence Bands.} For simultaneous inference across all event times, consider sup-t bands (uniform bands) that maintain 95\% coverage jointly across the entire event-time profile. Sup-t bands are wider than pointwise intervals but provide valid simultaneous inference. The trade-off is power: sup-t bands have lower power to detect effects at individual event times because they are conservative. They are particularly useful for pre-trend tests, where the question is whether any pre-treatment coefficient deviates from zero, not whether a specific one does. Software: the \texttt{fixest} package in R reports sup-t bands via \texttt{iplot(ci\_level=0.95, ci\_type="sup-t")}. Report both pointwise and joint bands when feasible, or clearly state which is displayed.
+
+If multiple event-time profiles are displayed (for example, cohort-specific profiles or estimates from different estimators), they should be distinguished by line style or colour, with a clear legend.
+
+Marking $k = 0$ with a vertical line or shaded region highlights the treatment threshold and draws attention to the immediate effect $\theta_0$ and to the contrast between pre-treatment and post-treatment dynamics. If the treatment was phased in over multiple periods or if there was a lag between adoption and full implementation, the plot should indicate the phase-in period explicitly, and interpretation should account for the gradual ramp-up.
+
+Showing support per event time $k$ ensures that readers understand where the data are rich and where estimates are based on few observations. A support table or a second panel in the figure can display the number of observations, the number of cohorts contributing, or the effective sample size (accounting for weights and clustering) for each $k$. If support is thin at extreme event times, confidence intervals will be wide. Conclusions about long-run effects should then be tempered. Binning decisions (aggregating extreme event times) should be indicated in the plot, for example by using a different marker style for binned event times or by annotating the axis labels.
+
+Overlaying cohort-specific paths $\theta_{g,k}$ on the main event-time plot provides a diagnostic for heterogeneity. If cohort-specific paths are similar, pooling them into a single $\theta_k$ is defensible. If paths diverge, the aggregated $\theta_k$ obscures meaningful variation, and conclusions should acknowledge the heterogeneity. Cohort-specific paths can be displayed as lighter lines or with greater transparency, with the aggregated path displayed as a bold line, making the overall trajectory salient while retaining the diagnostic information.
+
+\subsection*{Interpretation Patterns}
+
+\textbf{Visual inspection can be misleading.} Humans are prone to seeing patterns in noise. A flat pre-treatment profile may look "slightly trending" to a motivated observer, and random variation in post-treatment coefficients may be interpreted as meaningful dynamics. Formal statistical tests (joint pre-trend tests, tests for monotonicity or decay) should accompany visual inspection. When in doubt, report the formal test results alongside the plot.
+
+Substantive interpretation for marketing requires translating the event-time profile into business insights. Ramp-up patterns, where post-treatment effects grow over event time ($\theta_k$ increases with $k$), indicate that the intervention takes time to produce its full impact. A loyalty programme may exhibit ramp-up as customers enrol, accumulate points, and develop purchasing habits. Advertising may exhibit ramp-up as brand awareness builds. Platform entry may exhibit ramp-up as network effects accumulate. Ramp-up patterns suggest that short-run evaluations understate long-run benefits and that patience is required for interventions to mature. However, apparent ramp-up can also reflect composition bias: if early adopters with large effects dominate at large $k$ (because late adopters have not yet reached that horizon), the profile may show increasing effects even if within-cohort effects are constant. Cohort-specific profiles (Section~\ref{sec:event-specification}) diagnose this issue.
+
+Decay patterns, where post-treatment effects diminish over event time ($\theta_k$ decreases with $k$), indicate that the intervention produces transient effects that erode over time. Promotional pricing may exhibit decay as customers stockpile products during the promotion and reduce buying afterward. Advertising may exhibit decay if awareness fades or if competitors respond. Decay patterns suggest that sustained investment is required to maintain effects and that one-time interventions have limited long-run impact.
+
+Hysteresis, where post-treatment effects persist at a stable level over event time ($\theta_k$ is roughly constant for $k \geq K$), indicates that the intervention produces a permanent shift in outcomes. A platform entry that captures market share may exhibit hysteresis if customers do not return to incumbents after trying the new platform. A loyalty programme that changes purchasing habits may exhibit hysteresis if habits persist even if the programme is discontinued. Hysteresis patterns suggest that the intervention has lasting effects and that the return on investment is high.
+
+\textbf{Identification challenge for hysteresis.} Hysteresis is difficult to distinguish from very slow decay. If the post-treatment window is short, what appears to be a permanent effect may actually be slow decay that would eventually return to zero. Longer post-treatment windows provide more confidence in hysteresis claims. When the window is limited, report the observed persistence but acknowledge that longer-run dynamics remain uncertain.
+
+Distinguishing transitory from persistent effects is central to marketing decisions. Transitory effects, where $\theta_k$ returns to near zero after a few periods, indicate that the intervention shifts demand forward in time but does not create new demand. Persistent effects, where $\theta_k$ remains elevated indefinitely, indicate that the intervention changes the level or trajectory of outcomes permanently. The distinction matters for go/no-go decisions: transitory effects may not justify the cost of the intervention, while persistent effects generate long-run value that justifies upfront investment.
+
+For quantitative metrics that translate these patterns into decision inputs---including formulas for ramp-up rate, time-to-maturity, effect multiplier, decay half-life, and cumulative effects---see Section~\ref{sec:event-marketing}.
+
+\subsection*{Linking Plots to Business Decisions}
+
+Event-study plots should be accompanied by narrative interpretation that explains the pattern, relates it to the substantive context, and draws implications for decisions. The plot provides transparent evidence on dynamics and credibility, but the narrative provides meaning and actionability. A retailer evaluating a loyalty programme uses the event-time profile to assess ramp-up speed and long-run steady-state effects. A brand estimating advertising ROI examines cumulative effects (the sum $\sum_{k=0}^{K} \theta_k$ of event-time coefficients, not literally the geometric area under the curve) and decay half-life. A platform assessing market entry tracks immediate effects and growth trajectories.
+
+The key is to translate the visual pattern into the metrics that matter for the decision at hand. Section~\ref{sec:event-marketing} provides formulas for computing these metrics directly from the estimated $\theta_k$ profile. Together, the plot and the quantitative metrics make event studies a powerful tool for communicating causal findings to technical and non-technical audiences alike. The next section addresses inference procedures for event-time estimates.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/event_plot_ch5.pdf}
+\caption{Event-Study Plot with Omitted Category and Confidence Intervals}
+\label{fig:event-plot}
+\small\textit{The figure displays event-time treatment effects $\theta_k$ from $k=-5$ (five periods before treatment) to $k=10$ (ten periods after treatment). Pre-treatment coefficients (left of the vertical red line at $k=0$) are near zero and flat, supporting parallel trends and no anticipation. The omitted reference period at $k=-1$ is marked with a hollow circle. Post-treatment coefficients (right of the red line) show a ramp-up pattern, with effects increasing gradually over event time, consistent with habit formation or network effects. Shaded bands represent 95\% confidence intervals. Sample sizes are annotated at the bottom, showing rich support near treatment and thinner support at extreme event times.}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{images/event_support.pdf}
+\caption{Support by Event Time $k$ and Cohort Composition Across $k$}
+\label{fig:event-support}
+\small\textit{The left panel shows sample size (number of observations) by event time $k$. Support is richest near the treatment period ($k=0$) and thinner at extreme event times ($k \ll 0$ or $k \gg 0$), where fewer cohorts contribute observations. Bars in coral indicate thin support (below 80 observations). The right panel displays cohort composition as a stacked area chart, showing which cohorts (g=2, 5, 8) contribute to each event time. Early-adopting cohorts (g=2, blue) dominate at large positive $k$, while all cohorts contribute at $k=0$. Composition changes across event time can confound interpretation if treatment effects are heterogeneous across cohorts.}
+\end{figure}

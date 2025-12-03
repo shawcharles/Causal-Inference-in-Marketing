@@ -7,7 +7,7 @@ title: "Causal Inference in Marketing"
 
 ## Panel Data and Machine Learning Methods
 
-> A rigorous, practitioner-oriented guide for marketing analysts and applied econometricians.
+> A pragmatic, practitioner-oriented guide for marketing analysts and applied econometricians.
 
 [📄 Download PDF](https://github.com/shawcharles/Causal-Inference-in-Marketing/raw/main/book.pdf) ·
 <a href="https://github.com/shawcharles/Causal-Inference-in-Marketing" class="btn-view-on-github">📖 View on GitHub</a>

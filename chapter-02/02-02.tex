@@ -20,6 +20,16 @@ W_{N1} & \dots & W_{NT}
 \]
 The relative magnitude of $N$ and $T$ determines the ``shape'' of the data frame, which in turn dictates the appropriate asymptotic approximations and estimation strategies.
 
+\subsubsection*{Balanced and Unbalanced Panels}
+
+A \textbf{balanced panel} observes every unit in every period, so the matrices $\mathbf{Y}$ and $\mathbf{W}$ contain no missing entries. An \textbf{unbalanced panel} has gaps: some units enter the sample late, exit early, or have intermittent observations. We formalise this distinction with an observation indicator:
+\[
+M_{it} = \begin{cases} 1 & \text{if } Y_{it} \text{ is observed}, \\ 0 & \text{otherwise}. \end{cases}
+\]
+The observation matrix $\mathbf{M}$ has the same dimensions as $\mathbf{Y}$, with entries indicating which cells contain data. In a balanced panel, $M_{it} = 1$ for all $i, t$. In an unbalanced panel, the pattern of zeros in $\mathbf{M}$ determines which estimators are feasible and how standard errors must be computed.
+
+Marketing data are frequently unbalanced. Customers churn, stores open and close, products launch and discontinue. Scanner panels may track different store samples over time. Digital platforms observe users only when they are active. The missingness pattern itself may be informative---customers who churn differ systematically from those who remain---raising selection concerns that Chapter~\ref{ch:threats} addresses. For now, we note that unbalanced panels require explicit attention to the observation process, and estimators must be adapted accordingly.
+
 \subsubsection*{Thin Panels ($N \gg T$)}
 Thin panels are the classic setting in microeconometrics, with many units observed over few periods. In marketing, think of customer purchase histories: thousands of customers tracked over a handful of quarters, or hundreds of stores observed across a dozen months. The loyalty programme example from Chapter 1 --- 500 stores over 12 quarters --- falls squarely in this regime.
 \[
@@ -30,7 +40,11 @@ Y_{21} & Y_{22} & Y_{23} \\
 Y_{N1} & Y_{N2} & Y_{N3}
 \end{pmatrix} \quad (N \gg T).
 \]
-Asymptotics rely on $N \to \infty$ with fixed $T$. We can estimate unit fixed effects consistently, but the incidental parameter problem prevents consistent estimation of nonlinear models without bias correction. Random effects approaches work well here if the strict exogeneity and uncorrelatedness assumptions hold.
+The asymptotic regime for thin panels assumes $N \to \infty$ with $T$ fixed. Formally, we consider a sequence of panels $\{(Y_{it}, W_{it}) : i = 1, \ldots, N; t = 1, \ldots, T\}$ where $N$ grows but $T$ remains constant. This fixed-$T$ asymptotic framework underpins most microeconometric panel estimators.
+
+In this regime, we can estimate unit fixed effects $\alpha_i$ consistently because averaging over $T$ observations per unit yields consistent within-unit means as $N \to \infty$. However, the \textbf{incidental parameter problem} \citep{neyman1948consistent} creates difficulties for nonlinear models. The problem arises because the number of nuisance parameters (the $N$ fixed effects) grows with the sample size. In linear models, the fixed effects can be concentrated out, and their estimation does not contaminate inference on the treatment effect. In nonlinear models---logit, probit, Poisson---the fixed effect estimates are inconsistent when $T$ is small, and this inconsistency propagates to the parameters of interest. Bias correction methods \citep{hahn2004jackknife, fernandez2016individual} or conditional likelihood approaches can mitigate but not eliminate this problem.
+
+Random effects approaches avoid the incidental parameter problem by treating $\alpha_i$ as random draws from a population distribution rather than fixed parameters to estimate. This works well if the strict exogeneity assumption holds and $\alpha_i$ is uncorrelated with the regressors---assumptions that marketing applications frequently violate.
 
 \subsubsection*{Fat Panels ($N \ll T$)}
 Fat panels arise when we observe a few aggregate units over many periods. The TV advertising example from Chapter 1 --- 50 DMAs tracked over 100 weeks --- illustrates this shape. Brand-level sales data, where a handful of brands are tracked weekly for years, also falls here.
@@ -41,7 +55,9 @@ Y_{21} & Y_{22} & \dots & Y_{2T} \\
 Y_{31} & Y_{32} & \dots & Y_{3T}
 \end{pmatrix} \quad (N \ll T).
 \]
-This setting resembles time-series analysis. Asymptotics rely on $T \to \infty$. We must account for serial correlation through HAC estimators, and inference requires care. Synthetic control methods (Chapter~\ref{ch:sc}) often operate in this regime.
+This setting resembles time-series analysis more than cross-sectional microeconometrics. The asymptotic regime assumes $T \to \infty$ with $N$ fixed. Formally, we treat the $N$ units as a fixed collection and derive asymptotic distributions from the growing time dimension.
+
+This regime introduces challenges absent from thin panels. Serial correlation is typically present---outcomes in adjacent periods are correlated even after conditioning on observables---so standard errors must account for temporal dependence. Heteroskedasticity and autocorrelation consistent (HAC) estimators \citep{newey1987efficient} or cluster-robust inference at the unit level address this concern. Stationarity assumptions become relevant: if the data-generating process changes over time, long-run averages may not converge to stable population quantities. Synthetic control methods (Chapter~\ref{ch:sc}) often operate in this regime, exploiting the long pre-treatment period to construct counterfactuals.
 
 \subsubsection*{Square Panels ($N \approx T$)}
 Square panels have comparable unit and time dimensions. The platform entry example from Chapter 1 --- 50 cities over 24 months --- approaches this shape. Scanner data from 50 stores tracked over 52 weeks is another common instance.
@@ -52,7 +68,9 @@ Y_{11} & \dots & Y_{1T} \\
 Y_{N1} & \dots & Y_{NT}
 \end{pmatrix} \quad (N \approx T).
 \]
-Inference here is challenging. Neither dimension dominates, so neither pure cross-sectional nor pure time-series asymptotics apply cleanly. Methods like matrix completion (Chapter~\ref{ch:factor}) and synthetic difference-in-differences (Chapter~\ref{ch:generalized-sc}) exploit the joint structure of $N$ and $T$, treating the panel as a matrix to be decomposed rather than a collection of independent units or time series.
+Inference here requires \textbf{joint asymptotics} where both $N \to \infty$ and $T \to \infty$ simultaneously. The rate at which each dimension grows matters: if $N/T \to c$ for some constant $c \in (0, \infty)$, we are in a truly square regime where neither dimension dominates. Different limiting behaviours emerge depending on whether $N/T \to 0$, $N/T \to \infty$, or $N/T \to c$.
+
+Neither pure cross-sectional nor pure time-series asymptotics apply cleanly in this regime. Methods like interactive fixed effects (Chapter~\ref{ch:factor}) and synthetic difference-in-differences (Chapter~\ref{ch:generalized-sc}) exploit the joint structure of $N$ and $T$, treating the panel as a matrix to be decomposed rather than a collection of independent units or time series. These methods typically require both dimensions to be ``large enough'' for the low-rank structure to be estimable, with convergence rates depending on $\min(N, T)$ or $NT$ jointly.
 
 \subsection{Other Data Configurations}
 
@@ -74,4 +92,16 @@ When treatment adoption is staggered, we need notation that distinguishes calend
 
 Event time measures periods relative to adoption: $k = t - G_i$. When $k = 0$, the unit has just adopted. When $k < 0$, the unit has not yet adopted. When $k > 0$, the unit has been treated for $k$ periods. This mapping transforms the calendar-time treatment matrix $\mathbf{W}$ into an event-time structure where all adopters are aligned at their adoption moment, regardless of when that moment occurred in calendar time.
 
-Consider the loyalty programme example. Some stores adopt in quarter 3, others in quarter 5, others in quarter 8. In calendar time, their treatment indicators turn on at different columns of the matrix. In event time, we align them so that $k = 0$ corresponds to the adoption quarter for each store, allowing us to trace out how effects evolve in the periods before and after adoption. This event-time indexing is essential for event-study designs (Chapter~\ref{ch:event}) and for understanding dynamic treatment effects (Chapter~\ref{ch:dynamics}).
+Consider the loyalty programme example. Some stores adopt in quarter 3, others in quarter 5, others in quarter 8. In calendar time, their treatment indicators turn on at different columns of the matrix. In event time, we align them so that $k = 0$ corresponds to the adoption quarter for each store, allowing us to trace out how effects evolve in the periods before and after adoption.
+
+We formalise event-time treatment indicators as follows. For each event-time value $k$, define:
+\[
+D_{it}^k = \mathbf{1}\{t - G_i = k\} = \mathbf{1}\{t = G_i + k\},
+\]
+where $\mathbf{1}\{\cdot\}$ is the indicator function. The variable $D_{it}^k$ equals one if and only if unit $i$ is exactly $k$ periods from its adoption date at calendar time $t$. For never-treated units with $G_i = \infty$, all event-time indicators are zero ($D_{it}^k = 0$ for all finite $k$), since no finite $t$ satisfies $t - \infty = k$.
+
+These event-time indicators form the building blocks of event-study regressions:
+\[
+Y_{it} = \alpha_i + \lambda_t + \sum_{k \neq -1} \tau_k D_{it}^k + \varepsilon_{it},
+\]
+where $\tau_k$ captures the treatment effect at event time $k$, and we normalise $\tau_{-1} = 0$ so that effects are measured relative to the period just before adoption. The coefficients $\{\tau_k\}_{k < 0}$ test for pre-trends (anticipation or selection), while $\{\tau_k\}_{k \geq 0}$ trace out the dynamic treatment effects. This event-time indexing is essential for event-study designs (Chapter~\ref{ch:event}) and for understanding dynamic treatment effects (Chapter~\ref{ch:dynamics}).

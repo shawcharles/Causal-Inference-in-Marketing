@@ -19,12 +19,18 @@ Chapter~\ref{ch:design-overview} discusses randomised experiments in more depth,
 
 When randomisation is infeasible, as is often the case in marketing, we must rely on observational variation in treatment timing. Staggered adoption occurs when units adopt treatment at different times. Some units adopt in period 2 (cohort $g = 2$), others in period 5 (cohort $g = 5$), and some never adopt during the observation window ($g = \infty$). This structure is ubiquitous in marketing: a retailer rolls out a loyalty programme to batches of stores over multiple quarters, a brand launches advertising campaigns sequentially across markets, a platform enters cities in staggered fashion. The variation in adoption timing creates opportunities for identification provided that units adopting at different times would have followed parallel trends in the absence of treatment. The parallel trends assumption asserts that differences in outcome trajectories between units with different adoption times can be attributed to treatment rather than to differential pre-existing trends.
 
-Formally, the parallel trends assumption for staggered adoption can be stated as follows: for all cohorts $g$ and $g'$ and all periods $t$ where neither cohort is yet treated,
-\[
-\mathbb{E}[Y_{it}(0) - Y_{i,t-1}(0) \mid G_i = g] = \mathbb{E}[Y_{it}(0) - Y_{i,t-1}(0) \mid G_i = g'].
-\]
+Formally, we state this as an assumption.
 
-In words, the expected change in untreated potential outcomes from one period to the next is the same across cohorts. This assumption is stated in terms of changes rather than levels because it allows cohorts to differ in their baseline outcome levels --- early adopters (those with small $g$, adopting in early calendar periods) might have systematically higher sales than late adopters --- while still requiring that their growth rates would have been parallel absent treatment. This assumption does not require that levels or slopes are identical across cohorts, only that the evolution over time --- absent treatment --- would have been parallel. Staggered adoption designs are particularly compelling when the timing of adoption is driven by factors unrelated to the anticipated magnitude of the treatment effect. If the firm rolls out a programme alphabetically by store name, or if a platform enters cities based on operational capacity constraints rather than expected profitability, then parallel trends may be plausible. Chapter~\ref{ch:did} develops modern heterogeneity-robust estimators that aggregate $\text{ATT}(g, t)$ effects from staggered designs, and Chapter~\ref{ch:event} discusses event-study specifications that test for pre-trends and estimate dynamic effects.
+\begin{assumption}[Parallel Trends]
+\label{assump:parallel-trends}
+For all cohorts $g, g' \in \{1, \ldots, T\} \cup \{\infty\}$ and all periods $t < \min(g, g')$ (i.e., before either cohort is treated),
+\[
+\mathbb{E}[Y_{it}(\infty) - Y_{i,t-1}(\infty) \mid G_i = g] = \mathbb{E}[Y_{it}(\infty) - Y_{i,t-1}(\infty) \mid G_i = g'],
+\]
+where $Y_{it}(\infty)$ denotes the potential outcome under never receiving treatment.
+\end{assumption}
+
+In words, the expected change in untreated potential outcomes from one period to the next is the same across cohorts. This assumption is stated in terms of changes rather than levels because it allows cohorts to differ in their baseline outcome levels --- early adopters (those with small $g$, adopting in early calendar periods) might have systematically higher sales than late adopters --- while still requiring that their growth rates would have been parallel absent treatment. This assumption does not require that levels or slopes are identical across cohorts, only that the evolution over time --- absent treatment --- would have been parallel. Staggered adoption designs are particularly compelling when the timing of adoption is driven by factors unrelated to the anticipated magnitude of the treatment effect. If the firm rolls out a programme alphabetically by store name, or if a platform enters cities based on operational capacity constraints rather than expected profitability, then parallel trends may be plausible. Chapter~\ref{ch:did} develops modern heterogeneity-robust estimators that aggregate $\tau(g, t)$ effects from staggered designs, and Chapter~\ref{ch:event} discusses event-study specifications that test for pre-trends and estimate dynamic effects.
 
 \subsection*{Single Treated Unit}
 
@@ -40,7 +46,18 @@ Treatment assignment need not be binary. In many marketing applications, treatme
 
 The potential outcomes framework extends naturally: $Y_{it}(w)$ denotes the potential outcome under treatment level $w$. The causal effect of moving from treatment intensity $w$ to $w'$ is $Y_{it}(w') - Y_{it}(w)$. For the TV advertising example, we might ask: what is the effect of increasing GRPs from 100 to 150 in a given market-week? The dose-response function traces out how outcomes change across the full range of treatment intensities.
 
-Identification typically relies on a conditional independence assumption: conditional on covariates $X_{it}$, the treatment intensity $W_{it}$ is independent of potential outcomes. This is a strong assumption. It requires that we observe and control all confounders --- all factors that jointly affect both advertising spending and sales.
+Identification typically relies on a conditional independence assumption, which we state formally.
+
+\begin{assumption}[Unconfoundedness for Continuous Treatment]
+\label{assump:unconfoundedness-continuous}
+Conditional on covariates $X_{it}$, unit fixed effects $\alpha_i$, and time fixed effects $\lambda_t$, the treatment intensity is independent of potential outcomes:
+\[
+W_{it} \perp Y_{it}(w) \mid X_{it}, \alpha_i, \lambda_t \quad \text{for all } w \in \mathcal{W},
+\]
+where $\mathcal{W}$ denotes the support of treatment intensity.
+\end{assumption}
+
+This is a strong assumption. It requires that we observe and control all confounders---all factors that jointly affect both advertising spending and sales.
 
 Panel settings make this assumption more plausible by including unit and time fixed effects, which control for time-invariant unobservables and common shocks. High-dimensional controls (Chapter~\ref{ch:high-dim}) and double machine learning (Chapter~\ref{ch:ml-nuisance}) provide flexible approaches to conditioning on many covariates without imposing restrictive functional forms. Dose-response functions, marginal effects, and elasticity estimation for continuous treatments are covered in Chapter~\ref{ch:continuous}.
 
@@ -48,7 +65,11 @@ Panel settings make this assumption more plausible by including unit and time fi
 
 In practice, you should combine identification strategies rather than treat them as mutually exclusive. Difference-in-differences can incorporate high-dimensional controls; synthetic control can be followed by sensitivity analyses; factor models can be combined with staggered adoption to accommodate common shocks and timing. What matters is matching the design to the variation that identifies the effect.
 
-Parallel trends asserts that treated and control units would have evolved similarly absent treatment. It can be stated conditionally (after covariate adjustment) or unconditionally (in levels). Conditional versions are often more plausible; unconditional versions require fewer modelling choices. Although untestable directly, pre-treatment fit and placebo checks (Chapter~\ref{ch:design-diagnostics}) provide indirect evidence. Difference-in-differences and event studies (Chapters~\ref{ch:did}, \ref{ch:event}) rely on this assumption, and recent sensitivity analyses \citet{rambachan2023more} quantify how large a violation must be to overturn conclusions.
+\subsubsection*{Parallel Trends Revisited}
+
+Parallel trends (Assumption~\ref{assump:parallel-trends}) asserts that treated and control units would have evolved similarly absent treatment. It can be stated conditionally (after covariate adjustment) or unconditionally (in levels). Conditional versions are often more plausible; unconditional versions require fewer modelling choices. Although untestable directly, pre-treatment fit and placebo checks (Chapter~\ref{ch:design-diagnostics}) provide indirect evidence. Difference-in-differences and event studies (Chapters~\ref{ch:did}, \ref{ch:event}) rely on this assumption, and recent sensitivity analyses \citet{rambachan2023more} quantify how large a violation must be to overturn conclusions.
+
+\subsubsection*{Factor Structure}
 
 Factor structure provides an alternative when parallel trends in levels is implausible but units are subject to common time-varying shocks that affect them differentially. While parallel trends requires that treated and control units evolve similarly, factor models allow for heterogeneous responses to common shocks. Interactive fixed effects models (Chapter~\ref{ch:factor}) posit that untreated potential outcomes can be decomposed as
 \[
@@ -56,9 +77,15 @@ Y_{it}(0) = \sum_{r=1}^R \lambda_{ir} f_{tr} + \varepsilon_{it},
 \]
 where $f_{tr}$ are latent factors common to all units and $\lambda_{ir}$ are unit-specific loadings. This structure accommodates differential exposure to common shocks -- such as seasonality, macroeconomic trends, or industry-wide demand shifts -- without requiring parallel trends. Estimation proceeds via principal components, expectation-maximisation algorithms, or nuclear norm regularisation. Factor models are particularly effective in marketing panels where all stores are affected by category demand shocks, all markets experience national advertising campaigns, or all platforms face common technological changes.
 
-Unconfoundedness with high-dimensional controls applies in settings where treatment intensity varies continuously or where treatment is targeted based on observable characteristics. Conditional independence assumptions can justify causal inference when we control for a sufficiently rich set of covariates -- demographics, past outcomes, competitor actions, seasonal indicators -- such that treatment assignment is as good as random conditional on these controls. This is a strong assumption -- it requires that there are no unobserved confounders that jointly affect treatment and outcomes -- but panel structures strengthen this strategy by allowing unit fixed effects (controlling for time-invariant confounders) and time fixed effects (controlling for common shocks), reducing the set of potential unobserved confounders to time-varying unit-specific factors. When the covariate set is high-dimensional, regularisation methods such as lasso (Chapter~\ref{ch:high-dim}) can select relevant controls without overfitting, and double machine learning (Chapter~\ref{ch:ml-nuisance}) enables valid inference even when the selection and outcome models are estimated flexibly.
+\subsubsection*{Unconfoundedness with High-Dimensional Controls}
 
-Interference-aware designs become necessary when SUTVA is violated. Identification requires either cluster randomisation or explicit modelling of spillovers. Cluster designs assign treatment to groups of units, internalising spillovers within clusters while maintaining independence across clusters. When randomisation is infeasible, spatial models and exposure mappings estimate direct and spillover effects jointly, given network or geographic structure. Chapter~\ref{ch:spillovers} also discusses partial identification when the spillover structure is uncertain.
+Unconfoundedness (Assumption~\ref{assump:unconfoundedness-continuous}) applies in settings where treatment intensity varies continuously or where treatment is targeted based on observable characteristics. Conditional independence assumptions can justify causal inference when we control for a sufficiently rich set of covariates -- demographics, past outcomes, competitor actions, seasonal indicators -- such that treatment assignment is as good as random conditional on these controls. This is a strong assumption -- it requires that there are no unobserved confounders that jointly affect treatment and outcomes -- but panel structures strengthen this strategy by allowing unit fixed effects (controlling for time-invariant confounders) and time fixed effects (controlling for common shocks), reducing the set of potential unobserved confounders to time-varying unit-specific factors. When the covariate set is high-dimensional, regularisation methods such as lasso (Chapter~\ref{ch:high-dim}) can select relevant controls without overfitting, and double machine learning (Chapter~\ref{ch:ml-nuisance}) enables valid inference even when the selection and outcome models are estimated flexibly.
+
+\subsubsection*{Interference-Aware Designs}
+
+Interference-aware designs become necessary when SUTVA (Assumption~\ref{assump:sutva}) is violated. Identification requires either cluster randomisation or explicit modelling of spillovers. Cluster designs assign treatment to groups of units, internalising spillovers within clusters while maintaining independence across clusters. When randomisation is infeasible, spatial models and exposure mappings estimate direct and spillover effects jointly, given network or geographic structure. Chapter~\ref{ch:spillovers} also discusses partial identification when the spillover structure is uncertain.
+
+\subsubsection*{Method Selection Summary}
 
 Method choice depends on the structure of treatment variation, the plausibility of assumptions, and available diagnostics. With staggered timing and plausible parallel trends, use modern DiD (Chapters~\ref{ch:did}, \ref{ch:event}). With one or few treated units, use synthetic control (Chapters~\ref{ch:sc}, \ref{ch:generalized-sc}). With continuous treatments and rich covariates, use unconfoundedness with high-dimensional controls (Chapters~\ref{ch:high-dim}, \ref{ch:ml-nuisance}). With spillovers, use interference-aware designs (Chapter~\ref{ch:spillovers}). Comparing multiple approaches is often most persuasive.
 

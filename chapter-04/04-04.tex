@@ -3,9 +3,9 @@
 
 The \index{two-way fixed effects}two-way fixed effects (TWFE) regression is the traditional workhorse for difference-in-differences estimation. A retailer evaluating a loyalty programme rollout might run:
 \[
-Y_{it} = \alpha_i + \beta_t + \tau W_{it} + \varepsilon_{it},
+Y_{it} = \alpha_i + \lambda_t + \tau W_{it} + \varepsilon_{it},
 \]
-where $\alpha_i$ are unit fixed effects, $\beta_t$ are time fixed effects, and $W_{it}$ is a treatment indicator. The coefficient $\tau$ is interpreted as the average treatment effect. This specification is intuitive, easy to implement, and computationally fast. Under heterogeneous treatment effects it can be misleading.
+where $\alpha_i$ are unit fixed effects, $\lambda_t$ are time fixed effects, and $W_{it}$ is a treatment indicator. The coefficient $\tau$ is interpreted as the average treatment effect. This specification is intuitive, easy to implement, and computationally fast. Under heterogeneous treatment effects it can be misleading.
 
 \subsection*{The Promise of TWFE}
 
@@ -28,9 +28,9 @@ The third comparison is the source of the problem. When TWFE compares a newly tr
 
 \citet{de2020two} and \citet{goodman2021difference} formalised this problem by showing that TWFE can assign negative weights to some cohort-time effects. The TWFE estimator can be decomposed as:
 \[
-\hat{\tau}^{\text{TWFE}} = \sum_g \sum_{t \geq g} w_{gt} \, \text{ATT}(g, t),
+\hat{\tau}^{\text{TWFE}} = \sum_g \sum_{t \geq g} w_{gt} \, \tau(g, t),
 \]
-where the weights $w_{gt}$ sum to one but are not guaranteed to be non-negative. When some weights are negative, the TWFE estimate is not a convex combination of the underlying effects. In extreme cases, TWFE can produce an estimate with the opposite sign from all underlying $\text{ATT}(g,t)$---a phenomenon known as \index{negative weights}sign reversal.
+where the weights $w_{gt}$ sum to one but are not guaranteed to be non-negative. When some weights are negative, the TWFE estimate is not a convex combination of the underlying effects. In extreme cases, TWFE can produce an estimate with the opposite sign from all underlying $\tau(g,t)$---a phenomenon known as \index{negative weights}sign reversal.
 
 \begin{example}[Sign Reversal in a Loyalty Programme]
 Consider a loyalty programme rolled out to two cohorts. Cohort A adopts in period 2 and experiences an effect of +10 in all post-treatment periods. Cohort B adopts in period 4 and experiences an effect of +5 in all post-treatment periods. Both effects are positive. However, if TWFE assigns negative weight to cohort A's later periods (because cohort A serves as a "control" for cohort B's treatment), the TWFE estimate can be attenuated toward zero or even negative, despite all true effects being positive.
@@ -59,30 +59,30 @@ TWFE is less problematic when:
 
 Before abandoning TWFE, diagnose whether the problems are severe in your application. Several tools are available:
 
-\textbf{Bacon decomposition.} \citet{goodman2021difference} provides a decomposition of the TWFE estimator into its component 2×2 comparisons. The decomposition reveals what fraction of the TWFE estimate comes from (1) treated vs never-treated comparisons, (2) treated vs not-yet-treated comparisons, and (3) treated vs already-treated comparisons. If the third category dominates, TWFE is unreliable. The \texttt{bacondecomp} package in R and Stata implements this decomposition.
+\paragraph{Bacon Decomposition} \citet{goodman2021difference} provides a decomposition of the TWFE estimator into its component 2×2 comparisons. The decomposition reveals what fraction of the TWFE estimate comes from (1) treated vs never-treated comparisons, (2) treated vs not-yet-treated comparisons, and (3) treated vs already-treated comparisons. If the third category dominates, TWFE is unreliable. The \texttt{bacondecomp} package in R and Stata implements this decomposition.
 
-\textbf{Weight diagnostics.} \citet{de2020two} provides tools to compute the weights $w_{gt}$ and identify which cohort-time effects receive negative weight. If many weights are negative or if large negative weights attach to important cohort-time cells, TWFE is suspect. The \texttt{twowayfeweights} command in Stata and the \texttt{DIDmultiplegt} package in R implement these diagnostics.
+\paragraph{Weight Diagnostics} \citet{de2020two} provides tools to compute the weights $w_{gt}$ and identify which cohort-time effects receive negative weight. If many weights are negative or if large negative weights attach to important cohort-time cells, TWFE is suspect. The \texttt{twowayfeweights} command in Stata and the \texttt{DIDmultiplegt} package in R implement these diagnostics.
 
-\textbf{Comparison to modern estimators.} Run both TWFE and a modern estimator (Callaway--Sant'Anna, Sun--Abraham, or Borusyak--Jaravel--Spiess). If the estimates are similar, TWFE may be acceptable despite its theoretical problems. If the estimates diverge substantially, the divergence reveals the magnitude of the bias from forbidden comparisons.
+\paragraph{Comparison to Modern Estimators} Run both TWFE and a modern estimator (Callaway--Sant'Anna, Sun--Abraham, or Borusyak--Jaravel--Spiess). If the estimates are similar, TWFE may be acceptable despite its theoretical problems. If the estimates diverge substantially, the divergence reveals the magnitude of the bias from forbidden comparisons.
 
 \subsection*{A Worked Example: TWFE vs Modern Estimators}
 
-Consider a stylised example with three cohorts adopting a loyalty programme in periods 2, 4, and 6, observed through period 8. True effects are heterogeneous: cohort $g=2$ experiences $\text{ATT}(2,t) = 10$ for all $t \geq 2$; cohort $g=4$ experiences $\text{ATT}(4,t) = 5$ for all $t \geq 4$; cohort $g=6$ experiences $\text{ATT}(6,t) = 2$ for all $t \geq 6$. All effects are positive.
+Consider a stylised example with three cohorts adopting a loyalty programme in periods 2, 4, and 6, observed through period 8. True effects are heterogeneous: cohort $g=2$ experiences $\tau(2,t) = 10$ for all $t \geq 2$; cohort $g=4$ experiences $\tau(4,t) = 5$ for all $t \geq 4$; cohort $g=6$ experiences $\tau(6,t) = 2$ for all $t \geq 6$. All effects are positive.
 
 TWFE estimates a single coefficient $\hat{\tau}^{\text{TWFE}}$. Because cohort $g=2$ serves as a "control" for cohorts $g=4$ and $g=6$ in some comparisons, and because cohort $g=2$'s outcomes are elevated by its own treatment effect, TWFE underestimates the average effect. The Bacon decomposition reveals that a substantial fraction of the TWFE weight comes from already-treated comparisons, and the weight diagnostics show negative weights on some cohort-time cells.
 
-A modern estimator like Callaway--Sant'Anna estimates $\widehat{\text{ATT}}(g,t)$ for each cohort-time pair using only never-treated or not-yet-treated controls. Aggregating with non-negative weights produces an overall ATT that correctly reflects the positive effects across all cohorts. The discrepancy between TWFE and CS quantifies the bias from forbidden comparisons.
+A modern estimator like Callaway--Sant'Anna estimates $\widehat{\tau}(g,t)$ for each cohort-time pair using only never-treated or not-yet-treated controls. Aggregating with non-negative weights produces an overall ATT that correctly reflects the positive effects across all cohorts. The discrepancy between TWFE and CS quantifies the bias from forbidden comparisons.
 
 \subsection*{When Is TWFE Still Useful?}
 
 Despite its problems, TWFE remains useful in several contexts:
 
-\textbf{As a benchmark.} Report TWFE alongside modern estimators to show the magnitude of the bias correction. If TWFE and modern estimators agree, readers gain confidence that heterogeneity is not severe.
+\paragraph{As a Benchmark} Report TWFE alongside modern estimators to show the magnitude of the bias correction. If TWFE and modern estimators agree, readers gain confidence that heterogeneity is not severe.
 
-\textbf{With homogeneous effects.} If you have strong reasons to believe effects are homogeneous---perhaps from prior studies, institutional knowledge, or diagnostic evidence---TWFE is efficient and unbiased.
+\paragraph{With Homogeneous Effects} If you have strong reasons to believe effects are homogeneous---perhaps from prior studies, institutional knowledge, or diagnostic evidence---TWFE is efficient and unbiased.
 
-\textbf{For computational speed.} With very large panels (millions of observations), TWFE is fast while some modern estimators are slow. Use TWFE for exploratory analysis, then confirm with modern estimators on subsamples or with computational optimisations.
+\paragraph{For Computational Speed} With very large panels (millions of observations), TWFE is fast while some modern estimators are slow. Use TWFE for exploratory analysis, then confirm with modern estimators on subsamples or with computational optimisations.
 
-\textbf{With abundant never-treated units.} If never-treated units dominate the sample and provide most of the identifying variation, the forbidden comparisons contribute little to the TWFE estimate, and bias is small.
+\paragraph{With Abundant Never-treated Units} If never-treated units dominate the sample and provide most of the identifying variation, the forbidden comparisons contribute little to the TWFE estimate, and bias is small.
 
 The key is to diagnose before deciding. Run the Bacon decomposition, check the weights, compare to modern estimators. If TWFE passes these checks, use it. If it fails, use modern estimators and report the discrepancy. The next section introduces these modern estimators in detail.

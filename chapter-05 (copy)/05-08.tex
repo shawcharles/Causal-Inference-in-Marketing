@@ -1,0 +1,75 @@
+\section{Diagnostics}
+\label{sec:event-diagnostics}
+
+Credible event-study analysis requires rigorous diagnostics that assess the plausibility of identification assumptions, the sensitivity of conclusions to modelling choices, and the influence of individual observations or event times. This section outlines the core diagnostic workflow, with forward references to the detailed treatment in Chapter~\ref{ch:design-diagnostics}.
+
+\subsection*{Pre-Trend Checks}
+
+Pre-trend and anticipation checks using leads are the most important diagnostic. We test the joint null hypothesis that all pre-treatment coefficients (except the reference) are zero:
+\[
+H_0: \theta_k = 0 \quad \forall k \in \{k_{\min}, \dots, -2\}.
+\]
+Estimate the event-study regression including multiple pre-treatment event times, and test this hypothesis using a Wald test with cluster-robust standard errors (a standard F-test assumes homoskedasticity and is inappropriate when errors are clustered). Plot the pre-treatment coefficients with confidence intervals. If we fail to reject $H_0$ and the coefficients are visibly flat/near-zero, this supports parallel trends. Rejection of $H_0$, or significant trends approaching $k=0$, signals violation of identifying assumptions (anticipation or differential trends).
+
+The power of pre-trend tests is limited, as discussed in Section~\ref{sec:event-identification}, so the absence of detectable pre-trends provides evidence rather than proof. A useful rule of thumb from \citet{roth2022pretest}: pre-trend tests with conventional significance levels (5\%) can reliably detect pre-trends of magnitude similar to the estimated post-treatment effect, but they have low power against smaller violations. If your estimated $\theta_0 = 5.0$ with standard error 2.0, a pre-trend test has reasonable power to detect pre-trends of magnitude 5.0 or larger, but may miss pre-trends of magnitude 2.0 that could still bias conclusions. This limitation motivates supplementing statistical tests with visual inspection: a plot showing flat, near-zero pre-treatment coefficients is more convincing than a plot showing large but imprecisely estimated pre-treatment coefficients that are not statistically significant due to wide confidence intervals.
+
+Placebo-in-time tests apply the event-study logic to pre-treatment periods only, treating an earlier period as if it were the treatment period. For example, if treatment begins in period five and data are available from period one, a placebo test might treat period three as the "treatment" period and estimate event-time effects using periods one and two as the baseline. If the placebo event-study shows non-zero "effects," this indicates pre-trends or other violations of parallel trends. If the placebo event-study shows near-zero effects, this supports parallel trends. Like pre-trend tests, placebo-in-time tests have limited power: a null result provides supportive but not definitive evidence.
+
+\subsection*{Support and Sensitivity Analyses}
+
+Support and overlap checks by event time $k$ assess whether estimates at extreme event times are based on adequate data. Plot the sample size, the number of cohorts contributing, or the effective sample size (accounting for weights and clustering) as a function of $k$. Flag event times where support is thin or where only a single cohort contributes. There is no universal threshold for ``thin'' support, but practical guidance suggests that fewer than 30 observations per event time yield unreliable point estimates, and fewer than 2 cohorts contributing means the estimate reflects a single cohort's experience and may not generalise. Conclusions about effects at thin-support event times should be tempered. Sensitivity analyses that exclude extreme event times provide evidence on robustness.
+
+Leave-one-cohort-out sensitivity analyses re-estimate the event-time profile excluding each cohort in turn and check whether the profile is stable. If excluding a single cohort changes the profile substantially, this signals that the cohort is influential and that the aggregated profile may not generalise. However, sensitivity to cohort exclusion is ambiguous: it could indicate that the excluded cohort is an outlier (suggesting the main estimate is more reliable without it), or that treatment effects are genuinely heterogeneous across cohorts (suggesting the aggregated estimate obscures meaningful variation). Cohort-specific profiles $\theta_{g,k}$ help distinguish these cases: if profiles are similar across cohorts, the influential cohort is likely an outlier; if profiles diverge, heterogeneity is the explanation. If the profile is stable across leave-one-cohort-out specifications, this supports the robustness of conclusions.
+
+Leave-one-time-out sensitivity analyses exclude specific calendar periods and re-estimate the event-time profile. If a single period drives the result---for example, if excluding the first post-treatment period eliminates the estimated effect---this suggests that the effect is concentrated in that period or that the period is an outlier. Robustness checks that vary the event-time window, exclude outliers, or trim the sample based on pre-treatment characteristics provide evidence on the stability of conclusions.
+
+Weight audits examine the implicit weights assigned to cohort-time observations in the aggregation of $\theta_k$. Modern event-study estimators report these weights explicitly, and inspecting them reveals which cohorts and periods contribute most to each event-time coefficient. If a single cohort dominates the aggregation at certain event times due to support patterns, the estimated $\theta_k$ reflects that cohort's effect and may not generalise. Reporting weights alongside estimates ensures transparency.
+
+Specification curves aggregate estimates across many defensible modelling choices: different sets of control units (never-treated only vs never-treated and not-yet-treated), different covariate adjustments (no covariates vs rich controls), different event-time windows (short vs long), different binning choices, and different estimators (Sun--Abraham vs Callaway--Sant'Anna vs Borusyak--Jaravel--Spiess). Plot the distribution of estimates across specifications for each event time $k$ or for summary measures (overall ATT, cumulative effect, long-run multiplier). If estimates cluster tightly, conclusions are robust to modelling choices. If estimates vary widely, the choice of specification matters.
+
+\textbf{Multiple testing concern.} Running many specifications and reporting all results raises multiple testing concerns. If 22 of 24 specifications yield significant results, is this evidence of robustness or of specification searching? The key distinction is whether specifications were pre-registered or chosen post hoc. Pre-registered specification curves with a clear rationale for each specification provide valid robustness evidence. Post hoc specification curves that include only specifications that "work" are misleading. Report all pre-specified specifications regardless of results.
+
+\textbf{Interpreting Specification Curves.} As an illustrative example, suppose you estimate the immediate effect $\theta_0$ across 24 specifications (2 control sets $\times$ 2 covariate adjustments $\times$ 3 windows $\times$ 2 estimators). The resulting estimates range from 4.2 to 7.8, with median 5.8 and interquartile range [5.1, 6.4]. If 22 of 24 specifications yield positive and statistically significant estimates, this supports robust conclusions: the effect is clearly positive regardless of specification. If estimates range from $-1.2$ to 8.4 with half positive and half negative, the conclusion is specification-dependent and less credible. Report the full distribution, highlight the preferred specification with justification, and discuss which modelling choices drive variation.
+
+Practical guidance for marketing applications includes conducting pre-trend tests as a matter of course, reporting placebo estimates to bolster credibility, showing support by event time, conducting leave-one-cohort-out and leave-one-time-out analyses, inspecting weights, and constructing specification curves. Transparent reporting of diagnostics builds confidence that conclusions are not artefacts of arbitrary choices and that the identifying assumptions are plausible. The goal is not to achieve perfect identification -- which is impossible in observational settings -- but to articulate assumptions transparently, provide evidence that they are plausible, and demonstrate that conclusions are robust to plausible deviations.
+
+\begin{table}[htbp]
+\begin{tighttable}
+\centering
+\caption{Specification Choices and Associated Bias Risks}
+\label{tab:event-spec-bias}
+\begin{tabularx}{\textwidth}{Y Y Y}
+\toprule
+\textbf{Specification Choice} & \textbf{Risk if Misspecified} & \textbf{Diagnostic/Mitigation} \\
+\midrule
+Omitted category (reference bin) & Misinterpretation of levels vs differences & Clearly document reference; check robustness to alternative references \\
+\addlinespace
+Binning of extreme event times & Loss of resolution; aggregation bias if effects vary within bins & Report support by $k$; check robustness to alternative binning \\
+\addlinespace
+Event-time window (leads/lags) & Truncation bias if effects extend beyond window; loss of pre-trend evidence & Pre-specify based on data support and substantive expectations \\
+\addlinespace
+Control set (never-treated vs not-yet-treated) & Bias if not-yet-treated are not parallel; loss of precision if never-treated are few & Test parallel trends by cohort; compare estimates across control sets \\
+\addlinespace
+Cohort weights in aggregation & Misrepresentation of policy-relevant effect if weights do not match target population & Pre-specify weights based on substantive question; report cohort composition \\
+\addlinespace
+TWFE vs heterogeneity-robust estimator & Negative weights and contamination bias under heterogeneity & Estimate both; compare; report cohort-specific profiles \\
+\bottomrule
+\end{tabularx}
+\end{tighttable}
+\end{table}
+
+\begin{quote}
+\textbf{Box 5.1: Diagnostic Quick Reference}
+
+This box summarises the key diagnostics for event-study credibility. For the full end-to-end workflow with actionable checkboxes, see Section~\ref{sec:event-workflow}.
+
+\textit{Pre-trend checks}: Test joint significance of $\theta_k$ for $k < -1$; plot pre-treatment coefficients; conduct placebo-in-time test. Remember: pre-trend tests have limited power \citep{roth2022pretest}---supplement with visual inspection.
+
+\textit{Support checks}: Report observations and cohorts by event time $k$. Flag thin support ($<30$ obs, single cohort, or effective $N < \sqrt{N}$). Bin extreme event times if needed.
+
+\textit{Sensitivity analyses}: Leave-one-cohort-out, leave-one-time-out, vary control set (never-treated vs not-yet-treated), vary window and binning, and construct specification curve across estimators.
+
+\textit{Transparency}: Report weights and cohort composition; show cohort-specific profiles $\theta_{g,k}$ if heterogeneity is material; document deviations from pre-specified plan.
+\end{quote}
+
+These diagnostic procedures ensure that event-study estimates are credible and that conclusions are robust to plausible violations of identifying assumptions. The next section discusses extensions to continuous treatments, interference, and nonlinear outcomes.

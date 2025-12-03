@@ -18,7 +18,7 @@ Over-stratification can reduce power. If strata are too fine, some strata may co
 
 Re-randomisation extends stratification by generating multiple candidate randomisations, checking balance on a set of covariates for each candidate, and selecting the randomisation that achieves the best balance according to a pre-specified criterion (for example, the smallest maximum standardised difference across covariates). Re-randomisation improves balance without biasing the estimate of the treatment effect, provided that the balance criterion is specified \textit{ex ante} and the final randomisation is selected using that criterion alone.
 
-\textbf{Inference after re-randomisation.} Standard randomisation inference must be adjusted when re-randomisation is used. The reference distribution for the test statistic should include only those randomisations that would have passed the balance criterion, not all possible randomisations. Using standard inference after re-randomisation understates uncertainty because it ignores the selection step.
+\paragraph{Inference after Re-randomisation} Standard randomisation inference must be adjusted when re-randomisation is used. The reference distribution for the test statistic should include only those randomisations that would have passed the balance criterion, not all possible randomisations. Using standard inference after re-randomisation understates uncertainty because it ignores the selection step.
 
 \subsection{Treatment Windows and Seasonality}
 
