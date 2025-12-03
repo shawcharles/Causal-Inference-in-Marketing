@@ -126,9 +126,9 @@ Matrix completion can be combined with other causal inference methods.
 \]
 where $w_j$ are synthetic control weights and $\hat{L}_{it}$ is the low-rank residual.
 
-\paragraph{Matrix completion + Difference-in-differences.} DiD estimates unit and time fixed effects. The hybrid applies MC to residuals:
+\paragraph{Matrix completion + Difference-in-Differences.} DiD estimates unit and time fixed effects ($\alpha_i$ and $\delta_t$). The hybrid applies MC to residuals:
 \[
-\tilde{Y}_{it} = Y_{it} - \hat{\alpha}_i - \hat{\gamma}_t, \quad \hat{Y}_{it}(0) = \hat{\alpha}_i + \hat{\gamma}_t + \hat{L}_{it}.
+\tilde{Y}_{it} = Y_{it} - \hat{\alpha}_i - \hat{\delta}_t, \quad \hat{Y}_{it}(0) = \hat{\alpha}_i + \hat{\delta}_t + \hat{L}_{it}.
 \]
 
 \paragraph{Ensemble approaches.} Average predictions from multiple methods:

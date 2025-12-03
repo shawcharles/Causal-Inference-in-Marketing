@@ -116,7 +116,7 @@ Support shrinks at extreme lags. Common practice bins distant leads (e.g., $k \l
 
 Distributed-lag models estimate impulse responses by regressing outcomes on current and lagged treatment:
 \[
-Y_{it} = \sum_{s=0}^{\bar{L}} \beta_s W_{i,t-s} + \alpha_i + \gamma_t + \varepsilon_{it}.
+Y_{it} = \sum_{s=0}^{\bar{L}} \beta_s W_{i,t-s} + \alpha_i + \lambda_t + \varepsilon_{it}.
 \]
 
 \subsubsection*{Geometric (Koyck) Ad-Stock}
@@ -124,7 +124,7 @@ Y_{it} = \sum_{s=0}^{\bar{L}} \beta_s W_{i,t-s} + \alpha_i + \gamma_t + \varepsi
 \begin{definition}[Geometric (Koyck) Ad-Stock Model]\label{def:adstock}
 The geometric ad-stock model specifies:
 \[
-Y_{it} = \beta_0 W_{it} + \beta_1 A_{it} + \alpha_i + \gamma_t + \varepsilon_{it},
+Y_{it} = \beta_0 W_{it} + \beta_1 A_{it} + \alpha_i + \lambda_t + \varepsilon_{it},
 \]
 where the ad-stock variable accumulates past treatment with geometric decay:
 \[
@@ -170,7 +170,7 @@ Estimate $\beta_s$ freely for $s = 0, 1, \ldots, \bar{L}$ without functional for
 \begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Technical Note: Causal Interpretation of Dynamic Panel Models]
 Traditional dynamic panel models include lagged outcomes:
 \[
-Y_{it} = \beta W_{it} + \rho Y_{it-1} + \alpha_i + \gamma_t + \varepsilon_{it}.
+Y_{it} = \beta W_{it} + \rho Y_{it-1} + \alpha_i + \lambda_t + \varepsilon_{it}.
 \]
 Estimation uses GMM (Arellano-Bond) with lagged levels as instruments.
 

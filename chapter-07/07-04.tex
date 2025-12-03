@@ -49,7 +49,7 @@ Implementing SDID requires specifying the donor pool, the pre-treatment window, 
 
 The regularisation parameters $\eta_w$ and $\eta_\lambda$ control the bias-variance trade-off. Larger values shrink weights toward uniform, improving stability but reducing the estimator's ability to exploit heterogeneity. Cross-validation provides a principled choice: split the pre-treatment period, estimate weights on the training set, and select the $\eta$ values that minimise prediction error on the validation set.
 
-For the campaign launch, cross-validation selects $\eta_w = 0.1$ and $\eta_\lambda = 0.05$. The unit weights concentrate on six markets with similar demographic profiles. The time weights down-weight the holiday quarter, when campaign markets experienced promotional activity unrelated to the treatment. The resulting estimate shows a 4.2 per cent lift in sales, with a standard error of 1.1 per cent—tighter than the DiD estimate (5.8 per cent with SE 2.3 per cent) and more plausible than the SC estimate (2.1 per cent with poor pre-treatment fit).
+For the campaign launch, cross-validation selects $\eta_w = 0.1$ and $\eta_\lambda = 0.05$. The unit weights concentrate on six markets with similar demographic profiles. The time weights down-weight the holiday quarter, when campaign markets experienced promotional activity unrelated to the treatment. The resulting estimate shows a 4.2\% lift in sales, with a standard error of 1.1\%---tighter than the DiD estimate (5.8\% with SE 2.3\%) and more plausible than the SC estimate (2.1\% with poor pre-treatment fit).
 
 \subsection*{Connection to Factor Models}
 

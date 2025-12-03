@@ -3,9 +3,9 @@
 
 \subsection*{The Problem That Motivates Augmentation}
 
-Return to the five flagship stores piloting a loyalty programme. Standard synthetic control searches for weights that make a convex combination of control stores match the flagships' pre-treatment revenue trajectory. But the optimisation fails. The flagships anchor high-traffic urban centres with customer profiles that no suburban or regional store replicates. The best synthetic control undershoots the flagships' baseline revenue by eight per cent. That gap carries forward into the post-treatment period, contaminating the treatment effect estimate with residual bias.
+Return to the five flagship stores piloting a loyalty programme. Standard synthetic control searches for weights that make a convex combination of control stores match the flagships' pre-treatment revenue trajectory. But the optimisation fails. The flagships anchor high-traffic urban centres with customer profiles that no suburban or regional store replicates. The best synthetic control undershoots the flagships' baseline revenue by 8\%. That gap carries forward into the post-treatment period, contaminating the treatment effect estimate with residual bias.
 
-Augmented synthetic control attacks this problem directly. It pairs the weighting estimator with a regression adjustment that corrects the gap. If the synthetic control undershoots by eight per cent, the regression model estimates that systematic difference and subtracts it from the treatment effect. The cost is model dependence: the estimator now relies on the regression specification being correct. If the model is wrong, the augmentation may introduce bias rather than correct it.
+Augmented synthetic control attacks this problem directly. It pairs the weighting estimator with a regression adjustment that corrects the gap. If the synthetic control undershoots by 8\%, the regression model estimates that systematic difference and subtracts it from the treatment effect. The cost is model dependence: the estimator now relies on the regression specification being correct. If the model is wrong, the augmentation may introduce bias rather than correct it.
 
 \subsection*{The Estimator}
 

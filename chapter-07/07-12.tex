@@ -29,11 +29,11 @@ Pre-specify predictor sets and tuning procedures before seeing post-treatment ou
 
 \subsection*{Step 5: Assess Pre-Treatment Fit and Balance}
 
-Estimate the hybrid method and compute pre-treatment RMSPE (Section~\ref{sec:hybrid-diagnostics}). Compare to standard SC, SDID, and DID to assess whether the hybrid improves fit. A useful threshold is RMSPE less than 5 to 10 per cent of outcome SD; improvement of at least 20 per cent over SC justifies the added complexity.
+Estimate the hybrid method and compute pre-treatment RMSPE (Section~\ref{sec:hybrid-diagnostics}). Compare to standard SC, SDID, and DID to assess whether the hybrid improves fit. A useful threshold is RMSPE less than 5\% to 10\% of outcome SD; improvement of at least 20\% over SC justifies the added complexity.
 
 Compute covariate balance metrics (SMDs) and report balance tables. Flag covariates with SMD greater than 0.2. Compute weight dispersion ($N_{\text{eff}}$) and identify donors with large weights. For SDID, also compute $T_{\text{eff}}$ to assess time weight concentration.
 
-If pre-fit is poor (RMSPE exceeds 15 per cent of SD) or balance is weak (any SMD exceeds 0.3), revisit the donor pool, the predictor set, or the tuning parameters. This step is iterative: diagnostics inform refinements until acceptable fit is achieved or limitations are acknowledged.
+If pre-fit is poor (RMSPE exceeds 15\% of SD) or balance is weak (any SMD exceeds 0.3), revisit the donor pool, the predictor set, or the tuning parameters. This step is iterative: diagnostics inform refinements until acceptable fit is achieved or limitations are acknowledged.
 
 Figure~\ref{fig:hybrid-fit} illustrates the fit comparison. Panel A shows the treated unit alongside SC and ASCM counterfactuals, demonstrating that ASCM achieves tighter pre-treatment fit. Panel B displays gap trajectories with confidence intervals, enabling visual assessment of treatment effects.
 
@@ -41,7 +41,7 @@ Figure~\ref{fig:hybrid-fit} illustrates the fit comparison. Panel A shows the tr
 
 Run in-space placebos by applying the hybrid method to each donor as if treated, computing placebo gaps, and ranking the treated unit's RMSPE ratio (Section~\ref{sec:hybrid-inference}). Run in-time placebos by applying the method at pseudo-intervention dates in the pre-treatment period, verifying that pseudo effects are near zero.
 
-Conduct leave-one-donor-out and leave-one-period-out sensitivity analyses, reporting the range of treatment effect estimates. If a single donor or period changes the estimate by more than 20 per cent, investigate and report this influence. Plot residuals over time and inspect for trends, seasonality, or outliers.
+Conduct leave-one-donor-out and leave-one-period-out sensitivity analyses, reporting the range of treatment effect estimates. If a single donor or period changes the estimate by more than 20\%, investigate and report this influence. Plot residuals over time and inspect for trends, seasonality, or outliers.
 
 Figure~\ref{fig:hybrid-sdid} shows SDID weight distributions. Panel A displays unit weights, identifying donors with large influence. Panel B displays time weights, showing which pre-treatment periods receive emphasis.
 

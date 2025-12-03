@@ -30,7 +30,7 @@ Loyalty programme & Dynamic DiD & Quarterly store revenue & Gradual ramp-up & RO
 
 \subsection*{Application 1: Television Advertising with Carryover}
 
-Television advertising provides a canonical setting for dynamic methods. The distributed-lag framework has a rich history in advertising response modelling \citet{tellis2000which,tellis2006optimal}. Meta-analytic evidence shows that advertising elasticities average 0.10 in the short run and 0.22 in the long run, with substantial heterogeneity \citet{sethuraman2011advertising}.
+Television advertising provides a canonical setting for dynamic methods. The distributed-lag framework has a rich history in advertising response modelling (Tellis et al., 2000; Tellis, 2006). Meta-analytic evidence shows that advertising elasticities average 0.10 in the short run and 0.22 in the long run, with substantial heterogeneity (Sethuraman et al., 2011).
 
 \paragraph{Setting.} Suppose a CPG brand launches a national TV campaign in 50 DMAs over four weeks, with varying GRPs across markets. Weekly sales are observed for 52 weeks before and 26 weeks after.
 
@@ -38,7 +38,7 @@ Television advertising provides a canonical setting for dynamic methods. The dis
 
 \paragraph{Method.} Geometric ad-stock model:
 \[
-\log(\text{Sales}_{it}) = \beta_0 \text{GRP}_{it} + \beta_1 A_{it} + \alpha_i + \gamma_t + \varepsilon_{it},
+\log(\text{Sales}_{it}) = \beta_0 \text{GRP}_{it} + \beta_1 A_{it} + \alpha_i + \lambda_t + \varepsilon_{it},
 \]
 where $A_{it} = \delta A_{i,t-1} + \text{GRP}_{i,t-1}$ is ad-stock with decay rate $\delta$.
 
@@ -52,7 +52,7 @@ where $A_{it} = \delta A_{i,t-1} + \text{GRP}_{i,t-1}$ is ad-stock with decay ra
 
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Box 10.1: Meta-Analytic Evidence on Advertising Elasticity]
 
-Sethuraman, Tellis, and Briesch conduct a meta-analysis of 751 short-term and 402 long-term advertising elasticities from 56 studies spanning 1960--2008 \citet{sethuraman2011advertising}.
+Sethuraman, Tellis, and Briesch conduct a meta-analysis of 751 short-term and 402 long-term advertising elasticities from 56 studies spanning 1960--2008 (Sethuraman et al., 2011).
 
 \textbf{Key findings:}
 \begin{itemize}
@@ -75,7 +75,7 @@ Multi-period promotions induce stockpiling, creating post-promotion dips that re
 
 \paragraph{Method.} Event-study specification:
 \[
-\log(\text{Sales}_{it}) = \sum_{k = -3}^{+5} \theta_k \mathds{1}\{t - g_{im} = k\} + \alpha_i + \gamma_t + \varepsilon_{it},
+\log(\text{Sales}_{it}) = \sum_{k = -3}^{+5} \theta_k \mathds{1}\{t - g_{im} = k\} + \alpha_i + \lambda_t + \varepsilon_{it},
 \]
 where $g_{im}$ is the week of the $m$-th promotion, with $k = -1$ as reference.
 
@@ -107,7 +107,7 @@ where $\text{ATT}(g, t)$ compares cohort $g$ to never-treated stores.
 
 \subsection*{Vector Autoregressions for Marketing-Finance Links}
 
-VARs trace dynamic feedback among marketing investments, consumer response, and firm value. Shocks to advertising or satisfaction propagate through sales and user-generated content to stock returns. Identification relies on timing restrictions or external instruments, and impulse responses summarise horizon-by-horizon returns to marketing assets \citet{srinivasan2009marketing,tirunillai2012chatter}.
+VARs trace dynamic feedback among marketing investments, consumer response, and firm value. Shocks to advertising or satisfaction propagate through sales and user-generated content to stock returns. Identification relies on timing restrictions or external instruments, and impulse responses summarise horizon-by-horizon returns to marketing assets (Srinivasan et al., 2009; Tirunillai and Tellis, 2012).
 
 \subsection*{Summary: Method Selection}
 

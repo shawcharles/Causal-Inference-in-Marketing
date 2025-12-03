@@ -7,9 +7,9 @@ The interactive fixed effects (IFE) model decomposes untreated potential outcome
 
 The general IFE model for untreated potential outcomes, introduced in Section~\ref{sec:factor-motivation}, includes both additive and interactive components:
 \[
-Y_{it}(0) = \alpha_i + \gamma_t + \lambda_i' f_t + \varepsilon_{it},
+Y_{it}(0) = \alpha_i + \delta_t + \lambda_i' f_t + \varepsilon_{it},
 \]
-where $\alpha_i$ is a unit fixed effect, $\gamma_t$ is a time fixed effect, $\lambda_i \in \mathbb{R}^R$ is the loading vector for unit $i$, $f_t \in \mathbb{R}^R$ is the factor vector for period $t$, and $\varepsilon_{it}$ is an idiosyncratic error with mean zero and finite variance.
+where $\alpha_i$ is a unit fixed effect, $\delta_t$ is a time fixed effect, $\lambda_i \in \mathbb{R}^R$ is the loading vector for unit $i$, $f_t \in \mathbb{R}^R$ is the factor vector for period $t$, and $\varepsilon_{it}$ is an idiosyncratic error with mean zero and finite variance.
 
 In practice, estimation proceeds by first removing the additive fixed effects through demeaning. Define the demeaned outcome $\tilde{Y}_{it} = Y_{it} - \bar{Y}_{i\cdot} - \bar{Y}_{\cdot t} + \bar{Y}_{\cdot\cdot}$, where $\bar{Y}_{i\cdot}$ is the unit mean, $\bar{Y}_{\cdot t}$ is the time mean, and $\bar{Y}_{\cdot\cdot}$ is the grand mean. If the original model holds, then
 \[
@@ -17,7 +17,7 @@ In practice, estimation proceeds by first removing the additive fixed effects th
 \]
 where $\tilde{\lambda}_i$ and $\tilde{f}_t$ are the demeaned loadings and factors. This pure factor model is what we estimate. The additive fixed effects $\hat{\alpha}_i$ and $\hat{\gamma}_t$ are recovered after factor estimation if needed for interpretation.
 
-For the remainder of this section, we work with the demeaned pure factor model:
+For the remainder of this section, we work with factor models (Rubin, 1974; Imbens and Rubin, 2015):
 \[
 Y_{it}(0) = \lambda_i' f_t + \varepsilon_{it},
 \]
@@ -49,7 +49,7 @@ Choosing the rank $R$ is critical. Too few factors underfit the data, leaving sy
 
 \paragraph{Eigenvalue ratios.} Plot the eigenvalues $\mu_1 \geq \mu_2 \geq \ldots$ of the sample covariance matrix $Y'Y/T$ (or $YY'/N$). Select $R$ at the ``elbow'' where eigenvalues drop sharply. The eigenvalue ratio test of Ahn and Horenstein (2013) formalises this: select $R$ to maximise $\mu_R / \mu_{R+1}$.
 
-\paragraph{Cross-validation.} Split the pre-treatment period into training and validation sets. For each candidate $R$, estimate factors on the training set and compute prediction error on the validation set. Select $R$ to minimise validation error. A practical implementation holds out the last 20 per cent of pre-treatment periods as the validation set.
+\paragraph{Cross-validation.} Split the pre-treatment period into training and validation sets. For each candidate $R$, estimate factors on the training set and compute prediction error on the validation set. Select $R$ to minimise validation error. A practical implementation holds out the last 20\% of pre-treatment periods as the validation set.
 
 \paragraph{Economic reasoning.} Count the number of expected factor sources: seasonality (1-2 factors for annual and quarterly cycles), macroeconomic shocks (1 factor), category trends (1 factor per major category), regional effects (1 factor per region or region group). This provides a prior that disciplines purely statistical selection.
 

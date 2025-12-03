@@ -87,7 +87,7 @@ The choice depends on the extent and pattern of missingness. If missingness is s
 
 Reliable hybrid estimation in staggered settings requires sufficient data for each cohort. As a practical guideline, each cohort should have at least four to six pre-treatment periods to estimate stable weights. Cohorts with fewer than four pre-treatment periods produce unstable synthetic controls because the optimisation problem is underdetermined. When early-adopting cohorts have very short pre-treatment windows, consider using SDID (which regularises through time weights) or ridge SC (which regularises through penalisation) rather than standard SC. Alternatively, exclude cohorts with insufficient pre-treatment data from the analysis and report this exclusion transparently.
 
-Pre-treatment fit should be assessed for each cohort separately. A useful threshold is RMSPE less than 10 per cent of the outcome's standard deviation within that cohort. Cohorts with poor fit (RMSPE exceeding 15 to 20 per cent) should be flagged and their contribution to aggregate estimates assessed. If a single cohort with poor fit drives the aggregate result, conclusions are fragile.
+Pre-treatment fit should be assessed for each cohort separately. A useful threshold is RMSPE less than 10\% of the outcome's standard deviation within that cohort. Cohorts with poor fit (RMSPE exceeding 15\% to 20\%) should be flagged and their contribution to aggregate estimates assessed. If a single cohort with poor fit drives the aggregate result, conclusions are fragile.
 
 The donor pool shrinks as more cohorts adopt treatment. By the final adoption wave, only never-treated units remain as donors. If the donor pool becomes too small (fewer than five to ten donors), the synthetic control may overfit to idiosyncratic donor patterns. The analyst should monitor donor pool size across cohorts and consider whether late-adopting cohorts have sufficient comparison units.
 
@@ -99,7 +99,7 @@ SDID is preferable when parallel trends is plausible after reweighting and when 
 
 ASCM is preferable when treated cohorts are outliers that cannot be matched by convex combinations of donors, or when pre-treatment fit is poor despite reweighting. The regression adjustment corrects residual imbalances that pure weighting cannot eliminate. ASCM is particularly valuable when treated cohorts differ systematically from donors on observable characteristics that predict outcomes.
 
-Standard SC remains appropriate when treated cohorts lie well within the donor convex hull and pre-treatment fit is excellent (RMSPE less than 5 per cent of outcome SD). In such cases, the additional complexity of SDID or ASCM may not improve estimates and could introduce noise.
+Standard SC remains appropriate when treated cohorts lie well within the donor convex hull and pre-treatment fit is excellent (RMSPE less than 5\% of outcome SD). In such cases, the additional complexity of SDID or ASCM may not improve estimates and could introduce noise.
 
 A pragmatic workflow estimates all three methods for at least a subset of cohorts and compares pre-treatment fit and post-treatment estimates. If estimates converge, conclusions are robust. If estimates diverge, diagnostics should identify whether the divergence arises from poor fit (favouring ASCM), trend violations (favouring SDID), or model instability (suggesting the data do not support credible inference).
 

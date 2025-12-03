@@ -23,7 +23,7 @@ For SDID (incorporating time weights):
 \]
 where $\hat{\lambda}_t$ are time weights and $\hat{\alpha}$ is the intercept shift.
 
-A useful threshold is RMSPE less than 5 to 10 per cent of the outcome's standard deviation (Section~\ref{sec:hybrid-tuning}). If RMSPE exceeds this threshold, the hybrid model does not fit well enough to provide a credible counterfactual. RMSPE should be compared across methods (SC, ASCM, SDID, DID). If the hybrid achieves RMSPE at least 20 per cent lower than the simpler method, the additional complexity is likely justified. If the improvement is marginal, the simpler method is preferable for transparency.
+A useful threshold is RMSPE less than 5\% to 10\% of the outcome's standard deviation (Section~\ref{sec:hybrid-tuning}). If RMSPE exceeds this threshold, the hybrid model does not fit well enough to provide a credible counterfactual. RMSPE should be compared across methods (SC, ASCM, SDID, DID). If the hybrid achieves RMSPE at least 20\% lower than the simpler method, the additional complexity is likely justified. If the improvement is marginal, the simpler method is preferable for transparency.
 
 \paragraph{Decision.} If RMSPE is high despite tuning, consider: (1) adding or removing predictors, (2) changing the augmentation model (for ASCM), (3) increasing regularisation to prevent overfitting, or (4) curating the donor pool to include more similar units. If no specification achieves acceptable fit, the treated unit may be too different from available donors, and the analyst should acknowledge this limitation.
 
@@ -35,7 +35,7 @@ Balance metrics assess whether the hybrid synthetic control matches the treated 
 \]
 where $X$ is a covariate, $X_1$ is the treated unit's value, $\sum_j \hat{w}_j X_j$ is the synthetic control's weighted mean, and $\text{Var}(X)$ is the variance of $X$ across all units.
 
-Thresholds from the matching literature \citet{austin2011introduction} suggest that SMD less than 0.1 (in absolute value) indicates good balance, SMD between 0.1 and 0.2 indicates acceptable balance, and SMD greater than 0.2 indicates poor balance. Balance tables report SMDs for all covariates, enabling the analyst to identify which covariates are well balanced and which are imbalanced.
+Thresholds from the matching literature (Austin, 2011) suggest that SMD less than 0.1 (in absolute value) indicates good balance, SMD between 0.1 and 0.2 indicates acceptable balance, and SMD greater than 0.2 indicates poor balance. Balance tables report SMDs for all covariates, enabling the analyst to identify which covariates are well balanced and which are imbalanced.
 
 \paragraph{Decision.} If a covariate has SMD greater than 0.2, consider: (1) adding that covariate to the augmentation model (for ASCM), (2) including it as a predictor in the weighting optimisation, or (3) restricting the donor pool to units with similar values on that covariate. If balance cannot be achieved on theoretically important covariates, report the imbalance and discuss whether it threatens identification.
 
@@ -58,7 +58,7 @@ An effective number between 5 and 15 is typical for well-tuned hybrid methods (S
 
 Leverage checks identify donors or periods with unusually large influence on the hybrid estimates. For unit weights, donors with large $\hat{w}_j$ have high leverage. For time weights (in SDID), periods with large $\hat{\lambda}_t$ have high leverage.
 
-Leave-one-donor-out and leave-one-period-out sensitivity analyses quantify influence. Re-estimate the hybrid method excluding each donor or period in turn. Compute the change in the treatment effect estimate. If excluding a single donor or period changes the estimate by more than 20 to 30 per cent, that donor or period is influential. Report the range of estimates across leave-one-out specifications.
+Leave-one-donor-out and leave-one-period-out sensitivity analyses quantify influence. Re-estimate the hybrid method excluding each donor or period in turn. Compute the change in the treatment effect estimate. If excluding a single donor or period changes the estimate by more than 20\% to 30\% per cent, that donor or period is influential. Report the range of estimates across leave-one-out specifications.
 
 \paragraph{Decision.} If a single donor has outsized influence, investigate whether that donor is truly comparable or exhibits idiosyncratic patterns. Consider excluding highly influential donors and reporting both estimates (with and without). If a single time period has outsized influence (for SDID), check whether that period contains an unusual event or data error.
 
@@ -102,14 +102,14 @@ Transparent reporting of these diagnostics builds confidence that the hybrid met
 
 Consider a brand evaluating a regional advertising campaign across five designated market areas (DMAs), with 25 control DMAs and 12 quarters of pre-treatment data. The analyst estimates ASCM with ridge regularisation selected by cross-validation ($\eta = 0.1$).
 
-Pre-treatment RMSPE for ASCM is 1.8 (outcome SD is 18), or 10 per cent of outcome SD. Standard SC achieves RMSPE 2.9 (16 per cent of SD). The 38 per cent reduction in RMSPE justifies the augmentation complexity. SDID achieves RMSPE 2.1 (12 per cent of SD), intermediate between ASCM and SC.
+Pre-treatment RMSPE for ASCM is 1.8 (outcome SD is 18), or 10\% of outcome SD. Standard SC achieves RMSPE 2.9 (16\% of SD). The 38\% reduction in RMSPE justifies the augmentation complexity. SDID achieves RMSPE 2.1 (12\% of SD), intermediate between ASCM and SC.
 
 Balance tables show SMD below 0.1 for household income, retail distribution, and media cost. Urbanisation has SMD of 0.15, which is acceptable but worth noting. Population density has SMD of 0.08 after augmentation, down from 0.22 for standard SC, illustrating how augmentation corrects imbalances.
 
-The effective number of donors is $N_{\text{eff}} = 8$, indicating moderate weight concentration. The three largest weights are 0.18, 0.14, and 0.12, with the remaining 22 donors sharing the rest. Leave-one-out sensitivity analysis (excluding the top five donors in turn) yields treatment effect estimates ranging from 4.2 to 5.4, with the base estimate at 4.9. This 24 per cent range is acceptable.
+The effective number of donors is $N_{\text{eff}} = 8$, indicating moderate weight concentration. The three largest weights are 0.18, 0.14, and 0.12, with the remaining 22 donors sharing the rest. Leave-one-out sensitivity analysis (excluding the top five donors in turn) yields treatment effect estimates ranging from 4.2 to 5.4, with the base estimate at 4.9. This 24\% range is acceptable.
 
 Placebo-in-time tests at quarters 4 and 8 yield pseudo effects of 0.4 (SE 1.1) and -0.3 (SE 0.9), both statistically insignificant and small relative to the actual estimate. This supports the stability assumption.
 
 Residual plots show pre-treatment residuals scattered around zero with no clear trend. Post-treatment residuals are consistently positive, averaging 4.9 across five quarters, consistent with the treatment effect estimate. No unusual patterns or outliers are evident.
 
-Based on these diagnostics, the analyst concludes that ASCM provides a credible counterfactual. The augmentation improves fit substantially over SC, balance is good on key covariates, weights are reasonably dispersed, and the model extrapolates well within the pre-treatment period. The treatment effect estimate of 4.9 units (95 per cent CI: 2.1 to 7.7) is reported alongside these diagnostics, enabling readers to assess the strength of the evidence.
+Based on these diagnostics, the analyst concludes that ASCM provides a credible counterfactual. The augmentation improves fit substantially over SC, balance is good on key covariates, weights are reasonably dispersed, and the model extrapolates well within the pre-treatment period. The treatment effect estimate of 4.9 units (95\% CI: 2.1 to 7.7) is reported alongside these diagnostics, enabling readers to assess the strength of the evidence.

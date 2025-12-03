@@ -57,7 +57,7 @@ Block and wild bootstrap provide inference for aggregated estimands when multipl
 \item Re-estimate the hybrid method on the bootstrap sample.
 \item Compute the treatment effect estimate $\hat{\tau}^{(b)}$.
 \end{enumerate}
-The bootstrap standard error is the standard deviation of $\hat{\tau}^{(b)}$ across bootstrap samples. The bootstrap confidence interval uses percentiles of the bootstrap distribution (for example, the 2.5th and 97.5th percentiles for a 95 per cent interval). The block bootstrap is appropriate when units are independent but observations within units are correlated.
+The bootstrap standard error is the standard deviation of $\hat{\tau}^{(b)}$ across bootstrap samples. The bootstrap confidence interval uses percentiles of the bootstrap distribution (for example, the 2.5th and 97.5th percentiles for a 95\% interval). The block bootstrap is appropriate when units are independent but observations within units are correlated.
 
 \paragraph{Wild bootstrap.} The wild bootstrap imposes random signs on unit-level or cohort-level residuals. For each bootstrap sample:
 \begin{enumerate}
@@ -102,7 +102,7 @@ Randomisation inference is particularly compelling in experimental settings wher
 
 \subsection*{Multiplicity Considerations}
 
-Multiplicity considerations arise when testing treatment effects for many post-treatment periods, many cohorts, or many outcomes. Testing each period, cohort, or outcome separately at the 5 per cent significance level inflates the family-wise error rate (the probability of at least one false rejection).
+Multiplicity considerations arise when testing treatment effects for many post-treatment periods, many cohorts, or many outcomes. Testing each period, cohort, or outcome separately at the 5\% significance level inflates the family-wise error rate (the probability of at least one false rejection).
 
 Several approaches control multiplicity. Bonferroni correction divides the significance level by the number of tests (for example, use $\alpha = 0.05/T_1$ for $T_1$ post-treatment periods). This controls the family-wise error rate but at the cost of reduced power. False discovery rate (FDR) control, using the Benjamini-Hochberg procedure, controls the expected proportion of false discoveries among all rejections. FDR control is less conservative than Bonferroni and is appropriate when some false positives are acceptable. Romano-Wolf stepdown procedures exploit the correlation structure of test statistics (estimated via bootstrap) to improve power while controlling family-wise error rate.
 

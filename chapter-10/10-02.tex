@@ -36,7 +36,7 @@ Define the following canonical paths:
     \item \textbf{Always-treated path:} $\underline{w}^{\text{always}} = (1, 1, \ldots, 1) \in \{1\}^T$;
     \item \textbf{Adoption-at-$g$ path:} $\underline{w}^{\text{adopt}}(g) = (\underbrace{0, \ldots, 0}_{g-1}, \underbrace{1, \ldots, 1}_{T-g+1})$, switching from 0 to 1 at period $g$.
 \end{enumerate}
-The untreated potential outcome is $Y_{it}(0) \equiv Y_{it}(\underline{w}^{\text{never}})$, and the treated potential outcome under adoption at $g$ is $Y_{it}^g \equiv Y_{it}(\underline{w}^{\text{adopt}}(g))$.
+The untreated potential outcome is $Y_{it}(\infty) \equiv Y_{it}(\underline{w}^{\text{never}})$, and the treated potential outcome under adoption at $g$ is $Y_{it}^g \equiv Y_{it}(\underline{w}^{\text{adopt}}(g))$.
 \end{definition}
 
 \subsection*{Event-Time Effects}
@@ -50,6 +50,7 @@ For cohort $g$ (units first treated in period $g$) and event time $k = t - g$ (p
     \[
     \theta_k(g) = \mathbb{E}\left[Y_{i,g+k}(\underline{w}^{\text{adopt}}(g)) - Y_{i,g+k}(\underline{w}^{\text{never}}) \,\big|\, G_i = g\right];
     \]
+    Note that $\theta_k(g)$ corresponds to the cohort-time average treatment effect $\tau(g, t)$ defined in Chapter 4, where $t = g + k$.
     \item The \textbf{aggregate event-time effect} is:
     \[
     \theta_k = \sum_{g \in \mathcal{G}_k} \omega_g^k \, \theta_k(g),
@@ -67,9 +68,9 @@ Distributed-lag impulse responses provide an alternative representation of dynam
 \begin{definition}[Distributed-Lag Impulse Response]\label{def:impulse-response}
 Consider a linear distributed-lag model:
 \[
-Y_{it} = \sum_{s=0}^{\bar{L}} \beta_s W_{i,t-s} + \alpha_i + \gamma_t + \varepsilon_{it},
+Y_{it} = \sum_{s=0}^{\bar{L}} \beta_s W_{i,t-s} + \alpha_i + \lambda_t + \varepsilon_{it},
 \]
-where $W_{it} \in \mathbb{R}$ is treatment intensity, $\bar{L}$ is the maximum lag, $\alpha_i$ are unit fixed effects, $\gamma_t$ are time fixed effects, and $\varepsilon_{it}$ are idiosyncratic errors.
+where $W_{it} \in \mathbb{R}$ is treatment intensity, $\bar{L}$ is the maximum lag, $\alpha_i$ are unit fixed effects, $\lambda_t$ are time fixed effects, and $\varepsilon_{it}$ are idiosyncratic errors.
 \begin{enumerate}[(i)]
     \item The \textbf{impulse response function} is the sequence $\{\beta_s\}_{s=0}^{\bar{L}}$;
     \item The \textbf{contemporaneous effect} is $\beta_0$;
@@ -160,7 +161,7 @@ Table~\ref{tab:dynamic-estimands} summarises the key dynamic estimands.
 \toprule
 \textbf{Estimand} & \textbf{Formula} & \textbf{Interpretation} \\
 \midrule
-Event-time effect $\theta_k$ & $\mathbb{E}[Y_{i,g+k}^g - Y_{i,g+k}(0) \mid G_i = g]$ & Effect $k$ periods after adoption \\
+Event-time effect $\theta_k$ & $\mathbb{E}[Y_{i,g+k}^g - Y_{i,g+k}(\infty) \mid G_i = g]$ & Effect $k$ periods after adoption \\
 \addlinespace
 Impulse response $\beta_s$ & $\partial Y_t / \partial W_{t-s}$ & Effect of lag-$s$ treatment shock \\
 \addlinespace

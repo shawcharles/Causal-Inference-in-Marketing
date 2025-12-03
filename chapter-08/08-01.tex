@@ -9,11 +9,11 @@ The factor model view is particularly natural in marketing panels. Regional sale
 
 The key advantage of factor models over parallel trends or synthetic control is flexibility in modelling how common shocks affect units.
 
-Parallel trends, the foundation of difference-in-differences methods (Chapter~\ref{ch:did}), requires that treated and control units follow parallel trajectories in the absence of treatment. This implies that time-specific shocks affect all units identically---an additive time fixed effect $\gamma_t$ that is common to all units. This assumption fails when units differ in their sensitivity to common shocks (for example, when a recession affects urban stores more than rural stores).
+Parallel trends, the foundation of difference-in-differences methods (Chapter~\ref{ch:did}), requires that treated and control units follow parallel trajectories in the absence of treatment. This implies that time-specific shocks affect all units identically---an additive time fixed effect $\delta_t$ that is common to all units. This assumption fails when units differ in their sensitivity to common shocks (for example, when a recession affects urban stores more than rural stores).
 
 Synthetic control (Chapter~\ref{ch:sc}) constructs a counterfactual by reweighting control units to match the treated unit's pre-treatment trajectory. However, it imposes convexity constraints on the weights (weights must be non-negative and sum to one) and requires that the treated unit lies within the convex hull of the control units. When the treated unit is an outlier---larger, more urban, or otherwise different from all control units---synthetic control cannot match it well.
 
-Factor models relax both restrictions. They allow time shocks to affect units with heterogeneous intensities through interactive fixed effects (the product $\lambda_i' f_t$) rather than additive fixed effects ($\gamma_t$). They approximate the treated unit's outcomes using freely estimated loadings without convexity constraints. The treated unit need not lie within the convex hull of controls; instead, its loading vector $\lambda_i$ is estimated from the pre-treatment data.
+Factor models relax both restrictions. They allow time shocks to affect units with heterogeneous intensities through interactive fixed effects (the product $\lambda_i' f_t$) rather than additive fixed effects ($\delta_t$). They approximate the treated unit's outcomes using freely estimated loadings without convexity constraints. The treated unit need not lie within the convex hull of controls; instead, its loading vector $\lambda_i$ is estimated from the pre-treatment data.
 
 \subsection*{The Cost of Flexibility: Low-Rank Structure}
 
@@ -27,11 +27,11 @@ When the low-rank structure is plausible---for example, when a small number of m
 
 Connecting to the potential outcomes framework introduced in Chapter~\ref{ch:frameworks} and grounded in the foundational work of \citet{rubin1974estimating,imbens2015causal}, factor models provide a model for untreated potential outcomes $Y_{it}(0)$. The most general specification is the \index{interactive fixed effects}interactive fixed effects (IFE) model:
 \[
-Y_{it}(0) = \alpha_i + \gamma_t + \lambda_i' f_t + \varepsilon_{it},
+Y_{it}(0) = \alpha_i + \delta_t + \lambda_i' f_t + \varepsilon_{it},\footnote{In this chapter, we denote the untreated potential outcome as $Y_{it}(0)$. Unlike the staggered adoption setting in other chapters where $Y_{it}(\infty)$ is used, factor models allow for arbitrary treatment patterns, making the binary $Y_{it}(0)$ notation standard in this literature (e.g., Xu, 2017).}
 \]
-where $\alpha_i$ is a unit fixed effect capturing time-invariant heterogeneity, $\gamma_t$ is a time fixed effect capturing shocks common to all units, $\lambda_i \in \mathbb{R}^R$ is the loading vector for unit $i$, $f_t \in \mathbb{R}^R$ is the factor vector for period $t$, and $\varepsilon_{it}$ is an idiosyncratic error with mean zero. The interactive term $\lambda_i' f_t$ captures unit-specific responses to common time-varying shocks.
+where $\alpha_i$ is a unit fixed effect capturing time-invariant heterogeneity, $\delta_t$ is a time fixed effect capturing shocks common to all units, $\lambda_i \in \mathbb{R}^R$ is the loading vector for unit $i$, $f_t \in \mathbb{R}^R$ is the factor vector for period $t$, and $\varepsilon_{it}$ is an idiosyncratic error with mean zero. The interactive term $\lambda_i' f_t$ captures unit-specific responses to common time-varying shocks.
 
-Special cases nest familiar models. When $R = 0$ (no interactive effects), the model reduces to the two-way fixed effects model underlying difference-in-differences. When $\alpha_i = \gamma_t = 0$, the model is a pure factor model. For treatment effect estimation, the counterfactual for a treated unit $i$ in post-treatment period $t$ is imputed as $\hat{\alpha}_i + \hat{\gamma}_t + \hat{\lambda}_i' \hat{f}_t$, and the treatment effect is the difference between the observed outcome $Y_{it}$ and this imputed counterfactual.
+Special cases nest familiar models. When $R = 0$ (no interactive effects), the model reduces to the two-way fixed effects model underlying difference-in-differences. When $\alpha_i = \delta_t = 0$, the model is a pure factor model. For treatment effect estimation, the counterfactual for a treated unit $i$ in post-treatment period $t$ is imputed as $\hat{\alpha}_i + \hat{\delta}_t + \hat{\lambda}_i' \hat{f}_t$, and the treatment effect is the difference between the observed outcome $Y_{it}$ and this imputed counterfactual.
 
 \subsection*{Connection to Matrix Completion}
 
@@ -41,7 +41,7 @@ This perspective is valuable because it connects causal panel methods to the bro
 
 \subsection*{Unification with Synthetic Control and SDID}
 
-The framework developed by \citet{arkhangelsky2024causal} situates factor models within the modern panel data literature, clarifying their connection to synthetic control, difference-in-differences, and hybrid methods (Chapter~\ref{ch:generalized-sc}).
+The framework developed by (Arkhangelsky et al., 2024) situates factor models within the modern panel data literature, clarifying their connection to synthetic control, difference-in-differences, and hybrid methods (Chapter~\ref{ch:generalized-sc}).
 
 The relationship is most transparent when expressed in terms of how each method constructs the counterfactual for a treated unit. Difference-in-differences estimates the counterfactual as $\hat{Y}_{it}(0) = Y_{i,\text{pre}} + (\bar{Y}_{\text{control},t} - \bar{Y}_{\text{control},\text{pre}})$, effectively assuming that all units share the same loading ($\lambda_i = \lambda$ for all $i$)---a rank-one factor model. Synthetic control estimates the counterfactual as $\hat{Y}_{it}(0) = \sum_j w_j Y_{jt}$, where the weights $w_j$ are chosen to match pre-treatment outcomes; this is equivalent to assuming that the treated unit's loading is a convex combination of control loadings ($\lambda_1 = \sum_j w_j \lambda_j$ with $w_j \geq 0$, $\sum_j w_j = 1$). Factor models estimate the counterfactual as $\hat{Y}_{it}(0) = \hat{\lambda}_i' \hat{f}_t$, where the loading $\lambda_i$ is estimated freely without convexity constraints.
 

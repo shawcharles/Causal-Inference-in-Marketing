@@ -21,7 +21,7 @@ The rank minimisation problem is computationally intractable (NP-hard), motivati
 \[
 \| \mathbf{M} \|_* = \sum_{k=1}^{\min(N,T)} \sigma_k(\mathbf{M}),
 \]
-serves as a convex surrogate for rank \citet{candes2009exact,candes2010power}. The regularised matrix completion estimator solves:
+serves as a convex surrogate for rank (Candès and Recht, 2009; Candès and Tao, 2010). The regularised matrix completion estimator solves:
 \[
 \hat{\mathbf{M}} = \arg\min_{\mathbf{M}} \left( \frac{1}{2} \sum_{(i,t) \in \Omega} (Y_{it} - M_{it})^2 + \lambda \| \mathbf{M} \|_* \right),
 \]
@@ -60,7 +60,7 @@ The regularisation parameter $\lambda$ controls the bias-variance trade-off:
 
 \paragraph{Large $\lambda$} prioritises low rank, producing high bias but low variance. The imputed matrix is smooth but may underfit systematic structure, biasing counterfactuals toward zero.
 
-\paragraph{Optimal $\lambda$} balances these extremes. Cross-validation provides a data-driven choice: partition the observed cells $\Omega$ into training (80 per cent) and validation (20 per cent) sets; solve the nuclear-norm problem on the training set for a grid of $\lambda$ values (e.g., $\lambda \in \{0.1, 0.5, 1, 2, 5, 10, 20\} \times \sigma_1$, where $\sigma_1$ is the largest singular value of the observed matrix); select the $\lambda$ minimising validation error.
+\paragraph{Optimal $\lambda$} balances these extremes. Cross-validation provides a data-driven choice: partition the observed cells $\Omega$ into training (80\%) and validation (20\%) sets; solve the nuclear-norm problem on the training set for a grid of $\lambda$ values (e.g., $\lambda \in \{0.1, 0.5, 1, 2, 5, 10, 20\} \times \sigma_1$, where $\sigma_1$ is the largest singular value of the observed matrix); select the $\lambda$ minimising validation error.
 
 \subsection*{Connection to IFE}
 
@@ -82,7 +82,7 @@ The quality of matrix completion depends on the missingness pattern. \citet{cand
 \]
 where $C$ is a constant. This means that recovery requires observing at least $O(R)$ entries per row and per column on average.
 
-\paragraph{Random missingness.} If each cell is observed independently with probability $p$, recovery is feasible when $p \geq C R \log(NT) / \min(N,T)$. For a rank-5 matrix with $N = T = 100$, this requires observing roughly 50 per cent of entries.
+\paragraph{Random missingness.} If each cell is observed independently with probability $p$, recovery is feasible when $p \geq C R \log(NT) / \min(N,T)$. For a rank-5 matrix with $N = T = 100$, this requires observing roughly 50\% of entries.
 
 \paragraph{Design-driven missingness.} In causal inference, missingness is not random but determined by the treatment assignment. Treated cells are missing by definition. Recovery is feasible if the observed cells span both the row space (loadings) and the column space (factors). This requires that control units are similar to treated units (their loadings span the same subspace) and that pre-treatment periods are similar to post-treatment periods (factors are stable).
 

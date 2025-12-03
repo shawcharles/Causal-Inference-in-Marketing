@@ -62,7 +62,7 @@ where $\text{MSE}(R)$ is the mean squared residual with rank $R$. Compute both c
 
 \paragraph{Eigenvalue gaps.} Plot the eigenvalues of $\mathbf{Y}'\mathbf{Y}/T$ in decreasing order (scree plot). Select $R$ at the ``elbow'' where eigenvalues drop sharply. The eigenvalue ratio test (maximise $\mu_R / \mu_{R+1}$) formalises this.
 
-\paragraph{Cross-validation.} Split the pre-treatment period into training (first 80 per cent of periods) and validation (last 20 per cent). Estimate factors on the training set for each candidate $R$. Compute out-of-sample prediction error on the validation set. Select $R$ minimising validation error. This guards against overfitting (Section~\ref{sec:factor-ife}).
+\paragraph{Cross-validation.} Split the pre-treatment period into training (first 80\% of periods) and validation (last 20\% of periods). Estimate factors on the training set for each candidate $R$. Compute out-of-sample prediction error on the validation set. Select $R$ minimising validation error. This guards against overfitting (Section~\ref{sec:factor-ife}).
 
 \subsection*{Penalty Selection for Matrix Completion}
 
@@ -70,7 +70,7 @@ For matrix completion (Section~\ref{sec:factor-matrix}), the regularisation para
 
 \paragraph{Grid search.} Define a grid of $\lambda$ values relative to the largest singular value $\sigma_1$ of the demeaned outcome matrix: $\lambda \in \{0.01, 0.05, 0.1, 0.2, 0.5, 1\} \times \sigma_1$. Solve the nuclear-norm problem for each $\lambda$.
 
-\paragraph{Cross-validation.} Partition the observed cells $\Omega$ into training (80 per cent) and validation (20 per cent). For each $\lambda$, estimate on the training cells and compute prediction error on validation cells. Select $\lambda$ minimising validation error. Plot the validation curve and select at the minimum or at the ``elbow'' where error flattens.
+\paragraph{Cross-validation.} Partition the observed cells $\Omega$ into training (80\%) and validation (20\%). For each $\lambda$, estimate on the training cells and compute prediction error on validation cells. Select $\lambda$ minimising validation error. Plot the validation curve and select at the minimum or at the ``elbow'' where error flattens.
 
 \paragraph{Effective rank.} After solving for the optimal $\lambda$, count the number of singular values above a threshold (e.g., $0.01 \times \sigma_1$). This gives the effective rank selected by the nuclear-norm penalty.
 

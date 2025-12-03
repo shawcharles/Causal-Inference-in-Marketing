@@ -6,7 +6,7 @@ Marketing interventions rarely act instantaneously. A television advertising cam
 These dynamic patterns are central to marketing decision-making. Managers must forecast the cumulative impact of campaigns, understand the time profile of returns, and decide whether to sustain, refresh, or terminate investments based on the speed of ramp-up and decay.
 
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!50!black,title=Key Concepts: Dynamic Treatment Effects]
-\textbf{\index{impulse response}Impulse response:} The effect of a treatment shock on outcomes at each lag $s = 0, 1, 2, \ldots$ after treatment. Formally, $\beta_s = \mathbb{E}[Y_{i,t+s}(1) - Y_{i,t+s}(0) \mid W_{it} = 1]$.
+\textbf{\index{impulse response}Impulse response:} The effect of a treatment shock on outcomes at each lag $s = 0, 1, 2, \ldots$ after treatment. Formally, $\beta_s = \mathbb{E}[Y_{i,t+s}(1) - Y_{i,t+s}(\infty) \mid W_{it} = 1]$.
 
 \textbf{\index{long-run multiplier}Long-run multiplier:} The cumulative effect across all lags, $\text{LRM} = \sum_{s=0}^\infty \beta_s$. Measures the total impact of a treatment shock.
 
@@ -73,7 +73,7 @@ Design-based methods provide transparent, assumption-lean estimates. Model-based
 
 \subsection*{Connection to Causal Frameworks}
 
-The connection to potential outcomes and causal frameworks (Chapter~\ref{ch:frameworks}) clarifies the estimands. Path-dependent potential outcomes \citet{pearl2009causality} allow outcomes at time $t$ to depend on the full history of treatment assignments up to $t$, capturing carryover from past treatments and anticipation of future treatments. The observed outcome is a function of the entire treatment path, and the treatment effect at time $t$ is the contrast between outcomes under the observed path and an alternative path (e.g., no treatment). Estimating such effects requires comparing units with different treatment paths while holding constant other determinants—motivating panel data where multiple paths are observed.
+The connection to potential outcomes and causal frameworks (Chapter~\ref{ch:frameworks}) clarifies the estimands. Path-dependent potential outcomes (Pearl, 2009) allow outcomes at time $t$ to depend on the full history of treatment assignments up to $t$, capturing carryover from past treatments and anticipation of future treatments. The observed outcome is a function of the entire treatment path, and the treatment effect at time $t$ is the contrast between outcomes under the observed path and an alternative path (e.g., no treatment). Estimating such effects requires comparing units with different treatment paths while holding constant other determinants—motivating panel data where multiple paths are observed.
 
 \begin{tcolorbox}[colback=orange!5!white,colframe=orange!50!black,title=Example: Promotional Calendar Dynamics]
 \textbf{Setting:} A retailer implements discounts every four weeks over a year.

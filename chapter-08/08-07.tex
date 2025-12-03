@@ -15,7 +15,7 @@ Bootstrap methods provide finite-sample inference by resampling the data and rec
 \item \textbf{Re-estimate:} Estimate the factor model (loadings $\hat{\Lambda}^*$ and factors $\hat{\mathbf{F}}^*$) on the bootstrap sample.
 \item \textbf{Recompute treatment effects:} For each treated unit-period pair, compute $\hat{\tau}_{it}^* = Y_{it} - \hat{Y}_{it}^*(0)$.
 \item \textbf{Repeat:} Perform $B = 500$ to $1000$ bootstrap replications.
-\item \textbf{Construct intervals:} The 95 per cent confidence interval for $\tau$ is the 2.5th to 97.5th percentile of the bootstrap distribution $\{\hat{\tau}^{(b)}\}_{b=1}^B$.
+\item \textbf{Construct intervals:} The 95\% confidence interval for $\tau$ is the 2.5th to 97.5th percentile of the bootstrap distribution $\{\hat{\tau}^{(b)}\}_{b=1}^B$.
 \end{enumerate}
 
 \paragraph{Resampling units vs time.} The procedure above resamples time blocks, preserving cross-sectional correlation within periods. An alternative is to resample units (clusters) with replacement, preserving temporal dependence within units. Choose based on the dependence structure: resample time if serial correlation dominates; resample units if cross-sectional correlation dominates.
@@ -109,7 +109,7 @@ Small-sample and serial dependence considerations are critical in marketing pane
 
 \paragraph{Serial dependence.} When outcomes exhibit strong autocorrelation, use block bootstrap with block length accommodating the dependence structure. Alternatively, compute HAC (heteroskedasticity and autocorrelation consistent) standard errors. Chapter~\ref{ch:inference} covers these methods comprehensively.
 
-\paragraph{Reporting.} Always report: (1) the method used for inference (bootstrap type, block length, number of replications); (2) 95 per cent confidence intervals for the ATT and key event-time effects; (3) placebo-test results (RMSPE distribution, p-value for actual treatment); (4) any sensitivity checks (varying block length, rank, or sample).
+\paragraph{Reporting.} Always report: (1) the method used for inference (bootstrap type, block length, number of replications); (2) Report 95 % confidence intervals for the ATT and key event-time effects; (3) placebo-test results (RMSPE distribution, p-value for actual treatment); (4) any sensitivity checks (varying block length, rank, or sample).
 
 \subsection*{Software Implementation}
 

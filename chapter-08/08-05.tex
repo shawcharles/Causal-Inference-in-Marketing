@@ -35,9 +35,9 @@ where $\bar{Y}$ denotes averages over the relevant cells, and the second term us
 
 The connection to factor models is that SDID handles heterogeneous trends through the time weights $\omega_t$. In a factor model with one factor (rank one) plus unit and time intercepts:
 \[
-Y_{it} = \alpha_i + \gamma_t + \lambda_i f_t + \varepsilon_{it},
+Y_{it} = \alpha_i + \delta_t + \lambda_i f_t + \varepsilon_{it},
 \]
-the difference-in-differences removes $\gamma_t$ (common time shocks), but heterogeneous loadings $\lambda_i$ on the single factor $f_t$ remain. SDID's time weights $\omega_t$ re-weight pre-treatment periods to focus on periods where the single factor is most informative for the post-treatment comparison. In this sense, SDID approximates a rank-one factor model without explicitly estimating the factor.
+the difference-in-differences removes $\delta_t$ (common time shocks), but heterogeneous loadings $\lambda_i$ on the single factor $f_t$ remain. SDID's time weights $\omega_t$ re-weight pre-treatment periods to focus on periods where the single factor is most informative for the post-treatment comparison. In this sense, SDID approximates a rank-one factor model without explicitly estimating the factor.
 
 \subsection*{Matrix Completion in the Spectrum}
 

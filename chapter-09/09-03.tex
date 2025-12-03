@@ -154,7 +154,7 @@ Several packages implement robust matrix completion:
 
 \subsection*{Application: Retail Sales with Stockouts}
 
-Consider a grocery retailer with 500 products across 100 stores over 104 weeks. Stockouts affect approximately 5 per cent of product-store-week combinations. Stockouts are non-random: they are more common for popular products (high demand depletes inventory) and small stores (limited shelf space).
+Consider a grocery retailer with 500 products across 100 stores over 104 weeks. Stockouts affect approximately 5\% of product-store-week combinations. Stockouts are non-random: they are more common for popular products (high demand depletes inventory) and small stores (limited shelf space).
 
 \paragraph{Treatment.} A promotional campaign is applied to 50 products in 20 stores for 4 weeks. The goal is to estimate the causal effect on sales.
 
@@ -162,15 +162,15 @@ Consider a grocery retailer with 500 products across 100 stores over 104 weeks. 
 
 \paragraph{Robust MC solution.} Solve SPCP with $\lambda = 0.1$ (chosen by cross-validation) on untreated cells only. The low-rank component $\hat{\mathbf{L}}$ captures underlying demand. The sparse component $\hat{\mathbf{S}}$ captures stockouts and outliers.
 
-\paragraph{Outlier analysis.} Inspecting $\hat{\mathbf{S}}$: 95 per cent of non-zero entries are negative (stockouts produce zeros, which are negative deviations from demand). The remaining 5 per cent are positive (data errors or extreme promotions).
+\paragraph{Outlier analysis.} Inspecting $\hat{\mathbf{S}}$: 95\% of non-zero entries are negative (stockouts produce zeros, which are negative deviations from demand). The remaining 5\% are positive (data errors or extreme promotions).
 
-\paragraph{Results.} The imputed counterfactuals are $\hat{L}_{ijt}$ (excluding outliers). The robust ATT is 20 per cent increase in sales. For comparison, standard MC (without robustness) produces 15 per cent. The difference arises because standard MC is biased downward by stockouts in untreated cells.
+\paragraph{Results.} The imputed counterfactuals are $\hat{L}_{ijt}$ (excluding outliers). The robust ATT is 20\% increase in sales. For comparison, standard MC (without robustness) produces 15\%. The difference arises because standard MC is biased downward by stockouts in untreated cells.
 
 \paragraph{Diagnostics.}
 \begin{itemize}
-\item Distribution of $\hat{\mathbf{S}}$: 95 per cent zero entries; non-zero entries have mean absolute value 50 (vs mean sales of 100).
-\item Placebo test: randomly designate 5 per cent of untreated cells as artificial outliers; method correctly identifies 90 per cent.
+\item Distribution of $\hat{\mathbf{S}}$: 95\% zero entries; non-zero entries have mean absolute value 50 (vs mean sales of 100).
+\item Placebo test: randomly designate 5\% of untreated cells as artificial outliers; method correctly identifies 90\%.
 \item Sensitivity to $\lambda$: ATT estimates stable for $\lambda \in [0.05, 0.2]$.
 \end{itemize}
 
-\paragraph{Inference.} Confidence intervals for the robust ATT can be constructed using bootstrap methods (Section~\ref{sec:bayesian-matrix}) or by propagating uncertainty from the ADMM solution. The 95 per cent bootstrap CI for the ATT is [16\%, 24\%].
+\paragraph{Inference.} Confidence intervals for the robust ATT can be constructed using bootstrap methods (Section~\ref{sec:bayesian-matrix}) or by propagating uncertainty from the ADMM solution. The 95\% bootstrap CI for the ATT is [16\%, 24\%].

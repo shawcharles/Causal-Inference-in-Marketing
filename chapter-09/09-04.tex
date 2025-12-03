@@ -8,7 +8,7 @@ Marketing panels often include rich side information. Store characteristics (siz
 \begin{definition}[Covariate-Assisted Matrix Completion Model]
 The untreated potential outcomes follow:
 \[
-Y_{it}(0) = \underbrace{X_{it}^\top \beta}_{\text{covariate effect}} + \underbrace{\lambda_i^\top f_t}_{\text{low-rank component}} + \varepsilon_{it},
+Y_{it}(0) = \underbrace{X_{it}^\top \beta}_{\text{covariate effect}} + \underbrace{\lambda_i^\top f_t}_{\text{low-rank component}} + \varepsilon_{it},\footnote{In this chapter, we denote the untreated potential outcome as $Y_{it}(0)$. Unlike the staggered adoption setting in Chapter 10 where $Y_{it}(\infty)$ is used, matrix completion methods allow for arbitrary treatment patterns, making the binary $Y_{it}(0)$ notation standard in this literature (e.g., Athey et al., 2021).}
 \]
 where:
 \begin{enumerate}[(i)]
