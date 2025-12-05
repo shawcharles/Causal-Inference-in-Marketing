@@ -1,34 +1,47 @@
 \section{Reproducibility, Benchmarking, and Standards}
 \label{sec:reproducibility-standards}
 
-
-Credible science requires that others can verify our claims. In panel causal inference for marketing, this verification is difficult. Data are proprietary and cannot be shared. Methods are complex and implementation details matter. Results depend on choices—sample restrictions, control variables, inference procedures—that are rarely fully documented. This section addresses what reproducibility means in this context and what standards might improve practice.
+Credible science requires that others can verify our claims. In panel causal inference for marketing, this verification is difficult. Data are proprietary and cannot be shared. Methods are complex and implementation details matter. Results depend on choices---sample restrictions, control variables, inference procedures---that are rarely fully documented. This section addresses what reproducibility means in this context and what standards we can adopt to improve practice.
 
 \subsection*{Pre-Registration for Observational Studies}
 
-Pre-registration—committing to an analysis plan before seeing outcome data—originated in clinical trials and has spread to experimental social science. Its application to observational studies is less developed but equally important.
+Pre-registration---committing to an analysis plan before seeing outcome data---originated in clinical trials and has spread to experimental social science. Its application to observational studies is less developed but equally important.
 
-The core problem is specification searching. With panel data, the researcher faces many choices: which units to include, which time periods to analyse, which controls to add, which estimator to use, how to cluster standard errors. Each choice affects the result. Without pre-commitment, the temptation to search for specifications that yield desired results is strong, even unconsciously.
+The core problem is specification searching. With panel data, we face many choices: which units to include, which time periods to analyse, which controls to add, which estimator to use, how to cluster standard errors. Each choice affects the result. Without pre-commitment, the temptation to search for specifications that yield desired results is strong, even unconsciously.
 
-Pre-registration disciplines this process. Before accessing outcome data, the researcher specifies the estimand, the identification strategy, the sample definition, the primary and secondary outcomes, the control variables, the estimator, and the inference procedure. Deviations from the plan are permitted but must be documented and justified.
+Pre-registration disciplines this process. Before accessing outcome data, we specify the estimand, the identification strategy, the sample definition, the primary and secondary outcomes, the control variables, the estimator, and the inference procedure. Deviations from the plan are permitted but must be documented and justified.
 
-A pre-registration should at least describe the research question and estimand; the identification assumption and why it is plausible; the data sources and sample restrictions; the treatment and outcome definitions; the estimation method; the inference procedure, including clustering and multiple-testing corrections; the diagnostics to be run (pre-trends, balance, placebo tests); and the sensitivity analyses planned.
+A pre-registration should describe:
+\begin{itemize}
+    \item The research question and estimand
+    \item The identification assumption and why it is plausible
+    \item The data sources and sample restrictions
+    \item The treatment and outcome definitions
+    \item The estimation method
+    \item The inference procedure, including clustering and multiple-testing corrections
+    \item The diagnostics to be run (pre-trends, balance, placebo tests)
+    \item The sensitivity analyses planned
+\end{itemize}
 
-Pre-registration should occur before accessing outcome data. It is acceptable to explore treatment assignment and covariates to refine the design. But once outcomes are observed, the plan should be locked. Platforms like OSF and AsPredicted provide timestamped registration. Internal wikis or emails to stakeholders can serve a similar function when public registration is impossible.
+Pre-registration should occur before accessing outcome data. It is acceptable to explore treatment assignment and covariates to refine the design. But once outcomes are observed, the plan should be locked. Platforms like the Open Science Framework (OSF) and AsPredicted provide timestamped registration that proves when the plan was filed. Internal wikis or emails to stakeholders can serve a similar function when public registration is impossible due to confidentiality.
 
 Pre-registration does not guarantee correct results. A flawed design remains flawed whether pre-registered or not. But it shifts the burden of proof. Deviations from the plan require explanation. Readers can assess whether the reported analysis matches the registered plan or whether post-hoc adjustments suggest fishing.
 
 \subsection*{Why Benchmarking Is Hard in Marketing}
 
-Benchmarking—comparing methods on common datasets with known ground truth—has driven progress in machine learning. ImageNet, for instance, allowed researchers to compare vision models on a shared task. Section~\ref{sec:method-selection-outlook} discussed the role of benchmarking for method selection. Here we focus on why marketing panels make benchmarking difficult.
+Benchmarking---comparing methods on common datasets with known ground truth---has driven progress in machine learning. ImageNet allowed researchers to compare vision models on a shared task with clear performance metrics. Section~\ref{sec:method-selection-outlook} discussed the role of benchmarking for method selection. Here we focus on why marketing panels make benchmarking difficult.
 
-The obstacles are substantial. Ground truth requires knowing the true treatment effect. In observational data, we never know this. Experiments provide ground truth, but experiments are expensive and proprietary. Firms that run experiments rarely share the data.
+The obstacles are substantial.
 
-Simulations can provide ground truth, but simulations require assumptions about the data-generating process. If we simulate parallel-trends violations, we must specify how trends deviate. If we simulate interference, we must specify the spillover structure. Methods that perform well under our simulated violations may fail under violations we did not anticipate. Benchmarks become targets: researchers optimise for the benchmark rather than for real-world performance.
+\textit{Ground truth requires knowing the true treatment effect.} In observational data, we never know this. The whole point is that we are trying to estimate something we cannot directly observe. Experiments provide ground truth, but experiments are expensive and proprietary. Firms that run experiments rarely share the data because it reveals strategic information.
 
-Semi-synthetic benchmarks offer a middle path. Take real covariate data from marketing panels, simulate treatment assignment and potential outcomes, and inject known effects. This preserves realistic covariate structure while providing ground truth. But the simulated treatment mechanism may not match real-world selection, and the injected effects may not capture true heterogeneity.
+\textit{Simulations require assumptions about the data-generating process.} If we simulate parallel-trends violations, we must specify how trends deviate. If we simulate interference, we must specify the spillover structure. Methods that perform well under our simulated violations may fail under violations we did not anticipate. Simulations tell us how methods perform under assumed conditions, not under real conditions.
 
-Held-out experiments provide the most direct benchmark. When a firm runs an experiment, it can also apply observational methods to the same data and compare estimates to the experimental benchmark. This is rare because it requires experimental access and willingness to share results. A few academic–industry partnerships have produced such comparisons, but they remain exceptions.
+\textit{Benchmarks become targets.} Once a benchmark exists, researchers optimise for it. Methods may overfit to the benchmark's specific features rather than performing well in general. This is Goodhart's law applied to methodology.
+
+Semi-synthetic benchmarks offer a middle path. We take real covariate data from marketing panels, simulate treatment assignment and potential outcomes, and inject known effects. This preserves realistic covariate structure while providing ground truth. But the simulated treatment mechanism may not match real-world selection, and the injected effects may not capture true heterogeneity.
+
+Held-out experiments provide the most direct benchmark. When a firm runs an experiment, it can also apply observational methods to the same data and compare estimates to the experimental benchmark. This is the gold standard but rare because it requires experimental access and willingness to share results. A few academic--industry partnerships have produced such comparisons, but they remain exceptions.
 
 The implication is that benchmarking in marketing will remain fragmented. No single benchmark will achieve the status of ImageNet. Progress will come from accumulating evidence across many studies, each with its own limitations.
 
@@ -36,42 +49,60 @@ The implication is that benchmarking in marketing will remain fragmented. No sin
 
 Even without shared benchmarks, reporting standards can improve transparency. A credible analysis report should contain enough information for a reader to assess validity and, in principle, replicate the analysis.
 
-The estimand should be stated precisely. "The effect of advertising on sales" is insufficient. What effect—ATT, ATE, marginal effect? On which population? Over what time horizon?
+\textit{State the estimand precisely.} ``The effect of advertising on sales'' is insufficient. What effect---ATT, ATE, marginal effect? On which population? Over what time horizon? Ambiguous estimands lead to ambiguous conclusions.
 
-The identification strategy should be explicit. What assumption justifies a causal interpretation—parallel trends, unconfoundedness, exclusion restriction? Why is this assumption plausible in this context?
+\textit{Make the identification strategy explicit.} What assumption justifies a causal interpretation---parallel trends, unconfoundedness, exclusion restriction? Why is this assumption plausible in this context? What would violate it?
 
-The data should be described in detail. What is the unit of observation? What is the time period? What sample restrictions were applied and why? What is the treatment definition? What are the outcome and control variables?
+\textit{Describe the data in detail.} What is the unit of observation? What is the time period? What sample restrictions were applied and why? What is the treatment definition? What are the outcome and control variables?
 
-Diagnostics should be reported, drawing on the templates in Chapters~\ref{ch:design-diagnostics} and~\ref{ch:applications}. Pre-trend tests for DiD. Pre-treatment fit for synthetic control. Balance tables for matching. Overlap diagnostics for propensity methods. First-stage F-statistics for IV. These diagnostics allow readers to assess whether identification assumptions are credible.
+\textit{Report diagnostics.} Pre-trend tests for DiD. Pre-treatment fit for synthetic control. Balance tables for matching. Overlap diagnostics for propensity methods. First-stage F-statistics for IV. These diagnostics, discussed in Chapters~\ref{ch:design-diagnostics} and~\ref{ch:applications}, allow readers to assess whether identification assumptions are credible.
 
-Sensitivity analyses should accompany point estimates. How do results change under alternative specifications? What magnitude of assumption violation would overturn the conclusion? Bounds under explicit violations, as discussed in Section~\ref{sec:partial-identification}, are more informative than vague claims of robustness.
+\textit{Include sensitivity analyses.} How do results change under alternative specifications? What magnitude of assumption violation would overturn the conclusion? Bounds under explicit violations, as discussed in Section~\ref{sec:partial-identification}, are more informative than vague claims of robustness.
 
-Inference should be appropriate to the design: clustering at the level of treatment assignment, corrections for multiple testing when examining many outcomes or subgroups, and acknowledgment of uncertainty from small samples or few clusters.
+\textit{Use appropriate inference.} Cluster standard errors at the level of treatment assignment. Apply corrections for multiple testing when examining many outcomes or subgroups. Acknowledge uncertainty from small samples or few clusters.
 
-Adoption of these standards requires that journals, firms, and funders demand them. Without enforcement, standards remain aspirational.
+Adoption of these standards requires that journals, firms, and funders demand them. The \textit{Journal of Marketing Research} and other leading outlets have moved toward requiring pre-registration and detailed reporting, but enforcement varies. Without consistent enforcement, standards remain aspirational.
 
 \subsection*{Replication Without Data Sharing}
 
 Most marketing data cannot be shared. Contracts prohibit it. Privacy regulations restrict it. Competitive concerns preclude it. Yet replication remains essential. How do we verify results when data are proprietary?
 
-Code sharing is a partial solution. Even if data cannot be shared, analysis code can be. A reader who obtains similar data can run the same code and check whether the methodology is sound. Code also reveals implementation details—how missing data were handled, how standard errors were computed—that prose descriptions often omit.
+\textit{Code sharing.} Even if data cannot be shared, analysis code can be. A reader who obtains similar data can run the same code and check whether the methodology is sound. Code also reveals implementation details---how missing data were handled, how standard errors were computed---that prose descriptions often omit.
 
-Synthetic data can support verification. The analyst generates a synthetic dataset that mimics the structure of the real data—same variables, similar distributions, plausible correlations—and shares it alongside the code. A reader can run the code on the synthetic data to verify that it executes correctly and produces sensible output. This does not verify the results but verifies the methodology.
+\textit{Synthetic data.} We can generate a synthetic dataset that mimics the structure of the real data---same variables, similar distributions, plausible correlations---and share it alongside the code. Modern tools like \texttt{DoWhy} or \texttt{Synthcity} allow generating structural synthetic data that preserves causal relationships. A reader can run the code on this synthetic data to verify that it executes correctly and produces sensible output. This does not verify the results but verifies the methodology.
 
-Audit protocols allow third-party verification. An independent auditor with data access—perhaps under NDA—re-runs the analysis and certifies that the reported results match. This is common in financial auditing and could be adapted for research. The auditor's report provides assurance without requiring public data release.
+\textit{Audit protocols.} An independent auditor with data access---perhaps under NDA---re-runs the analysis and certifies that the reported results match. This is common in financial auditing and could be adapted for research. The auditor's report provides assurance without requiring public data release.
 
-Registered reports commit to publishing regardless of results. The analysis plan is reviewed and accepted before data are collected or analysed. This eliminates publication bias and ensures that null results are reported. Journals including the *Journal of Marketing Research* have adopted registered reports, though uptake remains limited.
+\textit{Registered reports.} Some journals commit to publishing regardless of results. The analysis plan is reviewed and accepted before data are collected or analysed. This eliminates publication bias and ensures that null results are reported. The \textit{Journal of Marketing Research} and \textit{Marketing Science} have experimented with registered reports, though uptake remains limited.
 
 None of these solutions is perfect. Code without data cannot be fully verified. Synthetic data may not capture the features that matter. Audits are costly and rare. Registered reports require advance planning that observational studies often lack. But each contributes to a culture of transparency that, over time, improves credibility.
 
 \subsection*{Open Problems}
 
-Open questions remain. How can we create benchmarks for marketing causal inference when data are proprietary and ground truth is unknown? Can academic–industry partnerships produce shared benchmarks without compromising competitive interests?
+Several questions remain open.
 
-How can we enforce reporting standards when journals, firms, and funders have weak incentives to demand them? What would change that equilibrium?
+How can we create benchmarks for marketing causal inference when data are proprietary and ground truth is unknown? Can academic--industry partnerships produce shared benchmarks without compromising competitive interests? Federated learning and secure computation offer technical possibilities, but the governance challenges are substantial.
 
-How can we make pre-registration practical for observational studies where the design evolves as data are explored? Can we distinguish legitimate design refinement from specification searching?
+How can we enforce reporting standards when journals, firms, and funders have weak incentives to demand them? What would change that equilibrium? Perhaps reputational concerns, as the credibility revolution in economics has raised expectations for identification.
 
-How can we verify results when data cannot be shared and audits are costly? Can secure computation or differential privacy enable verification without disclosure?
+How can we make pre-registration practical for observational studies where the design evolves as data are explored? Can we distinguish legitimate design refinement from specification searching? One approach is to separate exploratory and confirmatory phases explicitly, with pre-registration applying only to the latter.
+
+How can we verify results when data cannot be shared and audits are costly? Can secure computation or differential privacy enable verification without disclosure? The technical tools exist but are not yet practical for complex causal analyses.
 
 These are institutional problems as much as methodological ones. Solving them requires coordination across researchers, journals, firms, and funders. The methods in this book are only as credible as the practices that surround their use.
+
+\subsection*{Practical Guidance}
+
+Given the challenges above, what should practitioners do? We offer the following recommendations.
+
+First, pre-register when possible. Even if public registration is impossible, internal pre-registration---a timestamped analysis plan shared with stakeholders before seeing outcomes---disciplines the process and creates a record.
+
+Second, share code. Even if data cannot be shared, code can be. Document the code well enough that someone with similar data could run it. Include the code in an appendix or supplementary materials.
+
+Third, report comprehensively. State the estimand precisely. Explain the identification strategy. Describe the data. Report diagnostics. Include sensitivity analyses. Follow the reporting templates in Chapter~\ref{ch:applications}.
+
+Fourth, acknowledge limitations. No analysis is perfect. State what assumptions are required and why they might fail. Discuss what would change the conclusion. Readers appreciate honesty more than false confidence.
+
+Fifth, advocate for standards. When reviewing papers, demand pre-registration and detailed reporting. When working with firms, push for audit protocols and code sharing. When publishing, choose outlets that enforce high standards. Individual choices aggregate into norms.
+
+These recommendations do not solve the fundamental tensions between proprietary data and open science. But they move practice in the right direction and contribute to a culture where credibility is valued.

@@ -11,7 +11,7 @@ We rely on primary and foreign keys to link records across tables and systems. A
 
 \paragraph{Probabilistic matching.} When exact keys are not available, we turn to probabilistic matching—linking records based on name, address, or behavioural similarity. This introduces measurement error: false positives (linking distinct individuals) and false negatives (failing to link the same individual). Both bias causal estimates.
 
-\paragraph{Causal implications.} Linkage errors create measurement error in treatment assignment. If we cannot reliably identify who was treated, the estimated treatment effect is attenuated toward zero. Sensitivity analysis should assess how estimates change under plausible linkage error rates.
+\paragraph{Causal implications.} Linkage errors create measurement error in treatment assignment. If we cannot reliably identify who was treated, the estimated treatment effect is attenuated toward zero. With a false negative rate $\pi_{\text{FN}}$ (treated units misclassified as control) and false positive rate $\pi_{\text{FP}}$ (control units misclassified as treated), the naive estimator converges to $\hat\tau \to \tau \cdot (1 - \pi_{\text{FN}} - \pi_{\text{FP}})$ under classical measurement error assumptions. When linkage quality varies with covariates—as it often does, since younger or more privacy-conscious users are harder to match—the error is non-classical and can bias heterogeneous treatment effect estimates in either direction. Sensitivity analysis should assess how estimates change under plausible linkage error rates, reporting bounds for a range of $(\pi_{\text{FN}}, \pi_{\text{FP}})$ pairs.
 
 \subsection*{Cross-Device and Cross-Platform Linking}
 
@@ -51,7 +51,7 @@ In practice, identifiers are often missing or incomplete. A fraction of transact
 
 \paragraph{Missing at random (MAR).} If missingness depends on observed covariates, inverse probability weighting or imputation can recover unbiased estimates.
 
-\paragraph{Missing not at random (MNAR).} If missingness depends on unobserved factors (e.g., privacy-conscious users who block tracking are also less likely to convert), bias is unavoidable without strong assumptions. Sensitivity analysis is essential.
+\paragraph{Missing not at random (MNAR).} If missingness depends on unobserved factors (e.g., privacy-conscious users who block tracking are also less likely to convert), bias is unavoidable without strong assumptions. Partial identification methods provide bounds on causal effects without requiring the missing-at-random assumption \citep{manski2003partial}. The width of these bounds depends on what we are willing to assume about the relationship between missingness and outcomes. When bounds are wide, they honestly reflect our uncertainty; when narrow, they indicate that the data are informative despite missingness. Sensitivity analysis is essential: report point estimates under MAR alongside Manski-style bounds under MNAR to show how conclusions depend on assumptions.
 
 \subsection*{Identity and Linkage Checklist}
 

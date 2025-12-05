@@ -31,6 +31,7 @@ Platform-reported metrics rarely match external data sources perfectly. Reconcil
     \item 5–20\% discrepancy: Investigate root cause; consider calibration.
     \item $>$20\% discrepancy: Serious concern; do not proceed without resolution.
 \end{itemize}
+These thresholds are context-dependent. If the expected treatment effect is 2\%, a 5\% discrepancy in baseline metrics is catastrophic; if the expected effect is 50\%, a 5\% discrepancy is noise. Scale thresholds relative to the magnitude of effects you seek to detect.
 
 \paragraph{Persistent gaps.} If discrepancies persist after alignment, they may signal measurement drift (gradual change in definitions) or structural breaks (sudden policy changes). Monitor discrepancies over time; sudden jumps indicate breaks that require window restrictions or explicit modelling.
 
@@ -53,6 +54,7 @@ Different causal methods impose different identification assumptions. Comparing 
     \item \textbf{Agreement:} If multiple methods with different assumptions yield similar estimates, confidence in the causal effect increases. This is triangulation.
     \item \textbf{Divergence:} If methods disagree, diagnose the source. Design diagnostics (Chapter~\ref{ch:design-diagnostics}) can identify whether overlap, pre-trends, weights, or functional form drive differences.
 \end{itemize}
+Triangulation is most compelling when methods have *different* biases that would push estimates in opposite directions. If DiD is biased upward by anticipation effects but SC is biased downward by poor pre-treatment fit, agreement between them is stronger evidence than agreement between two methods with similar bias structures. Specification curve analysis provides a formal framework for this: enumerate all defensible specifications, estimate effects under each, and report the distribution of estimates rather than a single point.
 
 \paragraph{Root cause analysis for divergent estimates:}
 \begin{enumerate}
@@ -89,6 +91,8 @@ Triangulation combines evidence from multiple data sources and methods to streng
     \item Acknowledge uncertainty in conclusions.
     \item Recommend follow-up studies to resolve discrepancies.
 \end{itemize}
+
+\paragraph{Formal estimate combination.} When multiple estimates exist and triangulation neither clearly succeeds nor fails, formal combination methods can produce principled summaries. Bayesian Model Averaging (BMA) treats each estimation method as a model, assigns prior probabilities to each based on credibility of assumptions, updates weights based on model fit, and produces a posterior distribution over causal effects that reflects uncertainty across methods. Meta-analytic approaches pool estimates by inverse-variance weighting, though this assumes estimates are independent draws from a common effect distribution—often violated when methods use overlapping data. A simpler alternative is to report the range of estimates (minimum to maximum) as an informal bound, acknowledging that the true effect lies somewhere within if at least one method's assumptions are satisfied. The key principle is that combination should reflect genuine uncertainty, not hide disagreement: a wide range across methods is informative, signalling that conclusions depend on modelling assumptions.
 
 \subsection*{Validation and Reconciliation Checklist}
 

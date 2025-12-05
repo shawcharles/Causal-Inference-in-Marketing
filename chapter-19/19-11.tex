@@ -3,6 +3,8 @@
 
 This section consolidates the data and measurement practices from this chapter into a unified workflow. The checklist, figures, and summary table provide a practical reference for implementing design-faithful measurement in marketing causal inference.
 
+The workflow is iterative, not strictly linear. Diagnostics at later stages often reveal problems that require returning to earlier stages. For example, reconciliation failures at Stage 6 may indicate metric definition problems from Stage 3, and overlap violations at Stage 5 may require revising the sample definition from Stage 1. Budget time for multiple passes through the workflow.
+
 \subsection*{End-to-End Workflow}
 
 \begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 19.10: Data–Measurement–Platforms Workflow Checklist]
@@ -44,7 +46,7 @@ This section consolidates the data and measurement practices from this chapter i
 \textbf{Stage 6: Reconciliation and Governance}
 \begin{itemize}
     \item Compare estimates across methods (DiD, SC, DML) (Section~\ref{sec:validation-reconciliation}).
-    \item Enforce version control, snapshotting, and audit trails (Section~\ref{sec:pipelines-reproducibility}).
+    \item Enforce version control, snapshotting, audit trails, and data contracts (Section~\ref{sec:pipelines-reproducibility}).
     \item Document all assumptions and their diagnostics (Section~\ref{sec:assumptions-guardrails}).
 \end{itemize}
 \end{tcolorbox}
@@ -77,7 +79,7 @@ This section consolidates the data and measurement practices from this chapter i
 
 \subsection*{Metric-Estimand Mapping}
 
-Table~\ref{tab:metric-estimand-mapping} provides a quick reference for mapping common marketing metrics to their econometric estimands, design constraints, and diagnostic checks.
+Table~\ref{tab:metric-estimand-mapping} provides a quick reference for mapping common marketing metrics to their econometric estimands, design constraints, and diagnostic checks. Note that multi-touch attribution and cross-channel effects complicate this mapping: when users are exposed to multiple channels (TV, digital, social) simultaneously, isolating the effect of any single channel requires additional design considerations such as partial randomisation, sequential experimentation, or structural modelling of the attribution problem.
 
 \begin{table}[htbp]
 \begin{tighttable}

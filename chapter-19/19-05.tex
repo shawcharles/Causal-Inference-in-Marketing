@@ -28,7 +28,7 @@ Delivery metrics report what the platform did, not what the user experienced.
 \paragraph{Measurement gaps.} Platform-implied exposure from delivery logs may depart from actual exposure:
 \begin{itemize}
     \item \textbf{Viewability:} An impression is logged when the ad is served, not when it is seen. Viewability rates vary from 30\% to 80\% depending on placement.
-    \item \textbf{Bot traffic:} Fraudulent impressions inflate counts. Industry estimates suggest 5–20\% of digital ad spend is lost to fraud.
+    \item \textbf{Bot traffic:} Fraudulent impressions inflate counts. Industry estimates suggest 5–20\% of digital ad spend is lost to fraud \citep{gordon2019comparison}.
     \item \textbf{Post-hoc filters:} Fraud filters applied after delivery may remove impressions retroactively, creating discrepancies between real-time and reconciled data.
 \end{itemize}
 
@@ -61,7 +61,7 @@ When platform metrics diverge from external data, reconciliation is required.
 
 \paragraph{External validation.} Use independent outcome data—retail scanner sales, CRM transactions, financial results—to validate platform-reported conversions. Discrepancies reveal measurement error or attribution inflation.
 
-\paragraph{Incrementality calibration.} Run periodic geo-experiments or randomised holdouts to estimate true incrementality. Use these estimates to calibrate platform lift metrics (Section~\ref{sec:geo-experiments}, Section~\ref{sec:mmm}).
+\paragraph{Incrementality calibration.} Run periodic geo-experiments or randomised holdouts to estimate true incrementality. Use these estimates to calibrate platform lift metrics (Section~\ref{sec:geo-experiments}, Section~\ref{sec:mmm}). Remember that geo-experiment estimates themselves carry uncertainty, both from sampling variation and from the small number of geographic units typically available. This uncertainty should propagate into calibrated platform metrics: if the geo-experiment confidence interval spans $(0.5, 1.5)$ for the calibration multiplier, report calibrated lift ranges rather than point estimates.
 
 \paragraph{Multi-source triangulation.} Compare estimates from multiple methods: platform lift, MMM, geo-experiments, and attribution models. Convergence increases confidence; divergence signals measurement or identification problems.
 

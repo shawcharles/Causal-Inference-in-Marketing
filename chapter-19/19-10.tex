@@ -3,6 +3,8 @@
 
 This section states the core assumptions underpinning data and measurement workflows. These assumptions are implicit in every causal analysis using marketing panel data; violations threaten validity. Each assumption links to diagnostic checks that can detect violations.
 
+Some assumptions are testable via diagnostics: stable keys can be verified by auditing migrations, temporal ordering can be checked via join logic, and support can be assessed via overlap plots. Other assumptions are fundamentally untestable: full SUTVA (no interference whatsoever) cannot be verified without knowing the true spillover structure, and correct functional form cannot be confirmed without observing counterfactuals. However, partial interference is testable: buffer zone tests can detect whether treatment effects attenuate with distance from treated units, and exposure density designs can identify spillover gradients (Chapter~\ref{ch:spillovers}). For untestable assumptions, sensitivity analysis and domain knowledge must substitute for diagnostics. When multiple assumptions are violated simultaneously, biases compound and may reinforce or partially cancel; this interaction makes interpretation difficult and argues for conservative conclusions.
+
 \subsection*{Data Stability Assumptions}
 
 \begin{assumption}[Stable unit keys and measurement invariance]
@@ -45,6 +47,8 @@ Privacy-driven aggregation, consent-based sample restrictions, and trimming pres
 \end{assumption}
 
 \paragraph{Diagnostics.} Check propensity score overlap. Verify that trimming does not eliminate key subgroups. Report effective sample size after consent-based restrictions (Section~\ref{sec:privacy-governance}).
+
+\paragraph{Assumption hierarchy.} Not all assumptions are equally consequential. Violations of temporal ordering (leakage) typically invalidate the entire analysis and cannot be repaired post hoc. Violations of stable keys create measurement error that attenuates estimates but may be correctable via sensitivity analysis. Violations of adequate support can often be addressed by trimming or restricting the target population. Prioritise diagnostic effort accordingly: verify temporal ordering first, then key stability, then support.
 
 \subsection*{Assumption Verification Summary}
 

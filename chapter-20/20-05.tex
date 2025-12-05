@@ -1,52 +1,172 @@
 \section{Method Selection and Design Guidance}
 \label{sec:method-selection-outlook}
 
-Practitioners now face a dizzying menu of methods: difference-in-differences, synthetic control, SDID, factor models, matrix completion, double machine learning, and their many variants. How should one choose? The method selection guidance in Chapter~\ref{ch:applications} (Section~\ref{sec:method-selection}) provides practical heuristics, but a formal decision framework remains elusive. This section articulates the open problems in method selection and proposes directions for progress.
+Practitioners now face a dizzying menu of methods: difference-in-differences, synthetic control, SDID, factor models, matrix completion, double machine learning, and their many variants. How should we choose? The method selection guidance in Chapter~\ref{ch:applications} (Section~\ref{sec:method-selection}) provides practical heuristics, but a formal decision framework remains elusive. This section articulates the open problems in method selection and proposes directions for progress.
 
-\subsection*{Current Heuristics}
+\subsection*{A Decision Heuristic}
 
-Current practice relies on informal rules summarised in Chapter~\ref{ch:applications}. Data features provide initial guidance: many treated units suggest DiD or staggered DiD, while few treated units suggest synthetic control. Long pre-treatment periods favour SC and factor models, while short pre-periods favour DiD. High-dimensional covariates suggest augmented methods or DML.
+While no formal decision framework exists, we can offer a practical heuristic based on problem characteristics. The following questions guide method selection.
 
-Assumption plausibility matters as much as data features. If parallel trends are credible, DiD is natural. If pre-treatment fit is good, SC is attractive. If neither assumption is credible, factor models or bounds may be the only honest option. These assessments are subjective and rarely formalised.
+\textit{How many treated units do you have?} If you have one or a few treated units, synthetic control methods are the natural choice---they were designed precisely for this setting. If you have many treated units (say, more than 20), difference-in-differences and its heterogeneity-robust variants become feasible and often preferable.
 
-Diagnostic performance provides another signal. Running multiple methods and comparing diagnostics can reveal which assumptions are more plausible in a given setting. If DiD passes pre-trend tests and SC achieves good fit, both are candidates. If diagnostics fail, the analyst should reconsider the design or report bounds. Triangulation—applying multiple methods and comparing estimates—increases confidence when results agree and signals sensitivity to assumptions when they diverge. What remains unclear is how to weight or reconcile divergent estimates.
+\textit{How long is your pre-treatment period?} Synthetic control requires sufficient pre-treatment data to construct weights---typically at least 10--20 periods. With shorter pre-periods, DiD may be more robust because it relies on parallel trends rather than pre-treatment fit. Factor models and matrix completion also benefit from longer panels.
+
+\textit{Is treatment timing staggered or simultaneous?} If treatment occurs simultaneously for all treated units, classic DiD and SC are straightforward. If timing is staggered, you must use heterogeneity-robust DiD estimators (Chapter~\ref{ch:did}) or stacked approaches that avoid the negative weighting problem.
+
+\textit{What are your main threats to identification?} If parallel trends is the primary concern, synthetic control's pre-treatment fit provides a check. If time-varying confounders are the concern, factor models that allow for latent structure may be more appropriate. If you suspect interference, the methods from Chapter~\ref{ch:spillovers} become necessary.
+
+\textit{Do you have high-dimensional covariates?} If covariates are important for selection or for improving precision, augmented methods (ASDID, augmented SC) or double machine learning become attractive.
+
+These questions do not yield a unique answer, and the boundaries between methods blur. In practice, we recommend running multiple methods and comparing results, using diagnostics to assess which assumptions are most plausible.
+
+\subsection*{SDID as Principled Unification}
+
+Before presenting worked examples, we should highlight that synthetic difference-in-differences (SDID) often supersedes the need to choose between DiD and SC. SDID combines unit weights (like SC) with time weights (like DiD), achieving the best of both approaches. When SC achieves good pre-treatment fit and DiD passes pre-trend tests, SDID typically gives similar estimates to both. When they disagree, SDID provides a principled middle ground that does not require manual averaging or arbitrary method selection.
+
+The intuition is straightforward. SC constructs a weighted average of control units to match the treated unit's pre-treatment trajectory. DiD uses all control units equally but relies on parallel trends. SDID weights both units (to improve fit) and time periods (to down-weight periods where fit is poor). This double-weighting is equivalent to a weighted two-way fixed effects regression, providing familiar regression mechanics with SC-style adaptivity.
+
+For practitioners, the implication is clear: when both DiD and SC are plausible, consider SDID as your primary estimator rather than running both and trying to reconcile disagreement. SDID's unit weights reveal which control units contribute most, and its time weights reveal which pre-treatment periods drive identification---providing built-in diagnostics.
+
+\subsection*{A Worked Example}
+
+Consider a retailer testing a new loyalty programme. The programme launches in 5 DMAs in January 2023, with 45 DMAs as potential controls. We have monthly sales data from January 2020 through December 2023---36 pre-treatment periods and 12 post-treatment periods.
+
+How should we approach method selection?
+
+\textit{Number of treated units:} Five is too few for DiD to be well-powered but enough for synthetic control to construct separate controls for each treated DMA or to pool treated units.
+
+\textit{Pre-treatment length:} 36 months is ample for SC to achieve good pre-treatment fit. Factor models are also feasible.
+
+\textit{Treatment timing:} Simultaneous, so we do not face staggered adoption complications.
+
+\textit{Main threats:} The treated DMAs may have been selected because they were growing faster---a parallel trends concern. They may also be in different regions with different economic conditions---a time-varying confounder concern.
+
+Given these features, our approach would be:
+\begin{enumerate}
+    \item Construct synthetic controls for each treated DMA and assess pre-treatment fit.
+    \item Run two-way fixed effects DiD as a benchmark, checking pre-trends via event study.
+    \item Run SDID as the principled combination of both approaches.
+    \item If neither DiD nor SC achieves good diagnostics, consider a factor model that allows for DMA-specific loadings on regional economic factors.
+    \item Compare estimates across methods. If they agree, we have confidence. If they disagree, investigate which assumptions are violated.
+\end{enumerate}
+
+\subsection*{When Diagnostics Conflict}
+
+The worked example above assumes a clean resolution: methods either agree or we can diagnose why they disagree. Reality is messier. What do we do when SC achieves excellent pre-treatment fit but DiD has tighter confidence intervals? Or when DiD passes pre-trend tests but SC weights concentrate on a single donor that seems substantively implausible?
+
+Consider a scenario where our loyalty programme analysis yields:
+\begin{itemize}
+    \item DiD: $\hat{\tau} = 0.08$ (8\% lift), SE = 0.02, but event study shows a slight upward pre-trend (coefficient on $t = -1$ is 0.015).
+    \item SC: $\hat{\tau} = 0.05$ (5\% lift), pre-treatment RMSPE is excellent, but 70\% of weight falls on a single DMA that is geographically distant.
+    \item SDID: $\hat{\tau} = 0.06$ (6\% lift), intermediate weight structure.
+\end{itemize}
+
+The methods disagree. DiD's pre-trend suggests its estimate may be biased upward. SC's weight concentration raises concerns about unobserved differences between the treated DMAs and the dominant donor. What should we report?
+
+First, investigate the pre-trend. A coefficient of 0.015 at $t = -1$ when the treatment effect is 0.08 suggests the pre-trend could account for roughly 20\% of the estimated effect if it continued post-treatment. This is concerning but not fatal.
+
+Second, investigate the donor. Why does SC concentrate weight on one DMA? If that DMA has similar retail characteristics (similar demographics, similar baseline sales levels), the concentration may be appropriate. If it is concentrated there simply to match a spurious pre-treatment pattern, the SC estimate is fragile.
+
+Third, use SDID's intermediate estimate as a robustness check. The fact that SDID lies between DiD and SC (0.06 vs. 0.08 and 0.05) suggests neither extreme is obviously correct.
+
+Fourth, report the range. Rather than reporting a single estimate, report ``5--8\% with central estimate 6\%'' and explain the disagreement. Stakeholders can then assess how much the conclusion depends on method choice.
+
+\subsection*{Cross-Validation for Method Selection}
+
+The guidance above remains somewhat subjective: we investigate disagreement and make judgment calls. A more principled approach uses cross-validation on pre-treatment data to select methods based on predictive performance.
+
+The procedure is as follows. Take the pre-treatment period and split it into a training period and a validation period. For instance, with 36 pre-treatment months, use months 1--30 for training and months 31--36 for validation. Fit each candidate method (DiD, SC, SDID, factor model) on the training period. Predict outcomes in the validation period. Select the method with the lowest mean squared prediction error (MSPE) in the validation period.
+
+This approach has several advantages. It provides an objective criterion for method selection---the method that best predicts held-out pre-treatment data. It avoids cherry-picking based on which method gives the preferred answer. It naturally favours methods whose assumptions are most consistent with the data structure.
+
+The approach also has limitations. Predictive performance in the pre-treatment period may not translate to causal validity in the post-treatment period. A method that overfits pre-treatment patterns may underperform when treatment introduces structural change. The validation period may be too short to reliably estimate MSPE. And cross-validation does not account for the uncertainty introduced by method selection itself.
+
+Despite these limitations, pre-treatment holdout validation provides a useful starting point. When one method substantially outperforms others in the validation period, that is evidence in its favour. When all methods perform similarly, we lack strong grounds for preferring one over another.
+
+\subsection*{Multiverse Analysis and Specification Curves}
+
+Rather than selecting a single method and reporting a single estimate, we can map the space of reasonable analytic choices and report how estimates vary across this space. This approach goes by several names: \textit{multiverse analysis} examines how results change across the space of data processing and analytic decisions; \textit{specification curve analysis} plots estimates from all reasonable specifications on a single figure.
+
+The multiverse for a causal analysis might include: which control units to include, how to construct the outcome variable (levels vs. logs, seasonally adjusted or not), which pre-treatment periods to use for fit, whether to include covariates, and which method to apply. Each combination yields an estimate, and the full set of estimates forms the specification curve.
+
+A specification curve that is tightly clustered around a central estimate suggests robustness---conclusions do not depend on arbitrary analytic choices. A curve that spans zero or includes estimates of both signs suggests fragility---the conclusion depends critically on choices that the data cannot adjudicate.
+
+Reporting specification curves is more honest than reporting a single estimate from a single method. It acknowledges that researchers make choices and that different choices can yield different conclusions. The challenge is defining the space of ``reasonable'' specifications---including unreasonable specifications inflates variance, while excluding reasonable ones hides fragility.
+
+\subsection*{Sensitivity Analysis and Austen Plots}
+
+Beyond specification curves, formal sensitivity analysis quantifies how much unobserved confounding would be required to overturn a conclusion. Section~\ref{sec:partial-identification} introduced sensitivity frameworks; here we emphasise their role in method selection.
+
+\textit{Austen plots} (or omitted variable bias plots) provide a visual summary of sensitivity to unobserved confounding. The horizontal axis shows how strongly an unobserved confounder would need to correlate with treatment; the vertical axis shows how strongly it would need to correlate with outcomes. Contours show the resulting bias. The point where the contour crosses zero indicates the minimum confounding strength required to overturn the conclusion.
+
+These plots are available through the \texttt{sensemakr} package in R and similar implementations elsewhere. They provide two benefits for method selection. First, they quantify fragility: an effect that would be overturned by weak confounding is less credible than one that would require implausibly strong confounding. Second, they allow comparison across methods: a method that is robust to stronger confounding is preferable, all else equal.
+
+For practitioners, we recommend reporting Austen plots (or equivalent sensitivity metrics) alongside point estimates. This moves sensitivity analysis from a vague ``we conducted robustness checks'' to a quantitative statement about how much unobserved confounding would change the conclusion.
 
 \subsection*{Triangulating Panel Methods with MMM}
 
-A key open problem is reconciling panel causal methods with media mix modelling. The two approaches estimate different estimands: panel methods estimate ATT or ATE for specific interventions, while MMM estimates marginal effects of continuous spend variables. Reconciliation requires careful translation between these quantities.
+A key open problem is reconciling panel causal methods with media mix modelling. The two approaches estimate different quantities: panel methods estimate ATT or ATE for specific interventions, while MMM estimates marginal effects of continuous spend variables. We must understand when they should agree and what disagreement implies.
 
-The identification strategies also differ. Panel methods rely on parallel trends, pre-treatment fit, or unconfoundedness. MMM relies on time-series variation and functional form assumptions such as adstock and saturation curves. Neither set of assumptions implies the other, and both may fail simultaneously.
+\textit{When should they agree?} If the panel method estimates the effect of a discrete advertising campaign and MMM estimates the marginal effect of advertising spend, the two should be related through the chain rule. The panel ATT equals the marginal effect times the incremental spend divided by the number of treated units (approximately). Agreement requires that the MMM's functional form (adstock, saturation) correctly captures how effects aggregate.
 
-MMM estimates can be calibrated using experimental lift from geo-experiments or holdout tests, as discussed in Section~\ref{sec:mmm}. This bridges the two approaches but requires that experimental effects generalise to the MMM's continuous-dose framework—an assumption that is rarely tested. Emerging work attempts to unify panel causal inference with MMM by embedding both in a common structural model. This is promising but requires strong assumptions about functional forms and dynamics.
+\textit{When should they disagree?} Disagreement arises when: (1) the panel intervention is outside the range of MMM's training data (extrapolation); (2) the panel measures short-run effects while MMM captures long-run equilibrium; (3) one or both identification strategies fail; (4) the estimands genuinely differ because of heterogeneity or nonlinearity.
 
-When should each approach be used? MMM is appropriate for budget allocation across channels when experimental variation is unavailable. Panel methods are appropriate for evaluating specific interventions with credible counterfactuals. Triangulation uses both and investigates discrepancies, yet no formal framework exists for reconciling disagreement.
+\textit{What does disagreement tell us?} If panel methods suggest a large effect and MMM suggests a small effect, the MMM may be underestimating due to attenuation bias from measurement error or confounding from correlated channels. If panel methods suggest a small effect and MMM suggests a large effect, the panel may be measuring a local effect that does not generalise, or the MMM may be capturing spurious correlation.
+
+\textit{Calibration.} MMM estimates can be calibrated using experimental lift from geo-experiments or holdout tests, as discussed in Section~\ref{sec:mmm}. This bridges the two approaches but requires that experimental effects generalise to the MMM's continuous-dose framework---an assumption that is rarely tested. When calibration changes MMM estimates substantially, it signals that the MMM's identifying variation was problematic.
+
+No formal framework exists for reconciling disagreement, but we can offer guidance: investigate the source of disagreement before choosing which estimate to report. If the disagreement can be traced to a specific assumption that one method makes and the other does not, that assumption becomes the focus of sensitivity analysis.
 
 \subsection*{Toward Formal Decision Frameworks}
 
-A formal method selection framework would map problem characteristics to recommended methods. The inputs would include the number of treated and control units, the length of pre-treatment and post-treatment periods, treatment timing (simultaneous, staggered, or continuous), outcome characteristics (continuous, count, binary, zero-inflated), covariate availability and dimensionality, and suspected threats such as parallel trends violations, interference, and nonstationarity.
+A formal method selection framework would map problem characteristics to recommended methods. The inputs would include:
+\begin{itemize}
+    \item Number of treated and control units
+    \item Length of pre-treatment and post-treatment periods
+    \item Treatment timing (simultaneous, staggered, continuous)
+    \item Outcome characteristics (continuous, count, binary, zero-inflated)
+    \item Covariate availability and dimensionality
+    \item Suspected threats (parallel trends violations, interference, structural instability)
+\end{itemize}
 
-The output would be a decision rule that maps these inputs to a ranked list of methods, with diagnostics to run and sensitivity analyses to report. Such a framework requires understanding the relative performance of methods across the input space. This is difficult because performance depends on unknown features of the data-generating process, diagnostics are imperfect signals of assumption validity, and the preferred method depends on the loss function—how we trade off bias against variance or coverage against width.
+The output would be a ranked list of methods with diagnostics to run and sensitivity analyses to report. Such a framework requires understanding method performance across the input space---knowledge we do not yet have.
 
-\subsection*{Benchmarking and Simulation Studies}
+Building this knowledge requires systematic benchmarking. Realistic simulations would generate panels with known treatment effects under realistic violations---parallel trends deviations, factor structure, interference, measurement error---and compare methods on bias, RMSE, and coverage. Semi-synthetic benchmarks would use real marketing data with synthetic treatment effects, preserving realistic covariate structure while providing ground truth.
 
-Progress requires systematic benchmarking. Realistic simulations would generate panels with known treatment effects under realistic violations—parallel trends deviations, factor structure, interference, measurement error—and compare methods on bias, RMSE, and coverage. Semi-synthetic benchmarks would use real marketing data with synthetic treatment effects injected, preserving realistic covariate structure while providing ground truth.
-
-Held-out experiments provide the most direct benchmark. When experiments are available, they can serve as ground truth to evaluate observational methods applied to the same data. This is rare because it requires experimental access and willingness to share results. Community benchmarks—shared benchmark suites that allow method developers to compare performance on common tasks—would accelerate progress but require coordination and governance to prevent overfitting to specific benchmarks.
+Held-out experiments provide the most direct benchmark. When experiments are available, they can serve as ground truth for observational methods applied to the same data. This is rare because it requires experimental access and willingness to share results. Community benchmarks---shared benchmark suites that allow method developers to compare performance---would accelerate progress.
 
 \subsection*{When to Combine Methods}
 
-Rather than selecting a single method, practitioners may combine methods. Model averaging weights estimates from multiple methods based on diagnostic performance or prior beliefs. Bayesian model averaging provides a formal framework but requires specifying priors over methods, which is rarely straightforward.
+Rather than selecting a single method, we may combine methods. Several approaches exist.
 
-Ensemble estimation uses multiple methods as inputs to a meta-estimator. This can reduce variance but may not reduce bias if all methods are biased in the same direction. Specification curves report estimates across a range of reasonable specifications, as discussed in Section~\ref{sec:synthesis-reporting}. This reveals sensitivity but does not provide a single point estimate. If methods disagree, reporting the range of estimates as a bound on the true effect is conservative but honest.
+\textit{Model averaging.} Weight estimates from multiple methods based on diagnostic performance or prior beliefs. Bayesian model averaging provides a formal framework but requires specifying priors over methods---rarely straightforward in causal inference where ``methods'' correspond to different identifying assumptions, not different models of the same DGP.
 
-\subsection*{Open Problems}
+\textit{Ensemble estimation.} Use multiple methods as inputs to a meta-estimator. Stacking, for example, learns weights that minimise cross-validated prediction error. This can reduce variance but may not reduce bias if all methods are biased in the same direction.
 
-Given problem characteristics, what is the optimal method? Answering this requires a formal loss function and knowledge of method performance across the design space—knowledge we do not yet have. Can we use diagnostic performance to select methods adaptively? This risks overfitting to diagnostics that are themselves noisy.
+\textit{Bounds from disagreement.} If methods disagree, report the range of estimates as a bound on the true effect. This is conservative but honest. If DiD yields 5\% and SC yields 8\%, reporting ``5--8\%'' acknowledges that method choice matters without arbitrarily preferring one.
 
-How should we reconcile estimates from panel methods and MMM when they disagree? What assumptions justify averaging or preferring one over the other? Should method choice be pre-registered? Pre-registration prevents specification searching but may lock in suboptimal choices before seeing the data.
+The challenge is that combining methods does not resolve the fundamental question of which identifying assumptions are more plausible. Averaging across methods implicitly assumes that biases cancel, which may be false. Reporting bounds acknowledges uncertainty but may be too conservative for decision-making.
 
-\subsection*{Research Directions}
+\subsection*{Practical Guidance}
 
-Progress will require benchmark suites with realistic simulations and semi-synthetic data that allow systematic method comparison. We need formal decision rules that map problem characteristics to method recommendations, with uncertainty quantification. Unified frameworks that nest panel methods and MMM as special cases would clarify when each is appropriate. Adaptive selection methods that use diagnostics to choose among methods while controlling for selection bias would help practitioners navigate the menu. Reporting standards that require triangulation and sensitivity analysis rather than single-method estimates would improve transparency.
+Given the open problems above, how should practitioners proceed? We offer the following workflow.
 
-Until formal frameworks are available, practitioners should apply multiple methods, report diagnostics for each, investigate discrepancies, and acknowledge that method choice affects conclusions.
+First, characterise the problem. Before touching data, assess the number of treated units, pre-treatment length, treatment timing, main threats, and covariate availability. These features narrow the menu of appropriate methods.
+
+Second, consider SDID as your default. When both DiD and SC are plausible candidates, SDID provides a principled combination that often outperforms either alone.
+
+Third, run cross-validation on pre-treatment data. Use held-out pre-treatment periods to select among candidate methods based on predictive performance.
+
+Fourth, run diagnostics to assess assumption plausibility. Pre-trend tests for DiD, pre-treatment fit for SC, placebo tests for both. Diagnostics are imperfect but informative.
+
+Fifth, conduct multiverse analysis. Vary control group, outcome definition, covariates, and method. Report the specification curve, not just the preferred estimate.
+
+Sixth, quantify sensitivity. Use Austen plots or equivalent metrics to show how much unobserved confounding would be required to overturn the conclusion.
+
+Seventh, investigate disagreement. If methods disagree, do not average or choose arbitrarily. Trace the disagreement to specific assumptions and focus sensitivity analysis there.
+
+Eighth, report honestly. State which methods were run, which diagnostics passed and failed, how sensitive estimates are to specification, and what the range of estimates implies for the conclusion. Readers can then assess credibility for themselves.
+
+Ninth, pre-register when possible. If the analysis plan can be specified before seeing outcomes, pre-registration prevents specification searching. But recognise that pre-registration may lock in suboptimal choices; leave room for exploratory analysis clearly labelled as such.
+
+These steps do not provide a definitive answer to ``which method should I use?'' but they make the method selection process transparent and defensible.

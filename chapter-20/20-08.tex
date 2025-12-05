@@ -1,48 +1,81 @@
 \section{Partial Identification and Sensitivity}
 \label{sec:partial-identification}
 
-Point identification requires assumptions that are often contestable. Parallel trends may not hold exactly, as discussed in Chapters~\ref{ch:frameworks}--\ref{ch:threats}. SUTVA may be violated by spillovers (Chapter~\ref{ch:spillovers}). Outcomes may be measured with error (Chapter~\ref{ch:data-measurement}). When these assumptions fail, point estimates are biased. Partial identification offers an alternative: rather than assuming violations away, we bound the estimand under explicit assumptions about the magnitude of violations. This section sketches the open problems in making partial identification practical for marketing panels.
+Point identification requires assumptions that are often contestable. Parallel trends may not hold exactly. SUTVA may be violated by spillovers. Outcomes may be measured with error. When these assumptions fail, point estimates are biased. Partial identification offers an alternative: rather than assuming violations away, we bound the estimand under explicit assumptions about the magnitude of violations. This section develops the practical tools for making partial identification work in marketing panels.
 
-\subsection*{Why Partial Identification?}
+\subsection*{Why Partial Identification Matters}
 
-Point estimates with narrow confidence intervals can create false confidence when identification assumptions are uncertain. Bounds acknowledge that we do not know the exact effect but can rule out implausible values. They also make assumptions explicit. Rather than assuming parallel trends hold exactly, we might assume they hold within $\pm \delta$ per period and report results for specific values of $\delta$. Readers can then assess whether those values are plausible in their context.
+Point estimates with narrow confidence intervals can create false confidence when identification assumptions are uncertain. We might report that a loyalty programme increased retention by 3.2 percentage points ($p < 0.01$), but this precision rests on parallel trends holding exactly—an assumption we cannot verify. If trends deviated by even a small amount, the true effect could be 2\% or 4\% or zero.
 
-The sensitivity analyses and breakdown diagnostics from Chapters~\ref{ch:inference} and~\ref{ch:design-diagnostics} show how estimates change when assumptions are perturbed. Partial identification complements these tools by turning perturbations into explicit bounds on the estimand. Instead of saying that "results are robust to X", the analyst specifies the magnitude of X under which conclusions hold and the range of effects consistent with larger violations.
+Partial identification makes this uncertainty explicit. Rather than assuming parallel trends hold exactly, we assume they hold within $\pm \delta$ per period and report the range of effects consistent with that assumption. Readers can then assess whether $\delta$ is plausible in their context. The result is not ``the effect is 3.2\%'' but rather ``the effect lies between 2.1\% and 4.3\% if parallel trends deviate by at most 0.5\% per period.'' This is more honest and often more useful for decision-making.
 
-\subsection*{Bounding Strategies by Violation Type}
+\subsection*{Bounded Parallel Trends: The Rambachan-Roth Framework}
 
-Different assumption violations call for different bounding approaches. If parallel trends hold within $\pm \delta$ per period, a simple template bounds the ATT by the point estimate plus or minus $T_1 \cdot \delta$, where $T_1$ is the number of post-treatment periods. Calibrating $\delta$ from pre-treatment trend differences or from domain knowledge is essential but often ad hoc.
+The most important recent advance in partial identification for panels is the work of \citet{rambachan2023more}, who develop a practical framework for ``honest'' difference-in-differences inference under bounded parallel trends violations.
 
-When spillovers are present, individual treatment effects are not point identified, but bounds can be constructed under assumptions about spillover magnitude. If spillovers affect outcomes by at most $\gamma$, the direct effect lies within the observed effect $\pm \gamma$. Classical measurement error attenuates estimates toward zero; when the error variance is known or can be bounded, we can construct corresponding bounds. Non-classical error requires stronger structure.
+The core idea is simple. We assume that the deviation from parallel trends in post-treatment periods is no larger than some multiple $\bar{M}$ of the maximum deviation observed in pre-treatment periods. Formally, if $\delta_t$ denotes the violation of parallel trends at time $t$, we assume:
+\[
+|\delta_t| \leq \bar{M} \cdot \max_{s < 0} |\delta_s|
+\]
+When $\bar{M} = 0$, we recover the standard parallel trends assumption. When $\bar{M} > 0$, we allow for violations whose magnitude is bounded by what we observe pre-treatment.
 
-Rosenbaum bounds\index{Rosenbaum bounds} (Definition~\ref{def:rosenbaum-gamma} and Proposition~\ref{prop:rosenbaum-bounds} in Chapter~\ref{ch:threats}) assess unmeasured confounding by asking how strong a hidden confounder would need to be to overturn the result. The sensitivity parameter $\Gamma$ quantifies the required confounding strength. When outcomes are missing not at random, Manski bounds provide worst-case intervals by imputing extreme values for missing observations. These intervals can be wide but require no assumptions about the missing-data mechanism.
+This approach has two virtues. First, the bound is calibrated from data: we use pre-treatment trend differences to set the scale of plausible violations. Second, the resulting confidence intervals have correct coverage even if the true violation is anywhere within the assumed bound—they are ``honest'' in the sense of being valid uniformly over the class of allowed violations.
 
-\subsection*{Current Tools and Limitations}
+The \texttt{HonestDiD} R package implements this framework, providing ready-to-use tools for constructing bounds in DiD and event-study settings. Practitioners can specify $\bar{M}$, compute the implied confidence interval, and report how conclusions change as $\bar{M}$ varies. This is exactly the ``breakdown analysis'' we want: at what violation magnitude does the conclusion change?
 
-Chapters~\ref{ch:inference} and~\ref{ch:design-diagnostics} develop sensitivity analyses that show how estimates move under perturbations of assumptions. These are valuable but often lack defaults for what perturbation magnitudes to consider. Specification curves in Section~\ref{sec:synthesis-reporting} report estimates across a range of specifications, revealing sensitivity but not delivering formal bounds on the estimand.
+\subsection*{Calibrating Violation Magnitudes}
 
-Breakdown analysis reports the violation magnitude at which the substantive conclusion would change—for example, "the effect remains positive unless parallel trends are violated by more than 5\% per period." This is informative but requires choosing a threshold for what counts as a changed conclusion. Partial identification methods are less well implemented than point estimation. Practitioners rarely have ready-to-use tools for constructing bounds in DiD, SC, or factor-based designs.
+The hardest part of partial identification is choosing the violation magnitude $\delta$ or $\bar{M}$. Several strategies help.
+
+Pre-treatment calibration uses observed pre-trends to bound plausible post-treatment deviations. If pre-treatment trends differ by at most 0.5\% per period, it is plausible (though not guaranteed) that post-treatment violations are similar. The Rambachan-Roth $\bar{M}$ parameter formalises this: $\bar{M} = 1$ means we allow violations as large as the worst pre-treatment deviation, $\bar{M} = 2$ allows violations twice as large, and so on.
+
+Domain-knowledge calibration uses external information about the mechanism. If we know that regional economic shocks affect treated and control regions differently, we can estimate the magnitude of these shocks from auxiliary data and use this to bound parallel-trends violations.
+
+Benchmark calibration compares the required violation to observable confounders. If we would need parallel trends to deviate by 10\% per period to overturn the result, but all observable confounders produce deviations of less than 1\%, the result is robust in a meaningful sense. This logic underlies sensitivity analysis frameworks like those in Chapter~\ref{ch:threats}.
+
+\subsection*{Bounding Other Violations}
+
+Different assumption violations call for different bounding approaches. When spillovers are present, individual treatment effects are not point identified, but bounds can be constructed under assumptions about spillover magnitude. If spillovers affect outcomes by at most $\gamma$, the direct effect lies within the observed effect $\pm \gamma$. We can calibrate $\gamma$ from observed cross-unit correlations or from auxiliary experiments that measure spillover intensity.
+
+For measurement error, classical attenuation pushes estimates toward zero. When the reliability ratio $\rho = \text{Var}(T^*)/\text{Var}(T)$ can be bounded from auxiliary data, we can construct corresponding bounds on the true effect. Non-classical error requires stronger structure but can sometimes be bounded using instrumental variables or repeated measurements.
+
+For unmeasured confounding, Rosenbaum bounds (Definition~\ref{def:rosenbaum-gamma} and Proposition~\ref{prop:rosenbaum-bounds} in Chapter~\ref{ch:threats}) assess how strong a hidden confounder would need to be to overturn the result. The sensitivity parameter $\Gamma$ quantifies the required confounding strength. When $\Gamma$ must be large to change conclusions, we have evidence of robustness.
 
 \subsection*{Combining Multiple Violations}
 
-In practice, multiple assumptions may be violated simultaneously. Parallel trends and SUTVA may both be uncertain, and measurement error may be present as well. Bounds must then account for several types of violations at once. Joint bounds are wider than bounds for any single violation. Optimising over multiple violation parameters to find the implied range of the estimand is computationally intensive, especially when the parameter space is high dimensional.
+In practice, multiple assumptions may be violated simultaneously. Parallel trends and SUTVA may both be uncertain, measurement error may be present, and some confounding may remain. We must then account for several types of violations at once.
 
-Specifying plausible magnitudes for multiple violations requires domain knowledge. There is no consensus on how to elicit or report these magnitudes in marketing settings. The analyst must make judgement calls that shape the reported bounds and, in turn, the apparent strength of the evidence.
+Joint bounds are necessarily wider than bounds for any single violation. If parallel trends can deviate by $\delta$ and spillovers can add $\gamma$, the combined bound is at least $\delta + \gamma$. Optimising over multiple violation parameters to find the implied range of the estimand is computationally intensive but feasible for moderate-dimensional problems.
+
+The practical challenge is specifying plausible magnitudes for multiple violations. There is no consensus on how to elicit or report these magnitudes, but transparency helps. We should state each assumed bound explicitly (``we allow parallel trends to deviate by up to 1\% per period and spillovers to affect outcomes by up to 0.5\%'') rather than hiding assumptions in sensitivity tables.
 
 \subsection*{Reporting Standards}
 
-Transparent reporting of partial identification requires stating the assumed bounds on parallel-trends deviations, spillover magnitudes, or confounding strength. Vague statements such as "robust to violations" should be avoided. The point estimate under the maintained assumptions should be reported alongside bounds under explicit violations so that readers can see both the best guess and the range of uncertainty.
+Transparent reporting of partial identification requires several elements. We should state the assumed bounds on parallel-trends deviations, spillover magnitudes, or confounding strength. Vague statements such as ``robust to violations'' should be avoided in favour of specific magnitudes.
 
-Breakdown analysis should report the violation magnitude at which conclusions change and relate this to observable features where possible. For instance, calibrating allowable trend deviations from pre-treatment gaps or calibrating spillover magnitudes from observed cross-market effects grounds the bounds in evidence rather than arbitrary choices.
+We should report the point estimate under maintained assumptions alongside bounds under explicit violations, so readers see both the best guess and the range of uncertainty. A useful format is:
+\begin{quote}
+Under exact parallel trends, the estimated effect is 3.2\% (95\% CI: 2.1--4.3\%). If parallel trends deviate by up to $\bar{M} = 1$ times the maximum pre-treatment deviation, the 95\% robust confidence interval is 1.8--4.8\%. The conclusion that the effect is positive is robust to $\bar{M} \leq 2.3$.
+\end{quote}
+
+Breakdown analysis should report the violation magnitude at which conclusions change and relate this to observable features where possible. Calibrating allowable deviations from pre-treatment gaps or from observable confounder effects grounds the bounds in evidence.
+
+\subsection*{Current Tools}
+
+Partial identification is now practical for DiD and event-study settings. The \texttt{HonestDiD} R package implements Rambachan-Roth bounds with pre-trend calibration. The \texttt{sensemakr} package \citep{cinelli2020making} provides sensitivity analysis for regression designs, generating "Austen plots" that visualise how much confounding (in terms of explained variance) would be required to overturn a result.
+
+For synthetic control, conformal inference methods from \citet{chernozhukov2021exact} provide exact p-values that implicitly bound the effect under the sharp null.
+
+For more complex settings—factor models, continuous treatments, dynamic panels—partial identification methods are less developed. Software is sparse, and calibration strategies are unclear. These remain open problems.
 
 \subsection*{Open Problems}
 
-Several questions remain open. How should we choose default violation magnitudes when domain knowledge is limited? Data-driven calibration methods are underdeveloped. How do we construct and report bounds under multiple simultaneous violations without the bounds becoming uninformatively wide? Efficient algorithms for computing bounds under complex violation structures are needed.
+Several questions remain. How should we construct bounds for factor-based estimators like matrix completion and GSC? The parallel-trends intuition does not directly apply. How do we extend the Rambachan-Roth framework to staggered adoption with heterogeneous effects? How do we communicate bounds to business audiences without creating the impression that ``we do not know anything''?
 
-How do we integrate partial identification with the design diagnostics from Chapter~\ref{ch:design-diagnostics}? Diagnostics that fail should trigger bounds, not just warnings. How do we communicate bounds to non-technical audiences? Wide bounds may be misinterpreted as "we do not know anything" rather than "we know the effect lies in this range."
+Progress will require templates that extend bounded-violation analysis to modern panel estimators, software that makes these templates easy to use, and reporting standards that normalise bounds alongside point estimates. The foundations exist; the challenge is diffusion into practice.
 
-\subsection*{Research Directions}
+\subsection*{Practical Guidance}
 
-Progress will require practical templates for bounded parallel trends, SUTVA violations, and measurement error, with default calibration strategies. We need software tools that implement partial identification for common panel estimators such as DiD, SC, and factor models. Joint sensitivity analysis that efficiently computes bounds under multiple violations would make partial identification usable in practice. Reporting standards that require bounds alongside point estimates, with explicit violation magnitudes, would improve transparency. Communication strategies for presenting bounds to business audiences in actionable terms would bridge the gap between methodological rigour and practical decision-making.
+Until partial identification becomes routine, practitioners should adopt the following workflow. First, report the point estimate under maintained assumptions. Second, use \texttt{HonestDiD} or similar tools to report bounds under plausible violation magnitudes, calibrating from pre-trends or domain knowledge. Third, report the breakdown point: the violation magnitude at which substantive conclusions would change. Fourth, relate this breakdown point to observable features so readers can assess plausibility.
 
-Until these advances materialise, practitioners should report sensitivity to key assumptions, state explicit violation magnitudes, and acknowledge when point estimates rest on contestable assumptions.
+This workflow makes assumptions explicit, provides actionable uncertainty quantification, and allows readers to form their own judgements about the credibility of results.

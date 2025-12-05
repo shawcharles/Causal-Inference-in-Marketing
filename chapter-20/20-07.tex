@@ -1,44 +1,74 @@
 \section{Continuous Treatments and Structural Response}
 \label{sec:continuous-outlook}
 
-Marketing treatments are often continuous: ad spend, price discounts, promotion intensity, and content frequency all vary in degree rather than presence or absence. Chapter~\ref{ch:continuous} developed dose–response methods for these settings, integrating with double machine learning (Chapter~\ref{ch:ml-nuisance}) and regularisation (Chapter~\ref{ch:high-dim}). Yet significant challenges remain, particularly when doses evolve dynamically, are set endogenously, or induce equilibrium responses.
+Marketing treatments are often continuous: ad spend, price discounts, promotion intensity, and content frequency all vary in degree rather than presence or absence. Chapter~\ref{ch:continuous} developed dose–response methods for these settings, integrating with double machine learning (Chapter~\ref{ch:ml-nuisance}) and regularisation (Chapter~\ref{ch:high-dim}). Yet continuous treatments in panels raise challenges that go beyond the static case. This section maps the frontier.
+
+\subsection*{Recent Methodological Advances}
+
+The past few years have seen significant progress on continuous treatments in panel data. \citet{callaway2021difference} develop difference-in-differences methods for continuous treatments, defining dose-response functions under conditional parallel trends.
+
+For heterogeneous effects, \textbf{Generalized Random Forests (GRF)} \citep{athey2019generalized} have become the industry standard. By modifying the splitting rule to maximise heterogeneity in the treatment coefficient (rather than outcome variance), GRF recovers individual-level partial effects $\tau(x_i) = \partial \mathbb{E}[Y|T, X] / \partial T$ even with continuous treatments. This allows marketers to target pricing or spend based on local price elasticity.
+
+\subsection*{Stochastic Shift Interventions}
+
+While the academic literature focuses on the full dose–response curve $\mu(t) = \mathbb{E}[Y(t)]$, marketing decisions often involve \textbf{stochastic shifts}. Instead of asking "What if everyone set Price = \$10?" (which is unrealistic for premium and budget items alike), we ask "What if we increased every item's price by 10\%?".
+
+\citet{diaz2021nonparametric} formalise this as a \textit{modified treatment policy} or shift intervention. The estimand is $\mathbb{E}[Y(T + \delta)]$ or $\mathbb{E}[Y(T \times (1+\delta))]$. This quantity is often easier to estimate robustly than the full curve because it relies on local variation around the observed treatment, avoiding the overlap violations common in global curve estimation.
 
 \subsection*{Dynamic Dosing and Anticipation}
 
 In practice, treatment intensity varies over time within units. Ad spend fluctuates weekly. Prices change daily. Promotion intensity varies by season. The dose at time $t$ may affect outcomes at $t+1, t+2, \ldots$, creating distributed lag structures that complicate identification.
 
-When future doses are predictable, units may respond in advance. Consumers stockpile before announced price increases. Advertisers front-load spend before budget exhaustion. Such anticipation violates the no-anticipation assumptions used in event studies from Chapter~\ref{ch:event} and complicates dose–response interpretation. Past doses affect current outcomes through adstock and habit formation. The Average Causal Response framework from Chapter~\ref{ch:continuous} addresses this by defining dynamic sensitivity over lags, but estimation requires assumptions about the decay structure.
+When future doses are predictable, units may respond in advance. Consumers stockpile before announced price increases. Advertisers front-load spend before budget exhaustion. Such anticipation violates the no-anticipation assumptions used in event studies from Chapter~\ref{ch:event} and complicates dose–response interpretation.
 
-Identification under dynamic dosing typically relies on sequential ignorability: the dose at each time is independent of future potential outcomes, conditional on observed history. When doses respond to outcomes and forecasts, this assumption is strong and often implausible.
+We can address anticipation in two ways. First, we can explicitly model anticipated effects by including leads in the dose-response specification—analogous to pre-trend tests in DiD but for continuous treatments. Second, we can restrict attention to variation that is plausibly unanticipated: algorithmic bid changes, exogenous budget shocks, or competitor-driven price responses.
+
+The Average Causal Response framework from Chapter~\ref{ch:continuous} provides a foundation for dynamic dosing by defining sensitivity over lags. The challenge is that estimation requires assumptions about the decay structure—how does the effect of a dose at $t$ persist to $t+k$?—and these assumptions are difficult to verify without experimental variation in timing.
 
 \subsection*{Endogenous Dosing Rules}
 
-Platforms and firms set doses based on predicted responses, creating endogeneity. Bid optimisers, pacing algorithms, and dynamic pricing systems adjust dose based on predicted outcomes. Units with high predicted response receive higher doses, confounding the dose–response relationship. Spend is allocated to maximise value subject to budget constraints. High-performing units receive more spend, but this reflects selection rather than causation.
+Platforms and firms set doses based on predicted responses, creating endogeneity that threatens identification. Bid optimisers, pacing algorithms, and dynamic pricing systems adjust dose based on predicted outcomes. High-performing units receive higher doses, but this reflects selection rather than causation.
 
-Firms also adjust doses in response to competitor actions. Price changes trigger competitive responses. Ad spend responds to share-of-voice. The observed dose reflects equilibrium behaviour, not an exogenous intervention. Instrumental variables that shift dose without affecting outcomes directly can restore identification. Algorithmic discontinuities such as bid thresholds and budget exhaustion provide quasi-experimental variation. Valid instruments are rare, however, and local to specific mechanisms, so discontinuities may not generalise beyond their immediate context.
+Consider ad spend allocation. A retailer allocates budget across stores to maximise total revenue. Stores with higher predicted conversion rates receive more spend. The observed correlation between spend and revenue reflects both the causal effect of spend and the selection of high-potential stores into high-spend buckets. Naive regression estimates the selection effect, not the causal effect.
+
+Several strategies can restore identification. Instrumental variables that shift dose without affecting outcomes directly are the textbook solution, but valid instruments for continuous marketing treatments are rare. More promising are algorithmic discontinuities: bid thresholds where small changes in predicted value cause discrete jumps in spend, budget exhaustion points that create exogenous variation in dose timing, and A/B tests embedded within optimisation systems.
+
+When instruments are unavailable, we can sometimes exploit the timing of dose changes. If the dosing algorithm updates predictions weekly but outcomes respond immediately, the lag between prediction and dose creates variation that is plausibly exogenous to short-run outcome fluctuations. This identification strategy is fragile—it requires the algorithm's prediction error to be uncorrelated with true potential outcomes—but it may be the best available option in many settings.
 
 \subsection*{Equilibrium and Structural Response}
 
-Dose–response estimates are partial equilibrium: they hold dose fixed for one unit while others remain unchanged. Policy interventions change doses for many units simultaneously, inducing equilibrium adjustments. When buyer treatment affects demand, sellers adjust prices, inventory, and quality. The full effect includes both the direct effect on buyers and the indirect effect through seller response.
+Dose–response estimates are partial equilibrium: they hold dose fixed for one unit while others remain unchanged. Policy interventions change doses for many units simultaneously, inducing equilibrium adjustments that our estimates do not capture.
 
-When all firms increase ad spend, the marginal effect of spend may decline as competition intensifies. Partial-equilibrium estimates can then overstate the effect of industry-wide changes. Large interventions such as platform-wide policy changes may alter wages, prices, and market structure. These equilibrium shifts lie beyond the scope of reduced-form dose–response estimation.
+When one firm increases ad spend, competitors may respond by increasing their own spend. The full effect of the initial increase includes both the direct effect on the firm's outcomes and the indirect effect through competitive response. If all firms increase spend together, the marginal effect may decline as competition intensifies—a congestion effect that partial-equilibrium estimates miss.
 
-Bridging partial-equilibrium estimates to policy-relevant equilibrium effects requires structural models that specify how agents respond to changes. This is often infeasible in marketing settings where agent behaviour is complex and heterogeneous.
+Large interventions may alter market structure itself. A platform-wide change to ad auction rules affects not just individual advertisers but the equilibrium bids, prices, and entry decisions of all participants. These general-equilibrium effects lie beyond the scope of reduced-form dose–response estimation.
+
+Bridging partial-equilibrium estimates to policy-relevant equilibrium effects requires either structural models that specify how agents respond to changes, or natural experiments where multiple firms were treated simultaneously. The first approach is often infeasible in marketing settings where agent behaviour is complex and heterogeneous. The second approach is rare but invaluable when available—industry-wide regulatory changes or platform policy shifts provide the cleanest identification of equilibrium effects.
 
 \subsection*{Overlap and Support Diagnostics}
 
 Continuous treatments require overlap: for each covariate value, a range of doses must have positive probability. In practice, this often fails. Some units always receive high doses because they are valuable customers. Others always receive low doses because they are unprofitable segments. Extreme regions of the dose distribution may be essentially unobserved for large parts of the population.
 
-When dose responds to outcomes, the observed dose distribution is selected. Units that would have poor outcomes under high dose are never observed at high dose. Trimming observations with extreme propensity scores improves effective support but changes the estimand. Extrapolation to unsupported regions depends on functional form assumptions that are difficult to verify.
+We can diagnose overlap problems using the generalised propensity score $f(T|X)$—the conditional density of treatment given covariates. When this density is near zero for certain dose-covariate combinations, we lack support for estimating effects in those regions. Unlike binary treatments where we can simply check $0 < e(X) < 1$, continuous treatments require examining the full conditional distribution.
 
-Overlap diagnostics for continuous treatments are less developed than for binary treatments. Generalised propensity score diagnostics can assess balance, but there is no consensus on acceptable thresholds or remediation strategies.
+Practical diagnostics include plotting the distribution of doses within covariate strata to identify gaps in support, computing the effective sample size at different dose levels to assess estimation precision, and using inverse propensity weights to identify regions where weights explode. When support is limited, we should either trim the dose range to regions with adequate overlap or acknowledge that our estimates apply only to the supported region.
 
-\subsection*{Open Problems}
+\subsection*{Functional Form and Sensitivity}
 
-Key questions remain. How can we estimate the full impulse response function when doses evolve endogenously and anticipation is present? What instruments are valid for continuous doses in marketing, and how should instrument strength and validity be assessed? How can we translate partial-equilibrium dose–response estimates to equilibrium policy effects without fully specified structural models? What diagnostics and procedures should we use when support is limited and dose assignment is endogenous? Dose–response curves require functional form choices—linear, polynomial, spline—and the sensitivity of conclusions to these choices remains poorly understood.
+Dose–response curves require functional form choices: linear, polynomial, spline, or fully nonparametric. These choices matter. A linear specification assumes constant marginal effects. A polynomial allows diminishing returns but imposes smoothness. Splines are more flexible but require choosing knot locations. Nonparametric methods avoid functional form assumptions but require more data and may have poor performance in the tails.
 
-\subsection*{Research Directions}
+We should routinely report sensitivity to functional form. Does the conclusion that ``more spend increases revenue'' hold under both linear and spline specifications? Does the estimated optimal dose change substantially across specifications? If conclusions are robust to functional form, we have stronger evidence. If they are sensitive, we should report the range of estimates and acknowledge the uncertainty.
 
-Progress will require dynamic causal models that integrate dose–response estimation with distributed lag and state-space structures, building on the ACR framework. We need instrument-discovery methods that identify valid instruments for continuous treatments from algorithmic discontinuities and natural experiments. Bounds under endogeneity would provide informative partial identification when instruments are unavailable or weak. Structural–reduced-form bridges that link dose–response estimates to equilibrium effects under minimal structural assumptions would help translate estimates to policy. Overlap diagnostics tailored to continuous treatments, with clear thresholds and remediation strategies, would improve practice.
+\subsection*{Practical Guidance}
 
-Until these advances materialise, practitioners should document the dose assignment mechanism, assess overlap using generalised propensity score diagnostics, report sensitivity to functional form, and acknowledge that partial-equilibrium estimates may not generalise to policy interventions.
+For marketing practitioners working with continuous treatments in panels, we offer the following workflow. First, document the dose assignment mechanism. Is dose set by algorithm, by managers, or by policy? Understanding the mechanism guides the identification strategy.
+
+Second, assess overlap using generalised propensity score diagnostics. Plot dose distributions within covariate strata. Identify regions where support is thin and either trim or acknowledge the limitation.
+
+Third, consider instruments or quasi-experimental variation. Budget exhaustion, algorithmic discontinuities, and timing variation may provide identification where simple conditioning fails.
+
+Fourth, report sensitivity to functional form. Show results under multiple specifications. If conclusions differ, explain why and report the range.
+
+Fifth, acknowledge the partial-equilibrium nature of the estimates. If the policy intervention would affect many units simultaneously, note that equilibrium effects may differ from the estimated partial-equilibrium response.
+
+This workflow does not solve the fundamental identification challenges of continuous treatments in panels, but it makes the challenges transparent and provides readers with the information needed to assess the credibility of the results.

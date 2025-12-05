@@ -1,51 +1,62 @@
 \section{Robust and Distribution-Free Inference}
 \label{sec:robust-inference-outlook}
 
-Chapter~\ref{ch:inference} developed robust inference methods—randomisation inference, conformal prediction, and bootstrap procedures—that avoid strong distributional assumptions. These methods are attractive but face practical limitations in panel settings. This section identifies the open problems and research directions for making robust inference scalable and applicable to complex marketing panels.
+Chapter~\ref{ch:inference} developed robust inference methods---randomisation inference, conformal prediction, and bootstrap procedures---that avoid strong distributional assumptions. These methods deliver exactly what marketing analysts need: valid uncertainty quantification without betting on normal errors or correctly specified variance models. Yet panels pose challenges that standard implementations do not address. This section maps the frontier where theory meets practice.
 
 \subsection*{Randomisation and Permutation Inference}
 
-As reviewed in Chapter~\ref{ch:inference}, randomisation inference delivers exact finite-sample p-values under the sharp null hypothesis by comparing the observed statistic to its distribution over treatment assignments. In panels, this faces several challenges. With $N$ units and $T$ periods, the number of possible assignments grows rapidly. Even with staggered adoption, exact enumeration is infeasible for large panels, and Monte Carlo approximations, while practical, introduce sampling error.
+Randomisation inference delivers exact finite-sample p-values under the sharp null by comparing an observed statistic to its distribution over treatment assignments. The appeal is conceptual purity: we make no distributional assumptions beyond the assignment mechanism itself. In panels, however, we face three obstacles that limit this purity.
 
-When units are clustered—stores within DMAs, users within networks—permutations must respect the cluster structure. Cluster-level permutation reduces the effective number of permutations, often to fewer than 50, limiting the precision of p-values. With staggered treatment timing, the permutation distribution must account for the timing structure. Permuting adoption dates rather than treatment status is one approach, but the appropriate permutation scheme depends on the assignment mechanism.
+The first is computational. With $N$ units and $T$ periods, the number of possible assignments grows rapidly. Even under staggered adoption, exact enumeration becomes infeasible for panels larger than a few dozen units. Monte Carlo approximations work in practice but introduce sampling error that undermines the ``exactness'' we sought.
 
-Randomisation inference requires knowledge of that assignment mechanism. When treatment is observational or adaptive, as discussed in Sections~\ref{sec:adaptive-experimentation} and~Chapter~\ref{ch:design-diagnostics}, the mechanism is often unknown or only partially observed, and randomisation-based guarantees may not hold. The theoretical appeal of exactness depends on design information that applied marketing analysts rarely possess.
+The second is structural. When units cluster---stores within DMAs, users within social networks---permutations must respect cluster boundaries. Permuting at the cluster level reduces the effective sample size, often to fewer than 50 permutations, which limits p-value precision to at best 0.02. This granularity may be too coarse for many applications.
 
-\subsection*{Conformal Prediction}
+The third is identification. Randomisation inference requires knowledge of the assignment mechanism. When treatment is observational or adaptive, as in Sections~\ref{sec:adaptive-experimentation} and Chapter~\ref{ch:design-diagnostics}, we rarely know the true mechanism. The theoretical guarantee of exactness then rests on a foundation we cannot verify.
 
-As introduced in Chapter~\ref{ch:inference}, conformal prediction provides distribution-free prediction intervals with finite-sample coverage guarantees under exchangeability. Extending these ideas to causal inference in panels is promising but faces obstacles. Panel data exhibit temporal dependence within units and cross-sectional dependence across units, violating exchangeability.
+\subsection*{Mosaic Inference: Local Exchangeability in Panels}
 
-Causal inference requires predicting counterfactual outcomes, not only future realised outcomes. Conformal methods for counterfactuals are less developed than for standard prediction. Off-the-shelf conformal procedures naturally produce intervals for outcomes, not treatment effects. Translating outcome intervals into effect intervals requires assumptions about the joint distribution of potential outcomes.
+Recent work by \citet{spector2025mosaic} offers a way forward. The key insight is that panels have a \textit{mosaic structure}: even when global exchangeability fails, local exchangeability may hold within certain blocks. Consider a staggered adoption design. Pre-treatment periods for eventually-treated units are exchangeable with pre-treatment periods for never-treated units, even though post-treatment periods are not. We can permute within these locally exchangeable blocks while respecting the non-exchangeability across blocks.
 
-Standard conformal prediction provides marginal coverage: the interval contains the true value on average across all units. Conditional coverage, valid for specific subgroups or units, is harder to achieve and may require larger samples than are available in typical marketing panels.
+This mosaic approach recovers valid permutation inference for panels without requiring global exchangeability. The analyst identifies which observations are ``similar enough'' to permute---typically based on treatment timing and covariate strata---and constructs tests that exploit this local structure. The resulting p-values are exact within each block and can be combined across blocks using established methods.
 
-\subsection*{Bootstrap Methods}
+The practical implication is significant. We no longer need to choose between exact inference on tiny samples and approximate inference on large ones. Mosaic methods scale to large panels while preserving finite-sample validity where the structure permits. The cost is that we must correctly specify which blocks are locally exchangeable---a design judgment that requires careful thought about the treatment assignment process.
 
-Bootstrap methods, also covered in Chapter~\ref{ch:inference}, resample data to approximate sampling distributions. In panels, resampling must respect the dependence structure. Block bootstrap resamples blocks of consecutive time periods to preserve temporal dependence. The block length trades off bias from short blocks against variance from long blocks, and optimal block length selection remains an open problem.
+\subsection*{Conformal Prediction for Counterfactuals}
 
-Cluster bootstrap resamples entire clusters to preserve within-cluster dependence. With few clusters, the bootstrap distribution may be poorly approximated. Wild cluster bootstrap multiplies residuals by random weights rather than resampling. This can be more reliable with few clusters but requires that the residual structure be correctly specified.
+Conformal prediction provides distribution-free prediction intervals with finite-sample coverage guarantees. Extending these ideas to causal inference is attractive but faces two obstacles: panel dependence and counterfactual estimation.
 
-When data exhibit both temporal and cross-sectional dependence, no standard bootstrap is fully satisfactory. Hybrid approaches that resample in both dimensions are computationally intensive and theoretically underdeveloped. In practice, the analyst must choose among imperfect options.
+For synthetic controls, \citet{chernozhukov2021exact} provide exact inference by permuting residuals, exploiting the estimator's structure rather than raw outcome exchangeability.
 
-\subsection*{Dependence Structures in Marketing Panels}
+For general heteroskedastic panels, \textbf{Conformalized Quantile Regression (CQR)} \citep{romano2019conformalized} offers a robust alternative. Instead of assuming constant variance (as in standard conformal prediction), CQR estimates the conditional quantiles $Q_\alpha(Y|X)$ using quantile regression (e.g., a quantile random forest) and then calibrates these estimates using a holdout set to guarantee coverage. This adapts interval width to the local difficulty of prediction---wider intervals during volatile periods, narrower ones during stable periods. This adaptivity is crucial for marketing panels where variance often scales with the mean (e.g., sales volatility is higher during holidays).
 
-Marketing panels exhibit complex dependence that challenges all inference methods. Geographic units such as stores and DMAs are spatially correlated. Nearby units have correlated outcomes and may experience spillovers. Users in social networks have correlated outcomes due to homophily and peer effects. The network structure induces dependence that cluster-robust methods do not fully address.
+\subsection*{Bootstrap Methods for Dependent Data}
 
-Outcomes are serially correlated within units. Carryover effects create dependence between treatment periods and outcome periods. Units are nested within clusters—stores within chains, users within markets—and dependence operates at multiple levels. The dependence structure is often unknown and must be estimated. Misspecifying dependence leads to invalid inference, yet correct specification requires knowledge that is rarely available.
+Bootstrap methods resample data to approximate sampling distributions. Their flexibility makes them the workhorse of applied inference, but panels require care in how we resample.
 
-\subsection*{Computational Scaling}
+Block bootstrap preserves temporal dependence by resampling contiguous time blocks rather than individual observations. The block length trades off bias from short blocks (which break dependence) against variance from long blocks (which yield few resamples). Optimal block length depends on the dependence structure, which we rarely know. In practice, we try several lengths and check sensitivity.
 
-Even when methods are theoretically valid, computation poses challenges. Modern marketing panels have millions of units and thousands of time periods. Exact methods are infeasible, and approximations are required. Many inference methods are embarrassingly parallel—permutation tests, for instance—and GPU acceleration and distributed computing can help, but require implementation effort that is not yet standard practice.
+Cluster bootstrap preserves within-cluster dependence by resampling entire clusters. With many clusters, this works well. With few clusters---common in marketing where we might have 20 DMAs or 15 retail chains---the bootstrap distribution is poorly approximated. The problem is not sample size per se but the number of independent units we resample from.
 
-Subsampling, sketching, and other approximations trade accuracy for speed. Quantifying this accuracy–speed trade-off is itself an open problem. How much precision can we sacrifice for computational tractability? The answer depends on the application, but practical guidance is lacking.
+Wild cluster bootstrap addresses the few-clusters problem by multiplying residuals by random weights rather than resampling observations. This expands the effective permutation space while respecting cluster structure. Implementation requires specifying the weight distribution (Rademacher weights are standard) and the residual type (HC2 or HC3 adjustments help with leverage). The wild cluster bootstrap is now our preferred method when clusters number between 10 and 50.
 
-\subsection*{Open Problems}
+When data exhibit both temporal and cross-sectional dependence, no single bootstrap is fully satisfactory. Hybrid approaches that resample in both dimensions are computationally demanding and theoretically underdeveloped. Recent work by \citet{almeida2025estimating} provides variance estimators for causal panel estimators that can guide bootstrap implementation, but a unified framework remains elusive.
 
-Several questions remain unresolved. Can we develop randomisation inference methods that scale to large panels while maintaining exactness or providing clear error bounds? How should conformal prediction be extended to treatment effects with valid coverage under panel dependence? What is the appropriate bootstrap for panels with both temporal and cross-sectional dependence, and how sensitive are results to this choice? Can we construct inference procedures that are robust to moderate misspecification of the dependence structure? How do robust methods extend to adaptive designs where the assignment mechanism evolves over time?
+\subsection*{Practical Guidance}
+
+Given the limitations above, how should practitioners proceed? We offer the following guidance, recognising that all choices involve trade-offs.
+
+For analytical standard errors, cluster-robust methods remain the baseline. Cluster at the level of treatment assignment---if stores are randomised within DMAs, cluster at the store level, not the DMA level. When in doubt, cluster conservatively (at a higher level), accepting wider confidence intervals as the price of validity.
+
+For few-cluster settings (fewer than 20 clusters), use wild cluster bootstrap with Rademacher weights. Report both analytical cluster-robust SEs and bootstrap confidence intervals. If they diverge substantially, investigate why---the divergence itself is diagnostic.
+
+For temporal dependence, consider block bootstrap with multiple block lengths. If results are sensitive to block length, report the range and acknowledge the uncertainty. HAC standard errors (Newey-West) provide an analytical alternative but require bandwidth selection with similar trade-offs.
+
+For permutation tests, use mosaic inference when you can identify locally exchangeable blocks. Pre-treatment periods across treatment groups are typically a safe choice. With fewer than 50 effective permutations, report exact p-values to two decimal places and acknowledge the granularity.
+
+For conformal inference, the \citet{chernozhukov2021exact} approach works for synthetic control settings. For other panel designs, conformal methods remain experimental. Use them to supplement, not replace, other inference methods.
 
 \subsection*{Research Directions}
 
-Progress will require mosaic permutation tests that exploit local exchangeability rather than global exchangeability, as in recent work on spatial and temporal dependence. We need conformal prediction methods for panels that account for temporal and cross-sectional dependence while maintaining coverage guarantees. Scalable bootstrap implementations using GPU acceleration and distributed computing would make robust inference practical at scale. Dependence-adaptive inference that estimates the dependence structure and adjusts inference accordingly would reduce sensitivity to misspecification. Unified frameworks that nest randomisation, conformal, and bootstrap methods as special cases would clarify when each is appropriate.
+Three developments would advance the field. First, we need implementations of mosaic inference that scale to large panels and provide guidance on block specification. The theory exists; the software does not. Second, we need conformal methods for heterogeneous treatment effects in panels---methods that provide conditional coverage under dependence. Third, we need bootstrap procedures that handle both temporal and cross-sectional dependence with clear guidance on when each dominates.
 
-Until these advances materialise, practitioners should use cluster-robust methods as a baseline, supplement them with bootstrap or permutation tests where feasible, and report sensitivity to alternative dependence assumptions.
-
+Until these advances become standard, practitioners should use multiple inference methods and report sensitivity to assumptions. Agreement across methods is reassuring. Disagreement is informative---it tells us that conclusions depend on modelling choices we cannot resolve with the data at hand.

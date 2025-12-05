@@ -1,62 +1,36 @@
 \section{ML Integration Beyond Nuisance}
 \label{sec:ml-beyond-nuisance}
 
-Chapter~\ref{ch:ml-nuisance} established machine learning as a tool for nuisance estimation: propensity scores, outcome regressions, and conditional expectations that feed into doubly robust estimators. But ML offers more than nuisance functions. Foundation models can encode rich unstructured data—text, images, networks—into features for causal analysis. Generative AI creates new marketing content whose effects we must evaluate. These applications raise open problems that current methods only partially address.
+Chapter~\ref{ch:ml-nuisance} treated machine learning as a black box for estimating nuisance functions. But modern ML---particularly foundation models---offers something more: mechanisms to encode unstructured data that traditional econometrics ignores. Text, images, and network structure all carry information about confounders we cannot directly measure. This frontier demands new rules for when ML features are safe to use in causal pipelines.
 
-\subsection*{Foundation Models as Feature Extractors}
+\subsection*{Embeddings as Proximal Controls}
 
-Marketing data increasingly include unstructured inputs that traditional econometrics cannot handle directly.
+Marketing data brims with unstructured confounders. A product's description affects both its pricing and its conversion rate. We might ignore the text entirely, or create manual dummies---neither approach captures the richness of what customers actually read. Large language models offer an alternative: map the text into dense vectors $Z \in \mathbb{R}^d$ and use these embeddings as controls.
 
-Large language models encode text from ad copy, product descriptions, and customer reviews into dense vector representations. These embeddings capture semantic content that may predict outcomes or confound treatment effects. A retailer's product descriptions, for instance, correlate with both advertising strategy and sales. Controlling for text embeddings may reduce confounding, but the embeddings themselves are learned from data and may capture post-treatment information.
+Conceptually, embeddings act as proxies for unobserved confounders $U$ in the sense of proximal causal inference \citep{miao2018identifying, tchetgen2020introduction}. If the embedding dimension is large enough and the mapping rich enough, $Z$ may span the latent space of $U$. \citet{veitch2020adapting} formalise this for text, showing how BERT representations can adjust for semantic confounding that no structured variable captures.
 
-Vision models process images of creative assets, store layouts, and product packaging. Visual features predict click-through rates and purchase behaviour. When creative varies across treatment arms, visual embeddings can characterise treatment heterogeneity. But vision models trained on consumer behaviour may encode outcome-related information, creating leakage.
+The danger lies in how we learn $Z$. Two strategies exist, and they differ sharply in their causal implications. Frozen embeddings---off-the-shelf models like BERT or ResNet trained on Wikipedia or ImageNet---capture semantic meaning without peeking at our outcome. They are exogenous to our treatment mechanism, which makes them safer for causal adjustment. Fine-tuned embeddings are riskier. When we tune an encoder on our marketing dataset to improve prediction, the encoder sees the outcome (or variables correlated with it). The resulting embedding becomes a collider. Controlling for it induces bias---what practitioners call ``leakage.''
 
-Graph neural networks embed network structure for spillover analysis. Rather than hand-crafting exposure mappings, we can learn representations of each unit's network neighbourhood. These embeddings may capture spillover channels that simple summary statistics miss. The risk is that learned embeddings reflect endogenous network formation rather than exogenous structure.
+The engineering rule follows directly. Treat representation learning as part of the nuisance estimation pipeline. If we must fine-tune, we must cross-fit the representation itself: train the encoder on Fold A, encode features for Fold B, and estimate effects on Fold B. The target label $Y$ must never influence the features $Z$ used to predict it, unless strictly separated by cross-fitting.
 
-The common thread is the prediction–identification tension that \citet{breiman2001statistical} articulated. Representations optimised for prediction capture any signal correlated with outcomes. Some of that signal may be post-treatment or endogenous. Using such representations as controls can introduce bias rather than remove it.
+\subsection*{High-Dimensional Treatments and Generative AI}
 
-\subsection*{Generative AI and Content Evaluation}
+Generative AI introduces treatments that are inherently high-dimensional. An ad is not just ``Treatment A vs B,'' but a specific image generated from a latent vector. We cannot estimate the causal effect of every unique image---positivity fails because no two users see the exact same pixel configuration. This is the core challenge of what \citet{fong2016discovery} and \citet{keith2020text} call text-as-treatment estimation.
 
-Generative AI creates marketing content at scale: ad copy, product descriptions, images, and video. Evaluating the causal effect of AI-generated content poses new challenges.
+We can make progress by reframing the estimand. Instead of asking about the effect of a specific generated image (which may never appear again), we view the prompt as defining a stochastic intervention. The treatment becomes the distribution $P(\text{Content} | \text{Prompt})$. The estimand becomes the expected outcome under a shift in this distribution---closer to a policy evaluation than a point treatment effect.
 
-The treatment is high dimensional. A generative model produces not one treatment but a distribution over possible outputs. Each generated ad differs in wording, imagery, and style. Defining the treatment effect requires specifying what we are comparing: AI-generated versus human-generated content, one prompt versus another, or one model versus another.
+To operationalise this, we must map the high-dimensional treatment space back to something we can estimate. One approach clusters the generative latent space into discrete concepts---``Minimalist'' versus ``Cluttered,'' say---and estimates the average treatment effect of these clusters. Another projects the high-dimensional treatment onto interpretable basis functions (text embeddings of the prompt, for instance) and estimates a causal effect function over the prompt space. Both strategies sacrifice some fidelity to gain identification.
 
-Content varies endogenously. When generative models are deployed in production, the content shown to each user depends on predicted response. This creates the same adaptive assignment problems discussed in Section~\ref{sec:adaptive-experimentation}. The content a user sees is selected, not randomised.
+\subsection*{Causal Representation Learning}
 
-Evaluation requires counterfactuals we do not observe. We can measure outcomes for users who saw AI-generated content, but we do not see what would have happened had they seen human-generated alternatives. Standard A/B testing helps when feasible, but creative production costs may preclude generating human baselines at scale.
+The ultimate goal is causal representation learning \citep{scholkopf2021toward}: learning valid causal variables from low-level inputs (pixels, tokens) without supervision. Standard supervised learning disentangles factors based on correlation. Causal learning seeks to disentangle factors based on invariance across environments.
 
-Quality and brand effects may differ from short-run metrics. AI-generated content may optimise for clicks while degrading brand perception. Long-run effects on customer lifetime value and brand equity are harder to measure than immediate conversions. The estimands that matter for business strategy may not be the estimands that are easiest to identify.
-
-Current practice relies on A/B tests where feasible and observational comparisons where not. Neither fully addresses the high-dimensional, adaptive, long-horizon nature of generative content evaluation.
-
-\subsection*{Leakage and Cross-Fitting with Learned Representations}
-
-When representations are learned from the same data used for causal inference, leakage threatens validity.
-
-Standard cross-fitting in Chapter~\ref{ch:ml-nuisance} splits data into folds, trains nuisance models on one fold, and predicts on another. This prevents overfitting to the estimation sample. If representations are learned on the full dataset before cross-fitting, however, information from the estimation fold leaks into the representation, and the cross-fitting guarantee no longer holds.
-
-One solution is to learn representations on held-out data that are never used for causal estimation. This requires abundant data and may sacrifice representation quality. Another is to learn representations only from pre-treatment data, ensuring that post-treatment outcomes cannot contaminate the features. This works naturally for panels but not for cross-sectional settings.
-
-A third approach treats representation learning as part of the nuisance estimation and cross-fits the entire pipeline. This is computationally expensive—foundation models are costly to train—and its theoretical properties are not well understood.
-
-\subsection*{Orthogonalisation as a Protective Layer}
-
-When ML predictions embed unobserved confounding, orthogonalisation provides partial protection.
-
-Double machine learning orthogonalises the treatment effect estimator with respect to nuisance estimation error. If the nuisance model is misspecified but the misspecification is orthogonal to the treatment effect, the estimator remains consistent. This Neyman orthogonality property is the foundation of DML's robustness.
-
-Orthogonalisation does not protect against all forms of confounding. If the ML model captures a confounder that is correlated with treatment, controlling for the ML prediction removes confounding. If the ML model captures a mediator or collider, controlling for it introduces bias. The ML model does not distinguish these cases. The researcher must.
-
-Foundation models are particularly opaque. We cannot easily inspect what a language model's embedding captures. It may encode confounders, mediators, colliders, or post-treatment variables. Without interpretability, we cannot assess whether controlling for the embedding helps or harms identification.
+For marketing, this means moving beyond ``predicting churn with embeddings'' to ``learning a representation of user loyalty that is invariant to discount depth.'' We want features that capture stable structural relationships, not features that happen to correlate with outcomes in our particular dataset. This remains an open engineering challenge, but the direction is clear: representations must be judged not by their predictive accuracy, but by their stability under intervention.
 
 \subsection*{Open Problems}
 
-Several problems remain unresolved. How do we learn representations that are safe for causal inference—capturing confounders but not mediators or post-treatment variables? How do we cross-fit when representation learning is expensive and data-hungry? How do we evaluate generative content when the treatment space is high dimensional and deployment is adaptive? How do we ensure that foundation-model embeddings do not embed the very confounding we seek to remove?
+Three problems define this frontier. First, when is a BERT embedding ``sufficient'' to block confounding? We lack tests for proxy sufficiency in high dimensions. The identification results from proximal causal inference assume we know something about the relationship between proxies and latent confounders---assumptions that are hard to verify when $Z$ is a 768-dimensional vector.
 
-These questions do not yet have satisfactory answers. Methods that work in prediction may fail in causal inference. Practitioners should proceed with caution, validate ML-based controls against known benchmarks where possible, and acknowledge that learned representations introduce assumptions that are difficult to verify.
+Second, adaptive content creates propensity nightmares. When generative AI produces content dynamically based on user history, the treatment assignment mechanism becomes a complex function of that history. Recovering the propensity score $\pi(X)$ requires access to the generative model's internal logic (its logits), not just its output. Most marketing teams do not have this access.
 
-\subsection*{Research Directions}
-
-Progress will require collaboration between causal-inference and machine-learning communities. We need identification theory for settings where features are learned rather than observed. We need cross-fitting procedures that accommodate expensive representation learning. We need evaluation frameworks for generative content that address high-dimensional treatments and adaptive deployment. We need interpretability tools that reveal what foundation models capture, so researchers can assess whether controlling for embeddings helps or harms.
-
-Until these tools exist, the safest approach is to treat ML-derived features as potentially endogenous, to validate their use against experimental benchmarks, and to report sensitivity to their inclusion. The promise of foundation models for marketing is real, but so are the risks.
+Third, controlling for a high-dimensional vector ``blocks confounding'' but offers no insight into what was confounded. Was it product quality? Sentiment? Topic? We need methods that project bias corrections back onto interpretable axes---methods that tell us not just that we adjusted for something, but what that something was.

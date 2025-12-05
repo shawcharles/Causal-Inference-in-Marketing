@@ -1,7 +1,7 @@
 \section{Interference at Scale}
 \label{sec:interference-scale}
 
-The partial-interference framework from Chapter~\ref{ch:spillovers} assumes that units can be partitioned into non-overlapping clusters with no between-cluster spillovers. This assumption fails in modern digital platforms where users belong to multiple social groups, geographic and online networks overlap, and treatment effects propagate through dense, interconnected systems. Scaling causal inference to these settings is one of the most important open problems in the field.
+The partial-interference framework from Chapter~\ref{ch:spillovers} assumes that units can be partitioned into non-overlapping clusters with no between-cluster spillovers. This assumption fails in modern digital platforms where users belong to multiple social groups, geographic and online networks overlap, and treatment effects propagate through dense, interconnected systems. Scaling causal inference to these settings is one of the most important open problems in the field, and recent methodological advances offer new tools for making progress.
 
 \subsection*{The Challenge of Dense Networks}
 
@@ -9,31 +9,45 @@ Marketing increasingly operates on platforms where interference is the rule, not
 
 Marketplace platforms exhibit similar complexity. Treating one seller affects competing sellers through price competition, search ranking displacement, and inventory effects. Treating one buyer affects sellers through demand shifts and affects other buyers through supply constraints. The two-sided nature of platforms means that interference flows in multiple directions simultaneously.
 
-Geographic overlap compounds the problem. A geo-experiment in one DMA spills over to adjacent DMAs through commuting, media spillover, and supply chain effects. Buffer zones help but waste experimental power and may not fully eliminate contamination. Platform algorithms create yet another layer of indirect interference: treating one user changes the algorithm's predictions, which affects recommendations to other users. This algorithmic spillover is difficult to model because the algorithm itself is a black box.
+Consider a ride-sharing platform testing a new surge pricing algorithm. Treating drivers with higher surge multipliers affects rider wait times, which affects rider demand, which feeds back to driver earnings. A naive experiment that randomises drivers ignores this feedback loop. An experiment that randomises riders ignores the supply-side response. The platform must design experiments that account for both sides of the market simultaneously.
+
+Geographic overlap compounds the problem. A geo-experiment in one DMA spills over to adjacent DMAs through commuting, media spillover, and supply chain effects. Buffer zones help but waste experimental power and may not fully eliminate contamination. Platform algorithms create yet another layer of indirect interference: treating one user changes the algorithm's predictions, which affects recommendations to other users. This algorithmic spillover is difficult to model because the algorithm itself is often a black box.
+
+\subsection*{Foundational Theory}
+
+The theoretical foundations for causal inference under interference were established by \citet{hudgens}, who introduced the partial-interference framework and defined direct and indirect (spillover) effects. Their key insight was that under partial interference—where units can be partitioned into non-overlapping clusters—we can identify both the direct effect of treatment and the indirect effect of having treated neighbours.
+
+\citet{aronow2017estimating} extended this framework to general interference, where we do not assume any cluster structure. Their approach uses inverse probability weighting with exposure probabilities rather than treatment probabilities. The estimand becomes the effect of a particular exposure mapping—a function that summarises how each unit's outcome depends on the full vector of treatment assignments. This generality comes at a cost: we need to correctly specify the exposure mapping, and inference requires knowledge of the joint distribution of exposures.
+
+The practical implication is that we cannot escape modelling assumptions about how interference operates. We must specify which units affect which others and how. The challenge at platform scale is that these assumptions become high-dimensional and difficult to verify.
 
 \subsection*{Current Approaches and Their Limitations}
 
-Chapter~\ref{ch:spillovers} described several designs that partially address interference. At platform scale, their limitations become binding. Cluster randomisation assigns treatment at the cluster level—graph clusters or geographic regions—to contain spillovers. In dense networks, clusters are rarely well-separated, so between-cluster spillovers remain and effective sample size collapses.
+Chapter~\ref{ch:spillovers} described several designs that partially address interference. At platform scale, we encounter binding limitations.
 
-Exposure mappings summarise neighbour treatments into low-dimensional variables, such as the fraction of friends treated. In dense graphs, the true exposure may depend on higher-order connections and on interaction between network position and treatment. Misspecification becomes almost inevitable, and identification requires variation in exposure conditional on own treatment, which may be scarce when assignment is correlated across neighbours.
+Cluster randomisation assigns treatment at the cluster level—graph clusters or geographic regions—to contain spillovers within clusters. In dense networks, clusters are rarely well-separated, so between-cluster spillovers remain and effective sample size collapses. We may partition a social network into 50 clusters, only to find that 30\% of edges cross cluster boundaries.
 
-Switchback experiments randomise treatment over time rather than across units, providing exogenous variation even when spatial interference is pervasive. They rely on limited carryover effects, however, and do not address spatial interference directly. Temporal dependence complicates inference. Ego-network designs randomise treatment to focal users and measure outcomes on their neighbours, but in dense networks ego-networks overlap heavily, violating the non-overlap conditions that make these designs interpretable.
+Exposure mappings summarise neighbour treatments into low-dimensional variables, such as the fraction of friends treated. In dense graphs, the true exposure may depend on higher-order connections and on interaction between network position and treatment. Misspecification becomes almost inevitable. Identification requires variation in exposure conditional on own treatment, which may be scarce when assignment is correlated across neighbours.
 
-\subsection*{Open Problems}
+Switchback experiments randomise treatment over time rather than across units, providing exogenous variation even when spatial interference is pervasive. They rely on limited carryover effects, however, and do not address spatial interference directly. Temporal dependence complicates inference.
 
-When users belong to multiple clusters simultaneously, the partial-interference framework breaks down. We need identification results that allow for overlapping memberships and estimators that remain tractable under this structure. Current theory provides little guidance for such settings.
+Ego-network designs randomise treatment to focal users and measure outcomes on their neighbours. In dense networks, ego-networks overlap heavily, violating the non-overlap conditions that make these designs interpretable.
 
-High-dimensional exposure mappings pose a related challenge. When exposure depends on the full network structure, not just immediate neighbours, the mapping becomes intractable. Dimensionality reduction techniques such as graph embeddings and spectral methods may help, but their causal properties are largely unexplored. Embeddings that work well for prediction may not preserve the structure needed for identification.
+\subsection*{Bipartite Experiments for Two-Sided Markets}
 
-Equilibrium effects present a more fundamental tension. In markets, treating all units simultaneously induces equilibrium adjustments that differ from partial-equilibrium effects estimated in experiments. Bridging experimental estimates to policy-relevant equilibrium effects typically requires structural modelling that is often infeasible in marketing settings where agent behaviour is complex and heterogeneous.
+Two-sided marketplaces—buyers and sellers, riders and drivers, guests and hosts—have a special structure we can exploit. The interference graph is bipartite: buyers affect sellers and sellers affect buyers, but buyers do not directly affect other buyers through the marketplace mechanism (though they may compete for scarce supply).
 
-Inference under network dependence remains underdeveloped. Standard cluster-robust inference assumes independent clusters. When clusters overlap or spillovers cross cluster boundaries, these corrections fail. Network-robust variance estimators exist but can scale as $O(n^2)$ and often require knowledge of the dependence structure that is rarely available in practice.
+\citet{bajari2023experimental} develop experimental design principles for marketplaces that exploit this bipartite structure. The key insight is that we can randomise on one side of the market while measuring outcomes on both sides. If we randomise which sellers receive a promotional treatment, buyers provide the variation we need to measure seller-side effects, and we can measure buyer-side spillovers by comparing buyers who transacted with treated versus control sellers.
+
+This design breaks the simultaneity problem that plagues naive marketplace experiments. Rather than trying to randomise the entire market, we fix one side and let the other side respond. The resulting estimand is a partial-equilibrium effect—the effect of treating some sellers while holding buyer behaviour fixed—but this is often the policy-relevant question.
+
+Practical implementation requires care. We need sufficient within-market variation to identify effects. We need to track which buyers transacted with which sellers to construct the relevant exposure mappings. We need to account for selection into transactions, since buyers who transact with treated sellers may differ from those who transact with control sellers. Platform data typically supports all of these requirements.
 
 \subsection*{Platform-Facilitated Experiments}
 
 Platforms have unique advantages for addressing interference. They can partition their user graph into clusters using community detection algorithms, then randomise at the cluster level. This graph-cluster randomisation requires platform cooperation and access to the social graph, but it enables designs that external researchers cannot implement.
 
-Market-level experiments offer another approach. Platforms can randomise entire markets—cities, product categories—to contain equilibrium effects within markets. This sacrifices granularity for cleaner identification. When only one market is treated, synthetic control methods from Chapter~\ref{ch:sc} can construct counterfactuals from untreated markets, provided spillovers across markets are limited.
+Market-level experiments offer another approach. Platforms can randomise entire markets—cities, product categories—to contain equilibrium effects within markets. This sacrifices granularity for cleaner identification. When only one market is treated, synthetic control methods from Chapter~\ref{ch:sc} can construct counterfactuals from untreated markets, provided spillovers across markets are limited. \citet{zervas2018rise} use this approach to estimate Airbnb's effect on hotel revenue by exploiting city-level variation in Airbnb penetration.
 
 Platforms can also create exogenous variation in neighbour treatment by randomising the information users receive about their neighbours' behaviour. This instrumented interference allows identification of peer effects without network-level randomisation, but designs must separate the effect of information from the effect of peers' actual behaviour.
 
@@ -41,11 +55,30 @@ Platforms can also create exogenous variation in neighbour treatment by randomis
 
 Even when identification is in place, computation poses challenges. Computing exposure mappings for millions of users with thousands of connections each is expensive. Approximate methods—sampling, sketching, and sparse representations—trade accuracy for speed, but the bias–variance trade-offs are not well understood.
 
-Network-robust variance estimators require summing over all pairs of connected units. Sparse approximations and parallel algorithms are needed to make this feasible at scale. Design optimisation—choosing which clusters to treat to maximise power while limiting spillover contamination—is a combinatorial problem that calls for heuristics and approximation algorithms.
+Network-robust variance estimators require summing over all pairs of connected units, which scales as $O(m)$ where $m$ is the number of edges. For dense networks with billions of edges, this is prohibitive. Sparse approximations and parallel algorithms are needed to make this feasible at scale.
+
+Design optimisation—choosing which clusters to treat to maximise power while limiting spillover contamination—is a combinatorial problem. Greedy heuristics and approximation algorithms help, but optimal designs remain computationally intractable for large networks.
+
+\subsection*{Practical Guidance}
+
+Given the challenges above, how should practitioners proceed? We offer the following workflow.
+
+First, map the interference structure. Before designing an experiment, understand how units affect each other. Is interference local (only immediate neighbours) or does it propagate? Is the network dense or sparse? Is it bipartite? This mapping guides design choices.
+
+Second, choose the design to match the structure. For sparse networks with clear clusters, cluster randomisation works. For two-sided marketplaces, bipartite designs exploit the market structure. For dense networks with no clear clusters, switchback designs may be the only option.
+
+Third, specify the exposure mapping explicitly. Do not assume that only immediate neighbours matter. Test sensitivity to alternative specifications. Report results under multiple exposure definitions.
+
+Fourth, use conservative inference. Cluster-robust standard errors that allow for within-cluster correlation are a minimum. When clusters overlap or spillovers cross boundaries, report sensitivity to broader dependence structures.
+
+Fifth, bound the bias from interference. If we cannot eliminate interference, we can sometimes bound it. Sensitivity analysis that asks ``how large would spillovers need to be to overturn the result?'' provides useful robustness checks.
+
+These steps do not solve the fundamental problem of interference at scale, but they make the problem transparent and provide readers with the information needed to assess the credibility of the results.
 
 \subsection*{Research Directions}
 
 Progress on interference at scale will require new identification frameworks that relax the non-overlapping cluster assumption while maintaining tractability. We need scalable algorithms for exposure calculation, variance estimation, and design optimisation on large networks. Platform partnerships that provide access to network structure and enable large-scale experimentation will be essential.
 
-Structural models that link experimental estimates to equilibrium policy effects would bridge the gap between what experiments identify and what policy requires. Sensitivity analysis that bounds estimates under plausible violations of the partial-interference assumption would help practitioners assess robustness. Until these advances materialise, practitioners should acknowledge interference as a limitation, use buffer zones and cluster designs where feasible, and report sensitivity to alternative interference assumptions.
+Structural models that link experimental estimates to equilibrium policy effects would bridge the gap between what experiments identify and what policy requires. Sensitivity analysis that bounds estimates under plausible violations of the partial-interference assumption would help practitioners assess robustness.
 
+The foundations exist. \citet{aronow2017estimating} provide the theoretical framework for general interference. \citet{bajari2023experimental} provide design principles for marketplaces. The challenge now is to scale these ideas to the billion-user networks where modern marketing operates.

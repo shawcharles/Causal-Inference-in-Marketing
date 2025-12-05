@@ -43,7 +43,9 @@ Pre-registration—specifying the analysis plan before seeing outcome data—pre
     \item \textbf{Inference:} Standard error method, confidence level, multiple testing correction.
 \end{itemize}
 
-\paragraph{When to pre-register.} Before accessing outcome data. It is acceptable to explore treatment and covariate data to refine the design, but outcome data should remain blinded until the plan is locked.
+\paragraph{When to pre-register.} Before accessing outcome data. It is acceptable to explore treatment and covariate data to refine the design, but outcome data should remain blinded until the plan is locked. This applies to confirmatory analysis—analysis intended to test a specific hypothesis. Exploratory analysis, where researchers search for patterns without pre-specified hypotheses, is legitimate and valuable but should be clearly labelled as such. The distinction matters: confirmatory findings carry more weight because they cannot be explained by specification searching.
+
+\paragraph{Pre-registration deviations.} Pre-registration is not a straitjacket. Deviations from the pre-registered plan are acceptable if disclosed and justified. Unexpected data quality issues, unforeseen confounding events, or discovery of coding errors may require plan modifications. Document all deviations, explain why they were necessary, and report both pre-registered and modified analyses when feasible. The goal is transparency, not rigidity.
 
 \paragraph{Where to register.} Options include OSF, AsPredicted, internal wikis with timestamps, or email to stakeholders with a fixed date.
 
@@ -85,9 +87,17 @@ Audit trails support accountability and debugging.
 
 \paragraph{Checksums.} Compute checksums (MD5, SHA-256) on key outputs. An independent researcher with access to the same snapshots and code should regenerate identical checksums, validating reproducibility.
 
+\paragraph{Levels of reproducibility.} Distinguish three levels of evidence strength:
+\begin{itemize}
+    \item \textbf{Computational reproducibility:} Same data and same code produce identical results. This is the minimum standard.
+    \item \textbf{Robustness:} Different reasonable specifications of the same analysis produce qualitatively similar conclusions. This tests sensitivity to researcher degrees of freedom.
+    \item \textbf{Replicability:} New data collected under similar conditions produce consistent findings. This tests external validity and generalisability.
+\end{itemize}
+Computational reproducibility is necessary but not sufficient. A finding that is computationally reproducible but not robust to specification changes provides weak evidence. A finding that is reproducible and robust but fails to replicate in new contexts has limited external validity.
+
 \subsection*{Common Reproducibility Failures}
 
-\paragraph{Silent data updates.} Source data changes without notification, altering results. \textit{Prevention:} Snapshot inputs; compare checksums across runs.
+\paragraph{Silent data updates.} Source data changes without notification, altering results. \textit{Prevention:} Snapshot inputs; compare checksums across runs. A more systematic solution is \textbf{data contracts}—formal agreements between data producers and consumers that specify schema (column names, types, constraints), freshness requirements, and quality guarantees. Data contracts make implicit expectations explicit: if a platform changes an attribution window or renames a column, the contract is violated and the pipeline fails loudly rather than silently producing incorrect results. Tools like dbt contracts, Great Expectations, or custom schema validators can enforce contracts automatically at ingestion time.
 
 \paragraph{Dependency drift.} Package updates change function behaviour. \textit{Prevention:} Pin package versions; use lock files; containerise environments.
 

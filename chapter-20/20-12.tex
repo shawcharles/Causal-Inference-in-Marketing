@@ -1,21 +1,21 @@
 \section{Practitioner Roadmap}
 \label{sec:practitioner-roadmap}
 
-This book has covered many methods, each with its own assumptions, diagnostics, and failure modes. Practitioners facing real problems need a workflow that turns this material into actionable steps. This section provides that workflow.
+This book has covered many methods, each with its own assumptions, diagnostics, and failure modes. Practitioners facing real problems need a workflow that turns this material into actionable steps. This section provides that workflow, synthesising the guidance scattered across earlier chapters into a single reference.
 
 \subsection*{Before You Start}
 
-Begin with the question, not the method. What causal effect do you want to estimate? Be precise. "The effect of advertising on sales" is too vague. Specify: the effect of what treatment (TV spend, digital impressions, a specific campaign), on what outcome (weekly store sales, online conversions, brand awareness), for what population (all customers, new customers, a specific segment), over what time horizon (immediate, cumulative over 12 weeks, long-run equilibrium).
+Begin with the question, not the method. What causal effect do you want to estimate? Be precise. ``The effect of advertising on sales'' is too vague. We need to specify: the effect of what treatment (TV spend, digital impressions, a specific campaign), on what outcome (weekly store sales, online conversions, brand awareness), for what population (all customers, new customers, a specific segment), over what time horizon (immediate, cumulative over 12 weeks, long-run equilibrium).
 
 Assess data availability honestly. What data do you have? What data would you need for your preferred method? If you want to run difference-in-differences, do you have pre-treatment data for both treated and control units? If you want synthetic control, do you have enough donor units with similar pre-treatment trajectories? If the data do not support the method, choose a different method or acknowledge that the question cannot be answered with available data.
 
-Identify the dominant threats. Every setting has threats to validity. Is selection the main concern—treated units differ systematically from controls? Is interference likely—treating one unit affects others? Is nonstationarity a risk—the environment is changing during the study period? Is measurement error substantial—outcomes or treatments are measured with noise? The dominant threat determines which methods are viable and which diagnostics are essential.
+Identify the dominant threats. Every setting has threats to validity. Is selection the main concern---treated units differ systematically from controls? Is interference likely---treating one unit affects others? Is structural instability a risk---the environment is changing during the study period? Is measurement error substantial---outcomes or treatments are measured with noise? The dominant threat determines which methods are viable and which diagnostics are essential. Section~\ref{sec:method-selection-outlook} provides a decision heuristic for mapping threats to methods.
 
 \subsection*{Design Phase}
 
 Choose the method based on data features and threats. Chapter~\ref{ch:applications} provides a mapping from problem characteristics to methods. Few treated units with good pre-treatment data suggest synthetic control. Many treated units with staggered adoption suggest modern DiD estimators. Continuous treatments suggest dose-response methods. Dense interference suggests cluster randomisation or switchback designs. No single method dominates; the choice depends on the setting.
 
-Pre-register the analysis plan. Before accessing outcome data, commit to the estimand, sample definition, method, diagnostics, and inference procedure. Section~\ref{sec:reproducibility-standards} details what to include. Pre-registration does not prevent learning from the data—you can still run exploratory analyses—but it distinguishes confirmatory from exploratory findings.
+Pre-register the analysis plan. Before accessing outcome data, commit to the estimand, sample definition, method, diagnostics, and inference procedure. Section~\ref{sec:reproducibility-standards} details what to include. Pre-registration does not prevent learning from the data---you can still run exploratory analyses---but it distinguishes confirmatory from exploratory findings.
 
 Plan the diagnostics in advance. Decide which diagnostics you will run and what thresholds will trigger concern. For DiD, specify the pre-trend test and what magnitude of pre-trend would undermine credibility. For synthetic control, specify the acceptable pre-treatment RMSPE. For propensity methods, specify the overlap threshold. Writing these down in advance prevents post-hoc rationalisation.
 
@@ -25,7 +25,7 @@ Run diagnostics before estimates. The temptation is to estimate the effect first
 
 Interpret diagnostic failures honestly. If pre-trends are not parallel, DiD is suspect. If synthetic control fit is poor, the counterfactual is unreliable. If overlap is limited, propensity methods extrapolate beyond the data. Diagnostic failure does not mean the analysis is worthless, but it means the results should be interpreted with caution and reported with appropriate caveats.
 
-Apply multiple methods when feasible. If the data support both DiD and synthetic control, run both. If results agree, confidence increases. If results diverge, investigate why. The divergence may reveal sensitivity to assumptions that a single method would hide. Section~\ref{sec:method-selection-outlook} discusses triangulation in detail.
+Apply multiple methods when feasible. If the data support both DiD and synthetic control, run both. If results agree, confidence increases. If results diverge, investigate why. The divergence may reveal sensitivity to assumptions that a single method would hide. Section~\ref{sec:method-selection-outlook} discusses triangulation and multiverse analysis in detail.
 
 \subsection*{Reporting Phase}
 
@@ -43,10 +43,26 @@ Consider alternative methods. If DiD fails pre-trends, can synthetic control ach
 
 Report bounds instead of points. When identification is partial, report what can be learned rather than pretending to know more. Section~\ref{sec:partial-identification} discusses bounding strategies. A wide bound that is credible is more valuable than a narrow estimate that is not.
 
-Acknowledge when the question cannot be answered. Sometimes the data do not support causal inference. Selection is too severe, interference is too pervasive, nonstationarity is too pronounced. In these cases, the honest response is to say so. Descriptive analysis may still be valuable, but it should not be dressed up as causal. The credibility of the field depends on practitioners who know when to stop.
+Acknowledge when the question cannot be answered. Sometimes the data do not support causal inference. Selection is too severe, interference is too pervasive, structural instability is too pronounced. In these cases, the honest response is to say so. Descriptive analysis may still be valuable, but it should not be dressed up as causal. The credibility of the field depends on practitioners who know when to stop.
+
+\subsection*{A Condensed Workflow}
+
+For quick reference, here is the workflow in condensed form:
+
+\begin{enumerate}
+    \item \textbf{Define the estimand.} What effect, on what outcome, for what population, over what horizon?
+    \item \textbf{Assess data.} Do you have the data the method requires?
+    \item \textbf{Identify threats.} Selection? Interference? Structural instability? Measurement error?
+    \item \textbf{Choose method.} Match data features and threats to method families (Section~\ref{sec:method-selection-outlook}).
+    \item \textbf{Pre-register.} Commit to estimand, sample, method, diagnostics, inference.
+    \item \textbf{Run diagnostics first.} Pre-trends, balance, overlap, fit---before seeing estimates.
+    \item \textbf{Estimate.} Apply the method. Apply multiple methods if feasible.
+    \item \textbf{Report transparently.} Estimand, assumptions, data, diagnostics, sensitivity, uncertainty.
+    \item \textbf{If diagnostics fail:} Try alternatives, report bounds, or acknowledge the question cannot be answered.
+\end{enumerate}
 
 \subsection*{The Practitioner's Mindset}
 
-The methods in this book are tools, not answers. They encode assumptions that may or may not hold. Diagnostics provide evidence about assumptions but cannot prove them. Triangulation increases confidence but does not eliminate uncertainty. The practitioner's job is to use these tools thoughtfully, report results honestly, and acknowledge what remains unknown.
+The methods in this book are tools, not answers. They encode assumptions that may or may not hold. Diagnostics provide evidence about assumptions but cannot prove them. Triangulation increases confidence but does not eliminate uncertainty. Our job is to use these tools thoughtfully, report results honestly, and acknowledge what remains unknown.
 
-This is harder than it sounds. Stakeholders want certainty. Deadlines pressure shortcuts. Incentives reward positive findings. Resisting these pressures requires discipline and institutional support. But the alternative—false confidence in unreliable estimates—serves no one. The methods in this book are only as good as the judgment and integrity of those who use them.
+This is harder than it sounds. Stakeholders want certainty. Deadlines pressure shortcuts. Incentives reward positive findings. Resisting these pressures requires discipline and institutional support. But the alternative---false confidence in unreliable estimates---serves no one. The methods in this book are only as good as the judgment and integrity of those who use them.

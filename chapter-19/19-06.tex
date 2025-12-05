@@ -15,7 +15,7 @@ Privacy regulations fundamentally constrain our ability to collect and link data
     \item \textbf{Cookie deprecation}: Third-party cookies being phased out in major browsers, eliminating a primary tracking mechanism.
 \end{itemize}
 
-\paragraph{Causal implications of consent.} Consent requirements shrink samples and introduce selection bias. Users who consent differ systematically from those who do not—they may be more engaged, more trusting, or less privacy-conscious. If consent correlates with potential outcomes, estimates from consented samples do not generalise to the full population.
+\paragraph{Causal implications of consent.} Consent requirements shrink samples and introduce selection bias. Users who consent differ systematically from those who do not—they may be more engaged, more trusting, or less privacy-conscious. If consent correlates with potential outcomes, estimates from consented samples do not generalise to the full population. The magnitude of selection bias depends on both the differential consent rate between treatment and control groups and the outcome difference between consenters and non-consenters. If treated users consent at rate $p_1$ and control users at rate $p_0$, with outcome means $\bar{Y}_{\text{consent}}$ and $\bar{Y}_{\text{no-consent}}$, the bias in the naive comparison equals $(p_1 - p_0) \cdot (\bar{Y}_{\text{consent}} - \bar{Y}_{\text{no-consent}})$. When both terms are non-zero, selection bias contaminates causal estimates.
 
 \paragraph{Sample size impact.} With 25\% opt-in rates, effective sample size drops by 75\%. Power calculations must account for consent rates. For rare outcomes, user-level experiments may become infeasible, requiring a shift to geo-level designs (Section~\ref{sec:geo-experiments}).
 
@@ -27,7 +27,7 @@ When individual-level data are unavailable, privacy-preserving techniques enable
 
 \paragraph{Secure aggregation.} Computes aggregates across users without exposing individual records. Useful for federated learning and cross-platform measurement.
 
-\paragraph{Data clean rooms.} Secure environments where multiple parties can join data without exposing raw records. Enable advertiser-publisher matching while preserving privacy. Examples include Google Ads Data Hub, Amazon Marketing Cloud, and LiveRamp Safe Haven.
+\paragraph{Data clean rooms.} Secure environments where multiple parties can join data without exposing raw records. Enable advertiser-publisher matching while preserving privacy. Examples include Google Ads Data Hub, Amazon Marketing Cloud, and LiveRamp Safe Haven. Clean rooms impose query restrictions that can prevent certain causal designs: minimum aggregation thresholds (e.g., cells must contain at least 50 users) preclude user-level difference-in-differences, and pre-specified query templates limit ad hoc sensitivity analyses. Differential privacy noise injected within clean rooms can invalidate inference for small treatment cells, where the noise magnitude exceeds the signal.
 
 \paragraph{Aggregated conversion APIs.} Platform-provided APIs (Meta Aggregated Event Measurement, Google Privacy Sandbox) report conversions at aggregate levels with noise injection. These replace user-level conversion tracking but introduce measurement error.
 

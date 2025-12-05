@@ -1,55 +1,110 @@
-\section{Nonstationarity and Regime Change}
+\section{Structural Instability and Regime Change}
 \label{sec:nonstationarity}
 
-The marketing environment is not static. Platform algorithms update, privacy policies change, competitors enter and exit, and macroeconomic conditions shift. This nonstationarity violates the stability assumptions that underpin panel causal inference methods. Understanding how to detect, model, and adapt to regime changes is essential for credible causal claims in dynamic environments.
+The marketing environment is not static. Platform algorithms update, privacy policies change, competitors enter and exit, and macroeconomic conditions shift. These changes violate the stability assumptions that underpin panel causal inference methods. We must learn to detect, model, and adapt to structural instability if we want credible causal claims in dynamic environments.
 
-\subsection*{Types of Nonstationarity}
+\subsection*{A Note on Terminology}
 
-Nonstationarity manifests in several forms, each with different implications for identification. Discrete structural breaks are sudden, persistent shifts in the data-generating process. Examples include platform policy changes such as iOS ATT and cookie deprecation, algorithm updates like Google search ranking changes, and regulatory events such as GDPR implementation. These breaks are often observable but may not be announced in advance.
+The term ``nonstationarity'' has a precise meaning in time-series econometrics: a process is nonstationary if its joint distribution---or, under weaker definitions, its mean, variance, or autocovariance structure---depends on time. This definition encompasses several distinct phenomena:
+\begin{itemize}
+    \item Deterministic trends: $y_t = a + bt + \varepsilon_t$ with i.i.d. errors
+    \item Heteroskedasticity over time: $\text{Var}(\varepsilon_t)$ depends on $t$
+    \item Structural breaks: parameters shift at known or unknown dates
+    \item Unit roots: $y_t = y_{t-1} + \varepsilon_t$, an I(1) process
+\end{itemize}
 
-Continuous drift involves gradual evolution of parameters over time. Treatment effects may decay as novelty wears off. Factor loadings may drift as market structure evolves. Consumer preferences may shift slowly. Drift is harder to detect than discrete breaks because there is no single break date to identify.
+The first three are nonstationary but ``well-behaved'' for inference: standard central limit theorems apply after appropriate adjustments. Unit roots are different---they require the functional CLT and specialised inference procedures.
 
-Regime switching occurs when the system alternates between multiple states—high-demand and low-demand regimes, or competitive and collusive pricing. The current regime may be unobserved, and transitions may be stochastic. Even if the environment is stable, treatment effects may vary over time due to learning, saturation, or competitive response. The ATT at time $t$ may differ from the ATT at time $t+k$.
+In most marketing panels, $T$ is too short for unit root concerns to dominate. With $T = 12$ or $T = 24$ months, we cannot reliably test for or estimate the properties of unit roots. The primary concern is structural breaks and parameter drift---the data-generating process changes because the marketing environment changes, not because of accumulating stochastic shocks.
+
+Throughout this section, we use ``structural instability'' rather than ``nonstationarity'' to avoid conflating these distinct issues. When we do use ``nonstationarity,'' we mean it in the broad sense of ``the DGP changes over time,'' which is the usage common in applied panel causal inference, even if it lacks the precision of the time-series definition.
+
+\subsection*{Types of Structural Instability}
+
+Structural instability manifests in several forms, each with different implications for identification.
+
+\textit{Discrete structural breaks} are sudden, persistent shifts in the data-generating process. Apple's App Tracking Transparency (ATT) update in April 2021 is a canonical example: overnight, the relationship between digital advertising exposure and measured conversions changed dramatically because users could now opt out of cross-app tracking. Other examples include algorithm updates (Google's search ranking changes), regulatory events (GDPR implementation), and platform policy shifts (cookie deprecation). These breaks are often observable but may not be announced in advance. They change the conditional mean function, the variance, or both.
+
+\textit{Continuous parameter drift} involves gradual evolution of parameters over time. Treatment effects may decay as novelty wears off. Factor loadings may drift as market structure evolves. Consumer preferences may shift slowly. Drift is harder to detect than discrete breaks because there is no single break date to identify. Unlike unit roots, which are stochastic and cumulative, parameter drift is typically modelled as deterministic or as a slow-moving random walk with small innovations.
+
+\textit{Regime switching} occurs when the system alternates between multiple states---high-demand and low-demand regimes, or competitive and collusive pricing. The current regime may be unobserved, and transitions may be stochastic. Even if the environment is stable within regimes, aggregating across regimes produces apparent instability.
+
+\textit{Time-varying treatment effects} represent a distinct form of instability. Even if the environment is stable, the treatment effect parameter itself may vary over time due to learning, saturation, or competitive response. The ATT at time $t$ may differ from the ATT at time $t+k$, not because the DGP changed, but because the treatment operates differently at different horizons.
 
 \subsection*{Implications for Panel Methods}
 
-Different estimators are affected differently by nonstationarity. Difference-in-differences relies on parallel trends in the pre-treatment period. A structural break in the pre-period undermines the extrapolation to the post-period, and breaks in the post-period confound treatment effects with underlying trend shifts. Time-varying treatment effects are estimable via event-study designs from Chapter~\ref{ch:event}, but these designs still assume that, absent treatment, relative trends across groups would be stable over the event window.
+Different estimators are affected differently by structural instability, and we must understand these vulnerabilities to choose methods wisely.
 
-Synthetic control depends on pre-treatment fit quality, which in turn depends on stability. If factor loadings drift, the synthetic control constructed from pre-treatment data may not approximate the treated unit's counterfactual in the post-period. SDID from Chapter~\ref{ch:generalized-sc} provides some robustness but does not fully address drift.
+Difference-in-differences relies on parallel trends in the pre-treatment period. A structural break in the pre-period undermines the extrapolation to the post-period; breaks in the post-period confound treatment effects with underlying trend shifts. Note that time fixed effects do not solve this problem: they absorb common shocks but not differential responses to those shocks across treated and control groups. If iOS ATT affects treatment and control DMAs differently, a year dummy for 2021 does not help.
 
-Interactive fixed effects from Chapter~\ref{ch:factor} allow for time-varying factors but assume stable factor loadings. If loadings drift, the low-rank structure breaks down. Matrix completion methods are similarly affected. Double machine learning from Chapter~\ref{ch:ml-nuisance} assumes that nuisance functions are stable across the sample. If the relationship between covariates and outcomes changes over time, cross-fitting alone may not prevent bias.
+Synthetic control depends on pre-treatment fit quality, which in turn depends on stability. If the relationship between treated and donor units changes---because factor loadings drift or a structural break differentially affects the treated unit---the synthetic control constructed from pre-treatment data may not approximate the treated unit's counterfactual in the post-period. SDID from Chapter~\ref{ch:generalized-sc} provides some robustness but does not fully address differential instability.
 
-\subsection*{Current Detection Methods}
+Interactive fixed effects from Chapter~\ref{ch:factor} allow for time-varying factors but assume stable factor loadings. If loadings drift, the low-rank structure breaks down. Matrix completion methods are similarly affected.
 
-When breaks are announced—platform policy changes, for instance—the analyst can restrict analysis to stable windows before and after the break, or model the break explicitly with time-varying parameters. When breaks are unannounced, detection is harder. Chow tests, CUSUM, and Bai-Perron procedures detect unknown break dates in time series, but these methods are less developed for panel data with cross-sectional dependence.
+Double machine learning from Chapter~\ref{ch:ml-nuisance} assumes that nuisance functions are stable across the sample. If the relationship between covariates and outcomes changes over time, cross-fitting alone may not prevent bias.
 
-Rolling estimation provides another approach: estimate parameters on rolling windows and monitor for instability. Large changes in rolling estimates suggest breaks or drift. Placebo tests around suspected break dates can also help. Running placebo DiD or SC analyses around suspected breaks reveals whether the break has contaminated the control group.
+\subsection*{A Concrete Example: iOS ATT and Panel Estimation}
 
-\subsection*{Bridging Identification Strategies}
+Consider a brand measuring the effect of a TV campaign on online conversions using synthetic control. The treatment---a TV campaign launch---occurs in February 2021. We construct a synthetic control from untreated DMAs using January 2020 to January 2021 as the pre-period, and measure effects through June 2021.
 
-A key open problem is choosing and combining identification strategies when assumptions are both strong and potentially unstable over time. As discussed in earlier chapters, DiD relies on parallel trends while propensity score methods rely on unconfoundedness, and neither assumption is testable. Under nonstationarity, even if these assumptions held in one period, they may fail in another.
+In April 2021, Apple's ATT update rolls out. Before ATT, we observe 80\% of online conversions attributed to digital touchpoints. After ATT, this drops to 40\% because users opt out of tracking. The synthetic control, constructed from pre-ATT data, predicts what online conversions would have been absent the TV campaign---but this prediction assumes the measurement environment is stable.
 
-When both assumptions are plausible, combining them can provide some protection. Doubly robust estimators that are consistent if either assumption holds are an active research area, but how to implement them in panels with time-varying environments remains unclear. Synthetic control is design-based—weights are chosen to match pre-treatment outcomes—while factor models are model-based, with structure estimated from the data. Hybrid methods like SDID and augmented SC bridge these approaches, yet understanding when each is preferred in the presence of regime changes is still open.
+The problem is that ATT affects both treated and control DMAs, but potentially differently. If the treated DMAs have higher iPhone penetration, ATT affects them more, and we may attribute to the TV campaign what is actually a differential measurement shock. Even if iPhone penetration is similar, the timing creates confounding: we cannot separate the TV campaign effect from the ATT effect in the February--June window.
 
-Event studies identify dynamic responses at different horizons, while distributed lag models focus on long-run cumulative effects. Under nonstationarity, reconciling these perspectives requires assumptions about the persistence of shocks and the stability of dynamics that are rarely testable. Section~\ref{sec:method-selection-outlook} returns to these method-selection issues in more detail; here the point is that nonstationarity tightens the trade-offs among competing assumptions.
+What can we do? One option is to restrict the post-period to February--March 2021, before ATT. This sacrifices statistical power and prevents us from measuring long-run effects. Another option is to model the ATT shock explicitly, perhaps by including an ATT indicator interacted with iPhone penetration as a covariate. This requires assumptions about how ATT affects conversions that may be difficult to verify. A third option is to use a different outcome---total sales rather than attributed online conversions---that is less affected by the measurement shock. This changes the estimand but may be more robust.
 
-\subsection*{Adaptive Methods}
+The broader lesson is that we must inventory potential structural breaks before analysis, not after. If we know ATT is coming, we can design around it. If we discover it post hoc, we are left with imperfect fixes.
 
-When nonstationarity is expected, adaptive methods can help. State-space models with drifting coefficients can track parameter evolution, and Kalman filtering provides real-time updates. These methods require assumptions about the drift process that may be difficult to verify.
+\subsection*{What Time Fixed Effects and First Differencing Do (and Don't) Solve}
 
-Windowed estimation restricts analysis to recent data where stationarity is more plausible. This sacrifices sample size for relevance. The optimal window width trades off bias from including stale data against variance from small samples. Online learning updates estimates as new data arrive, down-weighting older observations. This is natural for platforms with streaming data but complicates inference because the estimator itself is evolving.
+Two common tools---time fixed effects and first differencing---are sometimes proposed as solutions to instability. Understanding their limitations is important.
 
-Regime detection with estimation jointly estimates regime probabilities and regime-specific parameters. Markov-switching models are one approach, but they are computationally intensive and require strong assumptions about the number of regimes and the transition process.
+Time fixed effects absorb any time-varying shock that affects all units equally. They handle aggregate demand shocks, common seasonality, and platform-wide changes that affect everyone identically. They do \textit{not} handle: (1) unit-specific trends or differential responses to aggregate shocks; (2) structural breaks that affect units heterogeneously; or (3) time-varying parameters in the treatment effect itself.
 
-\subsection*{Open Problems}
+First differencing transforms $Y_{it}$ to $\Delta Y_{it} = Y_{it} - Y_{i,t-1}$. This eliminates unit fixed effects (since $\alpha_i$ cancels) and removes deterministic trends (since a linear trend becomes a constant). It also addresses unit roots---differencing an I(1) process yields an I(0) process. However, first differencing does \textit{not} solve: (1) structural breaks (the break is still present in the differenced data); (2) time-varying variance (differencing does not stabilise heteroskedasticity); or (3) regime switching (regime differences persist in differences).
 
-Extending structural break tests to panel data with cross-sectional dependence and staggered treatment adoption remains underdeveloped. Standard inference assumes parameter stability, and how to construct valid confidence intervals when parameters drift slowly is an open question.
+The upshot: neither time effects nor first differencing is a general solution to structural instability. They address specific forms of instability and leave others untouched.
 
-How should experimental designs adapt when the environment is nonstationary? Optimal stopping rules and adaptive randomisation under drift are active research areas without settled solutions. When parallel trends and unconfoundedness are both uncertain and potentially time-varying, it is unclear how best to combine DiD, SC, and propensity-based methods. Formal frameworks for method averaging or selection under assumption uncertainty are lacking.
+\subsection*{Detection Methods}
+
+When breaks are announced---platform policy changes, for instance---we can restrict analysis to stable windows or model the break explicitly. When breaks are unannounced, detection is harder.
+
+For time series, Chow tests detect known break dates, while Bai-Perron procedures detect unknown break dates by searching over candidate dates and testing for parameter instability. CUSUM tests track cumulative sums of residuals to detect gradual departures from stability. These methods are well-developed for single time series but less so for panels with cross-sectional dependence.
+
+Rolling estimation provides another approach: we estimate parameters on rolling windows and monitor for instability. Large changes in rolling estimates suggest breaks or drift. The challenge is distinguishing genuine breaks from sampling variation, especially with short windows.
+
+Placebo tests around suspected break dates can also help. Running placebo DiD or SC analyses around suspected breaks reveals whether the break has contaminated the control group. If a ``treatment effect'' appears at a placebo date, we have evidence of instability.
+
+\subsection*{Recent Advances: Honest DiD and Synthetic Trends}
+
+Two methodological developments directly address structural instability in panel causal inference.
+
+\citet{rambachan2023more} introduce ``Honest Difference-in-Differences,'' a framework for partial identification when parallel trends may not hold exactly. Instead of assuming zero violation, they bound the maximum post-treatment violation by a multiple of the observed pre-treatment trend differences. This allows analysts to report a "breakdown value"---how much trend instability would be required to overturn the result? This framework is now the industry standard for handling potential trend breaks.
+
+\citet{liu2025synthetic} develops synthetic parallel trends, which use SC-like methods to construct valid counterfactual trends under drift. Rather than assuming parallel trends hold exactly, this approach constructs weights that minimise trend differences in the pre-period and extrapolates these adjusted trends to the post-period.
+
+\subsection*{Solving Regime Switching}
+
+Regime switching---alternating between high-demand and low-demand states---requires explicit modelling.
+\begin{itemize}
+    \item \textbf{Change-Point Detection:} Tools like CUSUM tests or the \texttt{ruptures} library can identify breakpoints where the mean or variance shifts. Once identified, we can stratify the analysis by regime or include regime indicators as covariates.
+    \item \textbf{Markov Switching Models:} When regimes are latent, Hidden Markov Models (HMMs) can infer the probability of being in a given state at each time $t$. We can then estimate regime-specific treatment effects or marginalise over the regime distribution.
+\end{itemize}
 
 \subsection*{Practical Guidance}
 
-When nonstationarity is likely, practitioners should document known breaks by maintaining changelogs of platform policies, algorithm updates, and market events. Analysis should be restricted to stable windows or breaks should be modelled explicitly. Rolling estimates and placebo tests can detect unannounced breaks.
+When structural instability is likely, we offer the following workflow.
 
-Sensitivity analysis should show how estimates change when the analysis window is varied or when different pre-treatment periods are used. Triangulation across multiple methods with different stability assumptions increases confidence when results agree and signals instability when they diverge. Estimates should be reported as conditional on the stability assumption, with acknowledgment that extrapolation to other time periods may be invalid.
+First, document known breaks. Maintain changelogs of platform policies, algorithm updates, and market events. When major breaks occur, record the date and expected mechanism of impact. This documentation should be contemporaneous, not reconstructed post hoc.
 
+Second, restrict analysis to stable windows or model breaks explicitly. If a major break occurs mid-analysis, either truncate the sample or include the break as a covariate. Do not simply ignore it. Time fixed effects alone do not solve this problem.
+
+Third, use detection methods proactively. Rolling estimates and placebo tests can detect unannounced breaks. If estimates are unstable across windows, investigate why before reporting results.
+
+Fourth, conduct sensitivity analysis. Show how estimates change when the analysis window is varied or when different pre-treatment periods are used. If results are sensitive to window choice, acknowledge this limitation.
+
+Fifth, triangulate across methods. Use multiple estimators with different stability assumptions. Agreement across methods increases confidence; disagreement signals instability that warrants further investigation.
+
+Sixth, report estimates as conditional on stability. Acknowledge that extrapolation to other time periods may be invalid. If the environment has changed since the analysis period, the estimated effects may no longer apply.
+
+These steps do not eliminate the problem of structural instability, but they make it transparent and provide readers with the information needed to assess the credibility and applicability of the results.

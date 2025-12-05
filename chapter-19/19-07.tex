@@ -39,7 +39,7 @@ Imputing with post-treatment information or treatment-correlated covariates viol
 
 Measurement error biases estimates when it is non-classical or differential.
 
-\paragraph{Classical measurement error.} Error is independent of true values and other variables. In the outcome, classical error increases variance but does not bias point estimates. In the treatment, classical error attenuates estimates toward zero.
+\paragraph{Classical measurement error.} Error is independent of true values and other variables. In the outcome, classical error increases variance but does not bias point estimates. In the treatment, classical error attenuates estimates toward zero. Formally, if true treatment $X^*$ is measured with error $X = X^* + u$ where $u$ is independent of $X^*$ and has variance $\sigma^2_u$, the OLS estimator converges to $\hat{\beta} \to \beta \cdot \frac{\sigma^2_{X^*}}{\sigma^2_{X^*} + \sigma^2_u}$. This attenuation factor, sometimes called the reliability ratio, is always less than one, so estimates are biased toward zero.
 
 \paragraph{Non-classical measurement error.} Error is correlated with true values, treatment, or outcomes. Bias direction depends on the correlation structure. Example: viewability is lower for ads shown to less engaged users, who also have lower conversion rates—viewability error is correlated with outcomes.
 
@@ -74,9 +74,13 @@ Different marketing data sources exhibit characteristic measurement errors.
 
 \paragraph{Validation studies.} Use audits, surveys, or external benchmarks to estimate error magnitudes. Compare platform-reported conversions to CRM data; compare impression counts to viewability audits.
 
-\paragraph{Instrumental variables.} If an instrument is available that is correlated with the true treatment but not with the measurement error, IV estimation recovers consistent estimates (see the instrumental-variables sections in Chapter~\ref{ch:inference}).
+\paragraph{Instrumental variables.} If an instrument is available that is correlated with the true treatment but not with the measurement error, IV estimation recovers consistent estimates (see the instrumental-variables sections in Chapter~\ref{ch:inference}). The instrument effectively proxies for the true treatment, purging the measurement error that contaminates OLS.
 
-\paragraph{Partial identification.} When error magnitudes are unknown, accept that the estimand is set-valued and report bounds rather than point estimates. Manski bounds provide worst-case intervals.
+\paragraph{SIMEX.} When measurement error variance is known or can be estimated from validation data, Simulation Extrapolation (SIMEX) provides a practical correction \citep{carroll2006measurement}. The method adds increasing amounts of artificial measurement error, estimates the relationship between error variance and bias, then extrapolates back to zero error. SIMEX is particularly useful when IV is unavailable or when multiple variables are measured with error.
+
+\paragraph{Partial identification.} When error magnitudes are unknown, accept that the estimand is set-valued and report bounds rather than point estimates. Manski bounds provide worst-case intervals under minimal assumptions about the error process \citep{manski2003partial}. If prior information constrains the error distribution (e.g., known sign, bounded magnitude), tighter bounds are achievable. The width of the bounds reflects genuine uncertainty about the estimand; narrow bounds indicate that the data are informative despite measurement error, while wide bounds signal that conclusions are sensitive to assumptions.
+
+\paragraph{Negative controls.} Negative control outcomes and negative control exposures provide diagnostic tests for unmeasured confounding and measurement error. A negative control outcome is a variable that should be unaffected by treatment if the causal model is correct—for example, sales of an unrelated product category, or conversions that occur before the ad could plausibly have an effect. Finding a treatment effect on a negative control outcome signals bias from confounding or measurement error. A negative control exposure is a placebo treatment that should have no effect on outcomes—for example, ads shown but not viewed (due to viewability failure), or campaigns in markets where the product is unavailable. Finding an effect of negative control exposure indicates confounding or spurious correlation. Use negative controls as model diagnostics: if the analysis passes negative control tests, confidence in the primary estimate increases; if it fails, investigate the source of bias before interpreting the main results.
 
 \paragraph{Sensitivity analysis.} Specify the range of error magnitudes consistent with substantive conclusions (Chapter~\ref{ch:inference}, Chapter~\ref{ch:design-diagnostics}). Report how large measurement error would need to be to overturn the finding.
 

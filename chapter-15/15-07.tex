@@ -1,7 +1,7 @@
-\section{Structural Breaks and Nonstationarity}
+\section{Structural Breaks}
 \label{sec:structural-breaks}
 
-Marketing panels often rely on data from platforms that constantly evolve, creating structural breaks that threaten stationarity. For a practical diagnostic workflow and decision tree for handling nonstationarity, see Appendix~\ref{app:stationarity-panels}.
+Marketing panels often rely on data from platforms that constantly evolve, creating structural breaks that threaten parameter stability. A structural break occurs when model parameters shift at some point in time---the treatment effect, the baseline level, or the error variance changes. This is distinct from unit roots and other forms of nonstationarity discussed in Section~\ref{sec:regression-mechanics} and Appendix~\ref{app:stationarity-panels}. Structural breaks are the primary concern in short-$T$ marketing panels, where we cannot reliably test for unit roots but can often detect and model discrete parameter shifts.
 
 \begin{definition}[Parameter Stability]\label{def:structural-stability}
 A panel model exhibits structural stability if the parameters $\theta_t = (\tau_t, \beta_t, \sigma_t^2)$ are constant over the estimation window:

@@ -1,50 +1,152 @@
 \section{Adaptive Experimentation and Learning}
 \label{sec:adaptive-experimentation}
 
-Modern platforms rarely assign treatments randomly and hold them fixed. Instead, they deploy adaptive systems—bandits, pacing algorithms, budget optimisers, and recommendation engines—that continuously adjust treatment assignment based on observed outcomes. This adaptivity creates fundamental challenges for causal inference: the assignment mechanism depends on the data, violating the fixed-design assumptions set out in earlier chapters.
+Modern platforms rarely assign treatments randomly and hold them fixed. Instead, they deploy adaptive systems---bandits, pacing algorithms, budget optimisers, and recommendation engines---that continuously adjust treatment assignment based on observed outcomes. This adaptivity creates fundamental challenges for causal inference: the assignment mechanism depends on the data, violating the fixed-design assumptions we developed in earlier chapters. Understanding when and how we can still draw causal conclusions under adaptivity is one of the most important open problems in applied causal inference.
 
 \subsection*{Types of Adaptive Systems}
 
-Adaptive treatment assignment takes many forms in marketing. Multi-armed bandits allocate traffic to ads, creatives, or product variants based on observed performance. Thompson sampling, UCB, and $\epsilon$-greedy algorithms balance exploration with exploitation, and treatment assignment probabilities evolve as data accumulate.
+Adaptive treatment assignment takes many forms in marketing, and we must understand each to diagnose the identification challenges they create.
 
-Pacing and budget algorithms present similar challenges. Ad delivery systems pace spend over time to meet budget constraints while maximising value. Assignment depends on predicted outcomes, bid landscapes, and remaining budget—all of which evolve endogenously. Recommendation engines add another layer: personalisation algorithms assign content, products, or ads based on predicted user preferences, and these predictions update continuously as user behaviour is observed, creating feedback loops between treatment and outcomes.
+Multi-armed bandits allocate traffic to ads, creatives, or product variants based on observed performance. Thompson sampling draws from posterior distributions over arm rewards and selects the arm with the highest draw. Upper confidence bound (UCB) algorithms select arms based on optimistic reward estimates. $\epsilon$-greedy algorithms exploit the best-performing arm most of the time but explore randomly with probability $\epsilon$. In all cases, treatment assignment probabilities evolve as data accumulate, and units assigned later face different probabilities than units assigned earlier.
 
-Dynamic pricing creates simultaneity rather than just selection. Prices adjust in real time based on demand signals, inventory, and competitor behaviour. The treatment (price) is endogenous to the outcome (demand), and standard methods cannot disentangle cause from effect without further structure. Reinforcement learning agents, increasingly deployed on platforms, learn policies over time. The policy itself is the object of interest, but it evolves during the observation period, making the target of inference a moving target.
+Pacing and budget algorithms present similar challenges. Ad delivery systems pace spend over time to meet budget constraints while maximising value. Assignment depends on predicted outcomes, bid landscapes, and remaining budget---all of which evolve endogenously. A unit arriving late in the budget cycle faces different assignment probabilities than a unit arriving early.
+
+Recommendation engines add another layer: personalisation algorithms assign content, products, or ads based on predicted user preferences, and these predictions update continuously as user behaviour is observed. The feedback loop between treatment and outcomes is especially tight because the algorithm learns from the very outcomes we want to measure.
+
+Dynamic pricing creates simultaneity rather than just selection. Prices adjust in real time based on demand signals, inventory, and competitor behaviour. The treatment (price) is endogenous to the outcome (demand), and standard methods cannot disentangle cause from effect without further structure.
+
+Reinforcement learning agents, increasingly deployed on platforms, learn policies over time. The policy itself is the object of interest, but it evolves during the observation period, making the target of inference a moving target.
+
+\subsection*{Contextual Bandits and Personalisation}
+
+While the previous subsection focused on simple multi-armed bandits, most marketing applications involve \textit{contextual bandits}---algorithms that assign treatments based on user features, not just past rewards. Personalisation engines are contextual bandits: they observe user characteristics $X_i$ and assign treatment $W_i$ to maximise predicted outcomes given those characteristics.
+
+Contextual bandits create additional challenges beyond simple bandits. The assignment probability $e_i(w | X_i)$ depends on the user's features and the algorithm's current model, both of which evolve. This creates the \textit{vanishing propensity problem}: as the algorithm learns which treatment is best for each user type, propensities for suboptimal treatments approach zero. Users with features that strongly predict response to treatment A receive treatment A with probability approaching 1.
+
+When propensities vanish, inverse probability weighting fails. The IPW estimator reweights observations by $1/e_i(w)$, but as $e_i(w) \to 0$, these weights explode. The variance of IPW estimators becomes unbounded, and estimates become unstable. This is not a minor technical issue---it is the central obstacle to causal inference with personalisation data.
+
+Solutions exist but require different approaches. \textit{Stabilised IPW} uses the marginal probability of treatment rather than the conditional probability, reducing variance at the cost of introducing some bias. \textit{Policy learning} approaches, such as those developed by \citet{athey2021policy}, directly estimate optimal policies rather than treatment effects, sidestepping the propensity problem. \textit{Doubly robust methods} combine outcome modelling with propensity weighting, remaining consistent if either model is correct. When propensities are near-degenerate, the outcome model carries most of the inferential burden.
+
+For practitioners, the implication is clear: if your data come from a mature personalisation system, propensities may be too extreme for standard IPW. Doubly robust estimators are essential. Better still, design experiments with exploration phases where propensities are bounded away from zero.
 
 \subsection*{Why Adaptivity Breaks Standard Methods}
 
-In the design-based paradigm of Chapters~\ref{ch:frameworks}–\ref{ch:threats}, treatment assignment is either randomised with known probabilities or determined by observable covariates. Adaptive systems violate both conditions because assignment probabilities depend on past outcomes.
+In the design-based paradigm of Chapters~\ref{ch:frameworks}--\ref{ch:threats}, treatment assignment is either randomised with known probabilities or determined by observable covariates. Adaptive systems violate both conditions because assignment probabilities depend on past outcomes.
 
-In a bandit, the probability that unit $i$ receives treatment depends on the outcomes of all previous units. This probability is not fixed ex ante and may not be computable ex post without access to the algorithm's internal state. Assignment depends on observed outcomes, creating a feedback loop: units that would have good outcomes under treatment are more likely to be assigned treatment, confounding the treatment–outcome relationship.
+Consider a Thompson sampling bandit allocating traffic between two ad creatives. After 1000 impressions, Creative A has received 700 impressions (70\%) and Creative B has received 300 (30\%). Why the imbalance? Because Creative A was performing better, and the algorithm shifted traffic toward it.
 
-Each assignment depends on all previous assignments and outcomes, inducing temporal dependence that breaks standard independence assumptions. Adaptive experiments often stop when a "winner" is declared, creating selection bias. The stopping rule depends on the data, invalidating fixed-sample inference.
+A common misconception is that this creates estimation bias in the usual sense. In fact, the sample mean $\bar{Y}_A$ remains an unbiased estimator of $\theta_A$ conditional on A being sampled: $\mathbb{E}[\bar{Y}_A | N_A > 0] = \theta_A$. The problems are subtler but equally damaging:
 
-\subsection*{Current Approaches}
+\textit{Winner's curse (selection bias).} If we select the arm with the highest sample mean and report that mean as our estimate, \textit{that} estimate is biased upward. The winning arm is more likely to have benefited from positive sampling variation. This is selection bias, not estimation bias---we are reporting a selected quantity, not a random draw.
 
-Several approaches provide partial solutions, each with limitations. Switchback experiments, discussed also in Section~\ref{sec:interference-scale}, randomise treatment over time rather than across units, providing exogenous variation even when within-period assignment is adaptive. They rely on limited carryover and do not address within-period adaptivity. Phased rollouts introduce treatment in stages across units or markets, with early phases providing quasi-experimental variation before the adaptive system fully optimises. Effects may differ between early exploratory phases and late exploitative phases.
+\textit{Data-dependent sample size.} The sample size $N_A$ is random and correlated with outcomes. Arms that perform well early receive more samples; arms that perform poorly receive fewer. The CLT assumes $\sqrt{n}(\bar{Y} - \mu)$ converges to a normal distribution, but here $n$ itself is stochastic and correlated with $\bar{Y}$. Standard inference fails because the asymptotic distribution is no longer normal.
 
-If assignment probabilities can be reconstructed from logged data, propensity score adjustment through inverse probability weighting can correct for selection, building on the methods from Chapter~\ref{ch:ml-nuisance}. This requires access to the algorithm's decision process and correct specification of the propensity model—conditions that rarely hold in practice. Doubly robust methods combine outcome modelling with propensity weighting for robustness, but still assume that propensities are known or estimable.
+\textit{Temporal confounding.} The algorithm shifted traffic to A precisely when A was performing well, so A's sample is enriched with high-converting conditions (time of day, user segments). B's sample is enriched with periods when A was underperforming. This creates confounding by time and context that naive comparisons ignore.
 
-Off-policy evaluation estimates the value of a target policy using data collected under a different logging policy. Importance sampling and doubly robust estimators are standard tools, yet variance becomes prohibitive when target and logging policies differ substantially.
+In simulations, these effects combine to produce substantial errors. Naive estimates from bandit data can overstate the winner's advantage by 20--30\%, making a 2 percentage point true difference look like 2.5--3 points.
 
-\subsection*{Inference Under Adaptivity}
+The fundamental issues are:
 
-Even when identification is achieved, inference poses challenges. Under adaptivity, standard central limit theorems for independent observations may not apply. Martingale central limit theorems and concentration inequalities provide alternatives but rest on different regularity conditions.
+\textit{Endogenous assignment.} In a bandit, the probability that unit $i$ receives treatment depends on the outcomes of all previous units. This probability is not fixed ex ante and may not be computable ex post without access to the algorithm's internal state.
 
-When experiments are monitored continuously and stopped based on results, standard p-values are invalid. Sequential testing methods—alpha-spending functions and always-valid p-values—control error rates under optional stopping. Confidence sequences provide valid confidence intervals at any stopping time, not just at fixed sample sizes. These tools are essential for adaptive experiments but are typically less efficient than fixed-sample procedures.
+\textit{Feedback loops.} Units that would have good outcomes under treatment are more likely to be assigned treatment, confounding the treatment--outcome relationship. This is not standard confounding by observables---it is confounding by the algorithm's beliefs, which are updated by observed outcomes.
 
-Randomisation inference requires known assignment mechanisms, as developed in Chapter~\ref{ch:inference}. When the mechanism is adaptive and complex, exact randomisation inference may be infeasible: the assignment distribution is not known, and simulating it requires access to the algorithm's internal state.
+\textit{Temporal dependence.} Each assignment depends on all previous assignments and outcomes, inducing dependence that breaks standard independence assumptions. The observations are not i.i.d., and standard central limit theorems do not apply directly.
+
+\textit{Optional stopping.} Adaptive experiments often stop when a ``winner'' is declared, creating additional selection bias. The stopping rule depends on the data, invalidating fixed-sample inference. If we stop an experiment because one arm looks better, we are more likely to stop when sampling variation favours that arm.
+
+\subsection*{Off-Policy Evaluation}
+
+A primary use case for adaptive data in marketing is \textit{off-policy evaluation} (OPE): using data collected under one policy (the logging policy) to evaluate a different policy (the target policy). For example, we may want to evaluate a new personalisation algorithm using historical data from the current algorithm, without running an expensive A/B test.
+
+Three main approaches exist, each with different bias-variance trade-offs.
+
+\textit{The direct method (DM)} builds a model $\hat{\mu}(w, x)$ of expected outcomes given treatment $w$ and covariates $x$, then evaluates the target policy by computing $\hat{V}^{\text{DM}} = \frac{1}{n} \sum_i \hat{\mu}(\pi_{\text{target}}(X_i), X_i)$. The direct method ignores propensities entirely, relying solely on the outcome model. This gives low variance but high bias if the outcome model is misspecified---which it usually is, especially for treatment-covariate interactions.
+
+\textit{Inverse probability weighting (IPW)} reweights observations by the ratio of target to logging policy probabilities:
+\[
+\hat{V}^{\text{IPW}} = \frac{1}{n} \sum_i \frac{\pi_{\text{target}}(W_i | X_i)}{\pi_{\text{log}}(W_i | X_i)} Y_i.
+\]
+IPW is unbiased if propensities are known and bounded away from zero. The challenge is variance: when target and logging policies differ substantially, importance weights become extreme. A user who received treatment with probability 0.01 under the logging policy but would receive it with probability 0.99 under the target policy contributes a weight of 99, dominating the estimate.
+
+\textit{Doubly robust (DR) estimators} combine the direct method and IPW:
+\[
+\hat{V}^{\text{DR}} = \frac{1}{n} \sum_i \left[ \hat{\mu}(\pi_{\text{target}}(X_i), X_i) + \frac{\pi_{\text{target}}(W_i | X_i)}{\pi_{\text{log}}(W_i | X_i)} \left( Y_i - \hat{\mu}(W_i, X_i) \right) \right].
+\]
+DR estimators are consistent if either the outcome model or the propensity model is correct. They typically have lower variance than IPW while being more robust than DM. \citet{dudik2011doubly} established the theoretical foundations; \citet{hadad2021confidence} extended these results to provide valid confidence intervals under adaptive designs.
+
+For practitioners, the recommendation is clear: use doubly robust estimators for off-policy evaluation. They are the current state of the art and available in standard software packages.
+
+\subsection*{Anytime-Valid Inference}
+
+When experiments are monitored continuously and stopped based on results, standard p-values and confidence intervals are invalid. A 95\% confidence interval computed at a data-dependent stopping time does not have 95\% coverage. The more we peek at the data, the more likely we are to declare a winner spuriously.
+
+The solution is \textit{anytime-valid inference}---methods that provide valid error guarantees at any stopping time, not just at fixed sample sizes. Three related frameworks address this problem.
+
+\textit{Confidence sequences} are sequences of confidence intervals $(C_n)_{n \geq 1}$ such that the probability that the true parameter lies in all of them simultaneously is at least $1 - \alpha$:
+\[
+\Pr\left(\theta \in C_n \text{ for all } n \geq 1\right) \geq 1 - \alpha.
+\]
+Unlike fixed-sample confidence intervals, confidence sequences remain valid if we stop early, stop late, or peek repeatedly. The cost is that confidence sequences are wider than fixed-sample intervals at any given sample size---we pay a price for the flexibility to stop whenever we want. \citet{howard2021time} provide a comprehensive treatment with tight bounds.
+
+\textit{Sequential tests} control type I error under optional stopping using alpha-spending functions that allocate error probability across interim analyses. Group sequential methods partition the experiment into stages; alpha-spending allows continuous monitoring. The Pocock and O'Brien-Fleming boundaries are classic examples. These methods are standard in clinical trials and increasingly adopted in tech industry A/B testing.
+
+\textit{E-values and e-processes} provide a unified framework for anytime-valid inference, developed rigorously by \citet{grunwald2020safe}. An e-value $E$ is a non-negative random variable with $\mathbb{E}[E] \leq 1$ under the null. Large e-values are evidence against the null. The key insight is that e-values can be interpreted as wealth in a betting game against the null hypothesis. They can be combined by multiplication (betting sequentially), stopped at any time, and converted to p-values via $p = 1/E$. E-processes generalise e-values to sequences, providing a foundation for both testing and estimation under adaptivity.
+
+For marketing practitioners, the practical implication is clear: if your experiment involves adaptive assignment or optional stopping, standard p-values and confidence intervals are unreliable. Use confidence sequences or sequential testing methods instead. Software implementations are increasingly available, including in major A/B testing platforms.
+
+\subsection*{A Concrete Example: Inference Failure in Bandit Data}
+
+To make the identification problem concrete, consider a Thompson sampling bandit choosing between two creatives with true conversion rates $\theta_A = 0.10$ and $\theta_B = 0.08$. Creative A is genuinely better by 2 percentage points.
+
+In a standard A/B test with 50/50 allocation, we would estimate $\hat{\theta}_A - \hat{\theta}_B \approx 0.02$ with minimal bias, and a standard confidence interval would have correct coverage. In Thompson sampling, the algorithm learns that A is better and shifts traffic toward it. After 10,000 impressions, suppose A has received 7,500 and B has received 2,500.
+
+The sample means $\bar{Y}_A$ and $\bar{Y}_B$ are individually unbiased for $\theta_A$ and $\theta_B$. But reporting the difference $\bar{Y}_A - \bar{Y}_B$ as our estimate of $\theta_A - \theta_B$ encounters three problems:
+
+First, winner's curse: we selected A as the winner based on observed performance, so we are more likely to report an estimate that is biased upward.
+
+Second, temporal confounding: A's sample is enriched with high-converting periods (when the algorithm was shifting traffic toward it), while B's sample is enriched with low-converting periods.
+
+Third, invalid inference: the CLT-based confidence interval assumes fixed sample sizes, but $N_A$ and $N_B$ are random and correlated with outcomes. The true coverage of a nominal 95\% interval may be 80\% or less.
+
+Propensity score adjustment can address the temporal confounding if we know the assignment probabilities. At each decision point $t$, the Thompson sampling algorithm had a specific probability $e_t(A)$ of assigning treatment A, determined by its posterior at that moment. If we recorded these probabilities, we can use IPW:
+\[
+\hat{\theta}_A^{\text{IPW}} = \frac{1}{n_A} \sum_{i: W_i = A} \frac{Y_i}{e_i(A)}.
+\]
+For valid inference, we need methods designed for adaptive data, such as the doubly robust estimators with variance estimation from \citet{hadad2021confidence}.
+
+The challenge is that $e_i(A)$ depends on the algorithm's internal state, which may not be logged. Without these probabilities, identification fails. This is why logging propensities is essential for any system that may later be used for causal inference.
 
 \subsection*{Open Problems}
 
-When both own treatment and neighbour treatments evolve adaptively, identification becomes extremely difficult. We lack established results for settings with simultaneous adaptivity and interference. Bandits optimise for reward, not causal effect estimation in the sense of this book. Designing algorithms that balance reward maximisation with causal learning—so-called causal bandits—is an active research area without settled solutions.
+When both own treatment and neighbour treatments evolve adaptively, identification becomes extremely difficult. We lack established results for settings with simultaneous adaptivity and interference.
 
-How do we detect when adaptivity has compromised identification? The design diagnostics from Chapter~\ref{ch:design-diagnostics} assume fixed designs. New diagnostics are needed that can flag when adaptive assignment has induced confounding. Adaptive systems optimise for short-run outcomes, but estimating long-run effects such as brand equity and customer lifetime value when assignment is adapted to short-run signals remains largely unexplored.
+Bandits optimise for reward, not causal effect estimation in the sense of this book. Designing algorithms that balance reward maximisation with causal learning---so-called causal bandits---is an active research area. The goal is to learn which arm is best while also estimating by how much, with valid confidence intervals.
 
-Most work focuses on evaluating a fixed policy. Learning optimal policies from adaptive data—and quantifying uncertainty about the learned policy—remains challenging. The policy that appears optimal in sample may not be optimal out of sample, and standard confidence intervals do not account for the search over policy space.
+How do we detect when adaptivity has compromised identification? The design diagnostics from Chapter~\ref{ch:design-diagnostics} assume fixed designs. We need new diagnostics that can flag when adaptive assignment has induced confounding---for example, by checking whether treatment assignment is predictable from lagged outcomes.
 
-\subsection*{Research Directions}
+Adaptive systems optimise for short-run outcomes, but we often care about long-run effects---brand equity, customer lifetime value, habit formation. Estimating long-run effects when assignment is adapted to short-run signals remains largely unexplored.
 
-Progress will require identification theory for causal effects under adaptive assignment, including conditions under which effects are recoverable and bounds when they are not. We need inference methods that are valid under adaptivity, including confidence sequences, sequential tests, and martingale-based approaches. Algorithm design that balances exploration, exploitation, and causal learning would enable causal bandits that estimate effects while optimising reward. Diagnostic tools that detect when adaptivity has compromised identification would help practitioners assess credibility. Platform collaboration to access assignment logs and algorithm internals is essential for propensity reconstruction.
+Most work focuses on evaluating a fixed policy. Learning optimal policies from adaptive data---and quantifying uncertainty about the learned policy---remains challenging. The policy that appears optimal in sample may not be optimal out of sample, and standard confidence intervals do not account for the search over policy space.
 
-Until these advances materialise, practitioners should document the adaptive systems in use, attempt to reconstruct assignment probabilities where possible, and report sensitivity to assumptions about the assignment mechanism.
+\subsection*{Practical Guidance}
+
+Given the challenges above, how should practitioners proceed? We offer the following workflow.
+
+First, document the adaptive systems in use. Before analysing data from an adaptive experiment, understand how the algorithm assigns treatments. Is it Thompson sampling? UCB? A contextual bandit with vanishing propensities? A proprietary pacing algorithm? The identification strategy depends on the answer.
+
+Second, log propensities. If you control the adaptive system, ensure it logs the assignment probability at each decision point. Without these probabilities, causal inference is severely limited.
+
+Third, attempt to reconstruct assignment probabilities. If you have access to algorithm logs, extract the probabilities at each decision point. With these probabilities, doubly robust estimators become feasible.
+
+Fourth, if propensities are unavailable or extreme, use robust designs. Switchback experiments provide valid variation regardless of within-period adaptivity. Phased rollouts provide variation in early stages before the algorithm has optimised. Holdout groups that receive fixed assignment provide a benchmark.
+
+Fifth, use doubly robust estimation. For off-policy evaluation, always use DR estimators rather than pure IPW or direct methods. They are more robust to model misspecification and have better variance properties.
+
+Sixth, use anytime-valid inference. If the experiment involved optional stopping or continuous monitoring, report confidence sequences rather than fixed-sample confidence intervals. Sequential p-values rather than standard p-values. The software exists; use it.
+
+Seventh, conduct sensitivity analysis. If propensity reconstruction is imperfect, vary assumptions about the assignment mechanism and report how estimates change. If estimates are stable, the conclusion is robust; if estimates are sensitive, acknowledge the uncertainty.
+
+Eighth, separate exploration from exploitation. Design experiments with a dedicated exploration phase where assignment is random or near-random. Use this phase for causal inference; use the exploitation phase for reward maximisation. Do not try to do both with the same data.
+
+These steps do not fully solve the problem of causal inference under adaptivity, but they make the challenges transparent and provide practitioners with the tools to assess the credibility of their conclusions.

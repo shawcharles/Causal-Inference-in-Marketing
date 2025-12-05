@@ -1,12 +1,12 @@
 \section{Chapter Summary and Visual Guide}
 \label{sec:outlook-summary}
 
-This chapter has surveyed the open problems in panel causal inference for marketing. The challenges are substantial: interference at scale, nonstationarity, adaptive experimentation, privacy constraints, and the difficulty of method selection when assumptions are uncertain. The figures and table below provide a visual summary of these challenges and the research agenda they imply.
+This chapter has surveyed the open problems in panel causal inference for marketing. The challenges are substantial: interference at scale, structural instability, adaptive experimentation, privacy constraints, and the difficulty of method selection when assumptions are uncertain. The figures and table below provide a visual summary of these challenges and the research agenda they imply.
 
 \begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 20.1: Key Takeaways from This Chapter]
 \textbf{What we know how to do:} Estimate treatment effects in panels when units are independent, environments are stable, treatments are binary, and data are accessible. The methods in Chapters~\ref{ch:did}--\ref{ch:continuous} address these settings with increasing sophistication.
 
-\textbf{What remains open:} Interference in dense networks where clusters overlap. Nonstationarity where regimes shift without warning. Adaptive systems where assignment depends on outcomes. Privacy constraints where user-level data are unavailable. Method selection where assumptions are uncertain and diagnostics are imperfect.
+\textbf{What remains open:} Interference in dense networks where clusters overlap. Structural instability where regimes shift without warning. Adaptive systems where assignment depends on outcomes. Privacy constraints where user-level data are unavailable. Method selection where assumptions are uncertain and diagnostics are imperfect.
 
 \textbf{What practitioners should do now:} Use the methods that exist, but acknowledge their limitations. Pre-register analysis plans. Run diagnostics before estimates. Report bounds when identification is partial. Document assumptions and governance. Triangulate across methods. Be honest about uncertainty.
 
@@ -26,7 +26,7 @@ This chapter has surveyed the open problems in panel causal inference for market
 \includegraphics[width=0.95\textwidth]{images/fig_outlook_regime.pdf}
 \caption{Regime-change timeline with breakpoints overlaid on outcomes and exposures}
 \label{fig:outlook-regime}
-\small\textit{Two-panel time series (120 periods) illustrates nonstationarity challenges. Panel A shows outcomes with three regime breaks (red dashed lines at periods 30, 60, 90). Regime 1: linear trend. Regime 2: slower growth. Regime 3: nonlinear dynamics. Regime 4: return to trend. Green shaded regions mark stable windows suitable for analysis. Breaks represent platform policy changes, algorithm updates, or macro shocks. Panel B shows time-varying treatment effect (orange line). Effect drifts across regimes: constant in Regime 1, increasing in Regime 2, declining in Regime 3, stabilising in Regime 4. Purple dotted line shows adaptive parameter tracking that updates in real time. Challenge: current methods assume stability or discrete known breaks. Platforms evolve continuously with latent breaks. Open problems include real-time adaptation, break detection integrated with factor dynamics, and robustness to shifting supports.}
+\small\textit{Two-panel time series (120 periods) illustrates structural instability challenges. Panel A shows outcomes with three regime breaks (red dashed lines at periods 30, 60, 90). Regime 1: linear trend. Regime 2: slower growth. Regime 3: nonlinear dynamics. Regime 4: return to trend. Green shaded regions mark stable windows suitable for analysis. Breaks represent platform policy changes, algorithm updates, or macro shocks. Panel B shows time-varying treatment effect (orange line). Effect drifts across regimes: constant in Regime 1, increasing in Regime 2, declining in Regime 3, stabilising in Regime 4. Purple dotted line shows adaptive parameter tracking that updates in real time. Challenge: current methods assume stability or discrete known breaks. Platforms evolve continuously with latent breaks. Open problems include real-time adaptation, break detection integrated with factor dynamics, and robustness to shifting supports.}
 \end{figure}
 
 \begin{figure}[htbp]
@@ -49,7 +49,7 @@ This chapter has surveyed the open problems in panel causal inference for market
 \textbf{Open problem} & \textbf{Current tools} & \textbf{Research gaps} & \textbf{Evaluation metrics} \\
 \midrule
 Interference at scale & Partial interference, buffers & Overlapping clusters, dense networks & Spillover detection power, scalability \\
-Nonstationarity & Break tests, time-varying factors & Real-time adaptation, latent breaks & Post-break coverage, regime detection \\
+Structural instability & Break tests, time-varying factors & Real-time adaptation, latent breaks & Post-break coverage, regime detection \\
 Adaptive experiments & Switchbacks, phased rollouts & Adaptivity + interference, sequential testing & Inference validity, regret bounds \\
 Method selection & Diagnostics, triangulation & Formal decision frameworks, benchmarks & Bias-variance trade-offs, robustness \\
 Distribution-free inference & Permutation, conformal & Staggered adoption, few clusters & Finite-sample coverage, computational cost \\
@@ -60,3 +60,11 @@ Privacy + federated & Aggregation, differential privacy & Federated DiD/SC, diag
 \bottomrule
 \end{tabularx}
 \end{table}
+
+\subsection*{Looking Forward}
+
+The open problems in Table~\ref{tab:outlook-open-problems} will not be solved quickly. Progress will come incrementally, through theoretical advances, computational innovations, and---perhaps most importantly---collaborations between researchers and practitioners who can access the data where these problems are most acute.
+
+We wrote this book to provide practitioners with the best available tools while being honest about their limitations. The methods work well in settings they were designed for: independent units, stable environments, binary treatments, accessible data. As marketing moves toward dense networks, adaptive platforms, and privacy-constrained measurement, we will need new methods. Until those methods arrive, we must use what we have thoughtfully, report results honestly, and acknowledge what remains unknown.
+
+The credibility of causal inference in marketing depends not on having perfect methods---we never will---but on practitioners who understand the methods' assumptions, apply them with care, and communicate their limitations. That is the mindset this book has sought to cultivate.
