@@ -5,21 +5,21 @@ This section provides a compact, reproducible protocol for conducting dynamic tr
 
 For estimation methods, see Section~\ref{sec:dynamics-estimation}. For identification, see Section~\ref{sec:dynamics-identification}. For diagnostics, see Section~\ref{sec:dynamics-diagnostics}. For inference, see Section~\ref{sec:dynamics-inference}.
 
-\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Box 10.2: Dynamic Effects Workflow Summary]
-\small
-\textbf{1. Define estimand:} Event-time effects, impulse responses, LRM, or half-life. Pre-specify window based on domain knowledge.
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Box 10.2: Dynamic Effects Workflow Summary]
 
-\textbf{2. Map support:} Plot treated and control units for each lag; bin sparse tails.
+\paragraph{1. Define estimand:} Event-time effects, impulse responses, LRM, or half-life. Pre-specify window based on domain knowledge.
 
-\textbf{3. Select estimator:} Event study (discrete), distributed-lag (continuous), or dynamic DiD (staggered).
+\paragraph{2. Map support:} Plot treated and control units for each lag; bin sparse tails.
 
-\textbf{4. Run pre-trend checks:} Estimate leads; interpret significant leads as anticipation or design violations.
+\paragraph{3. Select estimator:} Event study (discrete), distributed-lag (continuous), or dynamic DiD (staggered).
 
-\textbf{5. Report dynamic profile:} Event-time plot with uniform confidence bands; LRM and half-life with bootstrap or delta-method SE.
+\paragraph{4. Run pre-trend checks:} Estimate leads; interpret significant leads as anticipation or design violations.
 
-\textbf{6. Inference:} Cluster-robust SE; joint tests; multiple testing adjustments.
+\paragraph{5. Report dynamic profile:} Event-time plot with uniform confidence bands; LRM and half-life with bootstrap or delta-method SE.
 
-\textbf{7. Diagnostics:} Follow protocol in Section~\ref{sec:dynamics-diagnostics}; placebo tests; sensitivity checks.
+\paragraph{6. Inference:} Cluster-robust SE; joint tests; multiple testing adjustments.
+
+\paragraph{7. Diagnostics:} Follow protocol in Section~\ref{sec:dynamics-diagnostics}; placebo tests; sensitivity checks.
 \end{tcolorbox}
 
 \subsection*{Step 1: Define the Dynamic Estimand}
@@ -138,23 +138,23 @@ Report results for multiple specifications. Discuss most plausible based on diag
 \textbf{Provide replication materials:} Data, scripts, software versions.
 
 \begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Box 10.3: Dynamic Effects Checklist]
-\textbf{1. Define Estimand:} Specify $\theta_k$, $\beta_s$, LRM, or half-life. Pre-specify window.
+\paragraph{1. Define Estimand:} Specify $\theta_k$, $\beta_s$, LRM, or half-life. Pre-specify window.
 
-\textbf{2. Map Support:} Plot treated/control per event time. Flag sparse lags. Bin or restrict.
+\paragraph{2. Map Support:} Plot treated/control per event time. Flag sparse lags. Bin or restrict.
 
-\textbf{3. Select Estimator:} Event study, distributed-lag, or dynamic DiD. Justify choice.
+\paragraph{3. Select Estimator:} Event study, distributed-lag, or dynamic DiD. Justify choice.
 
-\textbf{4. Specify Leads/Lags:} Define windows. Specify reference category. Document rationale.
+\paragraph{4. Specify Leads/Lags:} Define windows. Specify reference category. Document rationale.
 
-\textbf{5. Pre-Trend Checks:} Estimate leads. Plot with CIs. Joint F-test. Diagnose if rejected.
+\paragraph{5. Pre-Trend Checks:} Estimate leads. Plot with CIs. Joint F-test. Diagnose if rejected.
 
-\textbf{6. Choose Inference:} Cluster-robust, two-way, HAC, or wild bootstrap. Document choice.
+\paragraph{6. Choose Inference:} Cluster-robust, two-way, HAC, or wild bootstrap. Document choice.
 
-\textbf{7. Report Paths:} Plot event-time or impulse response. Report LRM and half-life with SE.
+\paragraph{7. Report Paths:} Plot event-time or impulse response. Report LRM and half-life with SE.
 
-\textbf{8. Sensitivity:} Vary window, binning, lag length, functional form, control group.
+\paragraph{8. Sensitivity:} Vary window, binning, lag length, functional form, control group.
 
-\textbf{9. Document:} State assumptions. Discuss threats. Provide replication materials.
+\paragraph{9. Document:} State assumptions. Discuss threats. Provide replication materials.
 \end{tcolorbox}
 
 \subsection*{Summary Tables and Figures}

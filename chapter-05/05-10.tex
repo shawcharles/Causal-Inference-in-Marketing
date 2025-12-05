@@ -31,7 +31,7 @@ Seasonal promotion timing & $\theta_{-2}, \theta_{-1} \approx 0$ & No anticipati
 
 Ramp-up occurs when treatment effects grow over event time, typically because customer behaviour changes gradually (enrolment, habit formation, network effects).
 
-\textbf{Metrics.}
+\textbf{Metrics.}\footnote{These metrics are computed from point estimates. Standard errors for derived quantities such as ramp-up rate, effect multiplier, and half-life require the delta method or bootstrap; see Chapter~\ref{ch:inference} for details on propagating uncertainty through nonlinear transformations of regression coefficients.}
 \begin{itemize}
 \item \textit{Average per-period growth}: $\bar{g} = (\theta_K - \theta_0) / K$, where $K$ is the last event time in the window. Measures how much the effect grows per period on average.
 \item \textit{Time-to-maturity}: The event time $k^*$ at which $\theta_k$ stabilises (i.e., $|\theta_{k+1} - \theta_k| < \epsilon$ for subsequent periods). Indicates when the programme reaches steady state.
@@ -62,7 +62,7 @@ Decay occurs when treatment effects diminish over event time, typically because 
 
 \textbf{Metrics.}
 \begin{itemize}
-\item \textit{Half-life}: The event time $k_{1/2}$ at which the effect falls to half its peak value, i.e., $\theta_{k_{1/2}} = \theta_{\text{peak}} / 2$. Shorter half-lives indicate faster decay.
+\item \textit{Half-life}: The event time $k_{1/2}$ at which the effect falls to half its peak value, i.e., $\theta_{k_{1/2}} = \theta_{\text{peak}} / 2$. Shorter half-lives indicate faster decay. When the half-life falls between observed event times, linear interpolation yields $k_{1/2} = k_a + (k_b - k_a) \times (\theta_{k_a} - \theta_{\text{peak}}/2) / (\theta_{k_a} - \theta_{k_b})$, where $k_a$ and $k_b$ are the event times bracketing the half-life.
 \item \textit{Decay rate}: If effects decay exponentially, $\theta_k = \theta_0 \exp(-\lambda k)$, then $\lambda = -\log(\theta_1 / \theta_0)$ and half-life is $k_{1/2} = \log(2) / \lambda$.
 \item \textit{Persistence ratio}: $\theta_K / \theta_{\text{peak}}$, where $K$ is the end of the window. Values near 1 indicate persistence; values near 0 indicate transitory effects.
 \end{itemize}
@@ -79,11 +79,11 @@ $\hat{\theta}_k$ & 8.2 & 6.1 & 4.5 & 3.4 & 2.5 & 1.9 & 1.4 \\
 
 \begin{itemize}
 \item Peak effect: $\theta_0 = 8.2$
-\item Half-life: $\theta_k = 4.1$ occurs between $k=2$ and $k=3$; by interpolation, $k_{1/2} \approx 2.3$ periods
+\item Half-life: $\theta_k = 4.1$ occurs between $k=2$ and $k=3$; by linear interpolation, $k_{1/2} = 2 + (3-2) \times (4.5 - 4.1)/(4.5 - 3.4) \approx 2.4$ periods
 \item Persistence ratio: $1.4 / 8.2 = 0.17$ (only 17\% of peak effect remains at $k=6$)
 \end{itemize}
 
-\textbf{Decision Implication.} Short half-lives indicate that sustained investment is required to maintain brand salience. If $k_{1/2} = 2.3$ quarters, advertising effects largely dissipate within one year. Budget accordingly: one-time campaigns produce transitory effects; sustained presence requires ongoing investment.
+\textbf{Decision Implication.} Short half-lives indicate that sustained investment is required to maintain brand salience. If $k_{1/2} = 2.4$ quarters, advertising effects largely dissipate within one year. Budget accordingly: one-time campaigns produce transitory effects; sustained presence requires ongoing investment.
 
 \subsection*{Cumulative Effects and ROI}
 
@@ -93,15 +93,17 @@ The cumulative effect aggregates event-time coefficients over a window, providin
 \[
 \text{Cumulative effect} = \sum_{k=0}^{K} \theta_k.
 \]
-This sum aggregates the event-time effects over the post-treatment window. If the goal is to express the cumulative effect in outcome units (for example, total additional sales over the window), multiply by the number of units and periods as appropriate. For ROI calculations:
+This sum aggregates the event-time effects over the post-treatment window. If the goal is to express the cumulative effect in outcome units (for example, total additional sales over the window), multiply by the number of units and periods as appropriate.\footnote{For long evaluation horizons, effects at distant event times should be discounted. The net present value (NPV) of the event-time profile is $\sum_{k=0}^{K} \theta_k / (1+r)^k$, where $r$ is the per-period discount rate. For short horizons (one year or less), discounting has modest impact; for multi-year evaluations, NPV can be substantially lower than the simple cumulative sum.} For ROI calculations:
 \[
 \text{ROI} = \frac{\text{Cumulative effect} \times \text{Scale factor} - \text{Cost}}{\text{Cost}},
 \]
 where the scale factor converts the cumulative effect into monetary terms (for example, multiplying by the number of treated units and the value per unit of outcome).
 
-\textbf{Comparing Interventions.} Two interventions with the same immediate effect $\theta_0$ can have very different cumulative effects depending on their dynamics. A ramp-up profile produces high cumulative effects if ramp-up is fast and the long-run effect is large. A decay profile produces lower cumulative effects if decay is fast. A hysteresis profile produces the highest cumulative effects if the effect persists indefinitely.
+\textbf{Comparing Interventions.} Two interventions with the same immediate effect $\theta_0$ can have very different cumulative effects depending on their dynamics. A ramp-up profile produces high cumulative effects if ramp-up is fast and the long-run effect is large. A decay profile produces lower cumulative effects if decay is fast. A persistent-effect profile produces the highest cumulative effects if the effect persists indefinitely.
+
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Box 5.2: The Brand vs Performance Paradox]
-\textbf{Setting.} A retailer considers two ways to boost category revenue over the next year using the same budget per store:
+
+\paragraph{Setting:} A retailer considers two ways to boost category revenue over the next year using the same budget per store:
 \begin{itemize}
 \item \textit{Performance campaign (deep discounts)}: high-frequency discount promotions that generate immediate sales spikes but little persistence.
 \item \textit{Brand-building campaign}: sustained advertising that strengthens brand equity and shifts preferences gradually.
@@ -121,7 +123,7 @@ Brand-building & 1.0 & 3.0 & 5.0 & 6.0 \\
 
 The discount campaign has a much larger immediate effect ($\theta_0 = 8.0$) than the brand-building campaign ($\theta_0 = 1.0$), but their dynamics differ sharply.
 
-\textbf{Dynamic metrics.} For the discount campaign, the cumulative effect through $k=3$ is
+\paragraph{Dynamic metrics:} For the discount campaign, the cumulative effect through $k=3$ is
 \[
 \sum_{k=0}^3 \theta_k^{\text{disc}} = 8.0 + 2.0 + 0.5 - 1.0 = 9.5,
 \]
@@ -133,7 +135,7 @@ For the brand-building campaign, the cumulative effect through $k=3$ is
 \]
 with an effect multiplier of $15.0 / 1.0 = 15$. Evaluated only at $k=0$, the brand campaign appears weak; evaluated at maturity, it dominates on total incremental revenue and feeds into longer-run CLV and brand equity.
 
-\textbf{Measurement implication.} The \emph{brand vs performance paradox} is that short-run ROI evaluated at $k=0$ favours the performance campaign, while long-run cumulative ROI and CLV favour brand-building. Event-time metrics (effect multipliers, cumulative effects) make this trade-off explicit and highlight the need to align evaluation horizons with strategic objectives.
+\paragraph{Measurement implication:} The \emph{brand vs performance paradox} is that short-run ROI evaluated at $k=0$ favours the performance campaign, while long-run cumulative ROI and CLV favour brand-building. Event-time metrics (effect multipliers, cumulative effects) make this trade-off explicit and highlight the need to align evaluation horizons with strategic objectives.
 \end{tcolorbox}
 
 \subsection*{Summary: Event-Time Metrics Decision Guide}

@@ -143,18 +143,19 @@ Matrix Completion (this chapter) & Missing cells; unclear rank; need regularisat
 \end{tighttable}
 \end{table}
 
-\begin{tcolorbox}[title={Box 8.1: Factor Model Workflow Summary}, colback=gray!5, colframe=gray!75, fonttitle=\bfseries]
-\textbf{Design.} Specify the target estimand (ATT, unit-specific, or period-specific). Define treated and untreated cells. Choose IFE if rank is known and interpretation is desired; choose matrix completion if rank is unclear.
+\begin{tcolorbox}[title={Box 8.1: Factor Model Workflow Summary}, colback=green!5!white, colframe=green!50!black, fonttitle=\bfseries]
 
-\textbf{Estimation.} Select rank $R$ or penalty $\lambda$ using information criteria, scree plots, or cross-validation. Pre-specify the selection procedure. Estimate loadings and factors on untreated cells using principal components, iterated least squares, or nuclear-norm minimisation.
+\paragraph{Design:} Specify the target estimand (ATT, unit-specific, or period-specific). Define treated and untreated cells. Choose IFE if rank is known and interpretation is desired; choose matrix completion if rank is unclear.
 
-\textbf{Imputation and Aggregation.} Impute counterfactuals for treated cells. Compute treatment effects as observed minus imputed. Aggregate into ATT or event-time effects. Plot event-study profiles.
+\paragraph{Estimation:} Select rank $R$ or penalty $\lambda$ using information criteria, scree plots, or cross-validation. Pre-specify the selection procedure. Estimate loadings and factors on untreated cells using principal components, iterated least squares, or nuclear-norm minimisation.
 
-\textbf{Diagnostics.} Compute pre-treatment $R^2$. Assess factor stability (early vs late). Check residuals for autocorrelation and seasonality. Vary rank and assess sensitivity. Conduct leave-one-out analyses.
+\paragraph{Imputation and Aggregation:} Impute counterfactuals for treated cells. Compute treatment effects as observed minus imputed. Aggregate into ATT or event-time effects. Plot event-study profiles.
 
-\textbf{Inference.} Use block or wild bootstrap. Conduct placebo-in-time tests. Construct conformal intervals. Report 95\% confidence intervals.
+\paragraph{Diagnostics:} Compute pre-treatment $R^2$. Assess factor stability (early vs late). Check residuals for autocorrelation and seasonality. Vary rank and assess sensitivity. Conduct leave-one-out analyses.
 
-\textbf{Robustness.} Compare to SC and SDID. Document assumptions. Provide replication materials.
+\paragraph{Inference:} Use block or wild bootstrap. Conduct placebo-in-time tests. Construct conformal intervals. Report 95\% confidence intervals.
+
+\paragraph{Robustness:} Compare to SC and SDID. Document assumptions. Provide replication materials.
 \end{tcolorbox}
 \index{factor model|)}
 \index{matrix completion|)}

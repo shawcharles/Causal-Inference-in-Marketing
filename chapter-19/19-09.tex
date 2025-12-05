@@ -110,28 +110,28 @@ Computational reproducibility is necessary but not sufficient. A finding that is
 \subsection*{Reproducibility Checklist}
 
 \begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 19.9: Reproducibility Checklist]
-\textbf{Pipeline:}
+\paragraph{Pipeline:}
 \begin{itemize}
     \item Is the full ETL pipeline documented and version-controlled?
     \item Are transformations tested with unit tests?
     \item Are input data snapshots versioned and immutable?
 \end{itemize}
 
-\textbf{Pre-registration:}
+\paragraph{Pre-registration:}
 \begin{itemize}
     \item Was the analysis plan registered before accessing outcome data?
     \item Are estimand, design, sample, and diagnostics pre-specified?
     \item Are deviations from the pre-registered plan documented and justified?
 \end{itemize}
 
-\textbf{Environment:}
+\paragraph{Environment:}
 \begin{itemize}
     \item Are package versions pinned in requirements or lock files?
     \item Is the computational environment containerised or documented?
     \item Are random seeds set and recorded?
 \end{itemize}
 
-\textbf{Validation:}
+\paragraph{Validation:}
 \begin{itemize}
     \item Can an independent researcher regenerate results from snapshots and code?
     \item Do checksums on key outputs match across runs?

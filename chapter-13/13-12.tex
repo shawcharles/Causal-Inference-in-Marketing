@@ -91,7 +91,7 @@ Sparse DiD & Conditional parallel trends, no post-treatment controls, design ali
 \end{tighttable}
 \end{table}
 
-\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 13.1: High-Dimensional Controls Checklist]
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Box 13.1: High-Dimensional Controls Checklist]
 Practitioners should follow a systematic checklist to ensure high-dimensional control strategies are robust. First, define the estimand (ATE, ATT, or dose-response) and document the design providing identification. Next, decide on partialling strategies, choosing between within-transformation or factor methods based on data structure.
 
 Select a regulariser (lasso, elastic net, or group lasso) that matches the covariate structure. Implement blocked cross-validation to select penalties, ensuring unit-level or time-level blocking respects dependence. Apply double selection or DML, running lasso for both outcome and treatment models and taking the union of selected controls.

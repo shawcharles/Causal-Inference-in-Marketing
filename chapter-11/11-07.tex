@@ -101,28 +101,28 @@ Both & Outlier exclusion & Trim 5\%, 10\% of exposure distribution \\
 \end{table}
 
 \begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Diagnostic Workflow for Interference]
-\textbf{Step 1: Balance check.}
+\paragraph{Step 1: Balance check.}
 \begin{itemize}
 \item[$\square$] Compute pre-treatment exposure for all units.
 \item[$\square$] Test whether exposure is balanced across treatment groups.
 \item[$\square$] If imbalanced, consider stratification or matching on exposure.
 \end{itemize}
 
-\textbf{Step 2: Placebo test.}
+\paragraph{Step 2: Placebo test.}
 \begin{itemize}
 \item[$\square$] Among untreated units, regress outcome on exposure.
 \item[$\square$] If $\delta \neq 0$, spillovers are present; estimate spillover effects.
 \item[$\square$] If $\delta = 0$, consistent with SUTVA (but not conclusive).
 \end{itemize}
 
-\textbf{Step 3: Sensitivity analysis.}
+\paragraph{Step 3: Sensitivity analysis.}
 \begin{itemize}
 \item[$\square$] Re-estimate with alternative distance/network specifications.
 \item[$\square$] Re-estimate after trimming extreme exposures.
 \item[$\square$] Report range of estimates; discuss economic reasoning.
 \end{itemize}
 
-\textbf{Step 4: Report.}
+\paragraph{Step 4: Report.}
 \begin{itemize}
 \item[$\square$] Document exposure mapping used and alternatives considered.
 \item[$\square$] Report balance and placebo test results.

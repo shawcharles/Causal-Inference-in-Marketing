@@ -116,22 +116,22 @@ Decomposing CLV into these components clarifies the mechanism and informs interv
 
 \subsection*{Diagnostic Checklist}
 
-\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.11: CLV Attribution Diagnostic Checklist]
-\textbf{For Propensity Score Methods:}
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Box 18.11: CLV Attribution Diagnostic Checklist]
+\paragraph{For Propensity Score Methods:}
 \begin{itemize}
     \item Overlap: Check that all channels have positive probability for all covariate values. Trim extreme propensity scores.
     \item Balance: Report SMD for key covariates before and after weighting. Target $|\text{SMD}| < 0.1$.
     \item Sensitivity: Use Rosenbaum bounds or Oster's $\delta$ to assess robustness to unobserved confounding.
 \end{itemize}
 
-\textbf{For CLV Measurement:}
+\paragraph{For CLV Measurement:}
 \begin{itemize}
     \item Horizon: Report CLV at multiple horizons (6 months, 1 year, 2 years). Short horizons may miss channel effects; long horizons have more noise.
     \item Censoring: Account for customers who are still active (right-censoring). Use survival-based CLV models.
     \item Discounting: Report sensitivity to discount rate. High discount rates favour channels with early revenue.
 \end{itemize}
 
-\textbf{For Causal Interpretation:}
+\paragraph{For Causal Interpretation:}
 \begin{itemize}
     \item Placebo channels: Test for CLV differences between channels that should have no causal effect (e.g., two organic search variants).
     \item Mechanism: Decompose CLV into frequency, monetary value, and tenure. Which component drives the channel effect?

@@ -103,7 +103,8 @@ Posterior credible intervals quantify uncertainty. The hierarchical model reduce
 \subsection*{Lessons Learned}
 
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!50!black,title=Key Takeaways from Marketing Applications]
-\textbf{1. Match method to data structure:}
+
+\paragraph{1. Match method to data structure:}
 \begin{itemize}
 \item Multi-way structure (user $\times$ item $\times$ context) $\rightarrow$ Tensor completion.
 \item Outliers/stockouts $\rightarrow$ Robust MC.
@@ -111,28 +112,28 @@ Posterior credible intervals quantify uncertainty. The hierarchical model reduce
 \item Structural breaks $\rightarrow$ Time-varying models.
 \end{itemize}
 
-\textbf{2. Heterogeneity is the norm:}
+\paragraph{2. Heterogeneity is the norm:}
 \begin{itemize}
 \item Treatment effects vary by user segment, market, platform.
 \item Advanced methods reveal heterogeneity that standard methods mask.
 \item Report subgroup effects alongside overall ATT.
 \end{itemize}
 
-\textbf{3. Diagnostics are essential:}
+\paragraph{3. Diagnostics are essential:}
 \begin{itemize}
 \item Cross-validation validates the imputation model.
 \item Placebo tests assess pre-treatment fit.
 \item Sensitivity analyses assess robustness to specification choices.
 \end{itemize}
 
-\textbf{4. Quantify uncertainty:}
+\paragraph{4. Quantify uncertainty:}
 \begin{itemize}
 \item Report confidence/credible intervals, not just point estimates.
 \item Bayesian methods provide natural uncertainty quantification.
 \item Bootstrap provides frequentist CIs for non-Bayesian methods.
 \end{itemize}
 
-\textbf{5. Robust methods matter:}
+\paragraph{5. Robust methods matter:}
 \begin{itemize}
 \item Stockouts, data errors, and outliers are common in marketing data.
 \item Robust MC can change treatment effect estimates by 50\% (Case 2: 18\% vs 12\%).

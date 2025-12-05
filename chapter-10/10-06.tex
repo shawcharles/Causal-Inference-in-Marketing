@@ -113,28 +113,28 @@ For geometric ad-stock with $\text{LRM} = \beta_0 + \beta_1 / (1 - \delta)$:
 where $\nabla g = (1, (1-\delta)^{-1}, \beta_1 (1-\delta)^{-2})'$.
 \end{proposition}
 
-\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Reporting Checklist: Dynamic Inference]
-\textbf{Standard errors:}
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Reporting Checklist: Dynamic Inference]
+\paragraph{Standard errors:}
 \begin{itemize}
 \item[$\square$] Report cluster-robust SE clustered by unit (default).
 \item[$\square$] Use two-way clustering if common shocks plausible.
 \item[$\square$] Use wild cluster bootstrap if $N < 30$ clusters.
 \end{itemize}
 
-\textbf{Joint tests:}
+\paragraph{Joint tests:}
 \begin{itemize}
 \item[$\square$] Report joint test for pre-trends ($H_0: \theta_k = 0$ for $k < 0$).
 \item[$\square$] Report joint test for post-treatment effects ($H_0: \theta_k = 0$ for $k \geq 0$).
 \end{itemize}
 
-\textbf{Individual lags:}
+\paragraph{Individual lags:}
 \begin{itemize}
 \item[$\square$] Report unadjusted p-values for each lag.
 \item[$\square$] Note number of tests; interpret significance cautiously.
 \item[$\square$] Consider Romano-Wolf for formal FWER control.
 \end{itemize}
 
-\textbf{Summary statistics:}
+\paragraph{Summary statistics:}
 \begin{itemize}
 \item[$\square$] Report CI for LRM (using delta method or bootstrap).
 \item[$\square$] Report CI for half-life if estimated.

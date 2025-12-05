@@ -3,20 +3,20 @@
 
 The following protocol consolidates threat assessment, diagnostics, and sensitivity into a reportable workflow.
 
-\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 15.1: Threats-to-Validity Workflow Checklist]
-\textbf{Map threats.} Identify calendar effects, platform policy dates, algorithmic confounding sources, measurement error sources, spillover channels, and potential breaks for the specific marketing setting.
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Box 15.1: Threats-to-Validity Workflow Checklist]
+\paragraph{Map threats.} Identify calendar effects, platform policy dates, algorithmic confounding sources, measurement error sources, spillover channels, and potential breaks for the specific marketing setting.
 
-\textbf{Align estimand and design.} State the estimand (ATT, ATE, ADRF, etc.) and choose a design (DiD, event study, SC/SDID, factor, DML) that credibly identifies it given the threats. Document assumptions.
+\paragraph{Align estimand and design.} State the estimand (ATT, ATE, ADRF, etc.) and choose a design (DiD, event study, SC/SDID, factor, DML) that credibly identifies it given the threats. Document assumptions.
 
-\textbf{Document platform and calendar changes.} Maintain a timeline of policy updates, algorithm changes, and major calendar events. Flag windows where stability may be compromised.
+\paragraph{Document platform and calendar changes.} Maintain a timeline of policy updates, algorithm changes, and major calendar events. Flag windows where stability may be compromised.
 
-\textbf{Plan diagnostics ex ante.} Pre-specify pre-trend tests, overlap checks, leave-one-out diagnostics, and changepoint scans. Register these in a design document.
+\paragraph{Plan diagnostics ex ante.} Pre-specify pre-trend tests, overlap checks, leave-one-out diagnostics, and changepoint scans. Register these in a design document.
 
-\textbf{Choose robust inference.} Use wild cluster bootstrap or randomisation inference if $G$ is small. Account for serial and spatial dependence via clustering or HAC. Report finite-sample caveats.
+\paragraph{Choose robust inference.} Use wild cluster bootstrap or randomisation inference if $G$ is small. Account for serial and spatial dependence via clustering or HAC. Report finite-sample caveats.
 
-\textbf{Run sensitivity analyses.} Vary windows, donor sets, controls, and trimming rules. Report specification curves and bounded-effect analyses alongside main estimates. Assess sensitivity to measurement error and attribution rules.
+\paragraph{Run sensitivity analyses.} Vary windows, donor sets, controls, and trimming rules. Report specification curves and bounded-effect analyses alongside main estimates. Assess sensitivity to measurement error and attribution rules.
 
-\textbf{Report transparently.} Present main and sensitivity results with clear statements of assumptions, threats, diagnostics, and limitations. Include timelines and changepoint annotations. Link estimands to platform metrics where relevant.
+\paragraph{Report transparently.} Present main and sensitivity results with clear statements of assumptions, threats, diagnostics, and limitations. Include timelines and changepoint annotations. Link estimands to platform metrics where relevant.
 \end{tcolorbox}
 
 \begin{figure}[htbp]

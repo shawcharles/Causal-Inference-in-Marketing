@@ -54,10 +54,10 @@ where $\lambda > 0$ controls low-rank regularisation (as in Section~\ref{sec:fac
 
 The following algorithm provides a simple and computationally efficient approach.
 
-\begin{tcolorbox}[colback=blue!5!white,colframe=blue!50!black,title=Algorithm: Two-Step Covariate-Assisted Matrix Completion]
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Algorithm: Two-Step Covariate-Assisted Matrix Completion]
 \textbf{Input:} Outcomes $\{Y_{it}\}$, covariates $\{X_{it}\}$, untreated cells $\Omega$, treated cells $\mathcal{T}$.
 
-\textbf{Step 1: Estimate covariate effect.}
+\paragraph{Step 1: Estimate covariate effect:}
 \begin{enumerate}
 \item Regress $Y_{it}$ on $X_{it}$ using only untreated cells $(i,t) \in \Omega$:
 \[
@@ -66,7 +66,7 @@ The following algorithm provides a simple and computationally efficient approach
 \item Compute residuals: $\tilde{Y}_{it} = Y_{it} - X_{it}^\top \hat{\beta}$ for all $(i,t) \in \Omega$.
 \end{enumerate}
 
-\textbf{Step 2: Matrix completion on residuals.}
+\paragraph{Step 2: Matrix completion on residuals:}
 \begin{enumerate}
 \item Apply nuclear-norm regularised matrix completion to residuals $\{\tilde{Y}_{it}\}_{(i,t) \in \Omega}$:
 \[
@@ -75,7 +75,7 @@ The following algorithm provides a simple and computationally efficient approach
 \item Select $\lambda$ by cross-validation (Section~\ref{sec:factor-tuning}).
 \end{enumerate}
 
-\textbf{Step 3: Impute counterfactuals.}
+\paragraph{Step 3: Impute counterfactuals:}
 \begin{enumerate}
 \item For each treated cell $(i,t) \in \mathcal{T}$, impute:
 \[
@@ -84,10 +84,10 @@ The following algorithm provides a simple and computationally efficient approach
 \item Compute treatment effects: $\hat{\tau}_{it} = Y_{it} - \hat{Y}_{it}(0)$.
 \end{enumerate}
 
-\textbf{Output:} Counterfactuals $\{\hat{Y}_{it}(0)\}_{(i,t) \in \mathcal{T}}$ and treatment effects $\{\hat{\tau}_{it}\}$.
+\paragraph{Output:} Counterfactuals $\{\hat{Y}_{it}(0)\}_{(i,t) \in \mathcal{T}}$ and treatment effects $\{\hat{\tau}_{it}\}$.
 \end{tcolorbox}
 
-\paragraph{Two-step vs joint estimation.} Alternatively, estimate $\beta$ and $\mathbf{L}$ jointly via the nuclear-norm-penalised objective (see Chapter~\ref{ch:factor}). Joint estimation can improve efficiency but increases computational cost. The two-step approach is adequate when covariates explain most variation (high $R^2$ in Step 1). Joint estimation may improve efficiency when the low-rank component is important (low $R^2$).
+\paragraph{Two-step vs joint estimation:} Alternatively, estimate $\beta$ and $\mathbf{L}$ jointly via the nuclear-norm-penalised objective (see Chapter~\ref{ch:factor}). Joint estimation can improve efficiency but increases computational cost. The two-step approach is adequate when covariates explain most variation (high $R^2$ in Step 1). Joint estimation may improve efficiency when the low-rank component is important (low $R^2$).
 
 \subsection*{Identification with Covariates}
 

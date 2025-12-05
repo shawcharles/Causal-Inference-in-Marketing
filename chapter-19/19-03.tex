@@ -56,28 +56,28 @@ In practice, identifiers are often missing or incomplete. A fraction of transact
 \subsection*{Identity and Linkage Checklist}
 
 \begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 19.1: Identity and Linkage Checklist]
-\textbf{Before joining data:}
+\paragraph{Before joining data:}
 \begin{itemize}
     \item Are keys stable over the analysis period? Document any migrations or resets.
     \item What is the linkage rate? Report the fraction of records successfully linked.
     \item What is the false positive/negative rate for probabilistic matches?
 \end{itemize}
 
-\textbf{For cross-device analysis:}
+\paragraph{For cross-device analysis:}
 \begin{itemize}
     \item What is the opt-in rate for tracking consent?
     \item How does the identity graph handle unlinked devices?
     \item What fraction of treatment-to-outcome paths are observable?
 \end{itemize}
 
-\textbf{For leakage prevention:}
+\paragraph{For leakage prevention:}
 \begin{itemize}
     \item Are all covariates measured before treatment assignment?
     \item Does cross-validation respect temporal order?
     \item Are any features post-treatment mediators?
 \end{itemize}
 
-\textbf{For missing identifiers:}
+\paragraph{For missing identifiers:}
 \begin{itemize}
     \item What is the missing rate for key identifiers?
     \item Is missingness plausibly MCAR, MAR, or MNAR?

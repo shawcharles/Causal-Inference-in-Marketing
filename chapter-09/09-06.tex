@@ -53,12 +53,13 @@ where $\tau^{(k)}$ denotes the $k$-th order statistic. Under regularity conditio
 
 Posterior inference proceeds via Markov Chain Monte Carlo (MCMC). The following Gibbs sampler provides a practical implementation.
 
-\begin{tcolorbox}[colback=blue!5!white,colframe=blue!50!black,title=Algorithm: Gibbs Sampler for Bayesian Matrix Completion]
-\textbf{Input:} Observed data $\{Y_{it}\}_{(i,t) \in \Omega}$, maximum rank $R_{\max}$, hyperparameters $(\nu_\lambda, \Psi_\lambda, \nu_f, \Psi_f, a_\sigma, b_\sigma, a_\tau, b_\tau)$, iterations $S$, burn-in $B$.
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Algorithm: Gibbs Sampler for Bayesian Matrix Completion]
 
-\textbf{Initialise:} Set $\lambda_i^{(0)}$, $f_t^{(0)}$, $\tau_r^{(0)}$, $\sigma^{2(0)}$ using SVD on observed data.
+\paragraph{Input:} Observed data $\{Y_{it}\}_{(i,t) \in \Omega}$, maximum rank $R_{\max}$, hyperparameters $(\nu_\lambda, \Psi_\lambda, \nu_f, \Psi_f, a_\sigma, b_\sigma, a_\tau, b_\tau)$, iterations $S$, burn-in $B$.
 
-\textbf{For each iteration $s = 1, \ldots, S$:}
+\paragraph{Initialise:} Set $\lambda_i^{(0)}$, $f_t^{(0)}$, $\tau_r^{(0)}$, $\sigma^{2(0)}$ using SVD on observed data.
+
+\paragraph{For each iteration $s = 1, \ldots, S$:}
 \begin{enumerate}
 \item \textbf{Sample loadings:} For each unit $i$, sample
 \[
@@ -89,7 +90,7 @@ f_t^{(s)} | \mathbf{Y}, \boldsymbol{\lambda}^{(s)}, \sigma^{2(s-1)} \sim \mathca
 \item \textbf{Compute treatment effect:} $\tau^{(s)}_{\text{ATT}} = \frac{1}{|\mathcal{T}|} \sum_{(i,t) \in \mathcal{T}} (Y_{it} - \hat{Y}_{it}^{(s)}(0))$.
 \end{enumerate}
 
-\textbf{Output:} Posterior draws $\{\tau^{(s)}_{\text{ATT}}\}_{s=B+1}^S$, credible intervals, effective rank $\hat{R}_{\text{eff}}$.
+\paragraph{Output:} Posterior draws $\{\tau^{(s)}_{\text{ATT}}\}_{s=B+1}^S$, credible intervals, effective rank $\hat{R}_{\text{eff}}$.
 \end{tcolorbox}
 
 \paragraph{Variational alternative.} Variational inference approximates the posterior with a factorised Gaussian, minimising the KL divergence. Variational methods are faster than MCMC but provide less accurate uncertainty quantification. Use variational methods for exploratory analysis; use MCMC for final inference.

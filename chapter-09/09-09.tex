@@ -84,42 +84,42 @@ where $h_{it}$ is the leverage of cell $(i,t)$. Cells with $|\text{DFFITS}_{it}|
 \subsection*{Diagnostic Checklist}
 
 \begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Diagnostic Checklist for Matrix Completion]
-\textbf{Before estimation:}
+\paragraph{Before estimation:}
 \begin{itemize}
 \item[$\square$] Inspect data for obvious outliers and missing patterns.
 \item[$\square$] Compute scree plot and eigenvalue ratio test to determine rank.
 \item[$\square$] Check covariate distributions for anomalies.
 \end{itemize}
 
-\textbf{Rank selection:}
+\paragraph{Rank selection:}
 \begin{itemize}
 \item[$\square$] Run eigenvalue ratio test (formal p-values).
 \item[$\square$] Perform cross-validation for rank selection.
 \item[$\square$] Assess stability across subsamples.
 \end{itemize}
 
-\textbf{After estimation:}
+\paragraph{After estimation:}
 \begin{itemize}
 \item[$\square$] Plot residual distribution; check for heavy tails.
 \item[$\square$] Compute Cook's distance and DFFITS for influential cells.
 \item[$\square$] Compare robust vs standard MC estimates.
 \end{itemize}
 
-\textbf{Covariates:}
+\paragraph{Covariates:}
 \begin{itemize}
 \item[$\square$] Compute variable importance (drop-one $R^2$ decrease).
 \item[$\square$] Examine partial dependence plots for nonlinearity.
 \item[$\square$] Test sensitivity to covariate specification.
 \end{itemize}
 
-\textbf{Computation:}
+\paragraph{Computation:}
 \begin{itemize}
 \item[$\square$] Verify convergence (flat objective trajectory).
 \item[$\square$] Check solution stability across initialisations.
 \item[$\square$] Quantify approximation error if using randomised methods.
 \end{itemize}
 
-\textbf{Reporting:}
+\paragraph{Reporting:}
 \begin{itemize}
 \item[$\square$] Report chosen rank and justification.
 \item[$\square$] Report influential cells identified and how handled.

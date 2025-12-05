@@ -15,6 +15,12 @@ The power of pre-trend tests is limited, as discussed in Section~\ref{sec:event-
 
 Placebo-in-time tests apply the event-study logic to pre-treatment periods only, treating an earlier period as if it were the treatment period. For example, if treatment begins in period five and data are available from period one, a placebo test might treat period three as the "treatment" period and estimate event-time effects using periods one and two as the baseline. If the placebo event-study shows non-zero "effects," this indicates pre-trends or other violations of parallel trends. If the placebo event-study shows near-zero effects, this supports parallel trends. Like pre-trend tests, placebo-in-time tests have limited power: a null result provides supportive but not definitive evidence.
 
+\subsection*{Sensitivity to Parallel Trends Violations}
+
+When pre-trend tests pass but uncertainty about parallel trends remains, sensitivity analysis provides a formal framework for assessing robustness. Rambachan--Roth bounds \citep{rambachan2023more} specify a class of plausible violations of parallel trends and compute bounds on the treatment effect that are valid under all violations in the specified class. The key parameter $\bar{M}$ controls how much the post-treatment trend can differ from the pre-treatment trend. If conclusions are robust to plausible violations (that is, if the bounds exclude zero even under the worst-case violation), the analysis is credible. If conclusions are sensitive (that is, if the bounds include zero under mild violations), the analyst should acknowledge the uncertainty.
+
+Implementation via the \texttt{honestDiD} package in R makes this analysis straightforward: specify the event-study estimates and variance-covariance matrix, choose the class of violations (for example, relative magnitudes allowing post-treatment trends to differ from pre-treatment trends by at most a factor $\bar{M}$), and compute the resulting confidence intervals. Reporting these bounds alongside standard event-study estimates provides transparency about the sensitivity of conclusions to parallel trends assumptions. See Chapter~\ref{ch:design-diagnostics} for detailed implementation guidance.
+
 \subsection*{Support and Sensitivity Analyses}
 
 Support and overlap checks by event time $k$ assess whether estimates at extreme event times are based on adequate data. Plot the sample size, the number of cohorts contributing, or the effective sample size (accounting for weights and clustering) as a function of $k$. Flag event times where support is thin or where only a single cohort contributes. There is no universal threshold for ``thin'' support, but practical guidance suggests that fewer than 30 observations per event time yield unreliable point estimates, and fewer than 2 cohorts contributing means the estimate reflects a single cohort's experience and may not generalise. Conclusions about effects at thin-support event times should be tempered. Sensitivity analyses that exclude extreme event times provide evidence on robustness.
@@ -65,7 +71,9 @@ This box summarises the key diagnostics for event-study credibility. For the ful
 
 \textit{Pre-trend checks}: Test joint significance of $\theta_k$ for $k < -1$; plot pre-treatment coefficients; conduct placebo-in-time test. Remember: pre-trend tests have limited power \citep{roth2022pretest}---supplement with visual inspection.
 
-\textit{Support checks}: Report observations and cohorts by event time $k$. Flag thin support ($<30$ obs, single cohort, or effective $N < \sqrt{N}$). Bin extreme event times if needed.
+\textit{Sensitivity to parallel trends}: Compute Rambachan--Roth bounds \citep{rambachan2023more} using the \texttt{honestDiD} package to assess robustness to plausible violations.
+
+\textit{Support checks}: Report observations and cohorts by event time $k$. Flag thin support (fewer than 30 observations or fewer than 2 cohorts contributing). Bin extreme event times if needed.
 
 \textit{Sensitivity analyses}: Leave-one-cohort-out, leave-one-time-out, vary control set (never-treated vs not-yet-treated), vary window and binning, and construct specification curve across estimators.
 

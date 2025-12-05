@@ -146,8 +146,8 @@ For ride-hailing with high-frequency data, include hour-of-day and day-of-week f
 
 \subsection*{Diagnostic Checklist}
 
-\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.12: Dynamic Pricing Diagnostic Checklist]
-\textbf{For Algorithmic RDD:}
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Box 18.12: Dynamic Pricing Diagnostic Checklist]
+\paragraph{For Algorithmic RDD:}
 \begin{itemize}
     \item Discontinuity verification: Confirm that price actually jumps at the threshold. Plot price against the running variable.
     \item Manipulation: Test for bunching of observations just below the threshold (e.g., strategic booking timing).
@@ -155,14 +155,14 @@ For ride-hailing with high-frequency data, include hour-of-day and day-of-week f
     \item Bandwidth sensitivity: Report estimates at 0.5×, 1×, and 2× optimal bandwidth.
 \end{itemize}
 
-\textbf{For IV:}
+\paragraph{For IV:}
 \begin{itemize}
     \item First-stage strength: Target $F > 10$. Fuel cost instruments may be weak for short time series.
     \item Exclusion restriction: Argue why the instrument affects demand only through price.
     \item Overidentification: If multiple instruments, report Hansen J-test.
 \end{itemize}
 
-\textbf{For Spatial Dependence:}
+\paragraph{For Spatial Dependence:}
 \begin{itemize}
     \item Clustering: Cluster at origin-destination-time or city-hour level.
     \item Driscoll-Kraay: Use if cross-sectional dependence is pervasive.

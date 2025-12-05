@@ -8,42 +8,42 @@ The workflow is iterative, not strictly linear. Diagnostics at later stages ofte
 \subsection*{End-to-End Workflow}
 
 \begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 19.10: Data–Measurement–Platforms Workflow Checklist]
-\textbf{Stage 1: Source Inventory}
+\paragraph{Stage 1: Source Inventory}
 \begin{itemize}
     \item List all data inputs (platform logs, scanner data, CRM, geo/mobility).
     \item Define primary and foreign keys that link sources (Section~\ref{sec:identity-linking}).
     \item Document coverage gaps and missingness patterns (Section~\ref{sec:missing-measurement}).
 \end{itemize}
 
-\textbf{Stage 2: Temporal Alignment}
+\paragraph{Stage 2: Temporal Alignment}
 \begin{itemize}
     \item Standardise on ISO weeks or fiscal periods (Section~\ref{sec:transformations}).
     \item Specify seasonality controls (week-of-year, holiday indicators).
     \item Verify temporal ordering to prevent leakage (Assumption~\ref{assump:data-no-leakage}).
 \end{itemize}
 
-\textbf{Stage 3: Metric-Estimand Alignment}
+\paragraph{Stage 3: Metric-Estimand Alignment}
 \begin{itemize}
     \item Map platform metrics to econometric estimands (Section~\ref{sec:platform-metrics}).
     \item Construct exposure/dose variables from raw impressions (Section~\ref{sec:transformations}).
     \item Validate platform metrics against external data (Section~\ref{sec:validation-reconciliation}).
 \end{itemize}
 
-\textbf{Stage 4: Policy Documentation}
+\paragraph{Stage 4: Policy Documentation}
 \begin{itemize}
     \item Document attribution windows and conversion definitions.
     \item Maintain changelogs for platform policy changes (Section~\ref{sec:privacy-governance}).
     \item Flag break dates and restrict analysis to stable windows.
 \end{itemize}
 
-\textbf{Stage 5: Imperfection Handling}
+\paragraph{Stage 5: Imperfection Handling}
 \begin{itemize}
     \item Classify missingness as MCAR, MAR, or MNAR (Section~\ref{sec:missing-measurement}).
     \item Apply design-consistent imputation or matrix completion.
     \item Bound measurement error through validation studies.
 \end{itemize}
 
-\textbf{Stage 6: Reconciliation and Governance}
+\paragraph{Stage 6: Reconciliation and Governance}
 \begin{itemize}
     \item Compare estimates across methods (DiD, SC, DML) (Section~\ref{sec:validation-reconciliation}).
     \item Enforce version control, snapshotting, audit trails, and data contracts (Section~\ref{sec:pipelines-reproducibility}).

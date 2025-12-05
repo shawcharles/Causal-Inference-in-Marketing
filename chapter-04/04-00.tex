@@ -8,15 +8,38 @@
 
 In this chapter, we develop the DiD framework from its canonical form through to modern methods for staggered adoption. We begin with the canonical design, establishing the parallel trends assumption and the potential outcomes framework. We then define estimands for staggered adoption -- cohort-time effects $\tau(g,t)$ and event-time effects -- and explain the negative weighting problem in two-way fixed effects. Modern estimators from Callaway and Sant'Anna, Sun and Abraham, and others provide solutions, and we show how to implement them, conduct diagnostics, and assess robustness. Throughout, we emphasise practical guidance for marketing applications: how to define estimands that align with business questions, how to diagnose assumption violations, how to choose among competing estimators, and how to report results transparently. Chapter~\ref{ch:event} extends these methods to event-study designs that trace dynamic treatment paths and test for anticipation effects.
 
-\begin{tcolorbox}[title=Notation Guide for Dynamic and Heterogeneous Effects]
-\small
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Notation Guide for Dynamic and Heterogeneous Effects]
+
 This chapter uses the notation established in Chapter~\ref{ch:frameworks}:
+
+\paragraph{Core notation:}
 \begin{itemize}[leftmargin=*, nosep]
   \item $G_i \in \{1, 2, \ldots, T, \infty\}$: Adoption period for unit $i$ ($\infty$ = never treated)
   \item $D_{it} = \mathbf{1}\{t \geq G_i\}$: Treatment indicator (1 if unit $i$ is treated by period $t$)
-  \item $\tau(g,t) = \mathbb{E}[Y_{it}(1) - Y_{it}(0) \mid G_i = g]$: Cohort-time ATT for cohort $g$ in period $t$
+  \item $\tau(g,t) = \mathbb{E}[Y_{it}(1) - Y_{it}(0) \mid G_i = g]$: Cohort-time ATT for cohort $g$ in period $t \geq g$
   \item $\theta_k = \sum_{g} \omega_{g,k} \tau(g, g+k)$: Event-time effect at relative time $k = t - G_i$
   \item $\text{LRM} = \sum_{k \geq 0} \theta_k$: Long-run multiplier (cumulative effect)
 \end{itemize}
-Pre-treatment periods have $k < 0$ (leads); post-treatment periods have $k \geq 0$ (lags). We normalise $\theta_{-1} = 0$.
+
+\paragraph{Comparison groups:}
+\begin{itemize}[leftmargin=*, nosep]
+  \item \textit{Never-treated}: Units with $G_i = \infty$ (never adopt during sample window)
+  \item \textit{Not-yet-treated}: Units with $G_i > t$ (will adopt later but currently untreated)
+  \item Callaway-Sant'Anna uses not-yet-treated or never-treated; Sun-Abraham uses last-treated cohort as reference
+\end{itemize}
+
+\paragraph{Aggregation weights $\omega_{g,k}$:}
+\begin{itemize}[leftmargin=*, nosep]
+  \item Cohort-size weights: $\omega_{g,k} \propto n_g$ (number of units in cohort $g$)
+  \item Equal weights: $\omega_{g,k} = 1/|\mathcal{G}_k|$ where $\mathcal{G}_k$ is the set of cohorts observed at event-time $k$
+  \item \textbf{TWFE trap}: Traditional two-way fixed effects implicitly uses weights that can be \textit{negative} when effects are heterogeneous, causing already-treated units to serve as ``controls'' for later-treated units
+\end{itemize}
+
+\paragraph{Overall ATT aggregation:}
+\[
+\tau^{\text{ATT}} = \sum_{g < \infty} \sum_{t \geq g} w_{gt} \tau(g,t), \quad \text{where } \sum_{g,t} w_{gt} = 1
+\]
+Different weighting schemes answer different questions: cohort-size weights emphasise large cohorts; calendar-time weights emphasise recent periods; equal weights treat all $(g,t)$ cells symmetrically.
+
+Pre-treatment periods have $k < 0$ (leads); post-treatment periods have $k \geq 0$ (lags). We normalise $\theta_{-1} = 0$. Pre-trend coefficients $\theta_k$ for $k < -1$ should be statistically indistinguishable from zero if parallel trends holds.
 \end{tcolorbox}

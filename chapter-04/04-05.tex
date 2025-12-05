@@ -96,7 +96,7 @@ Choosing among these estimators requires matching the method to the data structu
 
 \paragraph{When to Use Sun--Abraham} Use SA when event-time effects $\theta_k$ are the primary estimand and you want a clean event-study plot. SA is particularly effective when cohorts are reasonably balanced in size and when the pre-treatment period is sufficient to assess pre-trends. SA integrates naturally with standard regression workflows.
 
-\paragraph{When to Use dCdH} Use dCdH for diagnostics, not as your primary estimator. Run dCdH to understand what fraction of TWFE variation comes from forbidden comparisons. As discussed in Section~\ref{sec:twfe-pitfalls}, a useful rule of thumb is that if more than 20\% of TWFE weight comes from forbidden comparisons (already-treated vs newly treated), treat TWFE with suspicion and prefer CS or SA. If dCdH reveals that most TWFE weight comes from valid comparisons (treated vs never-treated or not-yet-treated), TWFE may be acceptable despite its theoretical problems.
+\paragraph{When to Use dCdH} Use dCdH for diagnostics, not as your primary estimator. Run dCdH to understand what fraction of TWFE variation comes from forbidden comparisons. As discussed in Section~\ref{sec:twfe-pitfalls}, a useful rule of thumb is that if more than 20\% of TWFE weight comes from forbidden comparisons (already-treated vs newly treated), treat TWFE with suspicion and prefer CS or SA. This threshold is a practical heuristic rather than a formal statistical criterion. If dCdH reveals that most TWFE weight comes from valid comparisons (treated vs never-treated or not-yet-treated), TWFE may be acceptable despite its theoretical problems.
 
 \paragraph{When to Use BJS} Use BJS when parallel trends is implausible but a factor structure is credible -- for example, when treated and control units are subject to common industry shocks with differential exposure. BJS requires a sufficiently long pre-treatment period (at least 5-10 periods) to estimate factors reliably. Avoid BJS with short panels.
 
@@ -157,4 +157,4 @@ Borusyak--Jaravel--Spiess (BJS) & Overall ATT and related aggregates & Untreated
 \end{tabular}
 \end{table}
 
-These modern estimators represent a substantial advance over TWFE, providing credible estimates under heterogeneity while maintaining transparency about assumptions and aggregation choices. The next section develops event-study specifications that complement these estimators by tracing dynamic treatment paths.
+These modern estimators represent a substantial advance over TWFE, providing credible estimates under heterogeneity while maintaining transparency about assumptions and aggregation choices. For a comprehensive empirical comparison of these methods, see \citet{roth2023s}, who evaluate performance across a range of data-generating processes. The next section develops event-study specifications that complement these estimators by tracing dynamic treatment paths.

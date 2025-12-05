@@ -112,19 +112,18 @@ MMM reliability depends on input data quality. Platform-reported spend may not r
 \end{remark}
 
 \begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.6: MMM Diagnostic Checklist]
-\textbf{1. In-sample fit:} Report $R^2$ and MAPE. Poor fit suggests missing variables or misspecified dynamics.
+\paragraph{1. In-sample fit:} Report $R^2$ and MAPE. Poor fit suggests missing variables or misspecified dynamics.
+\paragraph{2. Out-of-sample validation:} Hold out the final 10--20\% of periods. Compare predicted vs. actual sales. Large errors indicate overfitting or structural breaks.
 
-\textbf{2. Out-of-sample validation:} Hold out the final 10--20\% of periods. Compare predicted vs. actual sales. Large errors indicate overfitting or structural breaks.
+\paragraph{3. Coefficient plausibility:} Check that elasticities are in plausible ranges. TV elasticities above 0.3 or negative elasticities for major channels warrant scrutiny.
 
-\textbf{3. Coefficient plausibility:} Check that elasticities are in plausible ranges. TV elasticities above 0.3 or negative elasticities for major channels warrant scrutiny.
+\paragraph{4. Experimental calibration:} Compare MMM-implied lift to geo-experiment lift for channels with experimental estimates. Discrepancies exceeding 50\% suggest confounding.
 
-\textbf{4. Experimental calibration:} Compare MMM-implied lift to geo-experiment lift for channels with experimental estimates. Discrepancies exceeding 50\% suggest confounding.
+\paragraph{5. Adstock and saturation stability:} Re-estimate with alternative $\lambda_c$ and $K_c$ values. Large sensitivity indicates weak identification of dynamics.
 
-\textbf{5. Adstock and saturation stability:} Re-estimate with alternative $\lambda_c$ and $K_c$ values. Large sensitivity indicates weak identification of dynamics.
+\paragraph{6. Residual diagnostics:} Check for autocorrelation (Durbin-Watson, Ljung-Box) and heteroskedasticity. Correlated residuals bias standard errors.
 
-\textbf{6. Residual diagnostics:} Check for autocorrelation (Durbin-Watson, Ljung-Box) and heteroskedasticity. Correlated residuals bias standard errors.
-
-\textbf{7. Counterfactual reasonableness:} Simulate a 50\% budget cut for each channel. Do the implied sales declines match business intuition and experimental evidence?
+\paragraph{7. Counterfactual reasonableness:} Simulate a 50\% budget cut for each channel. Do the implied sales declines match business intuition and experimental evidence?
 \end{tcolorbox}
 
 \subsection*{Case Study: Brand Equity as a Dynamic Stock}
@@ -154,7 +153,8 @@ Under standard discrete-choice foundations, the brand equity index can be interp
 linking dynamic advertising investment to a steady-state willingness-to-pay premium. In practice, parameters $(\lambda_b, \rho_b, \kappa_b, \theta, \beta_p)$ can be estimated using panel data on prices, quantities, and advertising, with experimental or quasi-experimental variation in spend anchoring $\kappa_b$ and $\theta$. This case study treats brand equity not as a vague intangible but as a measurable stock that mediates between marketing actions and long-run pricing power. The static demand-based brand premium model in Chapter~\ref{ch:high-dim}, Section~\ref{sec:hd-marketing}, can be viewed as taking $B_{bt}$ as given and inferring the implied willingness-to-pay premium at a point in time.
 
 \begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.7: The Brand vs Performance Paradox in Budget Allocation]
-\textbf{Setting.} Extend the brand-stock model to include a short-lived performance channel $P$ (for example, paid search or retargeting). Let $A^B_t$ and $A^P_t$ denote adstocked brand and performance spend for a focal brand, and let $B_t$ be the brand equity stock evolving as
+
+  \paragraph{Setting.} Extend the brand-stock model to include a short-lived performance channel $P$ (for example, paid search or retargeting). Let $A^B_t$ and $A^P_t$ denote adstocked brand and performance spend for a focal brand, and let $B_t$ be the brand equity stock evolving as
 \[
   B_t = \rho B_{t-1} + \kappa A^B_t + u_t,
 \]
@@ -164,24 +164,25 @@ while log demand follows
 \]
 The performance channel $A^P_t$ generates strong contemporaneous response $\beta_P$ but little persistence, whereas brand spend $A^B_t$ feeds into the stock $B_t$ and, via $\theta$, into long-run sales and willingness to pay.
 
-\textbf{Estimated dynamics.} Suppose MMM and dynamic panel estimates imply:
+\paragraph{Estimated dynamics.} Suppose MMM and dynamic panel estimates imply:
 \begin{itemize}
 \item Short-run elasticity of performance spend: $\beta_P = 0.12$, with long-run multiplier $\text{LRM}_P \approx 1.1$ (little carryover).
 \item Short-run elasticity of brand spend via $B_t$: small on impact, but long-run multiplier $\text{LRM}_B \approx 3.5$ once $B_t$ reaches steady state.
 \end{itemize}
 
-\textbf{Budget experiment.} With a fixed budget $M$ per period, compare two steady-state policies:
+\paragraph{Budget experiment.} With a fixed budget $M$ per period, compare two steady-state policies:
 \begin{itemize}
 \item \emph{Performance-heavy}: $0.8M$ to $A^P_t$, $0.2M$ to $A^B_t$. High immediate sales response, but modest contribution to $B_t$ and to the long-run brand premium $\Delta p_b$.
 \item \emph{Brand-heavy}: $0.2M$ to $A^P_t$, $0.8M$ to $A^B_t$. Lower short-run incremental sales, but much higher steady-state $B_t$ and thus higher long-run revenue and pricing power.
 \end{itemize}
 Evaluated over a one-week or one-month horizon, the performance-heavy mix can exhibit superior ROI because $\beta_P$ dominates. Evaluated over a one-year horizon, the brand-heavy mix can dominate once the contribution of $B_t$ to both quantity and the brand premium $\Delta p_b$ is accounted for.
 
-\textbf{Measurement implication.} The \emph{brand vs performance paradox} arises when MMM or attribution focuses on short-run conversions or revenue and ignores the stock $B_t$ and induced price premiums. Embedding brand equity as a state variable in MMM, and reporting both short-run and long-run elasticities and multipliers by channel, allows budget decisions to balance immediate ROI against the slower accumulation of brand value.
+\paragraph{Measurement implication.} The \emph{brand vs performance paradox} arises when MMM or attribution focuses on short-run conversions or revenue and ignores the stock $B_t$ and induced price premiums. Embedding brand equity as a state variable in MMM, and reporting both short-run and long-run elasticities and multipliers by channel, allows budget decisions to balance immediate ROI against the slower accumulation of brand value.
 \end{tcolorbox}
 
-\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.8: Joe Sixpack and Lifetime Brand Exposure]
-\textbf{Setting.} Consider Joe Sixpack choosing beer in a supermarket. Any given Budweiser ad this week has a small immediate effect on his purchase probability, but the \emph{cumulative} effect of years of Budweiser advertising makes him more likely to choose Bud over store brands. In the brand-stock model, Joe's latent predisposition is summarised by a brand equity stock $B_t$ that evolves as
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Box 18.8: Joe Sixpack and Lifetime Brand Exposure]
+
+\paragraph{Setting.} Consider Joe Sixpack choosing beer in a supermarket. Any given Budweiser ad this week has a small immediate effect on his purchase probability, but the \emph{cumulative} effect of years of Budweiser advertising makes him more likely to choose Bud over store brands. In the brand-stock model, Joe's latent predisposition is summarised by a brand equity stock $B_t$ that evolves as
 \[
   B_t = \rho B_{t-1} + \kappa A_t + u_t,
 \]
@@ -191,11 +192,11 @@ where $A_t$ is adstocked Budweiser exposure in Joe's market, $\rho$ is the persi
 \]
 where $s_t$ is Budweiser's share, $P_t$ is price, and $X_t$ collects promotions and competition.
 
-\textbf{Lifetime effects in the model.} Under a roughly constant advertising schedule $A_t = \bar{A}$, the brand stock converges to a steady state $B^* = \kappa \bar{A} / (1 - \rho)$. A brand that has advertised heavily for decades maintains a high $\bar{A}$ and thus a high steady-state $B^*$; a brand that has advertised sparingly has a lower $\bar{A}$ and $B^*$. The \emph{lifetime} effect of Budweiser advertising on Joe's choice is captured by the difference in steady states:
+\paragraph{Lifetime effects in the model.} Under a roughly constant advertising schedule $A_t = \bar{A}$, the brand stock converges to a steady state $B^* = \kappa \bar{A} / (1 - \rho)$. A brand that has advertised heavily for decades maintains a high $\bar{A}$ and thus a high steady-state $B^*$; a brand that has advertised sparingly has a lower $\bar{A}$ and $B^*$. The \emph{lifetime} effect of Budweiser advertising on Joe's choice is captured by the difference in steady states:
 \[
   \Delta B^* = \frac{\kappa}{1 - \rho}(\bar{A}^{\text{Bud}} - \bar{A}^{\text{baseline}}),
 \]
 and the corresponding long-run shift in log choice probability is $\theta \Delta B^*$. Even if any single week's ad has a tiny impact, the discounted sum of exposures over Joe's life is encoded in $B_t$.
 
-\textbf{Measurement strategies.} In practice we do not observe individual lifetime exposure, but we can estimate $(\rho, \kappa, \theta)$ using panel data on advertising, brand tracking, and sales at the market or cohort level. Long panels or historical variation in advertising intensity across regions allow us to approximate how markets with decades of heavy Budweiser advertising differ in baseline share from markets with weaker histories, holding current spend fixed. Combined with the steady-state formula, this provides an operational measure of Joe Sixpack's long-run advertising exposure and its contribution to brand choice.
+\paragraph{Measurement strategies.} In practice we do not observe individual lifetime exposure, but we can estimate $(\rho, \kappa, \theta)$ using panel data on advertising, brand tracking, and sales at the market or cohort level. Long panels or historical variation in advertising intensity across regions allow us to approximate how markets with decades of heavy Budweiser advertising differ in baseline share from markets with weaker histories, holding current spend fixed. Combined with the steady-state formula, this provides an operational measure of Joe Sixpack's long-run advertising exposure and its contribution to brand choice.
 \end{tcolorbox}

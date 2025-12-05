@@ -86,15 +86,15 @@ Seller intervention (Section~\ref{sec:seller-interventions}) & Limited spillover
 
 Before finalising any causal analysis, verify that you have avoided these anti-patterns.
 
-\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.20: Anti-Pattern Checklist]
-\textbf{Conceptual:}
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Box 18.20: Anti-Pattern Checklist]
+\paragraph{Conceptual:}
 \begin{itemize}
     \item Did you define a causal estimand, not just a descriptive metric?
     \item Did you specify the counterfactual explicitly?
     \item Did you distinguish prediction from causal identification?
 \end{itemize}
 
-\textbf{Design:}
+\paragraph{Design:}
 \begin{itemize}
     \item Did you account for interference if units interact?
     \item Did you address selection into treatment?
@@ -102,7 +102,7 @@ Before finalising any causal analysis, verify that you have avoided these anti-p
     \item Did you evaluate over an appropriate time horizon?
 \end{itemize}
 
-\textbf{Analysis:}
+\paragraph{Analysis:}
 \begin{itemize}
     \item Did you pre-register the primary specification?
     \item Did you correct for multiple testing if applicable?
@@ -110,7 +110,7 @@ Before finalising any causal analysis, verify that you have avoided these anti-p
     \item Did you check for Simpson's paradox in subgroups?
 \end{itemize}
 
-\textbf{Reporting:}
+\paragraph{Reporting:}
 \begin{itemize}
     \item Did you report all pre-registered analyses, including nulls?
     \item Did you disclose failed diagnostics?

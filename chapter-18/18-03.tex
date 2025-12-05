@@ -95,20 +95,20 @@ The estimation proceeds in three steps. First, we define the pre-treatment perio
 
 A valid geo-experiment requires rigorous diagnostics. The following checklist operationalises the general diagnostic framework from Chapter~\ref{ch:design-diagnostics} for the geo-experiment setting.
 
-\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.2: Geo-Experiment Diagnostic Checklist]
-\textbf{1. Pre-period balance:} Report standardised mean differences (SMD) on baseline sales, population, and demographics. Target $|\text{SMD}| < 0.1$.
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Box 18.2: Geo-Experiment Diagnostic Checklist]
+\paragraph{1. Pre-period balance:} Report standardised mean differences (SMD) on baseline sales, population, and demographics. Target $|\text{SMD}| < 0.1$.
 
-\textbf{2. Pre-trend test:} Conduct a joint F-test on all pre-treatment event-time coefficients. Report the p-value and interpret non-rejection cautiously (Section~\ref{sec:pretrends-placebo}).
+\paragraph{2. Pre-trend test:} Conduct a joint F-test on all pre-treatment event-time coefficients. Report the p-value and interpret non-rejection cautiously (Section~\ref{sec:pretrends-placebo}).
 
-\textbf{3. Synthetic control fit:} Compute $\text{RMSPE}_{\text{pre}}$ and verify it is less than 5\% of mean baseline sales.
+\paragraph{3. Synthetic control fit:} Compute $\text{RMSPE}_{\text{pre}}$ and verify it is less than 5\% of mean baseline sales.
 
-\textbf{4. Weight concentration:} Calculate the effective number of donors $N_{\text{eff}} = 1/\sum_j w_j^2$. Target $N_{\text{eff}} > 3$ (Section~\ref{sec:influence-stability}).
+\paragraph{4. Weight concentration:} Calculate the effective number of donors $N_{\text{eff}} = 1/\sum_j w_j^2$. Target $N_{\text{eff}} > 3$ (Section~\ref{sec:influence-stability}).
 
-\textbf{5. Placebo tests:} Run in-space placebos (apply SC to each donor) and in-time placebos (use a pseudo-treatment date). Report the rank of the treated unit.
+\paragraph{5. Placebo tests:} Run in-space placebos (apply SC to each donor) and in-time placebos (use a pseudo-treatment date). Report the rank of the treated unit.
 
-\textbf{6. Leave-one-out:} Re-estimate excluding each major donor. Flag estimates that change by more than 20\%.
+\paragraph{6. Leave-one-out:} Re-estimate excluding each major donor. Flag estimates that change by more than 20\%.
 
-\textbf{7. Spillover check:} Test for effects in geographies adjacent to treated regions (buffer analysis, Section~\ref{sec:support-exposure}).
+\paragraph{7. Spillover check:} Test for effects in geographies adjacent to treated regions (buffer analysis, Section~\ref{sec:support-exposure}).
 \end{tcolorbox}
 
 \subsection*{Extended Case Study: Regional Television Campaign}

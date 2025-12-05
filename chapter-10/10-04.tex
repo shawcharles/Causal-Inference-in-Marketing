@@ -39,31 +39,31 @@ Continuous dose-response & Continuous & Conditional exogeneity & Dose-response $
 \end{table}
 
 \begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Practical Guidance: Choosing an Estimation Method]
-\textbf{Binary treatment, common adoption timing:}
+\paragraph{Binary treatment, common adoption timing:}
 \begin{itemize}
 \item Standard event study with two-way fixed effects.
 \end{itemize}
 
-\textbf{Binary treatment, staggered adoption:}
+\paragraph{Binary treatment, staggered adoption:}
 \begin{itemize}
 \item Heterogeneity-robust event study (Callaway-Sant'Anna, Sun-Abraham).
 \item Aggregate $\text{ATT}(g,t)$ into event-time effects $\theta_k$.
 \end{itemize}
 
-\textbf{Continuous treatment (advertising GRPs, discount depth):}
+\paragraph{Continuous treatment (advertising GRPs, discount depth):}
 \begin{itemize}
 \item Distributed-lag model with flexible or constrained lags.
 \item Geometric (Koyck) if exponential decay is plausible.
 \item Almon polynomial for smooth, non-monotonic dynamics.
 \end{itemize}
 
-\textbf{Heterogeneous dynamics across units:}
+\paragraph{Heterogeneous dynamics across units:}
 \begin{itemize}
 \item LongBet for tree-based heterogeneity in decay/lift.
 \item Interact event-time dummies with covariates.
 \end{itemize}
 
-\textbf{Goal is structural parameters (half-life, LRM):}
+\paragraph{Goal is structural parameters (half-life, LRM):}
 \begin{itemize}
 \item Geometric ad-stock for closed-form $\delta$ and LRM.
 \item Fit decay curve to event-study estimates.
@@ -152,11 +152,11 @@ This imposes smoothness and reduces the number of free parameters from $\bar{L}+
 Estimate $\beta_s$ freely for $s = 0, 1, \ldots, \bar{L}$ without functional form. Use regularisation (ridge, lasso) to stabilise estimates; see Chapter~\ref{ch:ml-nuisance} for penalty choices.
 
 \begin{tcolorbox}[colback=orange!5!white,colframe=orange!50!black,title=Practical Guidance: Lag Length Selection]
-\textbf{Too short:} Truncates impulse response; biases LRM downward.
+\paragraph{Too short:} Truncates impulse response; biases LRM downward.
 
-\textbf{Too long:} Includes zero-effect lags; inflates standard errors; overfitting.
+\paragraph{Too long:} Includes zero-effect lags; inflates standard errors; overfitting.
 
-\textbf{Selection criteria:}
+\paragraph{Selection criteria:}
 \begin{itemize}
 \item \textbf{Information criteria:} AIC/BIC penalise additional lags.
 \item \textbf{Substantive knowledge:} Advertising 6--12 weeks; loyalty 4--8 quarters.
@@ -176,7 +176,7 @@ Estimation uses GMM (Arellano-Bond) with lagged levels as instruments.
 
 \citet{marx2024heterogeneous} show that under sequential exogeneity (Assumption~\ref{ass:seq-exog}), the GMM estimand identifies a weighted average of heterogeneous intertemporal treatment effects. The coefficient $\beta$ captures the contemporaneous effect; $\rho$ captures persistence.
 
-\textbf{Caution:} If state dependence is spurious (driven by serial correlation in unobservables), the DPDM biases treatment effects. See \citet{arellano2003panel} for foundations.
+\paragraph{Caution:} If state dependence is spurious (driven by serial correlation in unobservables), the DPDM biases treatment effects. See \citet{arellano2003panel} for foundations.
 \end{tcolorbox}
 
 \subsection*{Tree-Based Dynamic Heterogeneity (LongBet)}

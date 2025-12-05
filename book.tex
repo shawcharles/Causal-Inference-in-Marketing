@@ -59,6 +59,13 @@
 \usepackage[T1]{fontenc}
 \usepackage[shortlabels]{enumitem}
 
+\makeatletter
+\renewcommand\paragraph{\@startsection{paragraph}{4}{\z@}%
+                                    {3.25ex \@plus1ex \@minus.2ex}%
+                                    {-1em}%
+                                    {\normalfont\normalsize}}
+\makeatother
+
 \usepackage{algpseudocode}
 \usepackage{algorithm}
 \providecommand{\mathds}[1]{\mathbb{#1}}
@@ -86,6 +93,14 @@
 \newtheorem{pr}[thm]{Problem:}
 \newtheorem{lem}[thm]{Lemma:}
 \newtheorem{nota}[thm]{Notation:}
+
+\newtcolorbox[auto counter, number within=chapter]{workedexample}[2][]{
+  colback=blue!5!white,
+  colframe=blue!75!black,
+  fonttitle=\bfseries,
+  title=Example~\thetcbcounter: #2,
+  #1
+}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Document settings

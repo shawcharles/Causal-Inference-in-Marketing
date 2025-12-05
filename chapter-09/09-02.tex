@@ -40,6 +40,7 @@ Tucker allows different ranks for each mode, offering more flexibility than CP a
 \end{definition}
 
 \begin{tcolorbox}[colback=gray!10!white,colframe=gray!50!black,title=Technical Note: CP vs Tucker]
+
 \textbf{CP decomposition} approximates the tensor as a sum of $R$ rank-one tensors. Element-wise: $\mathcal{Y}_{ijk} \approx \sum_{r=1}^{R} A_{ir} B_{jr} C_{kr}$. CP is simpler and more interpretable but requires all modes to share the same rank.
 
 \textbf{Tucker decomposition} generalises CP by allowing distinct ranks $(R_1, R_2, R_3)$ for each mode. The core tensor $\mathcal{G} \in \mathbb{R}^{R_1 \times R_2 \times R_3}$ captures interactions. Tucker is more flexible but has more parameters: $R_1 R_2 R_3 + N_1 R_1 + N_2 R_2 + N_3 R_3$.
@@ -115,7 +116,7 @@ where $\mathcal{M}^*$ is the true low-rank component. See \citet{yuan2016tensor}
 
 Alternating least squares (ALS) provides a simple and effective algorithm for CP decomposition.
 
-\begin{tcolorbox}[colback=blue!5!white,colframe=blue!50!black,title=Algorithm: ALS for Tensor Completion]
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Algorithm: ALS for Tensor Completion]
 \textbf{Input:} Observed tensor entries $\{(i,j,t,\mathcal{Y}_{ijt}) : (i,j,t) \in \Omega\}$, rank $R$, convergence threshold $\epsilon$.
 
 \textbf{Initialise:} Factor matrices $\mathbf{A}^{(0)} \in \mathbb{R}^{N_p \times R}$, $\mathbf{B}^{(0)} \in \mathbb{R}^{N_s \times R}$, $\mathbf{C}^{(0)} \in \mathbb{R}^{T \times R}$ (random or SVD-based).

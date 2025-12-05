@@ -4,10 +4,10 @@
 The following protocol consolidates the inference strategies developed in this chapter.
 
 \begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 16.4: Inference Workflow Checklist]
-\textbf{Step 1: Assess dependence structure.}
+\paragraph{Step 1: Assess dependence structure.}
 Determine the level of clustering---store, market, or user---to match the level of treatment assignment. This determines which variance estimator is appropriate (Section~\ref{sec:variance-unified}).
 
-\textbf{Step 2: Choose inference method based on cluster count.}
+\paragraph{Step 2: Choose inference method based on cluster count.}
 \begin{itemize}
 \item $G \geq 50$ clusters: Cluster-robust variance estimators (CRVE).
 \item $10 \leq G < 50$ clusters: Wild cluster bootstrap (Section~\ref{sec:bootstrap}).
@@ -15,10 +15,10 @@ Determine the level of clustering---store, market, or user---to match the level 
 \item Spatial dependence with arbitrary boundaries: Mosaic permutation (Section~\ref{sec:mosaic}).
 \end{itemize}
 
-\textbf{Step 3: Handle prediction uncertainty.}
+\paragraph{Step 3: Handle prediction uncertainty.}
 For counterfactual prediction (synthetic control, demand forecasting), use conformal prediction intervals for distribution-free coverage guarantees (Section~\ref{sec:conformal}).
 
-\textbf{Step 4: Address multiplicity.}
+\paragraph{Step 4: Address multiplicity.}
 When testing multiple hypotheses (subgroups, outcomes, time periods):
 \begin{itemize}
 \item Confirmatory analysis: FWER control via Romano-Wolf (Section~\ref{sec:multiple-testing}).
@@ -26,7 +26,7 @@ When testing multiple hypotheses (subgroups, outcomes, time periods):
 \item Dynamic effects: Joint confidence bands (Section~\ref{sec:joint-inference}).
 \end{itemize}
 
-\textbf{Step 5: Check IV diagnostics (if applicable).}
+\paragraph{Step 5: Check IV diagnostics (if applicable).}
 If using instrumental variables (Section~\ref{sec:iv-marketing}), verify first-stage strength ($F > 10$) and use Anderson-Rubin inference when instruments are weak (Section~\ref{sec:weak-iv}).
 \end{tcolorbox}
 

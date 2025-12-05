@@ -67,23 +67,23 @@ The exposure mapping $f$ satisfies:
 
 With exposure mappings, potential outcomes are $Y_{it}(w, e)$, where $w \in \{0, 1\}$ is own treatment and $e$ is exposure. The observed outcome is $Y_{it} = Y_{it}(W_{it}, E_{it})$.
 
-\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Treatment Effects Under Interference]
-\textbf{Direct effect} (own treatment, holding exposure constant):
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Treatment Effects Under Interference]
+\paragraph{Direct effect} (own treatment, holding exposure constant):
 \[
 \tau^{\text{direct}}(e) = \mathbb{E}[Y_{it}(1, e) - Y_{it}(0, e)].
 \]
 
-\textbf{Spillover effect} (exposure change, holding own treatment constant):
+\paragraph{Spillover effect} (exposure change, holding own treatment constant):
 \[
 \tau^{\text{spillover}}(w, e, e') = \mathbb{E}[Y_{it}(w, e') - Y_{it}(w, e)].
 \]
 
-\textbf{Total effect} (own treatment and exposure change):
+\paragraph{Total effect} (own treatment and exposure change):
 \[
 \tau^{\text{total}}(e, e') = \mathbb{E}[Y_{it}(1, e') - Y_{it}(0, e)].
 \]
 
-\textbf{Decomposition:}
+\paragraph{Decomposition:}
 \[
 \tau^{\text{total}}(e, e') = \underbrace{\tau^{\text{direct}}(e)}_{\text{direct}} + \underbrace{\mathbb{E}[Y_{it}(1, e') - Y_{it}(1, e)]}_{\text{spillover for treated}}.
 \]

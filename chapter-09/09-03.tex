@@ -85,12 +85,15 @@ Let $\mathcal{T}$ denote the set of treated cells. Treatment effects are disting
 
 \begin{tcolorbox}[colback=orange!5!white,colframe=orange!75!black,title=Caution: Large Treatment Effects]
 Assumption~\ref{ass:treatment-outlier} requires that treatment effects are moderate relative to outliers. This may be violated when:
+
 \begin{itemize}
 \item Promotions cause extreme sales spikes (10x increases).
 \item Treatment fundamentally changes the demand structure.
 \item Treated units are systematically different from controls.
 \end{itemize}
-\textbf{Mitigation strategies:}
+
+\paragraph{Mitigation strategies:}
+
 \begin{enumerate}
 \item Estimate $\mathbf{L}$ and $\mathbf{S}$ using only untreated cells (excluding all treated cells from outlier detection).
 \item Compare robust MC estimates to standard MC estimates. If they differ substantially, investigate whether treatment effects are being classified as outliers.

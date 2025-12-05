@@ -59,12 +59,13 @@ where:
 
 \paragraph{Tuning $\alpha$.} Large $\alpha$ enforces smooth evolution but may fail to adapt to structural breaks. Small $\alpha$ allows rapid adaptation but may overfit to noise. Cross-validation on rolling windows guides the choice.
 
-\begin{tcolorbox}[colback=blue!5!white,colframe=blue!50!black,title=Algorithm: Online Matrix Completion with Subspace Tracking]
-\textbf{Input:} Panel data $\{Y_{it}\}$, treatment indicators $\{W_{it}\}$, initial rank $R_0$, regularisation $\lambda$, smoothing $\alpha$.
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Algorithm: Online Matrix Completion with Subspace Tracking]
 
-\textbf{Initialise:} Estimate $\hat{\mathbf{L}}_1$ from first $T_0$ periods using standard MC. Set rank $R_1 = R_0$.
+\paragraph{Input:} Panel data $\{Y_{it}\}$, treatment indicators $\{W_{it}\}$, initial rank $R_0$, regularisation $\lambda$, smoothing $\alpha$.
 
-\textbf{For each time $t = T_0 + 1, \ldots, T$:}
+\paragraph{Initialise:} Estimate $\hat{\mathbf{L}}_1$ from first $T_0$ periods using standard MC. Set rank $R_1 = R_0$.
+
+\paragraph{For each time $t = T_0 + 1, \ldots, T$:}
 \begin{enumerate}
 \item \textbf{Update estimate:} Solve the online MC objective via proximal gradient descent:
 \[
@@ -83,7 +84,7 @@ If $\Delta_t > \tau$ (threshold), flag $t$ as a potential change point.
 \item \textbf{Impute counterfactuals:} For treated cells $(i, t)$, impute $\hat{Y}_{it}(0) = \hat{L}_{it}$.
 \end{enumerate}
 
-\textbf{Output:} Time-varying estimates $\{\hat{\mathbf{L}}_t\}$, change points $\hat{\mathcal{B}}$, counterfactuals.
+\paragraph{Output:} Time-varying estimates $\{\hat{\mathbf{L}}_t\}$, change points $\hat{\mathcal{B}}$, counterfactuals.
 \end{tcolorbox}
 
 \begin{proposition}[Change-Point Detection Consistency]\label{prop:changepoint}

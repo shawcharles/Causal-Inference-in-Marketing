@@ -3,12 +3,12 @@
 
 Marketing causal inference requires a disciplined workflow that transforms vague business questions into precise, testable claims. A question like "Does advertising work?" is not actionable. The causal question must specify the treatment, the outcome, the population, and the counterfactual. This section provides a reusable protocol for any marketing application.
 
-\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.1: The Six-Step Application Protocol]
-\textbf{Step 1: Define the estimand.} State the causal quantity in potential outcomes notation. For advertising incrementality, this is typically $\tau = \mathbb{E}[Y_i(1) - Y_i(0) | W_i = 1]$ (ATT) or the incremental revenue per dollar spent. For price elasticity, it is the causal derivative $\partial \log Q / \partial \log P$. Vague objectives like "measure ROI" must be translated into a specific estimand before proceeding.
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Box 18.1: The Six-Step Application Protocol]
+\paragraph{Step 1: Define the estimand.} State the causal quantity in potential outcomes notation. For advertising incrementality, this is typically $\tau = \mathbb{E}[Y_i(1) - Y_i(0) | W_i = 1]$ (ATT) or the incremental revenue per dollar spent. For price elasticity, it is the causal derivative $\partial \log Q / \partial \log P$. Vague objectives like "measure ROI" must be translated into a specific estimand before proceeding.
 
-\textbf{Step 2: Assess data requirements.} Consult Table~\ref{tab:data-requirements} to determine the unit of analysis, time granularity, and minimum pre-period length for your application. Insufficient pre-period data undermines pre-trend tests and synthetic control fit. Missing covariates limit balance diagnostics.
+\paragraph{Step 2: Assess data requirements.} Consult Table~\ref{tab:data-requirements} to determine the unit of analysis, time granularity, and minimum pre-period length for your application. Insufficient pre-period data undermines pre-trend tests and synthetic control fit. Missing covariates limit balance diagnostics.
 
-\textbf{Step 3: Select identification strategy.} Choose the source of identifying variation and state the required assumptions explicitly:
+\paragraph{Step 3: Select identification strategy.} Choose the source of identifying variation and state the required assumptions explicitly:
 \begin{itemize}
     \item \textbf{Randomisation:} Unconfoundedness by design (Chapter~\ref{ch:frameworks}).
     \item \textbf{Parallel trends:} Difference-in-differences, event studies (Chapter~\ref{ch:did}, Chapter~\ref{ch:event}).
@@ -17,9 +17,9 @@ Marketing causal inference requires a disciplined workflow that transforms vague
     \item \textbf{Regression discontinuity:} Local randomisation at a threshold.
 \end{itemize}
 
-\textbf{Step 4: Choose estimation method.} Match the estimator to the identification strategy and data structure. For staggered adoption, use heterogeneity-robust estimators (Chapter~\ref{ch:did}). For high-dimensional controls, use double machine learning (Chapter~\ref{ch:ml-nuisance}). For continuous treatments, use dose-response methods (Chapter~\ref{ch:continuous}).
+\paragraph{Step 4: Choose estimation method.} Match the estimator to the identification strategy and data structure. For staggered adoption, use heterogeneity-robust estimators (Chapter~\ref{ch:did}). For high-dimensional controls, use double machine learning (Chapter~\ref{ch:ml-nuisance}). For continuous treatments, use dose-response methods (Chapter~\ref{ch:continuous}).
 
-\textbf{Step 5: Run diagnostics.} Follow the diagnostic workflow in Chapter~\ref{ch:design-diagnostics}:
+\paragraph{Step 5: Run diagnostics.} Follow the diagnostic workflow in Chapter~\ref{ch:design-diagnostics}:
 \begin{itemize}
     \item Pre-trend tests and placebos (Section~\ref{sec:pretrends-placebo}).
     \item Overlap and balance assessment (Section~\ref{sec:overlap-balance}).
@@ -27,7 +27,7 @@ Marketing causal inference requires a disciplined workflow that transforms vague
     \item Support-by-$k$ for event studies (Section~\ref{sec:support-exposure}).
 \end{itemize}
 
-\textbf{Step 6: Conduct sensitivity analysis.} Stress-test findings against assumption violations (Section~\ref{sec:sensitivity-analyses}). Report breakdown values for parallel trends, bounds under partial identification, and specification curves across defensible alternatives.
+\paragraph{Step 6: Conduct sensitivity analysis.} Stress-test findings against assumption violations (Section~\ref{sec:sensitivity-analyses}). Report breakdown values for parallel trends, bounds under partial identification, and specification curves across defensible alternatives.
 \end{tcolorbox}
 
 \subsection*{Method Selection Guide}

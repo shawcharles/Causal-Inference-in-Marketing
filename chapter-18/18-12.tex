@@ -152,22 +152,22 @@ Reporting position effects by user tenure and item age provides insight into the
 
 \subsection*{Diagnostic Checklist}
 
-\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.15: Ranking Algorithm Diagnostic Checklist]
-\textbf{For Position Randomisation:}
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Box 18.15: Ranking Algorithm Diagnostic Checklist]
+\paragraph{For Position Randomisation:}
 \begin{itemize}
     \item Balance: Verify that item quality is balanced across positions in the experimental sample.
     \item User experience: Monitor bounce rates and session duration in the randomised group.
     \item Sample size: Position effects are often small; ensure adequate power.
 \end{itemize}
 
-\textbf{For Pagination RDD:}
+\paragraph{For Pagination RDD:}
 \begin{itemize}
     \item Relevance balance: Check that item quality metrics are smooth through the page boundary.
     \item Manipulation: Test whether the algorithm strategically places items to avoid the boundary.
     \item Bandwidth sensitivity: Report estimates at multiple bandwidths.
 \end{itemize}
 
-\textbf{For Click Models:}
+\paragraph{For Click Models:}
 \begin{itemize}
     \item Model fit: Compare predicted vs. observed click rates by position.
     \item Separability: Test whether the multiplicative assumption holds (position effect independent of relevance).

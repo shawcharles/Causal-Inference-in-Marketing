@@ -74,16 +74,16 @@ Clean controls & Early adopters excluded from sample & Avoids contamination from
 \end{table}
 
 \begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Practical Guidance: Control Group Selection]
-\textbf{Primary recommendation:} Use never-treated units when available and comparable.
+\paragraph{Primary recommendation:} Use never-treated units when available and comparable.
 
-\textbf{When never-treated sparse:} Use not-yet-treated units, but:
+\paragraph{When never-treated sparse:} Use not-yet-treated units, but:
 \begin{itemize}
 \item Restrict event-time window to lags where control pool is stable and large.
 \item Report the number of control units at each lag (support plot).
 \item Bin distant lags when support is sparse.
 \end{itemize}
 
-\textbf{Avoid:} Already-treated units as controls (contaminated by their own treatment effects).
+\paragraph{Avoid:} Already-treated units as controls (contaminated by their own treatment effects).
 
 See Chapter~\ref{ch:did} for comprehensive guidance on staggered adoption.
 \end{tcolorbox}
@@ -206,22 +206,22 @@ Under Assumption~\ref{ass:strict-exog} and the rank condition:
 where $\tilde{\mathbf{W}}_i$ is the matrix of demeaned treatment lags, the impulse response coefficients $\{\beta_s\}_{s=0}^{\bar{L}}$ are identified and consistently estimated by within-group OLS.
 \end{theorem}
 
-\begin{tcolorbox}[colback=blue!5!white,colframe=blue!50!black,title=Summary: Which Assumptions When?]
-\textbf{For event-study designs:}
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Summary: Which Assumptions When?]
+\paragraph{For event-study designs:}
 \begin{itemize}
 \item Parallel trends (Assumption~\ref{ass:pt-event}) + No anticipation (Assumption~\ref{ass:no-anticipation}).
 \item Test pre-trends (Proposition~\ref{prop:pretrend}).
 \item Ensure overlap/support at each lag (Assumption~\ref{ass:dynamics-overlap}).
 \end{itemize}
 
-\textbf{For distributed-lag models:}
+\paragraph{For distributed-lag models:}
 \begin{itemize}
 \item Strict exogeneity (Assumption~\ref{ass:strict-exog}) for within-group estimation.
 \item Sequential exogeneity (Assumption~\ref{ass:seq-exog}) if lagged dependent variable present.
 \item Rank condition for identification.
 \end{itemize}
 
-\textbf{When parallel trends implausible:}
+\paragraph{When parallel trends implausible:}
 \begin{itemize}
 \item Use factor models (Chapter~\ref{ch:factor}) with heterogeneous loadings.
 \item Use synthetic control (Chapter~\ref{ch:sc}) for data-driven weighting.

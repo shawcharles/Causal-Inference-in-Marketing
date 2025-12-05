@@ -146,43 +146,43 @@ Ensemble approaches are robust to model misspecification.
 \subsection*{Practical Guidance: Method Selection}
 
 \begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Decision Flowchart for Method Selection]
-\textbf{1. Data structure:}
+\paragraph{1. Data structure:}
 \begin{itemize}
 \item Multi-way structure informative? $\rightarrow$ Tensor completion (Section~\ref{sec:tensor-completion}).
 \item Two-way structure sufficient? $\rightarrow$ Matrix completion.
 \end{itemize}
 
-\textbf{2. Data quality:}
+\paragraph{2. Data quality:}
 \begin{itemize}
 \item Outliers present ($>$5\% of cells, $>$3 SD)? $\rightarrow$ Robust MC (Section~\ref{sec:robust-matrix}).
 \item Clean data? $\rightarrow$ Standard MC.
 \end{itemize}
 
-\textbf{3. Side information:}
+\paragraph{3. Side information:}
 \begin{itemize}
 \item Rich covariates available? $\rightarrow$ Covariate-assisted MC (Section~\ref{sec:matrix-side-info}).
 \item Network structure? $\rightarrow$ Graph-regularised MC.
 \end{itemize}
 
-\textbf{4. Stability:}
+\paragraph{4. Stability:}
 \begin{itemize}
 \item Structural breaks present? $\rightarrow$ Time-varying MC (Section~\ref{sec:time-varying-rank}).
 \item Stable factor structure? $\rightarrow$ Standard MC.
 \end{itemize}
 
-\textbf{5. Inference:}
+\paragraph{5. Inference:}
 \begin{itemize}
 \item Full uncertainty quantification needed? $\rightarrow$ Bayesian MC (Section~\ref{sec:bayesian-matrix}).
 \item Point estimate sufficient? $\rightarrow$ Frequentist MC.
 \end{itemize}
 
-\textbf{6. Scale:}
+\paragraph{6. Scale:}
 \begin{itemize}
 \item Very large panel ($>$10M cells)? $\rightarrow$ SGD or Soft-Impute (Section~\ref{sec:computation}).
 \item Moderate panel? $\rightarrow$ ALS or nuclear norm.
 \end{itemize}
 
-\textbf{7. Outcome type:}
+\paragraph{7. Outcome type:}
 \begin{itemize}
 \item Continuous? $\rightarrow$ Standard factor model.
 \item Binary/count? $\rightarrow$ Nonlinear IFE (Zeleneev--Zhang).

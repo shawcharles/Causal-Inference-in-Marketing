@@ -9,20 +9,20 @@ This synthesis section completes the workflow established in this chapter: the t
 
 Every causal analysis should document the estimand, identification strategy, diagnostics, and sensitivity analysis. Pre-registration—documenting the design before seeing results—prevents post-hoc specification searching.
 
-\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.18: Reporting Standards Checklist]
-\textbf{1. Pre-registration:} Document the estimand, design, and primary specification before analysis. Register with a timestamp (internal wiki, OSF, or email to stakeholders).
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Box 18.18: Reporting Standards Checklist]
+\paragraph{1. Pre-registration:} Document the estimand, design, and primary specification before analysis. Register with a timestamp (internal wiki, OSF, or email to stakeholders).
 
-\textbf{2. Estimand clarity:} State the causal quantity (ATT, ATE, GATE) and its business interpretation. Avoid vague language like "the effect of X on Y."
+\paragraph{2. Estimand clarity:} State the causal quantity (ATT, ATE, GATE) and its business interpretation. Avoid vague language like "the effect of X on Y."
 
-\textbf{3. Assumption disclosure:} List the identification assumptions and discuss their plausibility in context. Do not bury assumptions in footnotes.
+\paragraph{3. Assumption disclosure:} List the identification assumptions and discuss their plausibility in context. Do not bury assumptions in footnotes.
 
-\textbf{4. Diagnostic reporting:} Include pre-trend tests, balance tables, fit statistics, and placebo results (Chapter~\ref{ch:design-diagnostics}). Report p-values and effect sizes, not just pass/fail.
+\paragraph{4. Diagnostic reporting:} Include pre-trend tests, balance tables, fit statistics, and placebo results (Chapter~\ref{ch:design-diagnostics}). Report p-values and effect sizes, not just pass/fail.
 
-\textbf{5. Sensitivity analysis:} Report specification curves or robustness to alternative designs (Section~\ref{sec:sensitivity-analyses}). Show what would change the conclusion.
+\paragraph{5. Sensitivity analysis:} Report specification curves or robustness to alternative designs (Section~\ref{sec:sensitivity-analyses}). Show what would change the conclusion.
 
-\textbf{6. Confidence intervals:} Report uncertainty using appropriate inference (cluster-robust, bootstrap, permutation). Never report point estimates without uncertainty.
+\paragraph{6. Confidence intervals:} Report uncertainty using appropriate inference (cluster-robust, bootstrap, permutation). Never report point estimates without uncertainty.
 
-\textbf{7. Business translation:} Convert the ATT to actionable metrics (iROAS, incremental CLV, elasticity). Include confidence intervals on business metrics.
+\paragraph{7. Business translation:} Convert the ATT to actionable metrics (iROAS, incremental CLV, elasticity). Include confidence intervals on business metrics.
 \end{tcolorbox}
 
 \subsection*{Visualising Causal Evidence}
@@ -98,61 +98,61 @@ Practitioners frequently make errors that undermine the credibility of causal cl
 A complete causal analysis report should include the following sections:
 
 \begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.19: Causal Analysis Report Template]
-\textbf{1. Executive Summary} (1 page)
+\paragraph{1. Executive Summary} (1 page)
 \begin{itemize}
     \item Business question and answer
     \item Key finding with confidence interval
     \item Recommendation
 \end{itemize}
 
-\textbf{2. Background and Motivation} (1–2 pages)
+\paragraph{2. Background and Motivation} (1–2 pages)
 \begin{itemize}
     \item Business context and decision at stake
     \item Prior evidence and expectations
 \end{itemize}
 
-\textbf{3. Data and Design} (2–3 pages)
+\paragraph{3. Data and Design} (2–3 pages)
 \begin{itemize}
     \item Data sources, sample, and time period
     \item Treatment definition and timing
     \item Identification strategy and key assumptions
 \end{itemize}
 
-\textbf{4. Results} (2–3 pages)
+\paragraph{4. Results} (2–3 pages)
 \begin{itemize}
     \item Main estimate with confidence interval
     \item Event-study or dynamic effects plot
     \item Heterogeneity analysis (if applicable)
 \end{itemize}
 
-\textbf{5. Diagnostics} (2–3 pages)
+\paragraph{5. Diagnostics} (2–3 pages)
 \begin{itemize}
     \item Pre-trend tests and balance tables
     \item Placebo tests and fit statistics
     \item Specification curve or robustness checks
 \end{itemize}
 
-\textbf{6. Sensitivity Analysis} (1–2 pages)
+\paragraph{6. Sensitivity Analysis} (1–2 pages)
 \begin{itemize}
     \item What would change the conclusion?
     \item Bounds under alternative assumptions
 \end{itemize}
 
-\textbf{7. Limitations and Caveats} (1 page)
+\paragraph{7. Limitations and Caveats} (1 page)
 \begin{itemize}
     \item Assumptions that may be violated
     \item External validity concerns
     \item What we cannot conclude
 \end{itemize}
 
-\textbf{8. Business Implications} (1 page)
+\paragraph{8. Business Implications} (1 page)
 \begin{itemize}
     \item Translation to business metrics
     \item Decision recommendation
     \item Next steps and follow-up analyses
 \end{itemize}
 
-\textbf{Appendix:} Technical details, reproducible code (with package versions), data dictionary, and pre-registration documentation
+\paragraph{Appendix:} Technical details, reproducible code (with package versions), data dictionary, and pre-registration documentation
 \end{tcolorbox}
 
 \subsection*{The Honest Conclusion}

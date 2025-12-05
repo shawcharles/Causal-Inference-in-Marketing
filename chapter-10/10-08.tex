@@ -54,7 +54,7 @@ where $A_{it} = \delta A_{i,t-1} + \text{GRP}_{i,t-1}$ is ad-stock with decay ra
 
 Sethuraman, Tellis, and Briesch conduct a meta-analysis of 751 short-term and 402 long-term advertising elasticities from 56 studies spanning 1960--2008 (Sethuraman et al., 2011).
 
-\textbf{Key findings:}
+\paragraph{Key findings:}
 \begin{itemize}
 \item Short-run elasticity averages 0.10; long-run averages 0.22.
 \item Long-run/short-run ratio $\approx 2.2$ reflects carryover through awareness and habit.
@@ -62,7 +62,7 @@ Sethuraman, Tellis, and Briesch conduct a meta-analysis of 751 short-term and 40
 \item Weekly data yield higher elasticities than monthly (aggregation bias).
 \end{itemize}
 
-\textbf{Implications:} Expect modest average effects (10\% elasticity means doubling ad spending increases sales by 10\%) but substantial heterogeneity. Context-specific estimation is essential.
+\paragraph{Implications:} Expect modest average effects (10\% elasticity means doubling ad spending increases sales by 10\%) but substantial heterogeneity. Context-specific estimation is essential.
 \end{tcolorbox}
 
 \subsection*{Application 2: Promotions with Post-Promotion Dips}
@@ -112,25 +112,26 @@ VARs trace dynamic feedback among marketing investments, consumer response, and 
 \subsection*{Summary: Method Selection}
 
 \begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Practical Guidance: Matching Method to Application]
-\textbf{Continuous treatment with carryover (advertising):}
+
+\paragraph{Continuous treatment with carryover (advertising):}
 \begin{itemize}
 \item Distributed-lag model with geometric ad-stock.
 \item Estimate half-life, LRM.
 \end{itemize}
 
-\textbf{Discrete treatment with stockpiling (promotions):}
+\paragraph{Discrete treatment with stockpiling (promotions):}
 \begin{itemize}
 \item Event-study design.
 \item Visualise spike, dip, and net cumulative effect.
 \end{itemize}
 
-\textbf{Staggered adoption with ramp-up (loyalty programmes):}
+\paragraph{Staggered adoption with ramp-up (loyalty programmes):}
 \begin{itemize}
 \item Dynamic DiD with heterogeneity-robust aggregation.
 \item Estimate ramp-up period and persistence.
 \end{itemize}
 
-\textbf{Marketing-finance linkages:}
+\paragraph{Marketing-finance linkages:}
 \begin{itemize}
 \item VAR with impulse response functions.
 \item Trace shocks through to stock returns.

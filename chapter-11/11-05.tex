@@ -138,35 +138,35 @@ The kernel $K_{\theta}$ enforces smooth spatial weights.
 \paragraph{Use case.} ``Impact zone'' studies: cannibalization radius of flagship store, effective reach of billboard campaign. Recovers full function $\tau(d)$ to identify where treatment effect fades to zero.
 
 \begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Method Selection Guidance]
-\textbf{Regression with exposure.} \textit{Example: Retail panel with distance-weighted exposure to promoted stores.}
+\paragraph{Regression with exposure.} \textit{Example: Retail panel with distance-weighted exposure to promoted stores.}
 \begin{itemize}
 \item[$\square$] Continuous exposure measure available.
 \item[$\square$] Exposure plausibly exogenous conditional on fixed effects.
 \item[$\square$] Direct and spillover effects approximately additive.
 \end{itemize}
 
-\textbf{DiD with spillover groups.} \textit{Example: New store opening affecting nearby stores (spillover) vs distant stores (control).}
+\paragraph{DiD with spillover groups.} \textit{Example: New store opening affecting nearby stores (spillover) vs distant stores (control).}
 \begin{itemize}
 \item[$\square$] Clear partition into treated, spillover, pure control feasible.
 \item[$\square$] Staggered or clustered treatment adoption.
 \item[$\square$] Parallel trends plausible for all three groups.
 \end{itemize}
 
-\textbf{Two-stage design.} \textit{Example: Geo-experiment with varying treatment intensity across DMAs.}
+\paragraph{Two-stage design.} \textit{Example: Geo-experiment with varying treatment intensity across DMAs.}
 \begin{itemize}
 \item[$\square$] Randomisation at cluster and unit levels possible.
 \item[$\square$] Partial interference assumption credible.
 \item[$\square$] Sufficient clusters for cluster-level inference.
 \end{itemize}
 
-\textbf{Spatial Hausman--Taylor.} \textit{Example: Brand equity effect on sales with spatial correlation.}
+\paragraph{Spatial Hausman--Taylor.} \textit{Example: Brand equity effect on sales with spatial correlation.}
 \begin{itemize}
 \item[$\square$] Time-invariant coefficients needed.
 \item[$\square$] Spatial weights matrix known or estimable.
 \item[$\square$] Instruments for time-invariant regressors available.
 \end{itemize}
 
-\textbf{SVR.} \textit{Example: Measuring cannibalization radius of flagship store opening.}
+\paragraph{SVR.} \textit{Example: Measuring cannibalization radius of flagship store opening.}
 \begin{itemize}
 \item[$\square$] Treatment at specific geographic location.
 \item[$\square$] Interest in treatment effect decay with distance.

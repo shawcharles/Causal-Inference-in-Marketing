@@ -113,21 +113,21 @@ The half-life is inversely related to the decay rate: faster decay (smaller $\de
 \end{definition}
 
 \begin{tcolorbox}[colback=orange!5!white,colframe=orange!50!black,title=Example: Computing LRM and Half-Life]
-\textbf{Setting:} Weekly advertising campaign with estimated impulse response $\beta_s = 100 \times 0.7^s$ (geometric decay with $\delta = 0.7$ and $\beta_0 = 100$ units of incremental sales).
+\paragraph{Setting:} Weekly advertising campaign with estimated impulse response $\beta_s = 100 \times 0.7^s$ (geometric decay with $\delta = 0.7$ and $\beta_0 = 100$ units of incremental sales).
 
-\textbf{Long-run multiplier:}
+\paragraph{Long-run multiplier:}
 \[
 \text{LRM} = \frac{\beta_0}{1 - \delta} = \frac{100}{1 - 0.7} = \frac{100}{0.3} = 333.3 \text{ units.}
 \]
 Interpretation: A one-week campaign generates 333 units of cumulative incremental sales over all time.
 
-\textbf{Half-life:}
+\paragraph{Half-life:}
 \[
 h^* = \frac{\log 2}{-\log 0.7} = \frac{0.693}{0.357} = 1.94 \text{ weeks.}
 \]
 Interpretation: Effects decay to half their initial magnitude in approximately 2 weeks.
 
-\textbf{Policy implication:} With a 2-week half-life, weekly pulsing maintains awareness better than monthly pulsing. If LRM = 333 and cost-per-campaign = \$10,000, the cost-per-incremental-unit is \$30.
+\paragraph{Policy implication:} With a 2-week half-life, weekly pulsing maintains awareness better than monthly pulsing. If LRM = 333 and cost-per-campaign = \$10,000, the cost-per-incremental-unit is \$30.
 \end{tcolorbox}
 
 \subsection*{Correspondence Between Event-Time and Impulse Response}

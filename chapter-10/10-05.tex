@@ -46,46 +46,46 @@ Estimate the event-study specification including leads ($k < 0$) alongside lags 
 \subsubsection*{Distinguishing Anticipation from Pre-Trends}
 
 \begin{tcolorbox}[colback=orange!5!white,colframe=orange!50!black,title=Distinguishing Anticipation from Pre-Trends]
-\textbf{Evidence for anticipation:}
+\paragraph{Evidence for anticipation:}
 \begin{itemize}
 \item Effect begins exactly one period before treatment.
 \item Effect is absent at earlier leads ($k = -2, -3, \ldots$).
 \item Institutional knowledge confirms agents could anticipate (pre-announcement).
 \end{itemize}
 
-\textbf{Evidence for pre-trends:}
+\paragraph{Evidence for pre-trends:}
 \begin{itemize}
 \item Effect present at multiple leads.
 \item Linear trend pattern across leads.
 \item Agents could not have known about treatment.
 \end{itemize}
 
-\textbf{Design-based test:} Compare pre-announced vs surprise treatments. If the dip is present only for pre-announced treatments, anticipation is supported.
+\paragraph{Design-based test:} Compare pre-announced vs surprise treatments. If the dip is present only for pre-announced treatments, anticipation is supported.
 \end{tcolorbox}
 
 \subsubsection*{Handling Anticipation}
 
 \begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Practical Guidance: Options When Anticipation is Present]
-\textbf{Option 1: Model anticipation explicitly.}
+\paragraph{Option 1: Model anticipation explicitly.}
 \begin{itemize}
 \item Include leads in the specification and interpret them as anticipatory effects.
 \item Report both anticipatory effects (leads) and post-treatment effects (lags).
 \item Discuss total effect = anticipation + post-treatment.
 \end{itemize}
 
-\textbf{Option 2: Redefine intervention time.}
+\paragraph{Option 2: Redefine intervention time.}
 \begin{itemize}
 \item If consumers anticipate one period in advance, redefine treatment to switch on at $g-1$.
 \item Captures onset of anticipation as the treatment.
 \end{itemize}
 
-\textbf{Option 3: Exclude anticipation period.}
+\paragraph{Option 3: Exclude anticipation period.}
 \begin{itemize}
 \item Use only periods $t \leq g - \bar{a}$ as pre-treatment, where $\bar{a}$ is anticipation window.
 \item Restricts comparison to periods before anticipation began.
 \end{itemize}
 
-\textbf{Choice depends on:} Substantive question; strength of evidence; whether anticipation is of independent interest.
+\paragraph{Choice depends on:} Substantive question; strength of evidence; whether anticipation is of independent interest.
 \end{tcolorbox}
 
 \subsection*{Carryover and Decay}
@@ -96,9 +96,10 @@ Carryover describes how treatment effects persist and dissipate over lags.
 
 \paragraph{Negative carryover.} Past treatments can also decrease current outcomes. Promotions may exhaust demand through stockpiling. Repeated exposures can cause satiation and wear-out.
 \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Box 10.4: The Attention Paradox in Dynamic Advertising Effects]
-\textbf{Setting.} A video platform runs a six-week campaign with a high-frequency pre-roll ad for a focal brand. Let $W_{it}$ indicate exposure to the high-frequency schedule in week $t$ for market $i$, and let $G_i$ be the week when the schedule is turned on. We estimate cohort-specific event-time effects $\theta_k(g)$ and aggregated effects $\theta_k$ as in Definition~\ref{def:event-time-effects}, with $k = t - G_i$.
 
-\textbf{Dynamic pattern.} Suppose the estimated profile $\{\hat{\theta}_k\}$ for $k = 0,1,\ldots,8$ shows:
+\paragraph{Setting.} A video platform runs a six-week campaign with a high-frequency pre-roll ad for a focal brand. Let $W_{it}$ indicate exposure to the high-frequency schedule in week $t$ for market $i$, and let $G_i$ be the week when the schedule is turned on. We estimate cohort-specific event-time effects $\theta_k(g)$ and aggregated effects $\theta_k$ as in Definition~\ref{def:event-time-effects}, with $k = t - G_i$.
+
+\paragraph{Dynamic pattern.} Suppose the estimated profile $\{\hat{\theta}_k\}$ for $k = 0,1,\ldots,8$ shows:
 \begin{itemize}
 \item $\hat{\theta}_0, \hat{\theta}_1, \hat{\theta}_2 > 0$: early weeks of high attention increase sales and brand search.
 \item $\hat{\theta}_3 \approx 0$: additional exposure is neutral.
@@ -106,7 +107,7 @@ Carryover describes how treatment effects persist and dissipate over lags.
 \end{itemize}
 The cumulative effect through horizon $H$ is $\text{LRM}(H) = \hat{\theta}_H$ if event-time effects are cumulative, or $\sum_{k=0}^H \hat{\beta}_k$ if working with incremental impulse responses $\hat{\beta}_k = \hat{\theta}_k - \hat{\theta}_{k-1}$. In this pattern $\text{LRM}(3)$ is positive and substantial, but $\text{LRM}(6)$ is only slightly larger or even smaller if the late negative effects dominate. More ``attention'' in the sense of longer exposure to the same ad generates negative carryover.
 
-\textbf{Measurement implication.} Focusing only on early positive lags or on total impressions obscures the attention paradox: past a point, incremental event-time effects turn negative even as exposure accumulates. Reporting the full $\hat{\theta}_k$ trajectory, cumulative effects $\text{LRM}(H)$ for multiple horizons, and confidence bands helps identify where attention becomes counterproductive and informs optimal campaign duration and rotation of creatives.
+\paragraph{Measurement implication.} Focusing only on early positive lags or on total impressions obscures the attention paradox: past a point, incremental event-time effects turn negative even as exposure accumulates. Reporting the full $\hat{\theta}_k$ trajectory, cumulative effects $\text{LRM}(H)$ for multiple horizons, and confidence bands helps identify where attention becomes counterproductive and informs optimal campaign duration and rotation of creatives.
 \end{tcolorbox}
 
 \subsubsection*{Interpreting Lag Profiles}
@@ -155,14 +156,14 @@ Understanding mediation channels informs design (which channels to activate), ta
 \subsubsection*{Caution: Post-Treatment Conditioning}
 
 \begin{tcolorbox}[colback=red!5!white,colframe=red!50!black,title=Warning: Post-Treatment Conditioning Bias]
-\textbf{Problem:} Naïve mediation analysis conditions on post-treatment mediators (e.g., regressing sales on treatment and reward redemption). This:
+\paragraph{Problem:} Naïve mediation analysis conditions on post-treatment mediators (e.g., regressing sales on treatment and reward redemption). This:
 \begin{itemize}
 \item Opens backdoor paths through confounders of mediator-outcome.
 \item Closes frontdoor paths that represent the causal effect.
 \item Produces estimates without causal interpretation.
 \end{itemize}
 
-\textbf{Requirements for credible mediation:}
+\paragraph{Requirements for credible mediation:}
 \begin{itemize}
 \item Sequential ignorability (no unmeasured confounding of mediator-outcome).
 \item Specialised methods: front-door adjustment, IV for mediator.
@@ -174,22 +175,22 @@ See \citet{pearl2009causality} for formal treatment.
 \subsubsection*{Practical Guidance for Mediation}
 
 \begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Practical Guidance: Mediation in Marketing Panels]
-\textbf{Report total effects as primary estimand:}
+\paragraph{Report total effects as primary estimand:}
 \begin{itemize}
 \item Total effect = overall effect of treatment on outcome.
 \item Clear causal interpretation; informs policy.
 \end{itemize}
 
-\textbf{Report path-specific effects only when:}
+\paragraph{Report path-specific effects only when:}
 \begin{itemize}
 \item Sequential ignorability is plausible.
 \item Assumptions are explicitly discussed.
 \item Sensitivity analyses assess robustness.
 \end{itemize}
 
-\textbf{Avoid conditioning on post-treatment variables} without explicit justification.
+\paragraph{Avoid conditioning on post-treatment variables} without explicit justification.
 
-\textbf{When feasible, use experimental variation in mediators:}
+\paragraph{When feasible, use experimental variation in mediators:}
 \begin{itemize}
 \item Randomise mediator (e.g., reward reminders).
 \item Isolates specific channels with design-based credibility.

@@ -99,39 +99,39 @@ Assess whether conclusions depend on modelling choices.
 \paragraph{Model selection.} Use AIC/BIC or cross-validation for data-driven guidance.
 
 \begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Diagnostic Workflow Checklist]
-\textbf{Step 1: Support}
+\paragraph{Step 1: Support}
 \begin{itemize}
 \item[$\square$] Plot support per event time.
 \item[$\square$] Flag sparse lags ($N_k^{\text{eff}} < 10$).
 \item[$\square$] Bin or exclude sparse lags.
 \end{itemize}
 
-\textbf{Step 2: Binning and Window}
+\paragraph{Step 2: Binning and Window}
 \begin{itemize}
 \item[$\square$] Report binning choices.
 \item[$\square$] Test sensitivity to bin thresholds.
 \item[$\square$] Test sensitivity to window restriction.
 \end{itemize}
 
-\textbf{Step 3: Pre-Trends}
+\paragraph{Step 3: Pre-Trends}
 \begin{itemize}
 \item[$\square$] Plot lead coefficients with CIs.
 \item[$\square$] Report joint F-test on leads.
 \item[$\square$] If fails, diagnose source.
 \end{itemize}
 
-\textbf{Step 4: Placebo}
+\paragraph{Step 4: Placebo}
 \begin{itemize}
 \item[$\square$] Run placebo test on never-treated.
 \item[$\square$] Assess magnitude of pseudo effects.
 \end{itemize}
 
-\textbf{Step 5: Robustness}
+\paragraph{Step 5: Robustness}
 \begin{itemize}
 \item[$\square$] Vary lag length; plot LRM vs $\bar{L}$.
 \item[$\square$] Compare functional forms.
 \item[$\square$] Report results for multiple specifications.
 \end{itemize}
 
-\textbf{Transparent reporting builds credibility.}
+\paragraph{Transparent reporting builds credibility.}
 \end{tcolorbox}

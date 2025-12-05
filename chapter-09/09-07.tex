@@ -20,12 +20,13 @@ The computational complexity of key algorithms is:
 \end{enumerate}
 \end{proposition}
 
-\begin{tcolorbox}[colback=blue!5!white,colframe=blue!50!black,title=Algorithm: Soft-Impute for Matrix Completion]
-\textbf{Input:} Observed entries $\{Y_{it}\}_{(i,t) \in \Omega}$, regularisation $\lambda$, rank $R$, tolerance $\epsilon$.
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Algorithm: Soft-Impute for Matrix Completion]
 
-\textbf{Initialise:} Set $\hat{\mathbf{L}}^{(0)} = \mathbf{0}_{N \times T}$.
+\paragraph{Input:} Observed entries $\{Y_{it}\}_{(i,t) \in \Omega}$, regularisation $\lambda$, rank $R$, tolerance $\epsilon$.
 
-\textbf{For $k = 1, 2, \ldots$ until convergence:}
+\paragraph{Initialise:} Set $\hat{\mathbf{L}}^{(0)} = \mathbf{0}_{N \times T}$.
+
+\paragraph{For $k = 1, 2, \ldots$ until convergence:}
 \begin{enumerate}
 \item \textbf{Fill in missing entries:} Create completed matrix
 \[
@@ -42,7 +43,7 @@ where $(x)_+ = \max(0, x)$.
 \item \textbf{Check convergence:} If $\|\hat{\mathbf{L}}^{(k)} - \hat{\mathbf{L}}^{(k-1)}\|_F / \|\hat{\mathbf{L}}^{(k-1)}\|_F < \epsilon$, stop.
 \end{enumerate}
 
-\textbf{Output:} Low-rank estimate $\hat{\mathbf{L}}$.
+\paragraph{Output:} Low-rank estimate $\hat{\mathbf{L}}$.
 \end{tcolorbox}
 
 \paragraph{Why Soft-Impute is efficient.} Soft-Impute exploits sparsity by operating only on observed entries. The SVD step uses truncated (partial) SVD, computing only the top $R$ singular values. Complexity is $O(|\Omega| R + (N + T) R^2)$ per iteration—for sparse panels with $|\Omega| \ll NT$, this is much faster than dense SVD.
@@ -96,7 +97,8 @@ MCMC & $O((N+T)R^2)$ & $O(NT)$ & No & Uncertainty needed \\
 \end{table}
 
 \begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Practical Guidance: Algorithm Selection]
-\textbf{Decision tree for algorithm selection:}
+
+\paragraph{Decision tree for algorithm selection:}
 \begin{enumerate}
 \item \textbf{Need uncertainty quantification?} $\rightarrow$ Use MCMC (Section~\ref{sec:bayesian-matrix}).
 \item \textbf{Panel fits in memory?}

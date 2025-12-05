@@ -35,7 +35,7 @@ E_i^{\text{decay}}(\lambda) = \sum_{j \neq i} W_j \cdot \exp(-\lambda \cdot d_{i
 for decay parameter $\lambda > 0$. The effective radius is approximately $3/\lambda$ (where exposure drops to 5\% of its maximum).
 \end{definition}
 
-\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Procedure: Data-Driven Radius Selection]
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Procedure: Data-Driven Radius Selection]
 To select the exposure radius empirically, first specify a grid of candidate radii $\{r_1, \ldots, r_K\}$ based on domain knowledge (e.g., 1km, 5km, 10km for retail). Second, for each $r_k$, compute exposure $E_i(r_k)$ and estimate the spillover effect in the pre-treatment period as a placebo. Third, select the radius where the pre-period placebo effect is closest to zero, indicating that the exposure definition does not spuriously predict outcomes. Fourth, report sensitivity of the main estimate to the radius grid. If spillover effects are detected at all radii, the design may require buffers or a spillover-aware estimand (Chapter~\ref{ch:spillovers}).
 \end{tcolorbox}
 
@@ -55,7 +55,7 @@ The blocking dimension should match the level at which treatment is assigned or 
 
 Reproducibility requires documenting all design choices before estimation. A design protocol guards against data-driven specification search and enables replication.
 
-\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 17.1: Design Protocol Checklist]
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Box 17.1: Design Protocol Checklist]
 \textbf{Before accessing outcome data}, document:
 
 \textbf{Sample definition.} Unit inclusion/exclusion criteria, time window, and any geographic or policy-based restrictions.

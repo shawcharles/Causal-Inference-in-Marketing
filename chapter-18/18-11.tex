@@ -153,8 +153,8 @@ where $n_\ell$ is the number of observations per window. High autocorrelation dr
 
 \subsection*{Diagnostic Checklist}
 
-\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Box 18.14: Platform Experiment Diagnostic Checklist]
-\textbf{For Switchback Experiments:}
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Box 18.14: Platform Experiment Diagnostic Checklist]
+\paragraph{For Switchback Experiments:}
 \begin{itemize}
     \item Carryover test: Compare outcomes in early vs. late portions of each window. Persistent differences suggest carryover.
     \item Buffer adequacy: Vary buffer length and check stability of estimates.
@@ -162,14 +162,14 @@ where $n_\ell$ is the number of observations per window. High autocorrelation dr
     \item Autocorrelation: Estimate within-window autocorrelation to assess effective sample size.
 \end{itemize}
 
-\textbf{For Graph Cluster Randomisation:}
+\paragraph{For Graph Cluster Randomisation:}
 \begin{itemize}
     \item Cluster independence: Test for cross-cluster spillovers using outcomes in control clusters adjacent to treated clusters.
     \item Cluster balance: Compare cluster-level covariates across treatment arms.
     \item Few-cluster inference: With $< 20$ clusters, use randomisation inference rather than asymptotic standard errors.
 \end{itemize}
 
-\textbf{For Both Designs:}
+\paragraph{For Both Designs:}
 \begin{itemize}
     \item GATE vs. DTE: Report both if possible. Large differences indicate strong interference.
     \item Heterogeneity: Check whether effects differ by market size, time of day, or user segment.
