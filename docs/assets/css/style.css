@@ -1,0 +1,68 @@
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Merriweather:wght@400;700&display=swap');
+
+/* Define colors */
+:root {
+  --accent-color: #4a90e2; /* A professional blue */
+  --text-color: #c9d1d9;
+  --body-bg: #22272e;
+  --header-bg: #1c2128;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  line-height: 1.7;
+  color: var(--text-color);
+  background-color: var(--body-bg);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Merriweather', serif;
+  color: #fff;
+  font-weight: 700;
+}
+
+a {
+  color: var(--accent-color);
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+}
+
+a:hover {
+  color: #8ab4f8; /* Lighter blue on hover */
+}
+
+/* Style the main header */
+.page-header {
+  background-color: var(--header-bg);
+  padding: 4rem 2rem;
+}
+
+/* Custom button styles */
+.btn {
+  display: inline-block;
+  padding: 0.8rem 1.5rem;
+  border: 1px solid var(--accent-color);
+  border-radius: 5px;
+  color: var(--accent-color);
+  font-weight: bold;
+  text-align: center;
+  transition: all 0.3s ease;
+  margin: 0.5rem;
+}
+
+.btn:hover {
+  background-color: var(--accent-color);
+  color: #fff;
+  text-decoration: none;
+}
+
+.btn-primary {
+    background-color: var(--accent-color);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background-color: #8ab4f8;
+    border-color: #8ab4f8;
+}
