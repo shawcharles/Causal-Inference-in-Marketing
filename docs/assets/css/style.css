@@ -7,6 +7,7 @@
   --text-color: #c9d1d9;
   --body-bg: #22272e;
   --header-bg: #1c2128;
+  --card-bg: #2d333b;
 }
 
 body {
@@ -14,6 +15,12 @@ body {
   line-height: 1.7;
   color: var(--text-color);
   background-color: var(--body-bg);
+}
+
+.main-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -36,6 +43,11 @@ a:hover {
 .page-header {
   background-color: var(--header-bg);
   padding: 4rem 2rem;
+  text-align: center;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
 }
 
 /* Custom button styles */
@@ -65,4 +77,35 @@ a:hover {
 .btn-primary:hover {
     background-color: #8ab4f8;
     border-color: #8ab4f8;
+}
+
+/* Card grid for 'What You'll Learn' */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.card {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    padding: 1.5rem;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.card h3 {
+    font-size: 1.2rem;
+    margin-top: 0;
+    color: var(--accent-color);
+}
+
+.card p {
+    font-size: 0.95rem;
+    color: var(--text-color);
 }

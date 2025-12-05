@@ -27,29 +27,31 @@ This monograph equips you with the methods to extract causal insights from **pan
 ## What You'll Learn
 
 <div class="cards">
-  <div class="card">
-    <h3>Design-Based Foundations</h3>
-    <p>Difference-in-Differences, Event Studies, Synthetic Control—with rigorous identification assumptions and diagnostics</p>
-  </div>
-  <div class="card">
-    <h3>Modern Extensions</h3>
-    <p>Staggered adoption estimators (Callaway–Sant'Anna, Sun–Abraham), Augmented Synthetic Control, Synthetic DiD</p>
-  </div>
-  <div class="card">
-    <h3>Factor & Matrix Methods</h3>
-    <p>Interactive Fixed Effects, nuclear-norm matrix completion, tensor methods for multi-way panels</p>
-  </div>
-  <div class="card">
-    <h3>Machine Learning Integration</h3>
-    <p>Double/Debiased ML, causal forests, high-dimensional controls with valid post-selection inference</p>
-  </div>
-  <div class="card">
-    <h3>Marketing Applications</h3>
-    <p>Advertising effectiveness, pricing, loyalty programmes, platform interference, privacy-preserving measurement</p>
-  </div>
-  <div class="card">
-    <h3>Practical Guidance</h3>
-    <p>Diagnostics, sensitivity analyses, and a practitioner roadmap for real-world implementation</p>
+  <div class="card-grid">
+    <div class="card">
+      <h3>Design-Based Foundations</h3>
+      <p>Difference-in-Differences, Event Studies, Synthetic Control—with rigorous identification assumptions and diagnostics.</p>
+    </div>
+    <div class="card">
+      <h3>Modern Extensions</h3>
+      <p>Staggered adoption estimators (Callaway–Sant'Anna, Sun–Abraham), Augmented Synthetic Control, Synthetic DiD.</p>
+    </div>
+    <div class="card">
+      <h3>Factor & Matrix Methods</h3>
+      <p>Interactive Fixed Effects, nuclear-norm matrix completion, tensor methods for multi-way panels.</p>
+    </div>
+    <div class="card">
+      <h3>Machine Learning Integration</h3>
+      <p>Double/Debiased ML, causal forests, high-dimensional controls with valid post-selection inference.</p>
+    </div>
+    <div class="card">
+      <h3>Marketing Applications</h3>
+      <p>Advertising effectiveness, pricing, loyalty programmes, platform interference, privacy-preserving measurement.</p>
+    </div>
+    <div class="card">
+      <h3>Practical Guidance</h3>
+      <p>Diagnostics, sensitivity analyses, and a practitioner roadmap for real-world implementation.</p>
+    </div>
   </div>
 </div>
 
