@@ -7,6 +7,7 @@ author: "Charles Shaw"
 
 # Theme (Slate is built into GitHub Pages)
 theme: jekyll-theme-slate
+includes_head: head_custom.html
 
 # Build settings
 markdown: kramdown
