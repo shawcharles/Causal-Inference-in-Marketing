@@ -26,6 +26,22 @@ Under Assumptions~\ref{ass:nuisance-rates}, \ref{ass:panel-crossfit}, and \ref{a
 The rate $\sqrt{N}$ reflects that inference is over $N$ independent units (clusters), not $n = NT$ observations. Within-unit dependence across time periods is absorbed into the variance $V$.
 \end{theorem}
 
+\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=Warning: Rate-Robustness vs. Model-Robustness]
+Practitioners often confuse two distinct types of ``robustness'':
+\begin{itemize}
+    \item \textbf{Rate Double Robustness (Chernozhukov et al.):} The estimator is $\sqrt{N}$-consistent even if nuisance estimators converge at slow rates ($N^{-1/4}$), provided \textit{both} are consistent. This is the core promise of standard DML.
+    \item \textbf{Model Double Robustness (AIPW):} The estimator is consistent if \textit{either} the propensity score \textit{or} the outcome model is correctly specified, even if the other is structurally wrong \citep{bang2005doubly}.
+\end{itemize}
+
+\textbf{The standard Robinson DML estimator possesses the first property but not the second.} As \citet{valentin2025on} clarify, Robinson is robust to outcome misspecification (if the propensity is correct) but \textit{fragile} to propensity misspecification. The root cause is subtle: Robinson's partialling-out approach estimates $\hat{\ell}(x) = \mathbb{E}[Y|X=x] = \theta m(x) + g(x)$, not the direct effect $g(x)$ itself. Even when $\hat{\ell} \to \ell$ perfectly, the bias term $\theta m(x)$ persists through the residual when $\hat{m}(x) \neq m(x)$. The treatment residual $T - \hat{m}(X)$ acts as an instrument; a biased instrument violates the exclusion restriction, and no amount of outcome model accuracy can compensate.
+
+\citet{valentin2025on} propose \textbf{Augmented DML (ADML)} to restore true Model Double Robustness. The key mechanism is an adaptive weight $\tau = \sum_i \hat{m}(x_i)t_i / \sum_i \hat{m}^2(x_i)$ that measures alignment between $\hat{m}$ and observed treatment. When $\hat{m} \approx m$, we have $\tau \to 1$ and ADML reduces to the standard Z-estimator. When $\hat{m}$ is completely misspecified (orthogonal to $T$), we have $\tau \to 0$ and ADML ignores $\hat{m}$ entirely, relying solely on the outcome model. This interpolation delivers Model-DR: consistency if \textit{either} model is correct.
+
+Mathematically, ADML is equivalent to the Efficient Influence Function (EIF) estimator for continuous treatments developed by \citet{kennedy2017non}. The likelihood-based derivation in \citet{valentin2025on} arrives at the same estimator via a different route---one that is computationally convenient for ML practitioners, as the objective can be optimised with standard autograd tools rather than solving moment equations or deriving GMM weighting matrices by hand.
+
+\textbf{Practical Advice:} Do not rely on the ``Double'' label to save you from bad models. Rigorously diagnose your treatment model $\hat{m}(X)$: check that residuals $T - \hat{m}(X)$ are orthogonal to covariates. If in doubt, compare Robinson estimates with a Z-estimator or ADML implementation. When estimates diverge, investigate treatment model specification first.
+\end{tcolorbox}
+
 Inference relies on consistent variance estimation. Because observations within a unit are dependent across time, we must cluster standard errors at the unit level.
 
 \begin{proposition}[Cluster-Robust Variance Estimator]\label{prop:variance-dml}
