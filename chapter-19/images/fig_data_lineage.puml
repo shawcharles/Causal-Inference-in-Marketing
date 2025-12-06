@@ -1,0 +1,95 @@
+@startuml fig_data_lineage
+!pragma layout smetana
+skinparam backgroundColor white
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam roundcorner 8
+
+skinparam rectangle {
+    BackgroundColor<<source>> #E3F2FD
+    BorderColor<<source>> #1976D2
+    BackgroundColor<<join>> #BBDEFB
+    BorderColor<<join>> #1565C0
+    BackgroundColor<<transform>> #E8F5E9
+    BorderColor<<transform>> #388E3C
+    BackgroundColor<<panel>> #C8E6C9
+    BorderColor<<panel>> #2E7D32
+    BackgroundColor<<validate>> #FFF3E0
+    BorderColor<<validate>> #F57C00
+    BackgroundColor<<governance>> #FFEBEE
+    BorderColor<<governance>> #C62828
+    BackgroundColor<<check>> #FFCDD2
+    BorderColor<<check>> #D32F2F
+}
+
+title **Data Lineage: Platform Logs → Econometric Panel**
+
+' ===== STAGE 1: Raw Data Sources =====
+together {
+    rectangle "**Platform**\n**Event Logs**\n\nimpressions, clicks,\nconversions, timestamps" as logs <<source>>
+    rectangle "**Retail**\n**Scanner**\n\nstore sales, prices,\npromotions, inventory" as scanner <<source>>
+    rectangle "**Geo/**\n**Mobility**\n\nlocation visits,\nDMA mapping" as geo <<source>>
+}
+
+' ===== STAGE 2: Identity Linking =====
+rectangle "**Identity Linking & Joins**\n\nPrimary Keys: Store ID, User ID, DMA, Week\nForeign Keys: Cross-device, Cross-platform" as joins <<join>>
+
+' ===== LEAKAGE CHECK 1 =====
+rectangle "✓\n**Temporal**\n**Ordering**" as check1 <<check>>
+
+' ===== STAGE 3: Transformations =====
+rectangle "**Transformations & Aggregation**" as transforms <<transform>> {
+    rectangle "Calendar Alignment (ISO weeks)" as t1
+    rectangle "Deduplication" as t2
+    rectangle "Winsorization" as t3
+    rectangle "Exposure Construction" as t4
+}
+
+' ===== LEAKAGE CHECK 2 =====
+rectangle "✓\n**No Look-**\n**Ahead**" as check2 <<check>>
+
+' ===== STAGE 4: Analysis-Ready Panel =====
+rectangle "**Analysis-Ready Panel**\n\nUnit × Time with Treatment, Outcomes, Covariates" as panel <<panel>>
+
+' ===== STAGE 5: Validation =====
+together {
+    rectangle "**Cross-Source**\n**Reconciliation**" as recon <<validate>>
+    rectangle "**Diagnostic**\n**Checks**" as diag <<validate>>
+    rectangle "**Sensitivity**\n**Analysis**" as sensitivity <<validate>>
+}
+
+' ===== STAGE 6: Governance =====
+rectangle "**Governance:** Version Control | Snapshots | Audit Trails | Reproducibility" as governance <<governance>>
+
+' ===== CONNECTIONS =====
+logs -down-> joins
+scanner -down-> joins
+geo -down-> joins
+
+joins -down-> transforms
+joins -right-> check1
+
+transforms -down-> panel
+transforms -right-> check2
+
+panel -down-> recon
+panel -down-> diag
+panel -down-> sensitivity
+
+recon -[hidden]down-> governance
+diag -down-> governance
+sensitivity -[hidden]down-> governance
+
+' ===== NOTES =====
+note right of check1
+  Verify event timestamps
+  precede outcome dates
+end note
+
+note right of check2
+  Confirm no future
+  information in features
+end note
+
+@enduml

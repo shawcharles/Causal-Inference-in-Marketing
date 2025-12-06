@@ -55,7 +55,7 @@ The workflow is iterative, not strictly linear. Diagnostics at later stages ofte
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.95\textwidth]{images/fig_data_lineage.pdf}
+\includegraphics[width=0.95\textwidth]{images/fig_data_lineage.png}
 \caption{Data lineage from platform logs to econometric panel with leakage guardrails}
 \label{fig:data-lineage}
 \small\textit{Flowchart shows complete data pipeline from raw sources to analysis-ready panel. Stage 1 (top) shows three raw data sources: platform event logs, retail scanner data, and geo/mobility data. Stage 2 shows identity linking and joins using primary keys (store ID, user ID, DMA, week) and foreign keys for cross-device and cross-platform linking. Red checkmark indicates temporal ordering verification. Stage 3 shows transformations including calendar alignment (ISO weeks), deduplication, winsorisation, and exposure construction. Second red checkmark verifies no look-ahead bias. Stage 4 produces analysis-ready panel with unit × time structure containing treatment, outcomes, and covariates. Stage 5 shows validation via cross-source reconciliation, diagnostic checks, and sensitivity analysis. Bottom governance layer ensures version control, snapshots, audit trails, and reproducibility. Leakage prevention checks at each stage prevent future information from contaminating past predictions.}
