@@ -185,8 +185,7 @@ Penalised synthetic control (Section~\ref{sec:sc-construction}) addresses overfi
 \centering
 \caption{Synthetic Control Diagnostic Checklist}
 \label{tab:sc-diagnostics}
-\small
-\begin{tabular}{lll}
+\begin{tabu}to \textwidth{X[1,l] X[1,l] X[1,l]}
 \hline
 \textbf{Diagnostic} & \textbf{What It Assesses} & \textbf{Warning Signal} \\
 \hline
@@ -199,7 +198,7 @@ Leave-one-out range & Donor sensitivity & Wide range \\
 In-time placebo gaps & Stability & Large pseudo-gaps \\
 CV validation RMSPE & Overfitting & $\gg$ training RMSPE \\
 \hline
-\end{tabular}
+\end{tabu}
 \end{table}
 
 \subsection*{Practical Workflow}

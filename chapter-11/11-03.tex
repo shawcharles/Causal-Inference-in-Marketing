@@ -56,11 +56,13 @@ Competitive & $E_{it}^{\text{comp}} = \sum_{j \neq i} \rho_{ij} W_{jt}$ & Simila
 
 \begin{assumption}[Exposure Regularity Conditions]\label{ass:exposure-regularity}
 The exposure mapping $f$ satisfies:
-\begin{enumerate}[(i)]
-    \item \textbf{Boundedness:} $\sup_{\mathbf{w}, i} |f(\mathbf{w}, i)| < \infty$;
-    \item \textbf{Locality:} There exists $\bar{s} < \infty$ such that $|\mathcal{S}_i| \leq \bar{s}$ for all $i$, where $\mathcal{S}_i = \{j : f(\mathbf{w}, i) \neq f(\mathbf{w}', i) \text{ for some } \mathbf{w}, \mathbf{w}' \text{ differing only in } w_j\}$;
-    \item \textbf{Lipschitz:} If exposure depends on covariates $X_i$, then $|f(\mathbf{w}, i) - f(\mathbf{w}, i')| \leq L \|X_i - X_{i'}\|$ for some $L < \infty$.
-\end{enumerate}
+
+ \textbf{Boundedness:} $\sup_{\mathbf{w}, i} |f(\mathbf{w}, i)| < \infty$.
+
+ \textbf{Locality:} There exists $\bar{s} < \infty$ such that $|\mathcal{S}_i| \leq \bar{s}$ for all $i$, where $\mathcal{S}_i = \{j : f(\mathbf{w}, i) \neq f(\mathbf{w}', i) \text{ for some } \mathbf{w}, \mathbf{w}' \text{ differing only in } w_j\}$.
+ 
+ \textbf{Lipschitz:} If exposure depends on covariates $X_i$, then $|f(\mathbf{w}, i) - f(\mathbf{w}, i')| \leq L \|X_i - X_{i'}\|$ for some $L < \infty$.
+
 \end{assumption}
 
 \subsection*{Treatment Effects Under Interference}
