@@ -55,12 +55,11 @@ This monograph equips you with the methods to extract causal insights from **pan
 
 ## Who Is This For?
 
-| Audience | What You'll Get |
-|----------|-----------------|
-| **Marketing Data Scientists** | Methods for building measurement systems at scale |
-| **Applied Econometricians** | Rigorous panel data techniques for industry applications |
-| **Academic Researchers** | Comprehensive coverage of modern causal methods |
-| **Graduate Students** | A structured reference for marketing, economics, or statistics |
+Here’s a more natural, flowing version of your text:
+
+---
+
+This guide is designed for **marketing data scientists** looking to build scalable measurement systems, as well as **applied econometricians** seeking rigorous panel data techniques tailored for real-world industry applications. Whether you’re focused on scaling analytical frameworks or applying econometric methods in practice, you’ll find actionable insights here.
 
 ---
 
