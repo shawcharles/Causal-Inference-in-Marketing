@@ -77,9 +77,9 @@ Tensor completion imputes $\mathcal{Y}_{ijt}(0)$ for treated cells by estimating
 \begin{assumption}[Tensor Factor Stability]\label{ass:tensor-stability}
 The factor structure is stable across treated and untreated cells:
 \[
-\mathbb{E}[\mathcal{Y}_{ijt}(0) | (i,j,t) \in \mathcal{T}] = \mathbb{E}[\mathcal{Y}_{ijt}(0) | (i,j,t) \in \Omega],
+\mathbb{E}[\mathcal{Y}_{ijt}(0) | (i,j,t) \in \mathcal{W}] = \mathbb{E}[\mathcal{Y}_{ijt}(0) | (i,j,t) \in \Omega],
 \]
-where $\mathcal{T}$ denotes treated cells and $\Omega$ denotes untreated cells.
+where $\mathcal{W}$ denotes the set of treated cells and $\Omega$ denotes untreated (observed control) cells.
 \end{assumption}
 
 \begin{definition}[Tensor Nuclear Norm]
@@ -99,9 +99,9 @@ where $\lambda > 0$ is the regularisation parameter (selected by cross-validatio
 \begin{theorem}[Identification of ATT under Tensor Completion]\label{thm:tensor-identification}
 Under Assumptions~\ref{ass:tensor-low-rank} and~\ref{ass:tensor-stability}, and assuming $|\Omega| \geq C \cdot R \cdot (N_p + N_s + T) \log^2(\max(N_p, N_s, T))$ for a universal constant $C > 0$, the ATT is identified and consistently estimated by
 \[
-\hat{\tau}_{\text{ATT}} = \frac{1}{|\mathcal{T}|} \sum_{(i,j,t) \in \mathcal{T}} \left( \mathcal{Y}_{ijt} - \hat{\mathcal{M}}_{ijt} \right),
+\hat{\tau}_{\text{ATT}} = \frac{1}{|\mathcal{W}|} \sum_{(i,j,t) \in \mathcal{W}} \left( \mathcal{Y}_{ijt} - \hat{\mathcal{M}}_{ijt} \right),
 \]
-where $\hat{\mathcal{M}}$ is the tensor completion estimator.
+where $\hat{\mathcal{M}}$ is the tensor completion estimator. This result extends the matrix completion identification theory of \citet{athey2021matrix} to tensor structures; see also \citet{yuan2016tensor} for the statistical foundations.
 \end{theorem}
 
 \begin{proposition}[Estimation Error Bound]\label{prop:tensor-rate}
@@ -139,24 +139,7 @@ Convergence is typically fast (10--50 iterations). Each step is a standard least
 
 \subsection*{Software Implementation}
 
-Several packages implement tensor completion:
-
-\paragraph{Python.}
-\begin{itemize}
-\item \texttt{tensorly}: General tensor decomposition library. Supports CP, Tucker, and tensor completion with various backends (NumPy, PyTorch, TensorFlow).
-\item \texttt{sktensor}: Tensor factorisation for sparse tensors. Useful for large panels with many missing entries.
-\end{itemize}
-
-\paragraph{R.}
-\begin{itemize}
-\item \texttt{rTensor}: CP and Tucker decompositions. Basic tensor operations and unfoldings.
-\item \texttt{tensorBF}: Bayesian tensor factorisation for uncertainty quantification.
-\end{itemize}
-
-\paragraph{MATLAB.}
-\begin{itemize}
-\item Tensor Toolbox (\texttt{tensor\_toolbox}): Comprehensive library for tensor computations, including CP and Tucker with missing data.
-\end{itemize}
+Several software packages implement tensor completion. In Python, \texttt{tensorly} provides a general tensor decomposition library supporting CP, Tucker, and tensor completion with various backends (NumPy, PyTorch, TensorFlow), while \texttt{sktensor} handles tensor factorisation for sparse tensors and is particularly useful for large panels with many missing entries. In R, \texttt{rTensor} implements CP and Tucker decompositions with basic tensor operations and unfoldings, and \texttt{tensorBF} provides Bayesian tensor factorisation for uncertainty quantification. MATLAB users can employ the Tensor Toolbox (\texttt{tensor\_toolbox}), a comprehensive library for tensor computations including CP and Tucker with missing data support.
 
 \subsection*{Application: Multi-Market Product Launches}
 

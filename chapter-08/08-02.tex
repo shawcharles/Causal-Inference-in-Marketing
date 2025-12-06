@@ -17,7 +17,7 @@ In practice, estimation proceeds by first removing the additive fixed effects th
 \]
 where $\tilde{\lambda}_i$ and $\tilde{f}_t$ are the demeaned loadings and factors. This pure factor model is what we estimate. The additive fixed effects $\hat{\alpha}_i$ and $\hat{\gamma}_t$ are recovered after factor estimation if needed for interpretation.
 
-For the remainder of this section, we work with factor models (Rubin, 1974; Imbens and Rubin, 2015):
+For the remainder of this section, we work with factor models \citep{rubin1974estimating, imbens2015causal}:
 \[
 Y_{it}(0) = \lambda_i' f_t + \varepsilon_{it},
 \]
@@ -62,30 +62,23 @@ Estimation minimises the sum of squared residuals on observed (untreated) cells.
 \min_{\Lambda, \mathbf{F}} \sum_{(i,t) \in \Omega} (Y_{it} - \lambda_i' f_t)^2 \quad \text{subject to normalisation constraints.}
 \]
 
-\paragraph{Balanced panels (PCA).} When all pre-treatment cells are observed, the solution is obtained via principal components analysis (PCA). Stack outcomes in an $N \times T$ matrix $\mathbf{Y}$. The estimated factors $\hat{\mathbf{F}}$ are the first $R$ eigenvectors of $\mathbf{Y}'\mathbf{Y}$, scaled by $\sqrt{T}$. The estimated loadings are $\hat{\Lambda} = \mathbf{Y}\hat{\mathbf{F}}/T$. Equivalently, apply singular value decomposition (SVD): $\mathbf{Y} = \mathbf{U}\mathbf{S}\mathbf{V}'$, then $\hat{\Lambda} = \mathbf{U}_R \mathbf{S}_R / \sqrt{N}$ and $\hat{\mathbf{F}} = \sqrt{N} \mathbf{V}_R$, where subscript $R$ denotes the first $R$ components.
+\paragraph{Balanced panels (PCA).} When all pre-treatment cells are observed, the solution is obtained via principal components analysis (PCA). Stack outcomes in an $N \times T$ matrix $\mathbf{Y}$. The estimated factors $\hat{\mathbf{F}}$ are the first $R$ eigenvectors of $\mathbf{Y}'\mathbf{Y}$, scaled by $\sqrt{T}$. The estimated loadings are $\hat{\Lambda} = \mathbf{Y}\hat{\mathbf{F}}/T$. Equivalently, apply singular value decomposition (SVD): $\mathbf{Y} = \mathbf{U}\mathbf{S}\mathbf{V}'$, then $\hat{\mathbf{F}} = \sqrt{T} \mathbf{V}_R$ and $\hat{\Lambda} = \mathbf{U}_R \mathbf{S}_R / \sqrt{T}$, where subscript $R$ denotes the first $R$ components. This scaling ensures consistency with the normalisation $\mathbf{F}'\mathbf{F}/T = I_R$.
 
 The computational cost of full SVD is $O(\min(N,T) \cdot NT)$, which is feasible for typical marketing panels (e.g., 1000 units $\times$ 100 periods takes seconds). For very large panels ($N, T > 10,000$), randomised SVD or iterative methods provide faster approximations.
 
-\paragraph{Unbalanced panels (iterated least squares).} When some cells are missing (e.g., staggered treatment adoption), PCA is not directly applicable. Instead, use the following iterative algorithm:
+\paragraph{Unbalanced panels (iterated least squares).} When some cells are missing (e.g., staggered treatment adoption), PCA is not directly applicable. Instead, we use an iterative Expectation-Maximisation style algorithm described in Box~\ref{box:ife-algorithm}. Convergence to a local minimum is guaranteed because each step weakly decreases the objective. Multiple initialisations help avoid poor local minima; the solution with the smallest objective is selected.
 
-\begin{enumerate}
-\item \textbf{Initialise:} Set $\hat{\mathbf{F}}^{(0)}$ to the PCA solution on a balanced subset (e.g., control units only) or random initialisation.
-\item \textbf{Update loadings:} For each unit $i$, regress observed outcomes on current factors:
-\[
-\hat{\lambda}_i^{(k+1)} = \left( \sum_{t \in \Omega_i} \hat{f}_t^{(k)} \hat{f}_t^{(k)'} \right)^{-1} \sum_{t \in \Omega_i} \hat{f}_t^{(k)} Y_{it},
-\]
-where $\Omega_i = \{t : (i,t) \in \Omega\}$ is the set of observed periods for unit $i$.
-\item \textbf{Update factors:} For each period $t$, regress observed outcomes on current loadings:
-\[
-\hat{f}_t^{(k+1)} = \left( \sum_{i \in \Omega_t} \hat{\lambda}_i^{(k+1)} \hat{\lambda}_i^{(k+1)'} \right)^{-1} \sum_{i \in \Omega_t} \hat{\lambda}_i^{(k+1)} Y_{it},
-\]
-where $\Omega_t = \{i : (i,t) \in \Omega\}$ is the set of observed units for period $t$.
-\item \textbf{Normalise:} Apply the Bai-Ng normalisation to $\hat{\mathbf{F}}^{(k+1)}$ and $\hat{\Lambda}^{(k+1)}$.
-\item \textbf{Check convergence:} Compute the relative change in the objective function or the Frobenius norm of the estimated matrix. Converge when $|\text{obj}^{(k+1)} - \text{obj}^{(k)}| / |\text{obj}^{(k)}| < 10^{-6}$.
-\item \textbf{Iterate:} Repeat steps 2-5 until convergence, typically 10 to 50 iterations.
-\end{enumerate}
+\begin{quote}
+\textbf{Box 8.1: Iterative Least Squares Algorithm for IFE}\label{box:ife-algorithm}
 
-Convergence is guaranteed to a local minimum because each step weakly decreases the objective. Multiple initialisations help avoid poor local minima; select the solution with the smallest objective.
+\textbf{1. Initialise:} Set initial factors $\hat{\mathbf{F}}^{(0)}$ using PCA on a balanced subset of control units or via random initialisation.
+
+\textbf{2. Update Loadings:} For each unit $i$, regress observed outcomes on the current factors: $\hat{\lambda}_i^{(k+1)} = \left( \sum_{t \in \Omega_i} \hat{f}_t^{(k)} \hat{f}_t^{(k)'} \right)^{-1} \sum_{t \in \Omega_i} \hat{f}_t^{(k)} Y_{it}$, where $\Omega_i$ is the set of observed (untreated) periods for unit $i$.
+
+\textbf{3. Update Factors:} For each period $t$, regress observed outcomes on the current loadings: $\hat{f}_t^{(k+1)} = \left( \sum_{i \in \Omega_t} \hat{\lambda}_i^{(k+1)} \hat{\lambda}_i^{(k+1)'} \right)^{-1} \sum_{i \in \Omega_t} \hat{\lambda}_i^{(k+1)} Y_{it}$, where $\Omega_t$ is the set of observed (untreated) units for period $t$.
+
+\textbf{4. Normalise and Check:} Apply the Bai-Ng normalisation to the updated matrices. Check for convergence of the objective function (sum of squared residuals). Repeat steps 2--4 until the relative change in the objective is below a tolerance (e.g., $10^{-6}$), typically requiring 10 to 50 iterations.
+\end{quote}
 
 \subsection*{Consistency and Asymptotics}
 
@@ -117,8 +110,6 @@ where the fixed effects are recovered from the demeaning step if present. The tr
 \subsection*{Practical Considerations}
 
 Several practical issues arise in implementation:
-
-\paragraph{Demeaning.} Always demean outcomes before factor estimation to remove additive fixed effects. The demeaned model is better identified and the factors are easier to interpret as deviations from unit and time means.
 
 \paragraph{Scaling.} Standardise outcomes (divide by the standard deviation) if units have very different scales. This prevents large-variance units from dominating the factor estimation.
 

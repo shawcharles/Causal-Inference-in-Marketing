@@ -128,26 +128,7 @@ Complexity: $O(NTR)$ vs $O(NT^2)$ for exact SVD. Approximation error is bounded 
 
 \subsection*{Software and Implementation}
 
-\paragraph{R.}
-\begin{itemize}
-\item \texttt{softImpute}: Soft-impute algorithm. Handles matrices with millions of entries.
-\item \texttt{MatrixCompletion}: Nuclear norm minimisation.
-\item \texttt{tensorBF}: Bayesian tensor factorisation.
-\end{itemize}
-
-\paragraph{Python.}
-\begin{itemize}
-\item \texttt{fancyimpute}: Multiple imputation algorithms including Soft-Impute.
-\item \texttt{scikit-learn}: \texttt{NMF} for matrix factorisation.
-\item \texttt{tensorly}: Tensor decomposition (CP, Tucker).
-\item \texttt{implicit}: ALS for large sparse matrices (recommender systems).
-\end{itemize}
-
-\paragraph{Julia.}
-\begin{itemize}
-\item \texttt{LowRankModels.jl}: Generalised low-rank models.
-\item \texttt{TensorToolbox.jl}: Tensor decomposition.
-\end{itemize}
+Several software packages implement scalable matrix completion algorithms. In R, \texttt{softImpute} implements the soft-impute algorithm and handles matrices with millions of entries, \texttt{MatrixCompletion} provides nuclear norm minimisation, and \texttt{tensorBF} offers Bayesian tensor factorisation. In Python, \texttt{fancyimpute} provides multiple imputation algorithms including Soft-Impute, \texttt{scikit-learn}'s \texttt{NMF} handles matrix factorisation, \texttt{tensorly} implements tensor decomposition (CP and Tucker), and \texttt{implicit} offers ALS for large sparse matrices in recommender system contexts. Julia users can employ \texttt{LowRankModels.jl} for generalised low-rank models and \texttt{TensorToolbox.jl} for tensor decomposition.
 
 \subsection*{Benchmarking}
 

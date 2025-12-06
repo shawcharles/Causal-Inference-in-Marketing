@@ -66,20 +66,7 @@ where $h_{it}$ is the leverage of cell $(i,t)$. Cells with $|\text{DFFITS}_{it}|
 
 \subsection*{Software for Diagnostics}
 
-\paragraph{R.}
-\begin{itemize}
-\item \texttt{RMTstat}: Random matrix theory tools for eigenvalue ratio tests.
-\item \texttt{influence.ME}: Influence diagnostics for mixed-effects models (adaptable to factor models).
-\item \texttt{car}: Cook's distance, leverage plots, DFFITS for regression.
-\item \texttt{ggplot2}: Scree plots, residual distributions, partial dependence plots.
-\end{itemize}
-
-\paragraph{Python.}
-\begin{itemize}
-\item \texttt{statsmodels}: Influence diagnostics (Cook's distance, leverage).
-\item \texttt{sklearn.inspection}: Partial dependence plots, permutation importance.
-\item \texttt{matplotlib}/\texttt{seaborn}: Scree plots, residual analysis.
-\end{itemize}
+Several software packages support diagnostic analyses for matrix completion. In R, \texttt{RMTstat} provides random matrix theory tools for eigenvalue ratio tests, \texttt{influence.ME} offers influence diagnostics for mixed-effects models (adaptable to factor models), \texttt{car} provides Cook's distance, leverage plots, and DFFITS for regression, and \texttt{ggplot2} enables scree plots, residual distributions, and partial dependence plots. In Python, \texttt{statsmodels} provides influence diagnostics including Cook's distance and leverage, \texttt{sklearn.inspection} offers partial dependence plots and permutation importance, and \texttt{matplotlib} or \texttt{seaborn} enable scree plots and residual analysis.
 
 \subsection*{Diagnostic Checklist}
 

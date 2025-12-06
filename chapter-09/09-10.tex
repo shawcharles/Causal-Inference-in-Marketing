@@ -32,13 +32,7 @@ An e-commerce platform observes user engagement (clicks, add-to-cart, purchases)
 
 \paragraph{Estimation.} Tensor completion imputes counterfactual engagement for treated users in the mobile context. We estimate a CP decomposition with rank $R = 10$ using ALS (Section~\ref{sec:computation}). The first factor captures user preferences (electronics vs fashion). The second factor captures item popularity. The third factor captures context effects (mobile users browse more but buy less). The remaining factors capture interactions.
 
-\paragraph{Results.}
-\begin{itemize}
-\item \textbf{Click-through rate:} +8\% (95\% CI: [5\%, 11\%]).
-\item \textbf{Purchase rate:} +5\% (95\% CI: [2\%, 8\%]).
-\item \textbf{Heterogeneity:} Power users: +12\%; casual users: +4\%.
-\end{itemize}
-Tensor completion reveals heterogeneity by leveraging the multi-way structure.
+\paragraph{Results.} The new recommendation algorithm increases click-through rate by 8\% (95\% CI: 5--11\%) and purchase rate by 5\% (95\% CI: 2--8\%). Heterogeneity analysis reveals that power users see a 12\% increase while casual users see only 4\%. Tensor completion reveals this heterogeneity by leveraging the multi-way structure.
 
 \paragraph{Diagnostics.} Cross-validation on held-out pre-treatment cells achieves $R^2 = 0.72$. Placebo tests (treating random pre-treatment cells as missing) produce near-zero effects (mean 0.01, SE 0.3). The tensor completion is valid (Section~\ref{sec:adv-matrix-diagnostics}).
 
@@ -50,13 +44,7 @@ A grocery retailer with 800 products across 150 stores over 104 weeks experience
 
 \paragraph{Estimation.} Robust matrix completion separates stockouts from underlying demand. We solve SPCP with $\lambda = 0.15$ (chosen by cross-validation). The low-rank component $\hat{\mathbf{L}}$ captures demand. The sparse component $\hat{\mathbf{S}}$ captures stockouts (95\% of non-zero entries in $\hat{\mathbf{S}}$ are negative).
 
-\paragraph{Results.}
-\begin{itemize}
-\item \textbf{Robust MC ATT:} +18\% sales (95\% CI: [14\%, 22\%]).
-\item \textbf{Standard MC ATT:} +12\% (biased downward by stockouts).
-\item \textbf{Stockout reduction:} 60\% decrease (from 8\% to 3\% of cells).
-\end{itemize}
-The robust correction accounts for 6 percentage points of the treatment effect. Half of the sales increase reflects higher demand due to improved product availability.
+\paragraph{Results.} Robust matrix completion yields an ATT of 18\% (95\% CI: 14--22\%), compared to 12\% from standard matrix completion, which is biased downward by stockouts. The inventory management system also reduces stockouts by 60\% (from 8\% to 3\% of cells). The robust correction accounts for 6 percentage points of the treatment effect, indicating that half of the sales increase reflects higher demand due to improved product availability.
 
 \paragraph{Diagnostics.} Residual analysis confirms heavy-tailed distribution before robust correction; approximately Gaussian after. Sensitivity to $\lambda$: estimates stable for $\lambda \in [0.10, 0.20]$.
 
@@ -68,14 +56,7 @@ A consumer packaged goods company launches 40 new products across 25 markets ove
 
 \paragraph{Estimation.} Covariate-assisted tensor completion incorporates market characteristics. We estimate a CP decomposition with rank $R = 6$ on residuals after controlling for market size, demographics, and competitive intensity. The covariates explain 50\% of the variation in sales. The tensor decomposition captures residual co-movement.
 
-\paragraph{Results.}
-\begin{itemize}
-\item \textbf{Overall ATT:} +22\% sales (95\% CI: [18\%, 26\%]).
-\item \textbf{By market size:} Large: +28\%; Small: +16\%.
-\item \textbf{By income:} High: +25\%; Low: +18\%.
-\item \textbf{Dynamic pattern:} Week 4: +15\%; Week 12: +25\% (growing awareness).
-\end{itemize}
-Covariate-assisted tensor completion reveals heterogeneity by leveraging market characteristics. The time mode captures the dynamic pattern.
+\paragraph{Results.} The overall ATT is 22\% (95\% CI: 18--26\%), with heterogeneity by market size (large markets: 28\%, small markets: 16\%) and income (high-income markets: 25\%, low-income markets: 18\%). The dynamic pattern shows effects growing over time: 15\% at week 4 and 25\% at week 12, reflecting growing consumer awareness. Covariate-assisted tensor completion reveals this heterogeneity by leveraging market characteristics, while the time mode captures the dynamic pattern.
 
 \paragraph{Diagnostics.} First-step $R^2 = 0.50$. Out-of-sample $R^2$ (tensor completion on residuals): 0.68. Sensitivity to covariate specification: estimates stable across specifications.
 
@@ -89,14 +70,7 @@ An advertiser runs campaigns across 4 platforms (search, social, display, video)
 
 Bayesian hierarchical tensor completion shares information across platforms. We place a hierarchical prior on platform-level factors, shrinking them toward a population-level factor. This improves estimates for platforms with limited data (video has fewer observations than search).
 
-\paragraph{Results.}
-\begin{itemize}
-\item \textbf{Overall CTR:} +15\% (95\% CI: [12\%, 18\%]).
-\item \textbf{Overall conversion:} +10\% (95\% CI: [7\%, 13\%]).
-\item \textbf{Search:} +18\% CTR (95\% CI: [14\%, 22\%]).
-\item \textbf{Social:} +12\% CTR (95\% CI: [8\%, 16\%]).
-\end{itemize}
-Posterior credible intervals quantify uncertainty. The hierarchical model reduces standard errors for video by 25\% by borrowing strength from other platforms.
+\paragraph{Results.} The bidding strategy increases overall CTR by 15\% (95\% CI: 12--18\%) and overall conversion by 10\% (95\% CI: 7--13\%). Platform-specific effects show search at 18\% CTR (95\% CI: 14--22\%) and social at 12\% CTR (95\% CI: 8--16\%). Posterior credible intervals quantify uncertainty, and the hierarchical model reduces standard errors for video by 25\% by borrowing strength from other platforms.
 
 \paragraph{Diagnostics.} Change-point detection identifies week 12 as a structural break. Model comparison: Bayes factor for time-varying vs static model = 18 (strong evidence for time-varying).
 

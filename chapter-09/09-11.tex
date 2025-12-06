@@ -19,97 +19,35 @@ Finally, estimate the effects by imputing counterfactuals and computing the ATT,
 Which advanced method should you use? The choice depends on data characteristics, research questions, and computational constraints. For a summary table, see Section~\ref{sec:adv-matrix-connections}.
 
 \begin{enumerate}
-\item \textbf{Data structure:}
-  \begin{itemize}
-  \item Multi-way (products $\times$ stores $\times$ time)? $\rightarrow$ Tensor completion (Section~\ref{sec:tensor-completion}).
-  \item Two-way? $\rightarrow$ Matrix completion.
-  \end{itemize}
+\item \textbf{Data structure:} If data are naturally multi-way (products $\times$ stores $\times$ time), use tensor completion (Section~\ref{sec:tensor-completion}). For two-way data, use matrix completion.
 
-\item \textbf{Data quality:}
-  \begin{itemize}
-  \item Outliers present (stockouts, data errors)? $\rightarrow$ Robust MC (Section~\ref{sec:robust-matrix}).
-  \item Clean data? $\rightarrow$ Standard MC.
-  \end{itemize}
+\item \textbf{Data quality:} If outliers are present (stockouts, data errors), use robust MC (Section~\ref{sec:robust-matrix}). For clean data, use standard MC.
 
-\item \textbf{Covariates:}
-  \begin{itemize}
-  \item Rich side information (demographics, weather)? $\rightarrow$ Covariate-assisted MC (Section~\ref{sec:matrix-side-info}).
-  \item Minimal covariates? $\rightarrow$ Standard MC.
-  \end{itemize}
+\item \textbf{Covariates:} If rich side information is available (demographics, weather), use covariate-assisted MC (Section~\ref{sec:matrix-side-info}). With minimal covariates, use standard MC.
 
-\item \textbf{Stationarity:}
-  \begin{itemize}
-  \item Structural breaks or algorithm changes? $\rightarrow$ Time-varying rank (Section~\ref{sec:time-varying-rank}).
-  \item Stable factor structure? $\rightarrow$ Standard MC.
-  \end{itemize}
+\item \textbf{Stationarity:} If structural breaks or algorithm changes are present, use time-varying rank models (Section~\ref{sec:time-varying-rank}). For stable factor structures, use standard MC.
 
-\item \textbf{Uncertainty quantification:}
-  \begin{itemize}
-  \item Need posterior distributions and credible intervals? $\rightarrow$ Bayesian MC (Section~\ref{sec:bayesian-matrix}).
-  \item Point estimates sufficient? $\rightarrow$ Frequentist MC.
-  \end{itemize}
+\item \textbf{Uncertainty quantification:} If posterior distributions and credible intervals are needed, use Bayesian MC (Section~\ref{sec:bayesian-matrix}). If point estimates suffice, use frequentist MC.
 
-\item \textbf{Computational constraints:}
-  \begin{itemize}
-  \item Very large panel ($>$10M cells)? $\rightarrow$ Efficient algorithms: Soft-Impute, SGD (Section~\ref{sec:computation}).
-  \item Moderate panel? $\rightarrow$ Standard algorithms (ALS, nuclear norm).
-  \end{itemize}
+\item \textbf{Computational constraints:} For very large panels ($>$10M cells), use efficient algorithms such as Soft-Impute or SGD (Section~\ref{sec:computation}). For moderate panels, use standard algorithms (ALS, nuclear norm).
 \end{enumerate}
 
 \subsection*{Step-by-Step Implementation Guide}
 
-\paragraph{Step 1: Prepare the data.}
-\begin{itemize}
-\item Organise outcomes into a matrix or tensor.
-\item Code treatment indicators (1 for treated, 0 for untreated).
-\item Collect covariates (unit characteristics, time-varying variables).
-\item Check for missing data and outliers.
-\item Visualise data (heatmaps, time series plots) to understand patterns.
-\end{itemize}
+\paragraph{Step 1: Prepare the data.} Organise outcomes into a matrix or tensor, then code treatment indicators (1 for treated, 0 for untreated). Collect covariates including unit characteristics and time-varying variables. Check for missing data and outliers, and visualise data using heatmaps and time series plots to understand patterns.
 
 \paragraph{Step 2: Select the method.}
 Use the decision tree above. If unsure, start with standard matrix completion as a baseline, then try advanced methods and compare.
 
-\paragraph{Step 3: Choose tuning parameters.}
-\begin{itemize}
-\item Select rank $R$ using cross-validation, information criteria, or eigenvalue ratio test (Section~\ref{sec:adv-matrix-diagnostics}).
-\item Select regularisation parameters ($\eta$, $\lambda$, $\gamma$) using cross-validation.
-\item For Bayesian methods, choose priors based on domain knowledge or use weakly informative priors.
-\end{itemize}
+\paragraph{Step 3: Choose tuning parameters.} Select rank $R$ using cross-validation, information criteria, or eigenvalue ratio test (Section~\ref{sec:adv-matrix-diagnostics}). Select regularisation parameters ($\eta$, $\lambda$, $\gamma$) using cross-validation. For Bayesian methods, choose priors based on domain knowledge or use weakly informative priors.
 
-\paragraph{Step 4: Estimate the model.}
-\begin{itemize}
-\item Run the chosen algorithm (ALS, ADMM, Soft-Impute, MCMC).
-\item Check convergence (plot objective function, compare multiple initialisations).
-\item Compute imputed counterfactuals for treated cells.
-\item Calculate treatment effects (observed minus imputed).
-\end{itemize}
+\paragraph{Step 4: Estimate the model.} Run the chosen algorithm (ALS, ADMM, Soft-Impute, MCMC) and check convergence by plotting the objective function and comparing multiple initialisations. Compute imputed counterfactuals for treated cells, then calculate treatment effects as observed minus imputed.
 
-\paragraph{Step 5: Conduct diagnostics.}
-Follow the diagnostic checklist in Section~\ref{sec:adv-matrix-diagnostics}:
-\begin{itemize}
-\item Rank selection (scree plots, stability across subsamples).
-\item Outlier detection (residual plots, robust vs non-robust comparison).
-\item Covariate relevance (variable importance, partial dependence).
-\item Computational validation (convergence, solution stability).
-\end{itemize}
+\paragraph{Step 5: Conduct diagnostics.} Follow the diagnostic checklist in Section~\ref{sec:adv-matrix-diagnostics}. Assess rank selection using scree plots and stability across subsamples. Perform outlier detection using residual plots and robust versus non-robust comparison. Evaluate covariate relevance through variable importance and partial dependence. Validate computation by checking convergence and solution stability.
 
-\paragraph{Step 6: Perform inference.}
-\begin{itemize}
-\item Compute standard errors using bootstrap, asymptotic theory, or posterior distributions.
-\item Construct confidence intervals or credible intervals.
-\item Conduct placebo tests (treat random pre-treatment cells as missing).
-\item Report treatment effects with uncertainty quantification.
-\end{itemize}
+\paragraph{Step 6: Perform inference.} Compute standard errors using bootstrap, asymptotic theory, or posterior distributions. Construct confidence intervals or credible intervals. Conduct placebo tests by treating random pre-treatment cells as missing. Report treatment effects with uncertainty quantification.
 
-\paragraph{Step 7: Report results.}
-\begin{itemize}
-\item Present treatment effect estimates with confidence intervals.
-\item Discuss heterogeneity (across units, time, subgroups).
-\item Compare to alternative methods (SC, DiD).
-\item Discuss limitations (assumptions, sensitivity to tuning).
-\item Provide replication materials (data, code, documentation).
-\end{itemize}
+\paragraph{Step 7: Report results.} Present treatment effect estimates with confidence intervals and discuss heterogeneity across units, time, and subgroups. Compare to alternative methods such as SC and DiD. Discuss limitations including assumptions and sensitivity to tuning. Provide replication materials including data, code, and documentation.
 
 
 \subsection*{Software Recommendations}
@@ -137,13 +75,7 @@ Bayesian inference & \texttt{rstan}, \texttt{JAGS} & \texttt{pymc}, \texttt{nump
 \end{tighttable}
 \end{table}
 
-\paragraph{Package recommendations by use case:}
-\begin{itemize}
-\item \textbf{Fastest for sparse matrices:} \texttt{softImpute} (R).
-\item \textbf{Most flexible for tensors:} \texttt{tensorly} (Python).
-\item \textbf{Most user-friendly for Bayesian:} \texttt{pymc} (Python).
-\item \textbf{Most general:} \texttt{LowRankModels.jl} (Julia)—handles arbitrary loss functions and regularisers.
-\end{itemize}
+\paragraph{Package recommendations by use case.} For sparse matrices, \texttt{softImpute} (R) is fastest. For tensors, \texttt{tensorly} (Python) offers the most flexibility. For Bayesian inference, \texttt{pymc} (Python) is most user-friendly. For the most general approach, \texttt{LowRankModels.jl} (Julia) handles arbitrary loss functions and regularisers.
 
 \subsection*{Common Pitfalls and Solutions}
 

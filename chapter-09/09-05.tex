@@ -3,12 +3,7 @@
 
 \subsection*{When Rank Changes Over Time}
 
-The low-rank assumption in Chapter~\ref{ch:factor} requires that the factor structure is stable over time. The rank $R$ (the number of factors) and the loadings $\lambda_i$ (unit sensitivities) are constant. This assumption is violated when structural breaks occur:
-\begin{itemize}
-\item A recession introduces new factors (unemployment, credit constraints).
-\item A platform algorithm change alters user behaviour (new engagement patterns).
-\item The COVID-19 pandemic created a structural break in demand (remote work, supply chain disruptions, consumption shifts).
-\end{itemize}
+The low-rank assumption in Chapter~\ref{ch:factor} requires that the factor structure is stable over time. The rank $R$ (the number of factors) and the loadings $\lambda_i$ (unit sensitivities) are constant. This assumption is violated when structural breaks occur. A recession introduces new factors such as unemployment and credit constraints. A platform algorithm change alters user behaviour by creating new engagement patterns. The COVID-19 pandemic created a structural break in demand through remote work, supply chain disruptions, and consumption shifts.
 
 When the rank changes over time, standard matrix completion produces biased counterfactuals. The pre-treatment factor structure does not extrapolate to the post-treatment period. Time-varying rank models adapt to non-stationary environments by allowing the rank and factor structure to change over time.
 
@@ -47,7 +42,7 @@ Online matrix completion provides a framework for time-varying rank models.
 \begin{definition}[Online Matrix Completion Objective]
 At time $t$, the online estimator solves:
 \[
-\hat{\mathbf{L}}_t = \arg\min_{\mathbf{L}} \sum_{s=1}^t \sum_{i=1}^N (1 - W_{is})(Y_{is} - L_{is})^2 + \lambda_t \|\mathbf{L}\|_* + \alpha \|\mathbf{L} - \hat{\mathbf{L}}_{t-1}\|_F^2,
+\hat{\mathbf{L}}_t = \arg\min_{\mathbf{L}} \sum_{s=1}^t \sum_{i=1}^N (1 - D_{is})(Y_{is} - L_{is})^2 + \lambda_t \|\mathbf{L}\|_* + \alpha \|\mathbf{L} - \hat{\mathbf{L}}_{t-1}\|_F^2,
 \]
 where:
 \begin{enumerate}[(i)]
@@ -61,7 +56,7 @@ where:
 
 \begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Algorithm: Online Matrix Completion with Subspace Tracking]
 
-\paragraph{Input:} Panel data $\{Y_{it}\}$, treatment indicators $\{W_{it}\}$, initial rank $R_0$, regularisation $\lambda$, smoothing $\alpha$.
+\paragraph{Input:} Panel data $\{Y_{it}\}$, treatment indicators $\{D_{it}\}$, initial rank $R_0$, regularisation $\lambda$, smoothing $\alpha$.
 
 \paragraph{Initialise:} Estimate $\hat{\mathbf{L}}_1$ from first $T_0$ periods using standard MC. Set rank $R_1 = R_0$.
 
@@ -128,28 +123,7 @@ Risk & Bias after breaks & Overfitting if $\alpha$ too small \\
 
 \subsection*{Software Implementation}
 
-Several packages support time-varying factor models and change-point detection:
-
-\paragraph{Python.}
-\begin{itemize}
-\item \texttt{ruptures}: Change-point detection library. Supports multiple algorithms (PELT, binary segmentation).
-\item \texttt{dynfact}: Dynamic factor models with time-varying loadings.
-\item Custom implementations using \texttt{scipy.optimize} for the online MC objective.
-\end{itemize}
-
-\paragraph{R.}
-\begin{itemize}
-\item \texttt{changepoint}: Change-point detection for time series. PELT and binary segmentation.
-\item \texttt{bfast}: Breaks for additive seasonal and trend detection.
-\item \texttt{tseries}: Time series analysis including structural break tests.
-\item \texttt{dfms}: Dynamic factor models with state-space representation.
-\end{itemize}
-
-\paragraph{MATLAB.}
-\begin{itemize}
-\item GRASTA (Grassmannian Rank-One Update Subspace Tracking): Online subspace tracking.
-\item Custom implementations using the Optimization Toolbox.
-\end{itemize}
+Several software packages support time-varying factor models and change-point detection. In Python, \texttt{ruptures} provides a change-point detection library supporting multiple algorithms including PELT and binary segmentation, \texttt{dynfact} implements dynamic factor models with time-varying loadings, and custom implementations using \texttt{scipy.optimize} can handle the online matrix completion objective. In R, \texttt{changepoint} provides change-point detection for time series using PELT and binary segmentation, \texttt{bfast} detects breaks in additive seasonal and trend components, \texttt{tseries} offers time series analysis including structural break tests, and \texttt{dfms} implements dynamic factor models with state-space representation. MATLAB users can employ GRASTA (Grassmannian Rank-One Update Subspace Tracking) for online subspace tracking or build custom implementations using the Optimization Toolbox.
 
 \subsection*{Application: COVID-19 Structural Break}
 
@@ -171,18 +145,8 @@ Consider an e-commerce platform observing daily user engagement (clicks, purchas
 
 \paragraph{Treatment.} A new feature (personalised recommendations) is launched in April 2020 for a subset of users. The goal is to estimate the causal effect on engagement.
 
-\paragraph{Results.}
-\begin{itemize}
-\item \textbf{Time-varying MC ATT:} 12\% increase in engagement (95\% CI: [8\%, 16\%]).
-\item \textbf{Standard MC ATT:} 8\% increase (95\% CI: [4\%, 12\%]).
-\item The standard MC estimate is biased downward because it uses the pre-COVID structure ($R = 3$) for imputation, failing to capture the new factors.
-\end{itemize}
+\paragraph{Results.} The time-varying matrix completion estimator yields an ATT of 12\% (95\% CI: 8--16\%), compared to 8\% (95\% CI: 4--12\%) from standard matrix completion. The standard estimate is biased downward because it uses the pre-COVID structure ($R = 3$) for imputation, failing to capture the new factors.
 
-\paragraph{Diagnostics.}
-\begin{itemize}
-\item Change-point detection identifies mid-March 2020 as a structural break (reconstruction error spike).
-\item Pre-break $R^2 = 0.80$; post-break $R^2 = 0.85$ (improved fit with $R = 5$).
-\item Sensitivity to $\alpha$: ATT stable for $\alpha \in [0.1, 1.0]$.
-\end{itemize}
+\paragraph{Diagnostics.} Three checks validate the time-varying approach. First, change-point detection identifies mid-March 2020 as a structural break through a reconstruction error spike. Second, model fit improves after the break: pre-break $R^2 = 0.80$ versus post-break $R^2 = 0.85$ with $R = 5$. Third, sensitivity analysis shows the ATT is stable for $\alpha \in [0.1, 1.0]$.
 
 \paragraph{Inference.} Confidence intervals constructed using block bootstrap with 7-day blocks (Section~\ref{sec:bayesian-matrix}).

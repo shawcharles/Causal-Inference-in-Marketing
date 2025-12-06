@@ -3,29 +3,21 @@
 
 High-dimensional panel models extend standard panel regression to accommodate many controls. This section formalises the model, discusses how to partial out fixed effects and latent factors, and clarifies the implications of dependence for selection and inference.
 
-The baseline model extends a standard panel regression to accommodate a high-dimensional vector of controls, $X_{it} \in \mathbb{R}^p$:
+The baseline model extends standard panel regression to a high-dimensional setting:
 \[
-Y_{it} = \tau W_{it} + X_{it}' \beta + \alpha_i + \gamma_t + \varepsilon_{it}.
+Y_{it} = \tau D_{it} + X_{it}' \beta + \alpha_i + \gamma_t + \varepsilon_{it},
 \]
-Here, $\tau$ is the treatment effect, while $\alpha_i$ and $\gamma_t$ are unit and time fixed effects. The model is high-dimensional when $p$ is large relative to the sample size, requiring regularisation to estimate $\beta$ and thereby identify $\tau$.
-
-The controls $X_{it}$ are included to absorb variation correlated with treatment, reducing omitted-variable bias. Regularisation provides a data-driven method for selecting the conditioning set when theory does not specify it, balancing the bias from omitting important confounders against the variance from including irrelevant ones.
+where $D_{it}$ is the treatment indicator, $\tau$ the treatment effect, $X_{it} \in \mathbb{R}^p$ the control vector, and $\alpha_i$, $\gamma_t$ the unit and time fixed effects. The model is high-dimensional when $p$ is large relative to the effective sample size, necessitating regularisation to estimate $\beta$ and thereby isolate $\tau$. The controls absorb variation correlated with treatment, reducing omitted-variable bias, while regularisation balances the bias from omitting important confounders against the variance from including irrelevant ones.
 
 \subsection*{Fixed Effects and the Within-Transformation}
 
-Unit and time fixed effects $\alpha_i$ and $\gamma_t$ absorb time-invariant unit characteristics (for example, store location, brand equity, baseline customer loyalty) and common time-varying shocks (for example, seasonality, macroeconomic conditions, category trends) that affect all units simultaneously. Fixed effects are identified from within-unit variation over time and within-time variation across units, provided that treatment varies within units or within periods.
+As established in Chapter~\ref{ch:frameworks}, unit fixed effects $\alpha_i$ absorb time-invariant heterogeneity (store location, brand equity, baseline loyalty) while time fixed effects $\gamma_t$ capture common shocks (seasonality, macroeconomic conditions). In high-dimensional settings, fixed effects reduce the effective covariate dimension: time-invariant controls are collinear with $\alpha_i$ and drop out, while time-varying controls enter only after the within-transformation.
 
-In high-dimensional settings, fixed effects reduce the effective dimension of controls by removing variation that is absorbed by $\alpha_i$ and $\gamma_t$. For example, if demographic variables are time-invariant ($X_{it} = X_i$ for all $t$), they are collinear with unit fixed effects and cannot be included in the regression. If controls are time-varying ($X_{it}$ varies within unit $i$ over time), they enter the regression after unit and time effects are partialled out, reducing the residual covariate dimension and mitigating multicollinearity.
-
-A common approach is to partial out the fixed effects via the within-transformation before applying regularisation. This involves demeaning the data for each unit and time period. Regularisation is then applied to a regression of the transformed outcome $\tilde{Y}_{it}$ on the transformed treatment $\tilde{W}_{it}$ and controls $\tilde{X}_{it}$. This two-step procedure is simple and transparent, but it treats the fixed effects as nuisance parameters to be removed rather than as part of the high-dimensional estimation problem.
+A common approach is to partial out fixed effects via demeaning before applying regularisation. The transformed regression of $\tilde{Y}_{it}$ on $\tilde{D}_{it}$ and $\tilde{X}_{it}$ treats fixed effects as nuisance parameters rather than as part of the high-dimensional problem.
 
 \subsection*{Factor-Augmented Models}
 
-Partialling out latent factors, as in Chapter~\ref{ch:factor}, extends this logic to accommodate heterogeneous exposure to common shocks. The factor-augmented model is:
-\[
-Y_{it} = \tau W_{it} + X_{it}' \beta + \lambda_i' f_t + \varepsilon_{it}.
-\]
-Regularisation can be applied after residualising the data with respect to the estimated factor structure, $\hat{\lambda}_i' \hat{f}_t$. This combines the flexibility of factor models with the parsimony of regularisation.
+Factor-augmented models (Chapter~\ref{ch:factor}) extend this logic to heterogeneous exposure to common shocks. Writing $Y_{it} = \tau D_{it} + X_{it}'\beta + \lambda_i' f_t + \varepsilon_{it}$, where $\lambda_i$ are unit-specific loadings and $f_t$ are common factors, regularisation can be applied after residualising with respect to the estimated factor structure $\hat{\lambda}_i' \hat{f}_t$. This combines factor flexibility with covariate parsimony.
 
 \subsection*{Dependence Structures in Panels}
 

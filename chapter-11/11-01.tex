@@ -15,28 +15,10 @@ Three examples illustrate the practical stakes:
 
 These examples share a common structure: the outcome for one unit depends on the treatment status of other units. Standard methods that ignore this dependence produce biased estimates.
 
-\subsection*{The SUTVA Assumption}
+\subsection*{When SUTVA Fails}
 \label{sec:sutva-interference}
 
-A foundational assumption in much of the causal inference literature is the Stable Unit Treatment Value Assumption (SUTVA), introduced by \citet{rubin1980randomization}. We define it formally to identify precisely how it fails under interference.
-
-\begin{definition}[\index{SUTVA}Stable Unit Treatment Value Assumption]\label{def:sutva}
-SUTVA comprises two components:
-\begin{enumerate}[(i)]
-    \item \textbf{No interference:} The potential outcome for unit $i$ depends only on its own treatment:
-    \[
-    Y_{it}(\mathbf{w}) = Y_{it}(\mathbf{w}') \quad \text{whenever } w_i = w'_i,
-    \]
-    for all treatment vectors $\mathbf{w}, \mathbf{w}' \in \{0,1\}^N$.
-    \item \textbf{No hidden treatments (consistency):} There is only one version of each treatment level. If unit $i$ receives treatment $W_{it} = w$, then the observed outcome equals the potential outcome under that treatment:
-    \[
-    Y_{it} = Y_{it}(w) \quad \text{when } W_{it} = w.
-    \]
-\end{enumerate}
-Under SUTVA, potential outcomes reduce to $Y_{it}(0)$ and $Y_{it}(1)$, yielding two potential outcomes per unit-period rather than $2^N$.
-\end{definition}
-
-In marketing, SUTVA is frequently and spectacularly violated. The examples above illustrate why: customers talk to each other, firms compete, and geographic markets overlap.
+SUTVA (Assumption~\ref{assump:sutva}) requires that potential outcomes depend only on a unit's own treatment and that treatment has a single, well-defined version. Under SUTVA, potential outcomes reduce to $Y_{it}(0)$ and $Y_{it}(1)$, yielding two potential outcomes per unit-period. The examples above illustrate why this assumption fails in marketing: customers talk to each other, firms compete, and geographic markets overlap.
 
 \subsection*{Potential Outcomes Under Interference}
 
@@ -51,7 +33,7 @@ The observed outcome satisfies:
 \[
 Y_{it} = Y_{it}(\mathbf{W}_t),
 \]
-where $\mathbf{W}_t = (W_{1t}, \ldots, W_{Nt})'$ is the realised treatment vector. The set of potential outcomes comprises $2^N$ elements. This combinatorial explosion motivates dimensionality reduction through exposure mappings (Section~\ref{sec:exposure-mappings}).
+where $\mathbf{W}_t = (W_{1t}, \ldots, W_{Nt})'$ is the realised treatment vector. The set of potential outcomes comprises $2^N$ elements, as noted in Section~\ref{sec:potential-outcomes-panels}. This combinatorial explosion motivates dimensionality reduction through exposure mappings (Section~\ref{sec:exposure-mappings}).
 \end{definition}
 
 \subsection*{Chapter Overview}

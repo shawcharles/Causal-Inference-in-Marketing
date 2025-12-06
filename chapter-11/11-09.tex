@@ -39,20 +39,17 @@ Applications & Section~\ref{sec:spillovers-applications} & Retail, social media,
 This chapter has developed a framework for causal inference under interference. Exposure mappings, as discussed in works by \citet{aronow2017estimating} and \citet{savje2021causal}, formalise how treatment of one unit affects outcomes of others. Partial interference provides a tractable structure by partitioning units into clusters. Estimation strategies exploit variation in own treatment and exposure to identify direct and spillover effects. Diagnostics detect interference and assess sensitivity to modelling choices.
 
 \begin{tcolorbox}[title=Box 11.2: Interference and Spillovers Workflow, colback=green!5!white, colframe=green!50!black]
-\small
-\begin{quote}
-\textbf{1. Define exposure mapping} (Section~\ref{sec:exposure-mappings}): Specify the spillover mechanism (geographic, network, competitive) and formalise it with an exposure mapping (e.g., inverse distance, number of treated neighbours).
+Begin by defining the exposure mapping (Section~\ref{sec:exposure-mappings}). Specify whether spillovers operate through geographic proximity, network connections, or competitive dynamics, and formalise the mechanism using an appropriate functional form such as inverse distance or fraction of treated neighbours.
 
-\textbf{2. Choose design} (Section~\ref{sec:partial-interference}): Use a cluster-randomised trial, a two-stage design, or an observational design with exogenous variation in exposure. Justify the partial interference assumption if used.
+Next, choose the research design (Section~\ref{sec:partial-interference}). Cluster-randomised trials, two-stage designs, and observational studies with exogenous exposure variation each enable identification of spillover effects. If invoking partial interference, justify why between-cluster spillovers are negligible.
 
-\textbf{3. Estimate direct and spillover effects} (Section~\ref{sec:estimating-spillovers}): Use regression with exposure controls, DiD with spillover groups, or a two-stage estimation approach. Report both direct and spillover effects.
+Then estimate direct and spillover effects (Section~\ref{sec:estimating-spillovers}). Regression with exposure controls, DiD with spillover groups, or two-stage estimation approaches can separate own-treatment effects from exposure-mediated effects. Report both components.
 
-\textbf{4. Conduct diagnostics} (Section~\ref{sec:spillovers-diagnostics}): Run balance tests on pre-treatment exposure, placebo tests on untreated units across exposure levels, and sensitivity analyses varying the exposure mapping.
+Conduct diagnostics to validate the analysis (Section~\ref{sec:spillovers-diagnostics}). Balance tests assess whether exposure is balanced across treatment groups. Placebo tests check whether exposure predicts outcomes among untreated units. Sensitivity analyses vary the exposure mapping to assess robustness.
 
-\textbf{5. Assess competition and saturation} (Section~\ref{sec:competition-saturation}): If relevant, test for competitive reactions by examining competitor behaviour post-treatment. Check for saturation by testing if treatment effects decline as the proportion of treated units grows.
+If competitive reactions or saturation effects are plausible (Section~\ref{sec:competition-saturation}), test for them explicitly. Competitive reactions can be detected through changes in competitor behaviour post-treatment. Saturation can be detected by testing whether treatment effects decline as the proportion of treated units grows.
 
-\textbf{6. Inference and reporting} (Chapter~\ref{ch:inference}): Use cluster-robust inference at the level of randomisation. Report total effects alongside direct and spillover components. Follow the full diagnostic protocol in Chapter~\ref{ch:design-diagnostics}.
-\end{quote}
+Finally, apply appropriate inference methods (Chapter~\ref{ch:inference}). Use cluster-robust standard errors at the level of randomisation. Report the total effect alongside direct and spillover components, and follow the full diagnostic protocol in Chapter~\ref{ch:design-diagnostics}.
 \end{tcolorbox}
 
 Three lessons emerge for practitioners. First, always question the SUTVA assumption. Consider whether spillovers are plausible given the market structure, the treatment, and the outcome. If spillovers are likely, model them explicitly using exposure mappings.

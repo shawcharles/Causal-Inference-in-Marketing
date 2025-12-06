@@ -75,10 +75,10 @@ for a constant $C$ depending on $\mu$, $R$, and $\rho$.
 For causal inference, we must ensure that treatment effects are not mistaken for outliers.
 
 \begin{assumption}[Treatment-Outlier Separation]\label{ass:treatment-outlier}
-Let $\mathcal{T}$ denote the set of treated cells. Treatment effects are distinguishable from outliers if:
+Let $\mathcal{W}$ denote the set of treated cells. Treatment effects are distinguishable from outliers if:
 \begin{enumerate}[(i)]
-    \item The sparse component is estimated using only untreated cells: $\text{supp}(\hat{\mathbf{S}}) \cap \mathcal{T} = \emptyset$;
-    \item Treatment effects satisfy $|\tau_{it}| \leq C_\tau \sigma$ for $(i,t) \in \mathcal{T}$;
+    \item The sparse component is estimated using only untreated cells: $\text{supp}(\hat{\mathbf{S}}) \cap \mathcal{W} = \emptyset$;
+    \item Treatment effects satisfy $|\tau_{it}| \leq C_\tau \sigma$ for $(i,t) \in \mathcal{W}$;
     \item Outlier magnitudes satisfy $|S^*_{it}| > C_S \sigma$ with $C_S \gg C_\tau$.
 \end{enumerate}
 \end{assumption}
@@ -134,26 +134,7 @@ Interpretability & Factors and loadings & Factors + identified outliers \\
 
 \subsection*{Software Implementation}
 
-Several packages implement robust matrix completion:
-
-\paragraph{Python.}
-\begin{itemize}
-\item \texttt{sklearn.decomposition.PCA} with \texttt{svd\_solver='arpack'}: standard PCA (not robust).
-\item \texttt{rpca}: Robust PCA using PCP. Implements ADMM solver.
-\item \texttt{tensorly}: Includes robust tensor decomposition methods.
-\end{itemize}
-
-\paragraph{R.}
-\begin{itemize}
-\item \texttt{rpca}: Robust PCA with nuclear norm + $\ell_1$ penalty. Implements ADMM.
-\item \texttt{pcaMethods}: Various PCA methods including robust variants.
-\item \texttt{robustbase}: General robust statistical methods.
-\end{itemize}
-
-\paragraph{MATLAB.}
-\begin{itemize}
-\item Augmented Lagrange Multiplier (ALM) implementations available from the authors of \citet{candes2011robust}.
-\end{itemize}
+Several software packages implement robust matrix completion. In Python, \texttt{sklearn.decomposition.PCA} with \texttt{svd\_solver='arpack'} provides standard PCA (not robust), while \texttt{rpca} implements Robust PCA using PCP with an ADMM solver, and \texttt{tensorly} includes robust tensor decomposition methods. In R, the \texttt{rpca} package provides Robust PCA with nuclear norm plus $\ell_1$ penalty using ADMM, \texttt{pcaMethods} offers various PCA methods including robust variants, and \texttt{robustbase} provides general robust statistical methods. MATLAB users can access Augmented Lagrange Multiplier (ALM) implementations from the authors of \citet{candes2011robust}.
 
 \subsection*{Application: Retail Sales with Stockouts}
 
@@ -169,11 +150,6 @@ Consider a grocery retailer with 500 products across 100 stores over 104 weeks. 
 
 \paragraph{Results.} The imputed counterfactuals are $\hat{L}_{ijt}$ (excluding outliers). The robust ATT is 20\% increase in sales. For comparison, standard MC (without robustness) produces 15\%. The difference arises because standard MC is biased downward by stockouts in untreated cells.
 
-\paragraph{Diagnostics.}
-\begin{itemize}
-\item Distribution of $\hat{\mathbf{S}}$: 95\% zero entries; non-zero entries have mean absolute value 50 (vs mean sales of 100).
-\item Placebo test: randomly designate 5\% of untreated cells as artificial outliers; method correctly identifies 90\%.
-\item Sensitivity to $\lambda$: ATT estimates stable for $\lambda \in [0.05, 0.2]$.
-\end{itemize}
+\paragraph{Diagnostics.} Three checks validate the robust approach. First, the distribution of $\hat{\mathbf{S}}$ shows 95\% zero entries, with non-zero entries having mean absolute value 50 compared to mean sales of 100, confirming that outliers are sparse and substantial. Second, a placebo test randomly designates 5\% of untreated cells as artificial outliers, and the method correctly identifies 90\% of them. Third, sensitivity analysis shows ATT estimates are stable for $\lambda \in [0.05, 0.2]$.
 
 \paragraph{Inference.} Confidence intervals for the robust ATT can be constructed using bootstrap methods (Section~\ref{sec:bayesian-matrix}) or by propagating uncertainty from the ADMM solution. The 95\% bootstrap CI for the ATT is [16\%, 24\%].

@@ -82,12 +82,12 @@ f_t^{(s)} | \mathbf{Y}, \boldsymbol{\lambda}^{(s)}, \sigma^{2(s-1)} \sim \mathca
 \sigma^{2(s)} | \mathbf{Y}, \boldsymbol{\lambda}^{(s)}, \mathbf{f}^{(s)} \sim \text{IG}\left( a_\sigma + \frac{|\Omega|}{2}, b_\sigma + \frac{1}{2} \sum_{(i,t) \in \Omega} (Y_{it} - \lambda_i^{(s)\top} f_t^{(s)})^2 \right).
 \]
 
-\item \textbf{Impute counterfactuals:} For treated cells $(i,t) \in \mathcal{T}$, draw
+\item \textbf{Impute counterfactuals:} For treated cells $(i,t) \in \mathcal{W}$, draw
 \[
 \hat{Y}_{it}^{(s)}(0) \sim \mathcal{N}(\lambda_i^{(s)\top} f_t^{(s)}, \sigma^{2(s)}).
 \]
 
-\item \textbf{Compute treatment effect:} $\tau^{(s)}_{\text{ATT}} = \frac{1}{|\mathcal{T}|} \sum_{(i,t) \in \mathcal{T}} (Y_{it} - \hat{Y}_{it}^{(s)}(0))$.
+\item \textbf{Compute treatment effect:} $\tau^{(s)}_{\text{ATT}} = \frac{1}{|\mathcal{W}|} \sum_{(i,t) \in \mathcal{W}} (Y_{it} - \hat{Y}_{it}^{(s)}(0))$.
 \end{enumerate}
 
 \paragraph{Output:} Posterior draws $\{\tau^{(s)}_{\text{ATT}}\}_{s=B+1}^S$, credible intervals, effective rank $\hat{R}_{\text{eff}}$.
@@ -148,27 +148,7 @@ Software & \texttt{boot}, custom & \texttt{Stan}, \texttt{pymc} \\
 
 \subsection*{Software Implementation}
 
-Several packages support Bayesian matrix completion:
-
-\paragraph{Python.}
-\begin{itemize}
-\item \texttt{pymc}: General Bayesian modelling. Supports custom factor models with ARD priors.
-\item \texttt{bpmf}: Bayesian Probabilistic Matrix Factorisation. Gibbs sampler for low-rank models.
-\item \texttt{edward2} / \texttt{tensorflow-probability}: Variational inference for large-scale problems.
-\end{itemize}
-
-\paragraph{R.}
-\begin{itemize}
-\item \texttt{blavaan}: Bayesian latent variable models. Supports factor analysis with MCMC.
-\item \texttt{brms}: Bayesian regression models via Stan. Can specify custom factor structures.
-\item \texttt{MCMCpack}: General MCMC samplers. Includes factor model implementations.
-\end{itemize}
-
-\paragraph{Stan.}
-\begin{itemize}
-\item Stan provides a flexible language for specifying custom Bayesian models. The factor model can be implemented directly with ARD priors.
-\item \texttt{rstan} (R) and \texttt{pystan} (Python) provide interfaces.
-\end{itemize}
+Several software packages support Bayesian matrix completion. In Python, \texttt{pymc} provides general Bayesian modelling with support for custom factor models and ARD priors, \texttt{bpmf} implements Bayesian Probabilistic Matrix Factorisation with a Gibbs sampler for low-rank models, and \texttt{edward2} or \texttt{tensorflow-probability} offer variational inference for large-scale problems. In R, \texttt{blavaan} provides Bayesian latent variable models supporting factor analysis with MCMC, \texttt{brms} offers Bayesian regression models via Stan with the ability to specify custom factor structures, and \texttt{MCMCpack} provides general MCMC samplers including factor model implementations. Stan provides a flexible language for specifying custom Bayesian models, allowing the factor model to be implemented directly with ARD priors, with \texttt{rstan} (R) and \texttt{pystan} (Python) providing interfaces.
 
 \subsection*{Application: Hierarchical Demand Across Categories}
 
@@ -203,11 +183,6 @@ Small ($<20$ products) & 10\% (SE 6.5) & 12\% (SE 4.5) & 31\% \\
 
 The hierarchical model reduces standard errors by 8--31\%, with larger gains for small categories. For small categories, the hierarchical model borrows strength from larger categories, shrinking estimates toward the population mean.
 
-\paragraph{Credible intervals.}
-\begin{itemize}
-\item Largest category (50 products): ATT = 15\% (95\% CI: [12\%, 18\%]).
-\item Smallest category (15 products): ATT = 12\% (95\% CI: [8\%, 16\%]).
-\end{itemize}
-The wider interval for the smallest category reflects greater uncertainty.
+\paragraph{Credible intervals.} The posterior yields 95\% credible intervals that vary with category size. For the largest category (50 products), the ATT is 15\% with a 95\% credible interval of 12--18\%. For the smallest category (15 products), the ATT is 12\% with a wider 95\% credible interval of 8--16\%, reflecting greater uncertainty due to limited data.
 
 \paragraph{Model comparison.} Bayes factor comparing hierarchical vs pooled: $\text{BF} = 45$, providing strong evidence for the hierarchical model.

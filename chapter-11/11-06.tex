@@ -1,4 +1,3 @@
-
 \section{Competition and Saturation Effects}
 \label{sec:competition-saturation}
 
@@ -33,7 +32,7 @@ Optimal response & Coordinate treatment across firms & Partial treatment to avoi
 
 \subsection*{Competitive Reactions}
 
-Competitive reactions create dynamic spillovers that evolve over time. Consider a market with $N$ firms. Firm $i$ increases advertising expenditure at time $t$. If the advertising is effective, firm $i$ gains market share. Competitors observe this gain (with some lag) and respond by increasing their own advertising at time $t + 1$.
+Building on the competitive spillover framework introduced in Section~\ref{sec:spillover-types}, we now formalise the estimation of reaction functions. Competitive reactions create dynamic spillovers that evolve over time. Consider a market with $N$ firms. Firm $i$ increases advertising expenditure at time $t$. If the advertising is effective, firm $i$ gains market share. Competitors observe this gain (with some lag) and respond by increasing their own advertising at time $t + 1$.
 
 This competitive response dampens firm $i$'s market share gain. The observed treatment effect at time $t + 1$ is smaller than at time $t$, not because the advertising wears off but because competition intensifies.
 
@@ -106,26 +105,9 @@ Second, they complicate the interpretation of treatment effects in staggered ado
 Third, they affect optimal treatment assignment. If saturation effects are strong, treating all units may be suboptimal. A partial treatment strategy (treating a subset of units) may generate larger average effects by avoiding saturation. If competitive reactions are strong, coordinated treatment (treating all firms simultaneously) may be preferable to staggered treatment (which triggers sequential competitive reactions).
 
 \begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Practical Guidance: When to Worry About Each Mechanism]
-\paragraph{Worry about competitive reactions when:}
-\begin{itemize}
-\item[$\square$] Firms observe each other's actions (advertising visible, prices public).
-\item[$\square$] Market share is roughly fixed (zero-sum competition).
-\item[$\square$] Competitors have capacity to respond quickly.
-\item[$\square$] Treatment effects decline even when market saturation is low.
-\end{itemize}
+Competitive reactions warrant concern when firms observe each other's actions (advertising is visible, prices are public), market share is roughly fixed creating zero-sum competition, competitors have capacity to respond quickly, and treatment effects decline even when market saturation is low.
 
-\paragraph{Worry about saturation effects when:}
-\begin{itemize}
-\item[$\square$] Treatment creates positive externalities that are exhaustible (novelty, network effects).
-\item[$\square$] Later adopters show smaller effects than early adopters.
-\item[$\square$] Effects decline more in high-penetration markets.
-\item[$\square$] Customer overlap across treated units is high.
-\end{itemize}
+Saturation effects warrant concern when treatment creates positive externalities that are exhaustible (novelty, network effects), later adopters show smaller effects than early adopters, effects decline more in high-penetration markets, and customer overlap across treated units is high.
 
-\paragraph{Distinguishing the two:}
-\begin{itemize}
-\item[$\square$] Do declining effects correlate with competitor actions? $\to$ Competition.
-\item[$\square$] Do declining effects correlate with aggregate treatment proportion? $\to$ Saturation.
-\item[$\square$] Do effects decline uniformly across markets? $\to$ Dynamic decay (Chapter~\ref{ch:dynamics}).
-\end{itemize}
+Distinguishing the two mechanisms requires examining correlations. If declining effects correlate with competitor actions, competition is the likely cause. If declining effects correlate with aggregate treatment proportion, saturation is the likely cause. If effects decline uniformly across markets regardless of competitor actions or treatment proportion, dynamic decay (Chapter~\ref{ch:dynamics}) is the likely explanation.
 \end{tcolorbox}

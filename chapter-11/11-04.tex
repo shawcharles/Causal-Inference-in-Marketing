@@ -8,7 +8,7 @@ This assumption is plausible in many marketing settings where spillovers are geo
 \subsection*{Formal Framework}
 
 \begin{assumption}[Partial Interference]\label{ass:partial-interference}
-The population can be partitioned into $G$ non-overlapping clusters $\mathcal{C}_1, \ldots, \mathcal{C}_G$ with $\bigcup_{g=1}^G \mathcal{C}_g = \mathcal{I}$ and $\mathcal{C}_g \cap \mathcal{C}_{g'} = \emptyset$ for $g \neq g'$. Interference occurs only within clusters:
+The population can be partitioned into $G$ non-overlapping clusters $\mathcal{C}_1, \ldots, \mathcal{C}_G$ with $\bigcup_{g=1}^G \mathcal{C}_g = \mathcal{I}$ and $\mathcal{C}_g \cap \mathcal{C}_{g'} = \emptyset$ for $g \neq g'$. Interference occurs only within clusters. We index potential outcomes by cluster $g$, unit $i$ within cluster, and time $t$:
 \[
 Y_{git}(\mathbf{W}_1, \ldots, \mathbf{W}_G) = Y_{git}(\mathbf{W}_g),
 \]
@@ -124,31 +124,11 @@ The partial interference assumption may fail in several scenarios:
 \end{figure}
 
 \begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Practical Guidance: Cluster Construction]
-\paragraph{Cluster selection criteria:}
-\begin{itemize}
-\item[$\square$] Geographic proximity (metros, DMAs, regions).
-\item[$\square$] Network structure (communities, cliques).
-\item[$\square$] Institutional boundaries (stores, schools, firms).
-\end{itemize}
+Cluster selection depends on the spillover mechanism under study. Geographic clusters such as metros, DMAs, or regions suit settings where spillovers decay with distance. Network clusters based on communities or cliques suit social spillover settings. Institutional boundaries---stores within a chain, schools within a district, firms within an industry---provide natural partitions when spillovers operate through organisational channels.
 
-\paragraph{Cluster size considerations:}
-\begin{itemize}
-\item[$\square$] Large enough for within-cluster variation.
-\item[$\square$] Small enough to assume no between-cluster spillovers.
-\item[$\square$] Similar sizes across clusters (avoids heterogeneity in power).
-\end{itemize}
+Cluster size involves a trade-off. Clusters must be large enough to provide within-cluster variation in treatment status, enabling estimation of direct effects. They must be small enough that the assumption of no between-cluster spillovers is credible. Similar sizes across clusters avoid heterogeneity in statistical power and simplify inference.
 
-\paragraph{Intensity selection:}
-\begin{itemize}
-\item[$\square$] Include $p = 0$ (pure control) and $p = 1$ (saturation) if possible.
-\item[$\square$] Multiple intermediate intensities (e.g., 25\%, 50\%, 75\%) enable spillover curve estimation.
-\item[$\square$] Equal allocation across intensities maximises power for contrasts.
-\end{itemize}
+Intensity selection shapes what estimands are identified. Including both $p = 0$ (pure control) and $p = 1$ (saturation) enables estimation of the full spillover curve. Multiple intermediate intensities (e.g., 25\%, 50\%, 75\%) allow researchers to trace how effects vary with cluster treatment density. Equal allocation across intensities maximises power for pairwise contrasts.
 
-\paragraph{Diagnostics:}
-\begin{itemize}
-\item[$\square$] Test for between-cluster spillovers (e.g., adjacent metros).
-\item[$\square$] Check balance across clusters.
-\item[$\square$] Conduct placebo tests (Chapter~\ref{ch:design-diagnostics}).
-\end{itemize}
+Diagnostics should accompany any partial interference analysis. Test for between-cluster spillovers by examining whether outcomes in cluster $g$ correlate with treatment intensity in adjacent clusters. Check covariate balance across clusters assigned to different intensities. Conduct placebo tests as described in Chapter~\ref{ch:design-diagnostics} to assess design validity.
 \end{tcolorbox}

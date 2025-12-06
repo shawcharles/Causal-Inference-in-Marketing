@@ -18,13 +18,7 @@ This chapter has extended the matrix completion framework from Chapter~\ref{ch:f
 
 For detailed method selection guidance, see Section~\ref{sec:adv-matrix-connections} and Section~\ref{sec:adv-matrix-workflow}.
 
-\begin{itemize}
-\item \textbf{Tensor completion:} Data are naturally multi-way and the multi-way structure is informative.
-\item \textbf{Robust methods:} Outliers are common ($>$5\% of cells) and large ($>$3 standard deviations).
-\item \textbf{Covariate-assisted:} Rich side information is available and treatment effects are heterogeneous.
-\item \textbf{Time-varying rank:} Structural breaks are present in the factor structure.
-\item \textbf{Bayesian:} Uncertainty quantification is critical and computational resources permit.
-\end{itemize}
+Use tensor completion when data are naturally multi-way and the multi-way structure is informative. Use robust methods when outliers are common ($>$5\% of cells) and large ($>$3 standard deviations). Use covariate-assisted methods when rich side information is available and treatment effects are heterogeneous. Use time-varying rank models when structural breaks are present in the factor structure. Use Bayesian methods when uncertainty quantification is critical and computational resources permit.
 
 \subsection*{Open Research Questions}
 
@@ -74,15 +68,18 @@ Soft-Impute & Efficient for sparse data & Large sparse panels & Low \\
 
 \begin{figure}[htbp]
 \centering
+\includegraphics[width=0.95\textwidth]{images/fig_tensor_schematic.pdf}
 \caption{Tensor Completion Schematic for Three-Way Panels}
 \label{fig:tensor-schematic}
-\textit{[Figure placeholder: Three-dimensional visualisation of a tensor (products $\times$ stores $\times$ time) with treated cells highlighted. Panel A: full tensor with observed (blue) and missing/treated (red) cells. Panel B: CP decomposition into product loadings, store loadings, and time factors. Panel C: imputed counterfactuals for treated cells.]}
+\small
+\textit{Note}: Panel A shows a three-way tensor (products $\times$ stores $\times$ time) with observed cells (blue) and treated/missing cells (red). Panel B illustrates the CP decomposition into product loadings, store loadings, and time factors. Panel C shows the counterfactual imputation workflow.
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
+\includegraphics[width=0.95\textwidth]{images/fig_robust_decomposition.pdf}
 \caption{Robust Matrix Completion: Separating Low-Rank Structure from Outliers}
 \label{fig:robust-decomposition}
-\textit{[Figure placeholder: Three panels showing decomposition $Y = L + S + E$. Panel A: observed outcome matrix $Y$ as heatmap with outliers visible. Panel B: estimated low-rank component $L$ (smooth structure). Panel C: estimated sparse component $S$ (outliers only).]}
+\small
+\textit{Note}: The decomposition $\mathbf{Y} = \mathbf{L} + \mathbf{S} + \mathbf{E}$ separates the observed matrix into a low-rank component (systematic structure), a sparse component (outliers), and noise. Panel A shows the observed matrix with outliers marked. Panel B shows the estimated low-rank component capturing trends and factor structure. Panel C shows the sparse component isolating outliers.
 \end{figure}
-

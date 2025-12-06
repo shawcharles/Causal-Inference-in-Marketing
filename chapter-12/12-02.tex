@@ -38,7 +38,7 @@ The product rate ensures that the bias from nuisance estimation is $o_P(n^{-1/2}
 We now construct a score that satisfies Neyman orthogonality. The doubly robust score combines outcome regression and propensity weighting in a way that protects against misspecification of either component.
 
 \begin{definition}[Doubly Robust Score for ATT]\label{def:dr-score}
-For the Average Treatment Effect on the Treated (ATT), define $p = P(W=1)$ as the marginal treatment probability. The doubly robust score is:
+For the Average Treatment Effect on the Treated (ATT), define $p = P(W=1)$ as the marginal treatment probability. Following \citet{santanna2020doubly}, the doubly robust score is:
 \[
 \psi^{\text{ATT}}(Z; \tau, \eta) = \frac{W}{p}\bigl(Y - \mu_0(X) - \tau\bigr) - \frac{e(X)(1-W)}{p(1-e(X))}\bigl(Y - \mu_0(X)\bigr),
 \]
@@ -62,7 +62,7 @@ The doubly robust score $\psi^{\text{ATT}}$ is Neyman-orthogonal with respect to
 Consequently, estimation errors in $\hat{\mu}_0$ and $\hat{e}$ contribute only second-order bias to $\hat{\tau}$.
 \end{proposition}
 
-The intuition is straightforward. The first term in the DR score uses the outcome regression to predict counterfactuals; the second term reweights control observations to match the treated covariate distribution.
+The first term in the DR score uses the outcome regression to predict counterfactuals. The second term reweights control observations to match the treated covariate distribution.
 
 When the outcome regression errs, the reweighting corrects for it. When the propensity score errs, the outcome regression provides the right answer directly.
 

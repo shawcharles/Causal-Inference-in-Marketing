@@ -1,7 +1,7 @@
 \section{Marketing Applications}
 \label{sec:dml-marketing}
 
-DML methods are particularly valuable in marketing applications where interventions exhibit heterogeneous effects, where confounding is complex and high-dimensional, and where flexible functional forms are required. This section provides methodological blueprints for three common marketing problems. Chapter~\ref{ch:applications} develops these and other applications in greater depth.
+DML methods are particularly valuable in marketing applications where interventions exhibit heterogeneous effects, where confounding is complex and high-dimensional, and where flexible functional forms are required. This section provides methodological blueprints for five common marketing problems. Chapter~\ref{ch:applications} develops these and other applications in greater depth.
 
 \subsection*{Loyalty Programme Heterogeneity}
 
@@ -9,9 +9,11 @@ Consider a retailer launching a loyalty programme across stores with staggered a
 
 The estimand is the conditional average treatment effect $\tau(x)$ for stores with characteristics $x$. The nuisance functions are the outcome regression $\mu_0(x) = \mathbb{E}[Y|W=0, X=x]$ (the sales trajectory for control stores) and the propensity score $e(x) = P(W=1|X=x)$ (the probability of adoption given characteristics).
 
-The DML procedure partitions stores into $K$ folds. On each iteration, train outcome regressions and propensity scores on $K-1$ folds using gradient-boosted trees, allowing nonlinear relationships and interactions. Evaluate on the held-out fold to construct doubly robust scores. Build causal forests on the scores to estimate $\hat{\tau}(X_i)$. Aggregate CATE estimates into grouped effects (e.g., urban versus rural, high-income versus low-income).
+The DML procedure partitions stores into $K$ folds. On each iteration, train outcome regressions and propensity scores on $K-1$ folds using gradient-boosted trees, allowing nonlinear relationships and interactions. Evaluate on the held-out fold to construct doubly robust scores. Build causal forests on the scores to estimate $\hat{\tau}(X_i)$ \citep{athey2019generalized}. Aggregate CATE estimates into grouped effects (e.g., urban versus rural, high-income versus low-income).
 
 Key diagnostics include placebo tests in pre-programme quarters (pseudo effects should be near zero), overlap checks (propensity distributions should overlap substantially), and CATE stability across folds. If heterogeneity is detected, the analysis informs rollout strategy: prioritise high-response segments, redesign the programme for low-response segments.
+
+\paragraph{Practical considerations.} Loyalty programme adoption is rarely random. Stores with stronger management or higher baseline growth may adopt earlier, creating selection on unobservables that violates unconfoundedness. The CRE approach (Section~\ref{sec:dml-estimators}) helps by proxying for store-level heterogeneity, but cannot fully address time-varying confounders. Combine DML with staggered DiD diagnostics (Chapter~\ref{ch:did}) to assess parallel trends. Watch for spillovers: programme members may cannibalise sales from non-members within the same store, inflating the estimated programme effect.
 
 \subsection*{Advertising Dose-Response}
 
@@ -19,9 +21,11 @@ Consider a digital advertiser varying impression intensity across geographic mar
 
 The estimand is the marginal treatment effect $\tau(w) = \partial \mu(w) / \partial w$, the incremental conversions per additional impression at intensity $w$. The nuisance functions are the conditional mean outcome $m(w, x) = \mathbb{E}[Y|W=w, X=x]$ and the generalised propensity score $r(w|x) = f(W=w|X=x)$, the conditional density of impressions.
 
-The DML procedure partitions markets into $K$ folds. Train outcome regressions using random forests (allowing nonlinear dose-response curves) and density models using kernel smoothing or normalising flows. Evaluate on held-out folds, construct doubly robust scores (Definition~\ref{def:dr-adrf-dml}), and estimate $\hat{\mu}(w)$ at a grid of impression values. Marginal effects are computed by numerical differentiation.
+The DML procedure partitions markets into $K$ folds. Train outcome regressions using random forests (allowing nonlinear dose-response curves) and density models using kernel smoothing or normalising flows. Evaluate on held-out folds, construct doubly robust scores (Definition~\ref{def:dr-adrf-dml}), and estimate $\hat{\mu}(w)$ at a grid of impression values. Marginal effects are computed by numerical differentiation \citep{kennedy2017non}.
 
 Key diagnostics include overlap checks (impression densities should overlap across device types), placebo tests in pre-campaign periods, and sensitivity to learner choice. The shape of the dose-response curve—diminishing returns, constant returns, or inverted-U—directly informs budget allocation across channels.
+
+\paragraph{Practical considerations.} Advertising intensity is endogenous: firms spend more in markets where they expect higher returns, creating positive confounding that biases naïve estimates upward. High-dimensional controls (competitor spending, seasonality, economic indicators) can help, but omitted variable bias remains a concern. Consider combining DML with instrumental variables (Section~\ref{sec:iv-marketing}) when valid instruments are available (e.g., cost shifters, natural experiments in ad delivery). Measurement lag is another challenge: conversions may occur days or weeks after exposure, requiring careful alignment of treatment and outcome windows.
 
 \subsection*{Competition-Conditioned Price Sensitivity}
 
@@ -33,8 +37,38 @@ The DML procedure partitions stores into $K$ folds, trains nuisance functions us
 
 Key diagnostics include overlap checks (propensity distributions should have substantial common support), placebo tests in periods without price changes, and CATE stability across folds. If price sensitivity increases with competition, the retailer should target promotions to high-competition markets where elasticity is highest.
 
+\paragraph{Practical considerations.} Price changes are strategic: retailers lower prices when they anticipate demand softness or competitive pressure. This endogeneity can bias estimates toward zero (prices fall when demand would have fallen anyway). The CRE approach controls for store-level demand baselines, but time-varying demand shocks remain problematic. Consider instrumenting price with cost shifters or using regression discontinuity designs around competitor entry events. Competitor count itself may be endogenous if competitors locate near high-demand areas.
+
+\subsection*{Multi-Touch Attribution}
+
+Consider a firm tracking customer journeys across multiple channels (email, display, search, social) and wanting to estimate each channel's causal contribution to conversion.
+
+The estimand is the channel-specific average treatment effect $\tau_j = \mathbb{E}[Y_i(W_j = 1) - Y_i(W_j = 0)]$ for channel $j$, holding other exposures at their observed values. In the presence of interaction effects, we may instead target the Shapley value decomposition or marginal contribution at the observed exposure profile.
+
+The nuisance functions include outcome regressions conditional on the full exposure vector $\mu(w_1, \ldots, w_J, x)$ and propensity scores for each channel $e_j(x) = P(W_j = 1 | X, W_{-j})$. The high-dimensional exposure space (customers may receive any combination of channels) makes flexible ML methods essential.
+
+The DML procedure proceeds as follows. Partition customers into $K$ folds. Train multi-output outcome regressions (predicting conversion as a function of the full exposure vector and covariates) using gradient boosting or neural networks. Train channel-specific propensity models conditional on other exposures. Construct doubly robust scores for each channel's marginal effect. Aggregate to obtain channel-level ATEs.
+
+Key diagnostics include positivity checks (do customers exist with and without each channel exposure, conditional on other exposures?), balance checks for each channel's propensity model, and sensitivity to the exposure order assumption. Compare DML estimates to last-touch and data-driven attribution benchmarks.
+
+\paragraph{Practical considerations.} Attribution is fundamentally a causal inference problem, but most industry approaches (last-touch, linear, position-based) are descriptive rather than causal. DML provides a principled framework, but faces severe identification challenges. First, exposure to multiple channels is highly correlated: customers who see display ads are more likely to receive email and search retargeting. High-dimensional propensity models help, but cannot address unobserved heterogeneity in customer intent. Second, the positivity assumption is often violated: some channel combinations are rare or impossible. Restrict inference to the observed support and report effect estimates only for well-supported regions. Third, timing matters: the causal effect of channel $j$ may depend on when it appears in the journey, requiring dynamic treatment regime methods beyond basic DML.
+
+\subsection*{Customer Lifetime Value Targeting}
+
+Consider a subscription business wanting to estimate heterogeneous effects of an acquisition discount on long-term customer value, and to design an optimal targeting policy.
+
+The estimand is the CATE $\tau(x) = \mathbb{E}[\text{CLV}_i(1) - \text{CLV}_i(0) | X_i = x]$, where $\text{CLV}_i(1)$ is the lifetime value under discount and $\text{CLV}_i(0)$ is the value under full price. The policy goal is to identify customers for whom $\tau(x) > c$, where $c$ is the discount cost.
+
+The nuisance functions are the CLV regressions under treatment and control $\mu_1(x) = \mathbb{E}[\text{CLV}|W=1, X=x]$ and $\mu_0(x) = \mathbb{E}[\text{CLV}|W=0, X=x]$, and the propensity score $e(x) = P(W=1|X=x)$. CLV is typically a constructed outcome (sum of discounted future revenues over a horizon), introducing measurement challenges.
+
+The DML procedure partitions customers into $K$ folds. Train CLV regressions using gradient boosting or survival models (if churn is relevant), allowing for censoring in the CLV calculation. Train propensity scores using regularised logistic regression or random forests. Build causal forests on the doubly robust scores to estimate $\hat{\tau}(X_i)$. Apply the policy learning framework (Section~\ref{sec:dml-policy}) to derive optimal targeting rules: offer the discount to customers with $\hat{\tau}(X_i) > c$ \citep{athey2021policy}.
+
+Key diagnostics include CLV model fit (out-of-sample $R^2$ on future revenues), propensity overlap, and policy value estimation using the doubly robust estimator (Proposition~\ref{prop:dr-policy-value}). Conduct regret analysis: compare the learned policy to the baseline (offer to everyone, offer to no one) and to simple heuristics (offer to high-income customers only).
+
+\paragraph{Practical considerations.} CLV targeting faces two distinctive challenges. First, CLV is a constructed outcome that depends on modelling assumptions (discount rate, horizon, churn model). Conduct sensitivity analysis across CLV definitions. Second, discount recipients may differ from non-recipients in unobserved ways that affect both CLV and response to discount. A/B testing provides the cleanest identification, but observational data often must suffice for initial policy learning. Use historical A/B tests to validate DML estimates before deployment. Third, the optimal policy depends on capacity constraints (can the firm afford to discount everyone in the target segment?) and strategic considerations (will competitors respond?). The simple threshold rule $\hat{\tau}(x) > c$ may need modification to account for budget constraints or externalities.
+
 \subsection*{Summary}
 
-These three blueprints illustrate the versatility of DML in marketing. CATE estimation reveals heterogeneity that informs targeting and rollout. Dose-response estimation quantifies marginal returns and guides budget allocation. Effect modification clarifies mechanisms and identifies segments where interventions are most effective.
+These five blueprints illustrate the versatility of DML in marketing. CATE estimation reveals heterogeneity that informs targeting and rollout. Dose-response estimation quantifies marginal returns and guides budget allocation. Effect modification clarifies mechanisms and identifies segments where interventions are most effective. Attribution addresses the channel contribution problem that vexes digital marketers. CLV targeting connects heterogeneous effect estimation to policy optimisation and business value.
 
-The unifying theme is that DML combines the flexibility of ML for nuisance estimation with the credibility of design-based inference. Transparent reporting of estimands, nuisance models, diagnostics, and policy implications builds confidence that conclusions are not driven by modelling artefacts.
+The unifying theme is that DML combines the flexibility of ML for nuisance estimation with the credibility of design-based inference \citep{chernozhukov2017double}. Transparent reporting of estimands, nuisance models, diagnostics, and policy implications builds confidence that conclusions are not driven by modelling artefacts. Each application faces domain-specific identification challenges—selection, endogeneity, spillovers, measurement—that DML alone cannot resolve. The methodological contribution of DML is to provide a principled estimation framework once identification is established; the substantive contribution of applied work is to defend that identification using institutional knowledge, diagnostics, and sensitivity analysis.

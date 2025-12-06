@@ -22,12 +22,7 @@ where:
 
 The covariates capture systematic variation explained by observed characteristics. The low-rank component captures residual co-movement after controlling for covariates.
 
-\paragraph{Types of covariates.}
-\begin{itemize}
-\item \textbf{Unit-specific covariates} (time-invariant): Store size, location (urban/rural), demographics (median income, population density), format (supermarket/convenience). Enter as $X_i' \beta$.
-\item \textbf{Time-varying covariates}: Weather (temperature, precipitation), holidays, macroeconomic conditions (unemployment, consumer confidence). Enter as $X_{it}' \beta$.
-\item \textbf{Network structure}: Geographic proximity, competitive relationships. Captured by graph-regularised methods (below).
-\end{itemize}
+\paragraph{Types of covariates.} Covariates fall into three categories. Unit-specific covariates are time-invariant characteristics such as store size, location (urban or rural), demographics (median income, population density), and format (supermarket or convenience), entering the model as $X_i' \beta$. Time-varying covariates include weather (temperature, precipitation), holidays, and macroeconomic conditions (unemployment, consumer confidence), entering as $X_{it}' \beta$. Network structure, capturing geographic proximity and competitive relationships, is handled by graph-regularised methods described below.
 
 \subsection*{Graph-Regularised Matrix Completion}
 
@@ -98,7 +93,7 @@ The covariates $X_{it}$ satisfy:
 \begin{enumerate}[(i)]
     \item \textbf{Strict exogeneity:} $\mathbb{E}[\varepsilon_{it} | X_{i1}, \ldots, X_{iT}, \lambda_i, f_1, \ldots, f_T] = 0$ for all $i, t$;
     \item \textbf{Rank condition:} $\mathbb{E}[X_{it} X_{it}^\top]$ is positive definite;
-    \item \textbf{Treatment independence:} $\mathbb{E}[X_{it} | W_{it} = 1, \lambda_i, f_t] = \mathbb{E}[X_{it} | W_{it} = 0, \lambda_i, f_t]$.
+    \item \textbf{Treatment independence:} $\mathbb{E}[X_{it} | D_{it} = 1, \lambda_i, f_t] = \mathbb{E}[X_{it} | D_{it} = 0, \lambda_i, f_t]$.
 \end{enumerate}
 \end{assumption}
 
@@ -152,27 +147,7 @@ Risk & None & Endogenous covariate bias \\
 
 \subsection*{Software Implementation}
 
-Several packages support covariate-assisted matrix completion:
-
-\paragraph{Python.}
-\begin{itemize}
-\item \texttt{fancyimpute}: Matrix completion with support for covariates via feature matrices.
-\item \texttt{surprise}: Recommender system library with side information support (for user/item features).
-\item Custom implementations using \texttt{scipy.optimize} for the two-step procedure.
-\end{itemize}
-
-\paragraph{R.}
-\begin{itemize}
-\item \texttt{softImpute}: Nuclear-norm regularised MC. Combine with \texttt{lm()} for two-step procedure.
-\item \texttt{cmfrec}: Collective matrix factorisation with side information.
-\item \texttt{recosystem}: Matrix factorisation for recommender systems with features.
-\end{itemize}
-
-\paragraph{Graph-regularised MC.}
-\begin{itemize}
-\item \texttt{pygsp} (Python): Graph signal processing; combine with MC for graph-regularised estimation.
-\item \texttt{igraph} + custom solvers: Build adjacency matrix and implement ADMM.
-\end{itemize}
+Several software packages support covariate-assisted matrix completion. In Python, \texttt{fancyimpute} provides matrix completion with support for covariates via feature matrices, \texttt{surprise} offers a recommender system library with side information support for user and item features, and custom implementations using \texttt{scipy.optimize} can handle the two-step procedure. In R, \texttt{softImpute} provides nuclear-norm regularised matrix completion that can be combined with \texttt{lm()} for the two-step procedure, \texttt{cmfrec} implements collective matrix factorisation with side information, and \texttt{recosystem} offers matrix factorisation for recommender systems with features. For graph-regularised matrix completion, \texttt{pygsp} in Python provides graph signal processing tools that can be combined with matrix completion for graph-regularised estimation, while \texttt{igraph} combined with custom solvers allows building adjacency matrices and implementing ADMM.
 
 \subsection*{Application: Store Characteristics and Demand}
 
@@ -187,19 +162,8 @@ Consider a retailer with 200 stores observing weekly sales of 100 products over 
 \item \textbf{Imputation:} Combine covariate effect and low-rank effect for counterfactuals.
 \end{enumerate}
 
-\paragraph{Results.}
-\begin{itemize}
-\item \textbf{Covariate-assisted ATT:} 18\% increase in sales (95\% CI: [14\%, 22\%]).
-\item \textbf{Standard MC ATT:} 15\% increase (95\% CI: [10\%, 20\%]).
-\item The difference arises because covariate-assisted MC accounts for store heterogeneity.
-\end{itemize}
+\paragraph{Results.} The covariate-assisted estimator yields an ATT of 18\% (95\% CI: 14--22\%), compared to 15\% (95\% CI: 10--20\%) from standard matrix completion. The difference arises because the covariate-assisted approach accounts for store heterogeneity that standard methods ignore.
 
-\paragraph{Heterogeneity by store type.}
-\begin{itemize}
-\item Large stores: 25\% (95\% CI: [19\%, 31\%])
-\item Medium stores: 15\% (95\% CI: [10\%, 20\%])
-\item Small stores: 10\% (95\% CI: [5\%, 15\%])
-\end{itemize}
-This heterogeneity is masked by standard MC, which produces a single average effect.
+\paragraph{Heterogeneity by store type.} Treatment effects vary substantially by store size: large stores see a 25\% increase (95\% CI: 19--31\%), medium stores 15\% (95\% CI: 10--20\%), and small stores 10\% (95\% CI: 5--15\%). This heterogeneity is masked by standard matrix completion, which produces a single average effect.
 
 \paragraph{Diagnostics.} Out-of-sample $R^2$: covariate-assisted MC achieves 0.75 vs 0.65 for standard MC. The 10 percentage point improvement indicates substantial value from covariates. Inference uses bootstrap methods (Section~\ref{sec:bayesian-matrix}).

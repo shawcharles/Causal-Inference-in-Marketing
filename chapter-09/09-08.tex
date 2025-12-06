@@ -108,11 +108,7 @@ Nonlinear panel models with interactive fixed effects combine the low-rank facto
 \item \textbf{Gradient descent refinement:} Run gradient descent on the original likelihood starting from the nuclear norm solution, converging to the fixed effects estimator under local convexity conditions.
 \end{enumerate}
 
-\paragraph{Marketing applications.}\begin{itemize}
-\item \textbf{Binary outcomes:} Customer adoption or churn decisions with latent demand factors. Use logit likelihood with interactive fixed effects to model unobserved heterogeneity.
-\item \textbf{Count outcomes:} Weekly purchase counts with latent category-time effects. Use Poisson likelihood with interactive fixed effects.
-\item \textbf{Network models:} Social network effects with homophily in unobservables. The factor structure captures latent similarity.
-\end{itemize}
+\paragraph{Marketing applications.} Nonlinear panels with interactive fixed effects apply to several marketing contexts. For binary outcomes such as customer adoption or churn decisions with latent demand factors, use a logit likelihood with interactive fixed effects to model unobserved heterogeneity. For count outcomes such as weekly purchase counts with latent category-time effects, use a Poisson likelihood with interactive fixed effects. For network models where social network effects exhibit homophily in unobservables, the factor structure captures latent similarity.
 
 The Zeleneev and Zhang estimator serves as the computational workhorse; this chapter provides intuition about why low-rank regularisation recovers the underlying factor structure.
 
@@ -135,13 +131,7 @@ where $w_j$ are synthetic control weights and $\hat{L}_{it}$ is the low-rank res
 \[
 \hat{\tau}_{\text{ensemble}} = \sum_{m=1}^M \omega_m \hat{\tau}_m, \quad \text{where } \sum_m \omega_m = 1.
 \]
-\textbf{Weight selection:}
-\begin{itemize}
-\item \textbf{Cross-validation:} Choose weights that minimise held-out prediction error on untreated cells.
-\item \textbf{Inverse variance:} $\omega_m \propto 1/\text{Var}(\hat{\tau}_m)$, giving more weight to methods with smaller standard errors.
-\item \textbf{Equal weights:} Simple averaging often performs well when methods are diverse.
-\end{itemize}
-Ensemble approaches are robust to model misspecification.
+Weights can be selected through several approaches. Cross-validation chooses weights that minimise held-out prediction error on untreated cells. Inverse-variance weighting sets $\omega_m \propto 1/\text{Var}(\hat{\tau}_m)$, giving more weight to methods with smaller standard errors. Equal-weight averaging often performs well when methods are diverse. Ensemble approaches are robust to model misspecification.
 
 \subsection*{Practical Guidance: Method Selection}
 

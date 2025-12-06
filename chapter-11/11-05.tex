@@ -138,38 +138,13 @@ The kernel $K_{\theta}$ enforces smooth spatial weights.
 \paragraph{Use case.} ``Impact zone'' studies: cannibalization radius of flagship store, effective reach of billboard campaign. Recovers full function $\tau(d)$ to identify where treatment effect fades to zero.
 
 \begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Method Selection Guidance]
-\paragraph{Regression with exposure.} \textit{Example: Retail panel with distance-weighted exposure to promoted stores.}
-\begin{itemize}
-\item[$\square$] Continuous exposure measure available.
-\item[$\square$] Exposure plausibly exogenous conditional on fixed effects.
-\item[$\square$] Direct and spillover effects approximately additive.
-\end{itemize}
+\textbf{Regression with exposure} suits settings like a retail panel with distance-weighted exposure to promoted stores. This approach requires a continuous exposure measure, exposure that is plausibly exogenous conditional on fixed effects, and direct and spillover effects that are approximately additive.
 
-\paragraph{DiD with spillover groups.} \textit{Example: New store opening affecting nearby stores (spillover) vs distant stores (control).}
-\begin{itemize}
-\item[$\square$] Clear partition into treated, spillover, pure control feasible.
-\item[$\square$] Staggered or clustered treatment adoption.
-\item[$\square$] Parallel trends plausible for all three groups.
-\end{itemize}
+\textbf{DiD with spillover groups} applies when a new store opening affects nearby stores (spillover) versus distant stores (control). This method requires a clear partition into treated, spillover, and pure control groups, staggered or clustered treatment adoption, and parallel trends that are plausible for all three groups.
 
-\paragraph{Two-stage design.} \textit{Example: Geo-experiment with varying treatment intensity across DMAs.}
-\begin{itemize}
-\item[$\square$] Randomisation at cluster and unit levels possible.
-\item[$\square$] Partial interference assumption credible.
-\item[$\square$] Sufficient clusters for cluster-level inference.
-\end{itemize}
+\textbf{Two-stage designs} work for geo-experiments with varying treatment intensity across DMAs. These designs require randomisation at both cluster and unit levels, a credible partial interference assumption, and sufficient clusters for cluster-level inference.
 
-\paragraph{Spatial Hausman--Taylor.} \textit{Example: Brand equity effect on sales with spatial correlation.}
-\begin{itemize}
-\item[$\square$] Time-invariant coefficients needed.
-\item[$\square$] Spatial weights matrix known or estimable.
-\item[$\square$] Instruments for time-invariant regressors available.
-\end{itemize}
+\textbf{Spatial Hausman--Taylor} applies when estimating brand equity effects on sales with spatial correlation. This method requires time-invariant coefficients, a known or estimable spatial weights matrix, and instruments for time-invariant regressors.
 
-\paragraph{SVR.} \textit{Example: Measuring cannibalization radius of flagship store opening.}
-\begin{itemize}
-\item[$\square$] Treatment at specific geographic location.
-\item[$\square$] Interest in treatment effect decay with distance.
-\item[$\square$] Sufficient distance rings with control units.
-\end{itemize}
+\textbf{SVR} suits impact-zone studies such as measuring the cannibalisation radius of a flagship store opening. This approach requires treatment at a specific geographic location, interest in how treatment effects decay with distance, and sufficient distance rings with control units.
 \end{tcolorbox}

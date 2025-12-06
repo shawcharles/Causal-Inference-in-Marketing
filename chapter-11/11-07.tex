@@ -100,32 +100,12 @@ Both & Outlier exclusion & Trim 5\%, 10\% of exposure distribution \\
 \end{tighttable}
 \end{table}
 
-\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Diagnostic Workflow for Interference]
-\paragraph{Step 1: Balance check.}
-\begin{itemize}
-\item[$\square$] Compute pre-treatment exposure for all units.
-\item[$\square$] Test whether exposure is balanced across treatment groups.
-\item[$\square$] If imbalanced, consider stratification or matching on exposure.
-\end{itemize}
+\begin{tcolorbox}[colback=orange!5!white,colframe=orange!50!black,title=Diagnostic Workflow for Interference]
+The first step is a balance check. Compute pre-treatment exposure for all units and test whether exposure is balanced across treatment groups using the test statistic in Proposition~\ref{prop:exposure-balance}. If exposure is imbalanced, consider stratification or matching on exposure before proceeding.
 
-\paragraph{Step 2: Placebo test.}
-\begin{itemize}
-\item[$\square$] Among untreated units, regress outcome on exposure.
-\item[$\square$] If $\delta \neq 0$, spillovers are present; estimate spillover effects.
-\item[$\square$] If $\delta = 0$, consistent with SUTVA (but not conclusive).
-\end{itemize}
+The second step is a placebo test. Among untreated units, regress outcomes on exposure. If the coefficient $\delta$ differs significantly from zero, spillovers are present and you should estimate spillover effects using the methods in Section~\ref{sec:estimating-spillovers}. If $\delta$ is not significantly different from zero, the result is consistent with SUTVA, though not conclusive.
 
-\paragraph{Step 3: Sensitivity analysis.}
-\begin{itemize}
-\item[$\square$] Re-estimate with alternative distance/network specifications.
-\item[$\square$] Re-estimate after trimming extreme exposures.
-\item[$\square$] Report range of estimates; discuss economic reasoning.
-\end{itemize}
+The third step is sensitivity analysis. Re-estimate spillover effects with alternative distance decay functions or network neighbour definitions. Re-estimate after trimming units with extreme exposures (top and bottom 5--10 per cent). Report the range of estimates across specifications and discuss the economic reasoning for preferring one specification over others.
 
-\paragraph{Step 4: Report.}
-\begin{itemize}
-\item[$\square$] Document exposure mapping used and alternatives considered.
-\item[$\square$] Report balance and placebo test results.
-\item[$\square$] Discuss implications for interpretation if SUTVA violated.
-\end{itemize}
+The fourth step is reporting. Document the exposure mapping used and the alternatives considered. Report balance test and placebo test results in tables or text. If SUTVA appears violated, discuss the implications for interpreting treatment effect estimates and the adjustments made to account for spillovers.
 \end{tcolorbox}

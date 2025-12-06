@@ -82,24 +82,9 @@ Suppose the direct effect estimate is positive (own advertising increases market
 The total effect of Firm 1's advertising increase, accounting for competitive reactions, combines the direct effect and the spillover effect weighted by competitors' responses. If competitive reactions are substantial, they can reduce the total effect by a meaningful fraction---potentially 20--40 per cent of the direct effect.
 
 \begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=Key Takeaways from Applications]
-\paragraph{Spillover sign varies by context:}
-\begin{itemize}
-\item[$\bullet$] Geographic spillovers from promotions: \textbf{negative} (customers travel to treated stores).
-\item[$\bullet$] Network spillovers from features: \textbf{positive} (content and social influence).
-\item[$\bullet$] Competitive spillovers from advertising: \textbf{negative} (rivals respond).
-\end{itemize}
+Spillover sign varies by context. Geographic spillovers from promotions are typically negative because customers travel to treated stores, reducing sales at untreated competitors. Network spillovers from new features are typically positive because content and social influence spread through connections. Competitive spillovers from advertising are typically negative because rivals respond with their own campaigns.
 
-\paragraph{Magnitude matters for decisions:}
-\begin{itemize}
-\item[$\bullet$] Small spillover adjustments may not change recommendations.
-\item[$\bullet$] Large adjustments can substantially affect ROI calculations.
-\item[$\bullet$] Non-linear effects (saturation) should inform optimal treatment intensity.
-\end{itemize}
+Magnitude matters for decisions. Small spillover adjustments may not change managerial recommendations, but large adjustments can substantially affect ROI calculations and optimal budget allocation. Non-linear effects such as saturation should inform the optimal treatment intensity---treating more units may yield diminishing returns if spillover effects saturate.
 
-\paragraph{Estimation requires appropriate methods:}
-\begin{itemize}
-\item[$\bullet$] Geographic: Regression with exposure controls (Section~\ref{sec:estimating-spillovers}).
-\item[$\bullet$] Network: Exposure bins for non-linearity (Section~\ref{sec:exposure-mappings}).
-\item[$\bullet$] Competitive: Panel VAR for dynamic reactions (Section~\ref{sec:competition-saturation}).
-\end{itemize}
+Estimation requires methods appropriate to the spillover mechanism. Geographic spillovers call for regression with exposure controls (Section~\ref{sec:estimating-spillovers}). Network spillovers may require exposure bins to capture non-linearity (Section~\ref{sec:exposure-mappings}). Competitive spillovers require panel VAR or similar dynamic models to capture reaction functions (Section~\ref{sec:competition-saturation}).
 \end{tcolorbox}
