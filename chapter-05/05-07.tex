@@ -19,7 +19,9 @@ In marketing panels, the number of treated cohorts or the number of DMAs in a ge
 
 \index{randomisation inference}Randomisation inference and permutation tests offer design-based alternatives that do not rely on parametric assumptions about error distributions. Under the sharp null hypothesis of no effect for any unit at any event time, the observed treatment assignment is just one of many possible assignments that could have been drawn from the randomisation protocol. By recomputing the test statistic for all possible assignments (or a large random sample of them), we generate the exact null distribution of the test statistic. We then compare the observed statistic to this distribution to compute an exact p-value. Randomisation inference is particularly compelling in experimental settings where the randomisation protocol is known and where the goal is to conduct inference that respects the design.
 
-\textbf{Limitation.} Randomisation inference requires knowledge of the randomisation protocol, which is often unavailable in observational settings. When treatment assignment is not randomised or when the assignment mechanism is unknown, randomisation inference is not applicable. In such cases, cluster-robust standard errors or bootstrap methods remain the default, with the caveat that they rely on asymptotic approximations and modelling assumptions.
+\begin{tcolorbox}[colback=orange!5!white,colframe=orange!50!black,title=Limitation: Randomisation Inference Requires Known Assignment]
+Randomisation inference requires knowledge of the randomisation protocol, which is often unavailable in observational settings. When treatment assignment is not randomised or when the assignment mechanism is unknown, randomisation inference is not applicable. In such cases, cluster-robust standard errors or bootstrap methods remain the default, with the caveat that they rely on asymptotic approximations and modelling assumptions.
+\end{tcolorbox}
 
 \subsection*{Multiple Testing}
 
@@ -37,6 +39,8 @@ Practical guidance for marketing applications includes clustering by unit as a d
 
 Transparency about inferential choices and robustness checks using alternative methods build confidence in conclusions. Report both unadjusted and adjusted p-values or confidence intervals. Document the families of hypotheses tested. Discuss the trade-offs between controlling family-wise error rate and power.
 
-\textbf{Inference choices can affect conclusions.} Different clustering choices, small-sample corrections, or multiplicity adjustments can lead to different conclusions about statistical significance. An effect that is significant with one-way clustering may become insignificant with two-way clustering. An effect that is significant without multiplicity adjustment may become insignificant after Bonferroni correction. Sensitivity analysis across inferential choices---reporting results under multiple specifications---provides evidence on the robustness of conclusions. If conclusions are sensitive to inferential choices, this should be acknowledged rather than hidden.
+\begin{tcolorbox}[colback=orange!5!white,colframe=orange!50!black,title=Inference Choices Can Affect Conclusions]
+Different clustering choices, small-sample corrections, or multiplicity adjustments can lead to different conclusions about statistical significance. An effect that is significant with one-way clustering may become insignificant with two-way clustering. An effect that is significant without multiplicity adjustment may become insignificant after Bonferroni correction. Sensitivity analysis across inferential choices---reporting results under multiple specifications---provides evidence on the robustness of conclusions. If conclusions are sensitive to inferential choices, this should be acknowledged rather than hidden.
+\end{tcolorbox}
 
 This ensures that readers understand the evidential standard applied and can assess whether alternative inferential choices would change conclusions. The next section develops diagnostic workflows for event-study analyses.

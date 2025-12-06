@@ -13,7 +13,8 @@ Y_{it} = \alpha_i + \beta_t + \sum_{k \neq -1} \theta_k \mathbb{I}\{t - G_i = k\
 \]
 where $W_{i}$ is the treatment intensity for unit $i$ (fixed at adoption). The coefficients $\theta_k$ estimate the effect of a unit change in treatment intensity at event time $k$. When intensity varies over time within units, use $W_{it}$ instead, but identification becomes more demanding. This specification assumes a linear dose-response: the effect of intensity is proportional at each event time. When diminishing returns or threshold effects are expected, use flexible specifications (intensity bins, splines, or the dose-response methods in Chapter~\ref{ch:continuous}).
 
-\textbf{Worked Example: Loyalty Programme with Tiered Rewards.} A retailer offers three reward tiers: 2\%, 5\%, and 10\% cashback. Stores are assigned to tiers based on customer demographics. The event-study estimates $\theta_k \times W_i$ for each tier over $k = 0, \ldots, 4$:
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!50!black,title=Worked Example: Loyalty Programme with Tiered Rewards]
+A retailer offers three reward tiers: 2\%, 5\%, and 10\% cashback. Stores are assigned to tiers based on customer demographics. The event-study estimates $\theta_k \times W_i$ for each tier over $k = 0, \ldots, 4$:
 
 \begin{center}
 \begin{tabular}{lccccc}
@@ -27,9 +28,12 @@ where $W_{i}$ is the treatment intensity for unit $i$ (fixed at adoption). The c
 \end{tabular}
 \end{center}
 
-\noindent Effects are in £ thousands additional quarterly sales per store; these are point estimates, and confidence intervals (not shown) should be computed and reported in practice. Two patterns emerge: (1) effects grow over event time as customers enrol and develop habits; (2) effects scale with intensity but exhibit diminishing returns---doubling from 5\% to 10\% does not double the effect. This suggests saturation at higher reward levels. Chapter~\ref{ch:continuous} develops dose-response methods; Chapter~\ref{ch:dynamics} covers distributed lag models for intensity-dependent dynamics.
+Effects are in £ thousands additional quarterly sales per store; these are point estimates, and confidence intervals (not shown) should be computed and reported in practice. Two patterns emerge: (1) effects grow over event time as customers enrol and develop habits; (2) effects scale with intensity but exhibit diminishing returns---doubling from 5\% to 10\% does not double the effect. This suggests saturation at higher reward levels. Chapter~\ref{ch:continuous} develops dose-response methods; Chapter~\ref{ch:dynamics} covers distributed lag models for intensity-dependent dynamics.
+\end{tcolorbox}
 
-\textbf{Key Identification Assumption.} Conditional independence requires that intensity assignment is as-good-as-random conditional on covariates and fixed effects. If high-intensity stores are systematically different (for example, higher baseline sales), the estimates conflate treatment intensity effects with selection effects. This assumption is often violated in marketing: firms typically assign higher intensity to units where they expect larger effects (for example, higher discounts to price-sensitive segments or more advertising to high-potential markets). Check balance on pre-treatment characteristics across intensity levels, and consider instrumental variables or regression discontinuity designs when selection on intensity is severe.
+\begin{tcolorbox}[colback=orange!5!white,colframe=orange!50!black,title=Key Identification Assumption: Continuous Treatments]
+Conditional independence requires that intensity assignment is as-good-as-random conditional on covariates and fixed effects. If high-intensity stores are systematically different (for example, higher baseline sales), the estimates conflate treatment intensity effects with selection effects. This assumption is often violated in marketing: firms typically assign higher intensity to units where they expect larger effects (for example, higher discounts to price-sensitive segments or more advertising to high-potential markets). Check balance on pre-treatment characteristics across intensity levels, and consider instrumental variables or regression discontinuity designs when selection on intensity is severe.
+\end{tcolorbox}
 
 \subsection*{Interference and Spillovers}
 
@@ -41,11 +45,15 @@ where $S_{it}(k) = \sum_{j \in N(i)} \mathbb{I}\{G_j \leq t, \, t - G_j = k\}$ c
 
 \textbf{Note on Exposure Mappings.} The simple neighbour count $S_{it}(k)$ treats all neighbours equally. More sophisticated exposure mappings may weight neighbours by distance, network centrality, or competitive overlap. The choice of exposure mapping is consequential for interpretation and should be justified ex ante based on the mechanism of spillover.
 
-\textbf{Worked Example: Store Network Spillovers.} Store A is treated in Q3; Store B (a neighbouring store) is never treated. After Store A's treatment, at $k = 0$ (Q3) Store B experiences spillover from Store A at $S_{B,Q3}(0) = 1$, and at $k = 1$ (Q4) Store B experiences spillover at $S_{B,Q4}(1) = 1$. Store A's direct effect is $\theta_k^{\text{direct}}$; Store B's spillover effect is $\theta_k^{\text{spillover}}$.
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!50!black,title=Worked Example: Store Network Spillovers]
+Store A is treated in Q3; Store B (a neighbouring store) is never treated. After Store A's treatment, at $k = 0$ (Q3) Store B experiences spillover from Store A at $S_{B,Q3}(0) = 1$, and at $k = 1$ (Q4) Store B experiences spillover at $S_{B,Q4}(1) = 1$. Store A's direct effect is $\theta_k^{\text{direct}}$; Store B's spillover effect is $\theta_k^{\text{spillover}}$.
 
-\noindent Estimated effects might show $\theta_0^{\text{direct}} = 8.2$ (immediate lift for treated store) and $\theta_0^{\text{spillover}} = -1.4$ (nearby control stores lose customers to the treated store). Negative spillovers indicate business stealing; positive spillovers indicate demand creation or word-of-mouth. As with all event-study estimates, these are point estimates; confidence intervals should be computed to assess statistical significance.
+Estimated effects might show $\theta_0^{\text{direct}} = 8.2$ (immediate lift for treated store) and $\theta_0^{\text{spillover}} = -1.4$ (nearby control stores lose customers to the treated store). Negative spillovers indicate business stealing; positive spillovers indicate demand creation or word-of-mouth. As with all event-study estimates, these are point estimates; confidence intervals should be computed to assess statistical significance.
+\end{tcolorbox}
 
-\textbf{Critical Assumption.} The exposure mapping $N(i)$ must be specified ex ante. In marketing, ``neighbours'' may be geographic (stores within 10km), network-based (customers who share social connections), or competitive (stores in the same category). The choice affects interpretation. If the exposure mapping is misspecified, spillover estimates are biased. Chapter~\ref{ch:spillovers} develops these methods in detail.
+\begin{tcolorbox}[colback=orange!5!white,colframe=orange!50!black,title=Critical Assumption: Exposure Mapping]
+The exposure mapping $N(i)$ must be specified ex ante. In marketing, ``neighbours'' may be geographic (stores within 10km), network-based (customers who share social connections), or competitive (stores in the same category). The choice affects interpretation. If the exposure mapping is misspecified, spillover estimates are biased. Chapter~\ref{ch:spillovers} develops these methods in detail.
+\end{tcolorbox}
 
 \subsection*{Nonlinear Outcomes and Log Transformations}
 
@@ -57,7 +65,9 @@ Event studies can be estimated on transformed outcomes when the outcome distribu
 \]
 the coefficient $\theta_k$ approximates the percentage change in $Y$ at event time $k$. For $\theta_k = 0.08$, the interpretation is approximately an 8\% increase in sales. For larger effects, use $(\exp(\theta_k) - 1) \times 100\%$ for the exact percentage change.
 
-\textbf{Jensen's Inequality Caveat.} When converting log-scale predictions back to levels, $\exp(\mathbb{E}[\log Y]) \neq \mathbb{E}[Y]$. This matters for forecasting aggregate outcomes. If the goal is prediction rather than causal identification, apply a smearing adjustment: $\hat{Y} = \exp(\hat{\theta}_k) \times \frac{1}{n}\sum_i \exp(\hat{\varepsilon}_i)$.
+\begin{tcolorbox}[colback=orange!5!white,colframe=orange!50!black,title=Jensen's Inequality Caveat]
+When converting log-scale predictions back to levels, $\exp(\mathbb{E}[\log Y]) \neq \mathbb{E}[Y]$. This matters for forecasting aggregate outcomes. If the goal is prediction rather than causal identification, apply a smearing adjustment: $\hat{Y} = \exp(\hat{\theta}_k) \times \frac{1}{n}\sum_i \exp(\hat{\varepsilon}_i)$.
+\end{tcolorbox}
 
 \textbf{When to Use Log vs Levels.} Use log transformations for sales, revenue, and expenditure---outcomes that are positive, right-skewed, and where multiplicative effects are plausible. Use levels for profit (which can be negative), customer counts (small integers where percentage changes are less meaningful), and indices (already normalised). Consider the inverse hyperbolic sine (IHS) transformation when the outcome includes zeros: IHS handles zeros gracefully and approximates the log for large values, though interpretation requires care \citep{bellemare2020elasticities}.
 

@@ -33,7 +33,9 @@ Weight audits examine the implicit weights assigned to cohort-time observations 
 
 Specification curves aggregate estimates across many defensible modelling choices: different sets of control units (never-treated only vs never-treated and not-yet-treated), different covariate adjustments (no covariates vs rich controls), different event-time windows (short vs long), different binning choices, and different estimators (Sun--Abraham vs Callaway--Sant'Anna vs Borusyak--Jaravel--Spiess). Plot the distribution of estimates across specifications for each event time $k$ or for summary measures (overall ATT, cumulative effect, long-run multiplier). If estimates cluster tightly, conclusions are robust to modelling choices. If estimates vary widely, the choice of specification matters.
 
-\textbf{Multiple testing concern.} Running many specifications and reporting all results raises multiple testing concerns. If 22 of 24 specifications yield significant results, is this evidence of robustness or of specification searching? The key distinction is whether specifications were pre-registered or chosen post hoc. Pre-registered specification curves with a clear rationale for each specification provide valid robustness evidence. Post hoc specification curves that include only specifications that "work" are misleading. Report all pre-specified specifications regardless of results.
+\begin{tcolorbox}[colback=orange!5!white,colframe=orange!50!black,title=Multiple Testing Concern]
+Running many specifications and reporting all results raises multiple testing concerns. If 22 of 24 specifications yield significant results, is this evidence of robustness or of specification searching? The key distinction is whether specifications were pre-registered or chosen post hoc. Pre-registered specification curves with a clear rationale for each specification provide valid robustness evidence. Post hoc specification curves that include only specifications that ``work'' are misleading. Report all pre-specified specifications regardless of results.
+\end{tcolorbox}
 
 \textbf{Interpreting Specification Curves.} As an illustrative example, suppose you estimate the immediate effect $\theta_0$ across 24 specifications (2 control sets $\times$ 2 covariate adjustments $\times$ 3 windows $\times$ 2 estimators). The resulting estimates range from 4.2 to 7.8, with median 5.8 and interquartile range [5.1, 6.4]. If 22 of 24 specifications yield positive and statistically significant estimates, this supports robust conclusions: the effect is clearly positive regardless of specification. If estimates range from $-1.2$ to 8.4 with half positive and half negative, the conclusion is specification-dependent and less credible. Report the full distribution, highlight the preferred specification with justification, and discuss which modelling choices drive variation.
 
@@ -64,9 +66,7 @@ TWFE vs heterogeneity-robust estimator & Negative weights and contamination bias
 \end{tighttable}
 \end{table}
 
-\begin{quote}
-\textbf{Box 5.1: Diagnostic Quick Reference}
-
+\begin{tcolorbox}[colback=gray!5!white,colframe=gray!75!black,title=Diagnostic Quick Reference]
 This box summarises the key diagnostics for event-study credibility. For the full end-to-end workflow with actionable checkboxes, see Section~\ref{sec:event-workflow}.
 
 \textit{Pre-trend checks}: Test joint significance of $\theta_k$ for $k < -1$; plot pre-treatment coefficients; conduct placebo-in-time test. Remember: pre-trend tests have limited power \citep{roth2022pretest}---supplement with visual inspection.
@@ -78,6 +78,6 @@ This box summarises the key diagnostics for event-study credibility. For the ful
 \textit{Sensitivity analyses}: Leave-one-cohort-out, leave-one-time-out, vary control set (never-treated vs not-yet-treated), vary window and binning, and construct specification curve across estimators.
 
 \textit{Transparency}: Report weights and cohort composition; show cohort-specific profiles $\theta_{g,k}$ if heterogeneity is material; document deviations from pre-specified plan.
-\end{quote}
+\end{tcolorbox}
 
 These diagnostic procedures ensure that event-study estimates are credible and that conclusions are robust to plausible violations of identifying assumptions. The next section discusses extensions to continuous treatments, interference, and nonlinear outcomes.
